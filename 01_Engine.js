@@ -25,6 +25,10 @@ function importReferenceData() {
   refSheet.getRange(1, 1, 1, csvData[0].length).setBackground("#003366").setFontColor("white").setFontWeight("bold");
   refSheet.setFrozenRows(1);
   trimAndFilterSheet(refSheet, csvData.length, csvData[0].length);
+  // Store import date so dashboard can show staleness
+  let importDateStr = Utilities.formatDate(newestDate, "GMT-5", "MM/dd/yyyy");
+  PropertiesService.getScriptProperties().setProperty('refDataImportDate', importDateStr);
+  PropertiesService.getScriptProperties().setProperty('refDataFileName', newestFile.getName());
   SpreadsheetApp.getUi().alert(`✅ Successfully imported Reference Data: \n${newestFile.getName()}`);
 }
 

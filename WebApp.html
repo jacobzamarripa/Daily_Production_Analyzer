@@ -987,6 +987,7 @@
               if(isNaN(start)) start = new Date(today); if(isNaN(end)) end = new Date(start.getTime() + 86400000*7); if(end < start) end = new Date(start.getTime() + 86400000); 
 
               let leftPct = ((start - minDate) / totalTime) * 100; let widthPct = Math.max(0.5, ((end - start) / totalTime) * 100);
+              let leftPx = Math.round(leftPct / 100 * chartWidth); let widthPx = Math.max(9, Math.round(widthPct / 100 * chartWidth));
               let isOverdue = (!isNaN(end) && today > end); let ganttClass = getGanttClass(item.stage, item.status, isOverdue); 
               let pillStage = item.stage ? item.stage : "-"; let pillStatus = item.status ? item.status : "-"; let highestSev = getSeverity(item.flags);
 
@@ -1019,11 +1020,11 @@
                  <div class="gantt-label ${highestSev}" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();">
                      <div class="gantt-label-fdh">${item.fdh}</div><div class="gantt-label-ven">${item.vendor || "UNKNOWN"}</div>
                  </div>
-                 <div class="gantt-bar-wrapper" style="width:${chartWidth}px;">
-                    <div class="gantt-bar-fill ${ganttClass}" style="left:${leftPct}%; width:${widthPct}%; pointer-events:auto;" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();" onmouseenter="showHUD(event, '${item.fdh}')" onmousemove="moveHUD(event)" onmouseleave="hideHUD()">
+                 <div class="gantt-bar-wrapper" style="width:${chartWidth}px; min-width:${chartWidth}px;">
+                    <div class="gantt-bar-fill ${ganttClass}" style="left:${leftPx}px; width:${widthPx}px; pointer-events:auto;" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();" onmouseenter="showHUD(event, '${item.fdh}')" onmousemove="moveHUD(event)" onmouseleave="hideHUD()">
                         <span class="gantt-bar-text">${item.fdh} • ${pillStage} | ${pillStatus}</span>
                     </div>
-                    <div style="position:absolute; left:${leftPct}%; width:${widthPct}%; height:100%; pointer-events:none; z-index:8;">${beadHtml}</div>
+                    <div style="position:absolute; left:${leftPx}px; width:${widthPx}px; height:100%; pointer-events:none; z-index:8;">${beadHtml}</div>
                  </div>
               </div>`;
           });
