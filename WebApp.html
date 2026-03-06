@@ -67,6 +67,22 @@
       .inbox-count { background: var(--border); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 900; color: var(--text-main);}
       .inbox-list { overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; padding: 0; gap: 0;}
 
+      .admin-strip { display: flex; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--card-bg); flex-shrink: 0; transition: background 0.3s, border-color 0.3s; }
+      .admin-kpi { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; text-align: center; transition: all 0.15s; }
+      .admin-kpi:hover { transform: translateY(-1px); }
+      .admin-kpi-val { font-size: 20px; font-weight: 900; line-height: 1.1; }
+      .admin-kpi-label { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; color: var(--text-muted); }
+      .admin-kpi.crossings { border-color: #facc15; }
+      .admin-kpi.crossings .admin-kpi-val { color: #854d0e; }
+      body.dark-mode .admin-kpi.crossings .admin-kpi-val { color: #fde047; }
+      .admin-kpi.status { border-color: #fca5a5; }
+      .admin-kpi.status .admin-kpi-val { color: #b91c1c; }
+      body.dark-mode .admin-kpi.status .admin-kpi-val { color: #fca5a5; }
+      .admin-kpi.active.crossings { background: #422006; border-color: #facc15; }
+      .admin-kpi.active.crossings .admin-kpi-val, .admin-kpi.active.crossings .admin-kpi-label { color: #fde047; }
+      .admin-kpi.active.status { background: #450a0a; border-color: #ef4444; }
+      .admin-kpi.active.status .admin-kpi-val, .admin-kpi.active.status .admin-kpi-label { color: #fca5a5; }
+
       .email-card { padding: 12px 16px; border: none; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s, border-color 0.3s; background: var(--card-bg); border-left: 4px solid transparent; display: flex; flex-direction: column; gap: 6px; }
       .email-card:hover { background: var(--bg); }
       .email-card.selected { background: rgba(59, 130, 246, 0.08); border-left-color: #3b82f6 !important; }
@@ -350,6 +366,16 @@
               </select>
           </div>
         </div>
+        <div class="admin-strip">
+          <div class="admin-kpi crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')" title="Filter: Crossings to verify">
+            <div class="admin-kpi-val" id="kpi-crossings-val">0</div>
+            <div class="admin-kpi-label">Check Crossings</div>
+          </div>
+          <div class="admin-kpi status" id="kpi-admin-status" onclick="toggleAdminFilter('status')" title="Filter: QB status issues">
+            <div class="admin-kpi-val" id="kpi-status-val">0</div>
+            <div class="admin-kpi-label">QB Status</div>
+          </div>
+        </div>
         <div class="inbox-list" id="inbox-list"></div>
       </div>
 
@@ -525,6 +551,12 @@
       }
       function toggleMinimize() { let wrapper = getEl('gantt-wrapper'); if(wrapper && !wrapper.classList.contains('fullscreen')) wrapper.classList.toggle('minimized'); }
       function toggleCriticalFilter() { let sevDropdown = getEl('filter-severity'); if (sevDropdown) { sevDropdown.value = (sevDropdown.value === 'crit') ? 'ALL' : 'crit'; applyFilters(); } }
+      function toggleAdminFilter(type) {
+          activeAdminFilter = (activeAdminFilter === type) ? null : type;
+          getEl('kpi-admin-crossings').classList.toggle('active', activeAdminFilter === 'crossings');
+          getEl('kpi-admin-status').classList.toggle('active', activeAdminFilter === 'status');
+          applyFilters();
+      }
       
       let hudLocked = false;
       function toggleHudLock(e) {
@@ -654,7 +686,8 @@
 
       function moveSpikeHUD(e) { moveHUD(e); } function hideSpikeHUD() { hideHUD(); }
 
-      let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 }; 
+      let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
+      let activeAdminFilter = null;
 
       const QB_STYLES = {
           "UG": { color: "var(--qb-ug)", bg: "var(--qb-ug)", border: "var(--qb-ug)" }, "AE": { color: "var(--text-main)", bg: "var(--qb-ae-bg)", border: "#94a3b8" },
@@ -697,12 +730,19 @@
             const vVen = getEl('filter-vendor')?.value || 'ALL'; const vCit = getEl('filter-city')?.value || 'ALL'; const vOfs = getEl('filter-ofs')?.value || 'ALL'; const vSev = getEl('filter-severity')?.value || 'ALL'; 
             const sortVal = getEl('sort-queue')?.value || 'default'; const searchTerm = (getEl('search-input')?.value || '').toLowerCase();
 
+            // Update admin badge counts from full unfiltered list
+            setTxt('kpi-crossings-val', allActionItems.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS")).length);
+            setTxt('kpi-status-val', allActionItems.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS")).length);
+
             let filtered = allActionItems.filter(i => {
                 let matchOfs = true;
                 if(vOfs !== 'ALL') { try { let d = new Date(i.ofsDate); let mStr = !isNaN(d) ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : ""; matchOfs = (mStr === vOfs); } catch(e) { matchOfs = false; } }
                 let matchSearch = true; if (searchTerm !== '') matchSearch = i.fdh.toLowerCase().includes(searchTerm);
                 let matchSev = true; if (vSev !== 'ALL') matchSev = (getSeverity(i.flags) === vSev);
-                return (vVen==='ALL' || i.vendor===vVen) && (vCit==='ALL' || i.city===vCit) && matchOfs && matchSearch && matchSev;
+                let matchAdmin = true;
+                if (activeAdminFilter === 'crossings') matchAdmin = i.flags.includes("ADMIN: CHECK CROSSINGS");
+                else if (activeAdminFilter === 'status') matchAdmin = i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS");
+                return (vVen==='ALL' || i.vendor===vVen) && (vCit==='ALL' || i.city===vCit) && matchOfs && matchSearch && matchSev && matchAdmin;
             });
 
             let activeProjCount = 0; let activeBslsCount = 0; let activeCritCount = 0; let today = new Date(); today.setHours(0,0,0,0);
