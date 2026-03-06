@@ -459,8 +459,8 @@
            <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--text-muted);">Global Construction Timeline</div>
            <div>
                <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; margin-right:6px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); exitTheaterMode()">Exit Focus</button>
-               <button class="btn btn-nav" style="display:inline-flex; padding: 4px 8px; font-size: 9px; margin-right:6px;" onclick="event.stopPropagation(); toggleMinimize()">Minimize</button>
-               <button class="btn btn-nav" style="display:inline-flex; padding: 4px 8px; font-size: 9px;" onclick="event.stopPropagation(); toggleFullscreen()">Fullscreen</button>
+               <button class="btn btn-nav" id="btn-minimize" style="display:inline-flex; padding: 4px 8px; font-size: 9px; margin-right:6px;" onclick="event.stopPropagation(); toggleMinimize()">Minimize</button>
+               <button class="btn btn-nav" id="btn-fullscreen" style="display:inline-flex; padding: 4px 8px; font-size: 9px;" onclick="event.stopPropagation(); toggleFullscreen()">Fullscreen</button>
            </div>
        </div>
        <div class="timeline-container" id="gantt-scroll" onclick="exitTheaterMode(event)">
@@ -508,7 +508,13 @@
           if ([...el.options].some(o => o.value === current)) el.value = current;
       }
 
-      function toggleFullscreen() { let wrapper = getEl('gantt-wrapper'); if(wrapper) { wrapper.classList.remove('minimized'); wrapper.classList.toggle('fullscreen'); } }
+      function toggleFullscreen() {
+          let wrapper = getEl('gantt-wrapper'); if(!wrapper) return;
+          wrapper.classList.remove('minimized'); wrapper.classList.toggle('fullscreen');
+          let isFs = wrapper.classList.contains('fullscreen');
+          let fsBtn = getEl('btn-fullscreen'); if(fsBtn) fsBtn.innerText = isFs ? 'Exit Fullscreen' : 'Fullscreen';
+          let minBtn = getEl('btn-minimize'); if(minBtn) minBtn.style.display = isFs ? 'none' : 'inline-flex';
+      }
       function toggleMinimize() { let wrapper = getEl('gantt-wrapper'); if(wrapper && !wrapper.classList.contains('fullscreen')) wrapper.classList.toggle('minimized'); }
       function toggleCriticalFilter() { let sevDropdown = getEl('filter-severity'); if (sevDropdown) { sevDropdown.value = (sevDropdown.value === 'crit') ? 'ALL' : 'crit'; applyFilters(); } }
       
@@ -851,7 +857,7 @@
                     <div class="gantt-bar-fill ${ganttClass}" style="left:${leftPct}%; width:${widthPct}%; pointer-events:auto;" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();" onmouseenter="showHUD(event, '${item.fdh}')" onmousemove="moveHUD(event)" onmouseleave="hideHUD()">
                         <span class="gantt-bar-text">${item.fdh} • ${pillStage} | ${pillStatus}</span>
                     </div>
-                    <div style="position:absolute; left:0; width:100%; height:100%; pointer-events:none; z-index:8;">${beadHtml}</div>
+                    <div style="position:absolute; left:${leftPct}%; width:${widthPct}%; height:100%; pointer-events:none; z-index:8;">${beadHtml}</div>
                  </div>
               </div>`;
           });
