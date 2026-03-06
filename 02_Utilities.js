@@ -153,7 +153,18 @@ function getDashboardData() {
          });
      }
   }
-  return { actionItems: actionItems, totalRows: data.length - 1, headers: headers };
+  // Compute latest data date from Date column for staleness indicator
+  let latestDataDate = "";
+  if (dateIdx > -1) {
+      for (let i = 1; i < data.length; i++) {
+          let cell = data[i][dateIdx];
+          if (!cell) continue;
+          let ds = cell instanceof Date ? Utilities.formatDate(cell, "GMT-5", "MM/dd/yyyy") : String(cell).split('T')[0];
+          if (ds && (!latestDataDate || ds > latestDataDate)) latestDataDate = ds;
+      }
+  }
+
+  return { actionItems: actionItems, totalRows: data.length - 1, headers: headers, refDataDate: latestDataDate };
 }
 
 function promptLoadSpecificDateToQB() { const ui = SpreadsheetApp.getUi(); const response = ui.prompt('Load QuickBase Tab', 'Enter the date to load (YYYY-MM-DD):', ui.ButtonSet.OK_CANCEL); if (response.getSelectedButton() === ui.Button.OK) populateQuickBaseTabCore(response.getResponseText().trim()); }

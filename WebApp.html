@@ -386,6 +386,7 @@
         <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
         <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
         <button class="btn-nav" onclick="triggerRefresh()" id="btn-refresh">Sync Engine</button>
+        <span id="nav-ref-age" style="font-size:9px; font-weight:900; padding:3px 8px; border-radius:10px; border:1px solid; display:none; white-space:nowrap;"></span>
         <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme">Dark Mode</button>
       </div>
     </div>
@@ -503,6 +504,8 @@
                            <span id="p-date" class="hover-trigger" onmouseenter="hl('Date')" onmouseleave="hl('')" style="cursor:pointer;">REPORT DATE: TBD</span>
                            <span style="margin: 0 6px; color:var(--border);">|</span>
                            <span id="p-last-check" class="hover-trigger" onmouseenter="hl('QB Context & Gaps')" onmouseleave="hl('')" style="cursor:pointer;">LAST CHECKED: NEVER</span>
+                           <span style="margin: 0 6px; color:var(--border);">|</span>
+                           <span id="p-ref-data" style="cursor:default;">REF DATA: —</span>
                        </div>
                        <button class="btn btn-skip" onclick="skipReview()">Skip (Clear)</button>
                        <button class="btn btn-primary" id="btn-commit" onclick="commitReview()">✔ Commit</button>
@@ -756,6 +759,7 @@
       function moveSpikeHUD(e) { moveHUD(e); } function hideSpikeHUD() { hideHUD(); }
 
       let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
+      let globalRefDataDate = "";
       let activeAdminFilter = null;
 
       const QB_STYLES = {
@@ -784,6 +788,8 @@
         safeExecute('initDashboard', () => {
             if (!data || !data.actionItems || data.actionItems.length === 0) { setHtml('gantt-container', `<div class="empty-msg" style="margin-top:40px;">All clear.</div>`); setHtml('inbox-list', `<div class="empty-msg">All clear.</div>`); return; }
             allActionItems = data.actionItems; globalHeaders = data.headers;
+            globalRefDataDate = data.refDataDate || "";
+            updateRefDataIndicator();
             populateDropdown('filter-vendor', [...new Set(allActionItems.map(i => i.vendor).filter(Boolean))]); populateDropdown('filter-city', [...new Set(allActionItems.map(i => i.city).filter(Boolean))]);
             let ofsMonths = allActionItems.map(i => {
                 if(!i.ofsDate || i.ofsDate === "-" || i.ofsDate === "Unknown") return null;
@@ -792,6 +798,49 @@
             populateDropdown('filter-ofs', [...new Set(ofsMonths)]);
             applyFilters();
         });
+      }
+
+      function updateRefDataIndicator() {
+          let badge = getEl('nav-ref-age'); let paneSpan = getEl('p-ref-data');
+          if (!globalRefDataDate) {
+              if (badge) badge.style.display = 'none';
+              if (paneSpan) { paneSpan.textContent = 'REF DATA: —'; paneSpan.style.color = 'var(--text-muted)'; }
+              return;
+          }
+
+          // Parse the stored date and compute days old
+          let parts = globalRefDataDate.split('/'); // MM/DD/YYYY or MM-DD-YYYY
+          if (parts.length < 3) parts = globalRefDataDate.split('-');
+          let refDate;
+          if (parts.length === 3) {
+              // Could be MM/DD/YYYY or YYYY-MM-DD
+              if (parts[0].length === 4) refDate = new Date(parts[0], parts[1]-1, parts[2]);
+              else refDate = new Date(parts[2], parts[0]-1, parts[1]);
+          }
+          let today = new Date(); today.setHours(0,0,0,0);
+          let daysOld = refDate ? Math.round((today - refDate) / 86400000) : 999;
+
+          let color, bgColor, borderColor, label;
+          if (daysOld <= 0) {
+              color = '#166534'; bgColor = '#dcfce7'; borderColor = '#86efac'; label = 'FRESH';
+          } else if (daysOld === 1) {
+              color = '#854d0e'; bgColor = '#fef9c3'; borderColor = '#fde047'; label = '1 DAY OLD';
+          } else if (daysOld === 2) {
+              color = '#9a3412'; bgColor = '#ffedd5'; borderColor = '#fb923c'; label = `${daysOld} DAYS OLD`;
+          } else {
+              color = '#7f1d1d'; bgColor = '#fee2e2'; borderColor = '#f87171'; label = `${daysOld} DAYS OLD — STALE`;
+          }
+
+          let displayDate = globalRefDataDate;
+          if (badge) {
+              badge.style.display = 'inline-block'; badge.style.color = color;
+              badge.style.background = bgColor; badge.style.borderColor = borderColor;
+              badge.textContent = `REF DATA: ${displayDate} (${label})`;
+          }
+          if (paneSpan) {
+              paneSpan.textContent = `REF DATA: ${displayDate}`;
+              paneSpan.style.color = color;
+          }
       }
 
       function applyFilters() {
@@ -937,7 +986,7 @@
               let end = item.cxEnd ? new Date(item.cxEnd) : (item.targetDate ? new Date(item.targetDate) : new Date(start.getTime() + 86400000*30));
               if(isNaN(start)) start = new Date(today); if(isNaN(end)) end = new Date(start.getTime() + 86400000*7); if(end < start) end = new Date(start.getTime() + 86400000); 
 
-              let leftPct = ((start - minDate) / totalTime) * 100; let widthPct = ((end - start) / totalTime) * 100;
+              let leftPct = ((start - minDate) / totalTime) * 100; let widthPct = Math.max(0.5, ((end - start) / totalTime) * 100);
               let isOverdue = (!isNaN(end) && today > end); let ganttClass = getGanttClass(item.stage, item.status, isOverdue); 
               let pillStage = item.stage ? item.stage : "-"; let pillStatus = item.status ? item.status : "-"; let highestSev = getSeverity(item.flags);
 
@@ -1263,7 +1312,8 @@
               let chkMatch = (item.gaps || "").match(/\[Chk:\s*([^\]]+)\]/); let lastCheckedStr = chkMatch ? chkMatch[1] : "NEVER";
               let d = new Date(); let dateStr = (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear().toString().slice(-2);
               
-              setTxt('p-date', `REPORT DATE: ${item.reportDate || dateStr}`); setTxt('p-last-check', `LAST CHECKED: ${lastCheckedStr}`); 
+              setTxt('p-date', `REPORT DATE: ${item.reportDate || dateStr}`); setTxt('p-last-check', `LAST CHECKED: ${lastCheckedStr}`);
+              updateRefDataIndicator(); 
               
               // 🧠 CRASH FIX RESTORED
               let smartNote = generateSmartComment(item, daysLeft, isOverdue);
