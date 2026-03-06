@@ -119,7 +119,7 @@
       body.dark-mode .tag-admin { background: rgba(250, 204, 21, 0.1); color: #fde047; border-color: #facc15; }
 
       .reading-pane { flex-grow: 1; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
-      .pane-content { width: 100%; max-width: 1000px; display: none; flex-direction: column; gap: 16px; }
+      .pane-content { width: 100%; max-width: 1000px; display: none; flex-direction: column; gap: 16px; position: relative; }
       .qb-grid { display: grid; grid-template-columns: 4fr 6fr; gap: 20px; }
 
       .qb-module { background: var(--card-bg); border-radius: 12px; border: 1.5px solid var(--border); padding: 14px 18px; display: flex; flex-direction: column; position: relative; transition: outline 0.2s, background 0.3s, border-color 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);}
@@ -209,7 +209,7 @@
       body.dark-mode .tl-header-dates { background: rgba(30, 30, 36, 0.9); }
 
       /* The Grid Lines Container */
-      .gantt-grid-container { position: absolute; left: 140px; right: 0; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
+      .gantt-grid-container { position: absolute; left: 140px; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
 
       .gantt-today-line { position: absolute; top: 30px; bottom: 0; width: 2px; background: rgba(239,68,68,0.8); z-index: 10; border-left: 1px dashed #ef4444; pointer-events: none;}
       .gantt-today-label { position: absolute; top: -2px; transform: translateX(-50%); font-size: 10px; font-weight: 900; color: #ffffff; background: #ef4444; padding: 4px 8px; border-radius: 6px; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; z-index: 50;}
@@ -242,7 +242,7 @@
       .gantt-label-ven { font-size: 8px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
 
       /* Holds the actual colored bars to match the Grid Container */
-      .gantt-bar-wrapper { position: absolute; left: 140px; right: 0; top: 0; bottom: 0; pointer-events: none; }
+      .gantt-bar-wrapper { position: absolute; left: 140px; top: 0; bottom: 0; pointer-events: none; }
 
       .gantt-bar-fill { position: absolute; top: 8px; height: 18px; border-radius: 9px; transition: width 0.3s, transform 0.4s, box-shadow 0.4s; display: flex; align-items: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.15);}
       .gantt-bar-text { color: #ffffff; font-size: 10px; font-weight: bold; padding: 0 10px; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6);}
@@ -262,6 +262,10 @@
           gap: 8px; z-index: 200; box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
           transition: background 0.3s, border-color 0.3s;
       }
+
+      .swipe-label { position: absolute; top: 24px; padding: 8px 18px; border-radius: 10px; font-size: 22px; font-weight: 900; letter-spacing: 2px; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 10; border: 3px solid; }
+      .swipe-label.commit-label { left: 20px; color: #22c55e; border-color: #22c55e; transform: rotate(-15deg); }
+      .swipe-label.skip-label { right: 20px; color: #ef4444; border-color: #ef4444; transform: rotate(15deg); }
 
       .mobile-outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 290; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
       .mobile-outbox-overlay.open { display: block; }
@@ -423,6 +427,8 @@
         <div id="welcome-screen" class="empty-msg"><div style="font-size:32px; margin-bottom:12px;">Select a Project</div></div>
         
         <div class="pane-content" id="pane-content">
+           <div class="swipe-label commit-label" id="swipe-label-commit">COMMIT ✔</div>
+           <div class="swipe-label skip-label" id="swipe-label-skip">SKIP ✗</div>
            <div class="mobile-back-btn" onclick="backToQueue()">◀ Back to Queue</div>
            <div class="qb-grid">
                <div class="qb-module hover-trigger" id="project-schedule-card" style="padding:12px 14px;" onmouseenter="hl('Forecasted OFS')" onmouseleave="hl('')">
@@ -881,7 +887,7 @@
                 <div class="tl-header-corner"></div>
                 <div class="tl-header-dates">
           `; 
-          let gridLines = `<div class="gantt-grid-container">`;
+          let gridLines = `<div class="gantt-grid-container" style="width:${chartWidth}px;">`;
           let spikeCount = 0;
 
           for(let i=0; i<=totalDays; i++) {
@@ -964,7 +970,7 @@
                  <div class="gantt-label ${highestSev}" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();">
                      <div class="gantt-label-fdh">${item.fdh}</div><div class="gantt-label-ven">${item.vendor || "UNKNOWN"}</div>
                  </div>
-                 <div class="gantt-bar-wrapper">
+                 <div class="gantt-bar-wrapper" style="width:${chartWidth}px;">
                     <div class="gantt-bar-fill ${ganttClass}" style="left:${leftPct}%; width:${widthPct}%; pointer-events:auto;" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();" onmouseenter="showHUD(event, '${item.fdh}')" onmousemove="moveHUD(event)" onmouseleave="hideHUD()">
                         <span class="gantt-bar-text">${item.fdh} • ${pillStage} | ${pillStatus}</span>
                     </div>
@@ -1315,22 +1321,59 @@
 
       function initSwipeGestures() {
           let pane = getEl('pane-content'); if(!pane) return;
-          let startX = 0, startY = 0;
-          pane.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
-          pane.addEventListener('touchend', e => {
-              if (!currentActiveItem || window.innerWidth > 768) return;
-              let dx = e.changedTouches[0].clientX - startX;
-              let dy = e.changedTouches[0].clientY - startY;
-              if (Math.abs(dy) > Math.abs(dx) * 0.75 || Math.abs(dx) < 70) return;
-              if (dx > 0) { flashSwipe('commit'); commitReview(); }
-              else { flashSwipe('skip'); skipReview(); }
-          }, { passive: true });
-      }
+          let startX = 0, startY = 0, isDragging = false, isHorizontal = null;
+          let labelCommit = getEl('swipe-label-commit'), labelSkip = getEl('swipe-label-skip');
 
-      function flashSwipe(type) {
-          let pane = getEl('pane-content'); if(!pane) return;
-          pane.style.transition = 'background 0.08s'; pane.style.background = type === 'commit' ? 'rgba(34,197,94,0.18)' : 'rgba(239,68,68,0.18)';
-          setTimeout(() => { pane.style.transition = 'background 0.3s'; pane.style.background = ''; }, 350);
+          function resetPane(animate) {
+              pane.style.transition = animate ? 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s ease' : 'none';
+              pane.style.transform = ''; pane.style.opacity = '';
+              if(labelCommit) labelCommit.style.opacity = '0';
+              if(labelSkip) labelSkip.style.opacity = '0';
+          }
+
+          pane.addEventListener('touchstart', e => {
+              if (!currentActiveItem || window.innerWidth > 768) return;
+              startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+              isDragging = true; isHorizontal = null;
+              pane.style.transition = 'none';
+          }, { passive: true });
+
+          pane.addEventListener('touchmove', e => {
+              if (!isDragging || !currentActiveItem || window.innerWidth > 768) return;
+              let dx = e.touches[0].clientX - startX;
+              let dy = e.touches[0].clientY - startY;
+              if (isHorizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+                  isHorizontal = Math.abs(dx) > Math.abs(dy);
+              }
+              if (!isHorizontal) return;
+              e.preventDefault();
+              let rotate = dx * 0.04;
+              let opacity = Math.max(0.55, 1 - Math.abs(dx) / 380);
+              pane.style.transform = `translateX(${dx}px) rotate(${rotate}deg)`;
+              pane.style.opacity = opacity;
+              let labelOpacity = Math.min(1, (Math.abs(dx) - 20) / 60);
+              if (labelCommit) labelCommit.style.opacity = dx > 20 ? labelOpacity : '0';
+              if (labelSkip)   labelSkip.style.opacity   = dx < -20 ? labelOpacity : '0';
+          }, { passive: false });
+
+          pane.addEventListener('touchend', e => {
+              if (!isDragging) return;
+              isDragging = false;
+              if (!currentActiveItem || window.innerWidth > 768 || !isHorizontal) { resetPane(true); return; }
+              let dx = e.changedTouches[0].clientX - startX;
+              if (Math.abs(dx) < 70) {
+                  resetPane(true);
+              } else {
+                  let dir = dx > 0 ? 1 : -1;
+                  pane.style.transition = 'transform 0.28s ease-in, opacity 0.28s ease-in';
+                  pane.style.transform = `translateX(${dir * 130}vw) rotate(${dir * 18}deg)`;
+                  pane.style.opacity = '0';
+                  setTimeout(() => {
+                      resetPane(false);
+                      if (dir > 0) commitReview(); else skipReview();
+                  }, 280);
+              }
+          }, { passive: true });
       }
 
       function promptEmailExport() {
