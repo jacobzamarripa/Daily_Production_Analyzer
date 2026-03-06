@@ -241,8 +241,8 @@
       .gantt-label-fdh { font-size: 11px; font-weight: 900; color: var(--text-main); letter-spacing: -0.2px; line-height: 1.1;}
       .gantt-label-ven { font-size: 8px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
 
-      /* Holds the actual colored bars to match the Grid Container */
-      .gantt-bar-wrapper { position: absolute; left: 140px; top: 0; bottom: 0; pointer-events: none; }
+      /* Holds the actual colored bars — flex item so the row expands to full chart width */
+      .gantt-bar-wrapper { position: relative; flex-shrink: 0; height: 100%; pointer-events: none; overflow: visible; }
 
       .gantt-bar-fill { position: absolute; top: 8px; height: 18px; border-radius: 9px; transition: width 0.3s, transform 0.4s, box-shadow 0.4s; display: flex; align-items: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.15);}
       .gantt-bar-text { color: #ffffff; font-size: 10px; font-weight: bold; padding: 0 10px; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6);}
@@ -1342,8 +1342,8 @@
               if (!isDragging || !currentActiveItem || window.innerWidth > 768) return;
               let dx = e.touches[0].clientX - startX;
               let dy = e.touches[0].clientY - startY;
-              if (isHorizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-                  isHorizontal = Math.abs(dx) > Math.abs(dy);
+              if (isHorizontal === null && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) {
+                  isHorizontal = Math.abs(dx) > Math.abs(dy) * 1.5;
               }
               if (!isHorizontal) return;
               e.preventDefault();
