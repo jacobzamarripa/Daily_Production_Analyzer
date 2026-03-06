@@ -759,6 +759,24 @@
 
       let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
       let globalRefDataDate = "";
+
+      // Mobile-safe date parser. new Date("MM-dd-yyyy") is Invalid on mobile browsers.
+      function safeDate(str) {
+          if (!str || str === '' || str === '-' || str === 'Unknown') return null;
+          let m;
+          // MM-dd-yyyy or M-d-yyyy (backend Utilities.formatDate output)
+          m = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+          if (m) return new Date(+m[3], +m[1]-1, +m[2]);
+          // MM/dd/yyyy or M/d/yyyy
+          m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+          if (m) return new Date(+m[3], +m[1]-1, +m[2]);
+          // yyyy-MM-dd (ISO 8601 — safe everywhere)
+          m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+          // Last resort (unreliable on mobile)
+          let d = new Date(str);
+          return isNaN(d.getTime()) ? null : d;
+      }
       let activeAdminFilter = null;
 
       const QB_STYLES = {
@@ -864,8 +882,8 @@
 
             let activeProjCount = 0; let activeBslsCount = 0; let activeCritCount = 0; let today = new Date(); today.setHours(0,0,0,0);
             filtered.forEach(item => {
-                let start = item.cxStart ? new Date(item.cxStart) : new Date(item.reportDate);
-                let end = item.cxEnd ? new Date(item.cxEnd) : (item.targetDate ? new Date(item.targetDate) : new Date(start.getTime() + 86400000*30));
+                let start = safeDate(item.cxStart) || safeDate(item.reportDate) || new Date(today);
+                let end = safeDate(item.cxEnd) || safeDate(item.targetDate) || new Date(start.getTime() + 86400000*30);
                 if(isNaN(start)) start = new Date(today); if(isNaN(end)) end = new Date(start.getTime() + 86400000*7); if(end < start) end = new Date(start.getTime() + 86400000);
                 if (today >= start && today <= end) {
                     activeProjCount++; let bslStr = String(item.bsls).replace(/,/g, ''); activeBslsCount += parseInt(bslStr) || 0;
@@ -902,8 +920,8 @@
           let today = new Date(); today.setHours(0,0,0,0); let minDate = new Date("2099-01-01"), maxDate = new Date("2000-01-01"); let monthBsls = {}; 
 
           items.forEach(item => {
-              let start = item.cxStart ? new Date(item.cxStart) : new Date(item.reportDate);
-              let end = item.cxEnd ? new Date(item.cxEnd) : (item.targetDate ? new Date(item.targetDate) : new Date(start.getTime() + 86400000*30));
+              let start = safeDate(item.cxStart) || safeDate(item.reportDate) || new Date(today);
+              let end = safeDate(item.cxEnd) || safeDate(item.targetDate) || new Date(start.getTime() + 86400000*30);
               if(isNaN(start)) start = new Date(today); if(isNaN(end)) end = new Date(start.getTime() + 86400000*7); if(end < start) end = new Date(start.getTime() + 86400000); 
               if(start < minDate) minDate = new Date(start); if(end > maxDate) maxDate = new Date(end);
               
@@ -981,8 +999,8 @@
           };
 
           items.forEach(item => {
-              let start = item.cxStart ? new Date(item.cxStart) : new Date(item.reportDate);
-              let end = item.cxEnd ? new Date(item.cxEnd) : (item.targetDate ? new Date(item.targetDate) : new Date(start.getTime() + 86400000*30));
+              let start = safeDate(item.cxStart) || safeDate(item.reportDate) || new Date(today);
+              let end = safeDate(item.cxEnd) || safeDate(item.targetDate) || new Date(start.getTime() + 86400000*30);
               if(isNaN(start)) start = new Date(today); if(isNaN(end)) end = new Date(start.getTime() + 86400000*7); if(end < start) end = new Date(start.getTime() + 86400000); 
 
               let leftPct = ((start - minDate) / totalTime) * 100; let widthPct = Math.max(0.5, ((end - start) / totalTime) * 100);
@@ -1205,7 +1223,7 @@
               let isComplete = st.includes('ofs') || stat.includes('complete'); let isOnHold = stat.includes('hold'); let isPermit = st.includes('permit');
 
               let hasEnd = item.cxEnd && item.cxEnd !== ""; let isOverdue = false;
-              if (hasEnd) { let end = new Date(item.cxEnd); let today = new Date(); today.setHours(0,0,0,0); if (today > end && !isComplete && !isOnHold && !isPermit) isOverdue = true; }
+              if (hasEnd) { let end = safeDate(item.cxEnd); let today = new Date(); today.setHours(0,0,0,0); if (end && today > end && !isComplete && !isOnHold && !isPermit) isOverdue = true; }
               
               setStyle('project-schedule-card', 'boxShadow', getCardGlow(item.stage, item.status, isOverdue));
 
@@ -1214,9 +1232,9 @@
               setHtml('p-cx-end', `CX COMPLETE: <span style="color:var(--text-main)">${hasEnd ? item.cxEnd : "TBD"}</span>`);
               
               let scheduleFill = getEl('p-time-fill'); let scheduleBead = getEl('p-time-bead');
-              let daysLeft = 0; let pStart = new Date(item.cxStart); let pEnd = new Date(item.cxEnd);
+              let daysLeft = 0; let pStart = safeDate(item.cxStart); let pEnd = safeDate(item.cxEnd);
 
-              if(hasStart && hasEnd && scheduleFill && scheduleBead) {
+              if(hasStart && hasEnd && pStart && pEnd && scheduleFill && scheduleBead) {
                  let total = pEnd - pStart, elap = new Date() - pStart; daysLeft = Math.ceil((pEnd - new Date()) / 86400000);
                  let pct = total > 0 ? Math.max(0, Math.min(100, (elap/total)*100)) : 0;
                  let scheduleColor = "#facc15"; if(isComplete) scheduleColor = "var(--qb-done)"; else if (isOverdue) scheduleColor = "var(--color-critical)";
@@ -1225,14 +1243,14 @@
               } else if (scheduleFill && scheduleBead) { scheduleFill.style.width = "0%"; scheduleBead.style.display = "none"; }
 
               const makeProjBead = (dateStr, icon, title, bgColor, borderColor, start, end) => {
-                  let d = new Date(dateStr); if(isNaN(d)) return ""; let pct = ((d - start) / (end - start)) * 100;
+                  let d = safeDate(dateStr); if(!d) return ""; let pct = ((d - start) / (end - start)) * 100;
                   if(pct >= 0 && pct <= 100) return `<div class="proj-bead has-tooltip" data-tooltip="${title}" style="left:${pct}%; background:${bgColor}; border-color:${borderColor}; color:${borderColor};">${icon}</div>`;
                   return "";
               };
 
               let projBeadHtml = ''; let benchStr = item.bench || "";
 
-              if(!isNaN(pStart) && !isNaN(pEnd) && (pEnd - pStart > 0)) {
+              if(pStart && pEnd && (pEnd - pStart > 0)) {
                   let locMatch = benchStr.match(/Loc:\s*([\d/]+)/); if(locMatch && locMatch[1]) projBeadHtml += makeProjBead(locMatch[1], 'L', `Locates Called (${locMatch[1]})`, 'var(--card-bg)', '#3b82f6', pStart, pEnd);
                   let cabMatch = benchStr.match(/Cab:\s*([\d/]+)/); if(cabMatch && cabMatch[1]) projBeadHtml += makeProjBead(cabMatch[1], 'C', `Cabinets Set (${cabMatch[1]})`, 'var(--card-bg)', '#a855f7', pStart, pEnd);
                   let litMatch = benchStr.match(/Lit:\s*([\d/]+)/); if(litMatch && litMatch[1]) projBeadHtml += makeProjBead(litMatch[1], '⚡', `Light Present (${litMatch[1]})`, 'var(--card-bg)', '#eab308', pStart, pEnd);
