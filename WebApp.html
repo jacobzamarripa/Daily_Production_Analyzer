@@ -225,7 +225,7 @@
       body.dark-mode .gantt-spike-label { background: #422006; color: #fde047; border-color: #713f12;}
 
       /* Individual Rows */
-      .gantt-row { position: relative; height: 34px; margin-bottom: 6px; cursor: pointer; z-index: 15; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex;}
+      .gantt-row { position: relative; height: 34px; margin-bottom: 6px; cursor: pointer; z-index: 15; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
       .gantt-row.is-active { z-index: 50; }
       .gantt-row.is-active .gantt-bar-fill { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--text-main), 0 10px 20px rgba(0,0,0,0.3) !important; transform: scaleY(1.15); }
       .gantt-row.is-active .gantt-label { background: var(--text-main) !important; border-right: 1px solid var(--text-main) !important; border-bottom: 1px solid var(--text-main) !important; backdrop-filter: none; -webkit-backdrop-filter: none;}
@@ -241,8 +241,7 @@
       .gantt-label-fdh { font-size: 11px; font-weight: 900; color: var(--text-main); letter-spacing: -0.2px; line-height: 1.1;}
       .gantt-label-ven { font-size: 8px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
 
-      /* Holds the actual colored bars — flex item so the row expands to full chart width */
-      .gantt-bar-wrapper { position: relative; flex-shrink: 0; height: 100%; pointer-events: none; overflow: visible; }
+      /* Bar wrapper removed — bars live directly in gantt-row via absolute px positioning */
 
       .gantt-bar-fill { position: absolute; top: 8px; height: 18px; border-radius: 9px; transition: width 0.3s, transform 0.4s, box-shadow 0.4s; display: flex; align-items: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.15);}
       .gantt-bar-text { color: #ffffff; font-size: 10px; font-weight: bold; padding: 0 10px; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6);}
@@ -1015,17 +1014,16 @@
                   });
               }
 
+              let barLeft = 140 + leftPx;
               html += `
-              <div class="gantt-row" id="gantt-row-${item.fdh}">
+              <div class="gantt-row" id="gantt-row-${item.fdh}" style="width:${chartWidth + 140}px;">
                  <div class="gantt-label ${highestSev}" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();">
                      <div class="gantt-label-fdh">${item.fdh}</div><div class="gantt-label-ven">${item.vendor || "UNKNOWN"}</div>
                  </div>
-                 <div class="gantt-bar-wrapper" style="width:${chartWidth}px; min-width:${chartWidth}px;">
-                    <div class="gantt-bar-fill ${ganttClass}" style="left:${leftPx}px; width:${widthPx}px; pointer-events:auto;" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();" onmouseenter="showHUD(event, '${item.fdh}')" onmousemove="moveHUD(event)" onmouseleave="hideHUD()">
-                        <span class="gantt-bar-text">${item.fdh} • ${pillStage} | ${pillStatus}</span>
-                    </div>
-                    <div style="position:absolute; left:${leftPx}px; width:${widthPx}px; height:100%; pointer-events:none; z-index:8;">${beadHtml}</div>
+                 <div class="gantt-bar-fill ${ganttClass}" style="left:${barLeft}px; width:${widthPx}px; pointer-events:auto;" onclick="let c=document.getElementById('card-${item.fdh}'); if(c) c.click();" onmouseenter="showHUD(event, '${item.fdh}')" onmousemove="moveHUD(event)" onmouseleave="hideHUD()">
+                     <span class="gantt-bar-text">${item.fdh} • ${pillStage} | ${pillStatus}</span>
                  </div>
+                 <div style="position:absolute; left:${barLeft}px; width:${widthPx}px; top:0; height:100%; pointer-events:none; z-index:8;">${beadHtml}</div>
               </div>`;
           });
           html += `</div>`; container.innerHTML = html;
