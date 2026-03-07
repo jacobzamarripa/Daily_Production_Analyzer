@@ -333,6 +333,7 @@
           .top-nav { padding: 0 14px; height: 46px; }
           .nav-brand { font-size: 14px; }
           .kpi-nav-container { display: none; }
+          #btn-outbox-toggle { display: none; }
           .filter-strip { padding: 5px 14px; }
           .filter-strip input[type="text"] { min-width: 120px; width: 120px; }
           select { min-width: 100px; width: 100px; }
@@ -731,7 +732,7 @@
       <button class="btn btn-skip" style="flex:0.7; font-size:13px;" onclick="backToQueue()">◀</button>
       <button class="btn btn-skip" style="flex:1;" onclick="skipReview()">Skip</button>
       <button class="btn btn-primary" style="flex:1.6;" onclick="commitReview()">✔ Commit</button>
-      <button class="btn btn-skip" style="flex:1; position:relative;" onclick="toggleMobileOutbox()">Queue <span id="mobile-ob-count" style="display:none; background:var(--color-insight); color:#fff; border-radius:8px; padding:1px 5px; font-size:9px; margin-left:2px;"></span></button>
+      <button class="btn btn-skip" style="flex:1; position:relative;" onclick="toggleMobileOutbox()">Reviewed <span id="mobile-ob-count" style="display:none; background:var(--color-insight); color:#fff; border-radius:8px; padding:1px 5px; font-size:9px; margin-left:2px;"></span></button>
     </div>
 
     <div class="mobile-outbox-overlay" id="mobile-outbox-overlay" onclick="toggleMobileOutbox()"></div>
@@ -1311,15 +1312,25 @@
               wrapper.style.height = dynH + 'px';
           }
 
-          setTimeout(() => {
-              let scrollContainer = getEl('gantt-scroll');
-              if(scrollContainer) {
-                  let containerW = scrollContainer.clientWidth || window.innerWidth;
-                  let centerOffset = (chartWidth * (todayPct / 100)) + 140 - (containerW / 2);
-                  scrollContainer.scrollLeft = Math.max(0, centerOffset);
-              }
-          }, 150);
+          setTimeout(scrollGanttToToday, 150);
       }
+
+      function scrollGanttToToday() {
+          let scrollContainer = getEl('gantt-scroll');
+          if (!scrollContainer) return;
+          let ganttArea = document.getElementById('gantt-area-main');
+          if (!ganttArea) return;
+          let todayLine = ganttArea.querySelector('.gantt-today-line');
+          if (!todayLine) return;
+          let gridContainer = ganttArea.querySelector('.gantt-grid-container');
+          let chartW = gridContainer ? gridContainer.offsetWidth : (ganttArea.offsetWidth - 140);
+          let leftPct = parseFloat(todayLine.style.left) || 0;
+          let containerW = scrollContainer.clientWidth || window.innerWidth;
+          let centerOffset = (chartW * (leftPct / 100)) + 140 - (containerW / 2);
+          scrollContainer.scrollLeft = Math.max(0, centerOffset);
+      }
+
+      window.addEventListener('orientationchange', () => { setTimeout(scrollGanttToToday, 350); });
 
       function renderList(items) {
         let list = getEl('inbox-list'); if(!list) return; setTxt('inbox-count', items.length); list.innerHTML = '';
