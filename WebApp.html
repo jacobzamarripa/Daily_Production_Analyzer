@@ -218,7 +218,8 @@
       .btn-skip { background: transparent; color: var(--text-main); border-color: var(--border);}
       .btn-skip:hover { background: var(--bg); transform: translateY(-1px);}
 
-      .outbox-pane { width: 22%; min-width: 250px; max-width: 400px; background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 5; flex-shrink: 0; box-shadow: -1px 0 10px rgba(0,0,0,0.02); transition: background 0.3s, border-color 0.3s;}
+      .outbox-pane { width: 22%; min-width: 250px; max-width: 400px; background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 5; flex-shrink: 0; box-shadow: -1px 0 10px rgba(0,0,0,0.02); transition: width 0.3s ease, min-width 0.3s ease, background 0.3s, border-color 0.3s;}
+      .outbox-pane.collapsed { width: 0 !important; min-width: 0 !important; overflow: hidden; border-left: none; }
       .ob-header { padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: background 0.3s, border-color 0.3s;}
       .ob-list { padding: 12px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 8px;}
       .ob-card { padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text-main);}
@@ -317,16 +318,13 @@
       .mob-sheet-list { overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
       .mob-sheet-footer { padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); flex-shrink: 0; }
 
-      /* 📱 TABLET (touch devices: iPad portrait + landscape) */
-      @media screen and (pointer: coarse) and (min-width: 769px) {
+      /* 📱 TABLET (touch devices: iPad portrait + landscape; min-height excludes iPhones in landscape ~390px) */
+      @media screen and (pointer: coarse) and (min-width: 769px) and (min-height: 600px) {
           .inbox-sidebar { width: 280px; min-width: 240px; }
-          .outbox-pane { display: none; }
           .reading-pane { padding: 16px; }
           .qb-grid { gap: 12px; }
           .kpi-nav-container { gap: 4px; }
           .kpi-nav-box { padding: 3px 8px; min-width: 38px; }
-          /* Gantt starts as minimized bar — user can expand via Fullscreen */
-          .timeline-wrapper:not(.fullscreen) { height: 40px !important; min-height: 40px !important; overflow: hidden; }
       }
 
       /* 📱 PORTRAIT MOBILE */
@@ -459,6 +457,7 @@
 
       <div class="nav-actions">
         <button class="btn-nav" onclick="triggerRefresh()" id="btn-refresh">⟳ Sync</button>
+        <button class="btn-nav" onclick="toggleOutbox()" id="btn-outbox-toggle">Reviews</button>
         <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme">Dark Mode</button>
         <button class="btn-nav" onclick="toggleHelpPanel()" id="btn-help" style="font-weight:900; padding:6px 10px;">?</button>
       </div>
@@ -851,7 +850,28 @@
           let isOpen = panel.classList.toggle('open');
           if (overlay) overlay.classList.toggle('open', isOpen);
       }
-      
+      function isIPadLike() {
+          if (window.matchMedia('(pointer: coarse) and (min-width: 769px) and (min-height: 600px)').matches) return true;
+          let ua = navigator.userAgent;
+          if (/iPad/.test(ua)) return true;
+          if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+          return false;
+      }
+      function toggleOutbox() {
+          let pane = document.querySelector('.outbox-pane');
+          if (!pane) return;
+          let collapsed = pane.classList.toggle('collapsed');
+          let btn = getEl('btn-outbox-toggle');
+          if (btn) btn.classList.toggle('btn-filters-active', !collapsed);
+      }
+      function initTabletLayout() {
+          if (!isIPadLike()) return;
+          let wrapper = document.querySelector('.timeline-wrapper');
+          if (wrapper && !wrapper.classList.contains('fullscreen')) wrapper.classList.add('minimized');
+          let pane = document.querySelector('.outbox-pane');
+          if (pane && !pane.classList.contains('collapsed')) pane.classList.add('collapsed');
+      }
+
       let hudLocked = false;
       function toggleHudLock(e) {
           if(e) e.stopPropagation(); hudLocked = !hudLocked; let hud = getEl('gantt-hud');
@@ -1038,6 +1058,7 @@
             }).filter(Boolean);
             populateDropdown('filter-ofs', [...new Set(ofsMonths)]);
             applyFilters();
+            initTabletLayout();
         });
       }
 
