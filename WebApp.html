@@ -383,6 +383,34 @@
           }
           .timeline-container { -webkit-overflow-scrolling: touch; padding-bottom: 40px; }
       }
+
+      /* 📖 HELP PANEL */
+      .help-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 99997; display: none; }
+      .help-overlay.open { display: block; }
+      .help-panel { position: fixed; top: 0; right: 0; width: 360px; max-width: 92vw; height: 100vh; background: var(--card-bg); border-left: 1px solid var(--border); z-index: 99998; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow: -8px 0 32px rgba(0,0,0,0.2); }
+      .help-panel.open { transform: translateX(0); }
+      .help-hdr { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; gap: 12px; }
+      .help-hdr-title { font-size: 13px; font-weight: 900; letter-spacing: -0.3px; }
+      .help-hdr-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+      .help-close { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 13px; font-weight: 900; color: var(--text-main); flex-shrink: 0; }
+      .help-close:hover { background: var(--border); }
+      .help-body { overflow-y: auto; flex-grow: 1; padding: 16px 18px; display: flex; flex-direction: column; gap: 20px; }
+      .help-body::-webkit-scrollbar { width: 4px; } .help-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+      .help-sec { display: flex; flex-direction: column; gap: 8px; }
+      .help-sec-title { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+      .help-row { display: flex; gap: 8px; align-items: flex-start; }
+      .hbadge { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; white-space: nowrap; }
+      .hbadge-red { background: rgba(239,68,68,0.12); color: #b91c1c; border: 1px solid rgba(239,68,68,0.3); }
+      .hbadge-yellow { background: rgba(250,204,21,0.2); color: #854d0e; border: 1px solid rgba(250,204,21,0.5); }
+      .hbadge-purple { background: rgba(168,85,247,0.12); color: #7c3aed; border: 1px solid rgba(168,85,247,0.3); }
+      .hbadge-blue { background: rgba(59,130,246,0.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,0.3); }
+      .hbadge-gray { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+      .hbadge-green { background: rgba(34,197,94,0.12); color: #15803d; border: 1px solid rgba(34,197,94,0.3); }
+      .hbadge-stripe { background: repeating-linear-gradient(-45deg,#facc15 0,#facc15 3px,#0f172a 3px,#0f172a 6px); border: 1px solid #facc15; color: #0f172a; }
+      .hdesc { font-size: 11px; line-height: 1.55; color: var(--text-main); }
+      .hdesc b { font-weight: 900; }
+      .help-wf-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 4px; }
+      .help-wf-num { width: 20px; height: 20px; border-radius: 50%; background: var(--text-main); color: var(--card-bg); font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
     </style>
   </head>
   <body>
@@ -405,6 +433,7 @@
       <div class="nav-actions">
         <button class="btn-nav" onclick="triggerRefresh()" id="btn-refresh">⟳ Sync</button>
         <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme">Dark Mode</button>
+        <button class="btn-nav" onclick="toggleHelpPanel()" id="btn-help" style="font-weight:900; padding:6px 10px;">?</button>
       </div>
     </div>
 
@@ -569,6 +598,109 @@
       </div>
     </div>
 
+    <!-- HELP OVERLAY + PANEL -->
+    <div class="help-overlay" id="help-overlay" onclick="toggleHelpPanel()"></div>
+    <div class="help-panel" id="help-panel">
+      <div class="help-hdr">
+        <div>
+          <div class="help-hdr-title">Dailies Command Center — Help</div>
+          <div class="help-hdr-sub">Reference guide for reviewers and managers</div>
+        </div>
+        <button class="help-close" onclick="toggleHelpPanel()">✕</button>
+      </div>
+      <div class="help-body">
+
+        <!-- WORKFLOW -->
+        <div class="help-sec">
+          <div class="help-sec-title">Daily Workflow</div>
+          <div class="help-wf-step"><div class="help-wf-num">1</div><div class="hdesc"><b>Sync</b> — Click <b>⟳ Sync</b> and enter yesterday's date. The engine pulls QB data, runs diagnostics, and loads the queue.</div></div>
+          <div class="help-wf-step"><div class="help-wf-num">2</div><div class="hdesc"><b>Select a project</b> — Click any item in the Diag. Queue on the left. The detail panel opens on the right.</div></div>
+          <div class="help-wf-step"><div class="help-wf-num">3</div><div class="hdesc"><b>Review</b> — Read the Vendor Update, check the System Diagnostic flags, and review the project schedule. Look for anything that needs action today.</div></div>
+          <div class="help-wf-step"><div class="help-wf-num">4</div><div class="hdesc"><b>Write your note</b> — The OMNI Manager Note pre-fills with an AI-drafted summary. Edit it to reflect your actual decision or action taken. Your edits are tracked separately from the auto-draft.</div></div>
+          <div class="help-wf-step"><div class="help-wf-num">5</div><div class="hdesc"><b>Commit or Skip</b> — <b>Commit</b> saves the review and moves the project to the Reviewed column. <b>Skip (Clear)</b> removes it from the queue without saving.</div></div>
+          <div class="help-wf-step"><div class="help-wf-num">6</div><div class="hdesc"><b>Export All</b> — Once all projects are reviewed, click Export All in the Reviewed column to email the daily summary CSV.</div></div>
+        </div>
+
+        <!-- NAVIGATION BAR -->
+        <div class="help-sec">
+          <div class="help-sec-title">Navigation Bar</div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Projects</span><div class="hdesc">Total active projects loaded from the current daily run.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">BSLs</span><div class="hdesc">Total build-site locations (homes passed) across all active projects.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-red">Critical</span><div class="hdesc">Projects with at least one critical-severity flag. Click to toggle the Critical-only filter on/off.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Ref Data</span><div class="hdesc">Shows the age of the reference data (QB status, etc.). <b>FRESH</b> means synced today. <b>STALE</b> means data is older than expected — re-sync or check the sheet.</div></div>
+        </div>
+
+        <!-- DIAGNOSTIC QUEUE -->
+        <div class="help-sec">
+          <div class="help-sec-title">Diagnostic Queue</div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">Check Crossings</span><div class="hdesc">Count of projects flagged for a special road or utility crossing. Click to filter the queue to only those projects.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-red">QB Status</span><div class="hdesc">Count of projects with a QuickBase status mismatch or missing status. Click to filter. This is an admin action — the status in QB needs to be updated to match field reality.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Filters</span><div class="hdesc">Reveals the filter strip to narrow the queue by severity, vendor, city, or OFS forecast date. The button turns red when any filter is active.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">☰ / ⊞</span><div class="hdesc">Toggle between card view (default) and compact list view for the queue.</div></div>
+        </div>
+
+        <!-- PROJECT SCHEDULE CARD -->
+        <div class="help-sec">
+          <div class="help-sec-title">Project Schedule Card</div>
+          <div class="hdesc">Shows the construction timeline for the selected project.</div>
+          <div class="help-row"><span class="hbadge hbadge-gray">CX Start / Complete</span><div class="hdesc">The official construction start and completion dates from QuickBase.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Time Bar</span><div class="hdesc">Visual progress from CX Start to CX Complete. The bead shows today's position. Stars mark 100% completion milestones for each phase (UG, AE, Fiber, NAP).</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Target Date</span><div class="hdesc">The projected OFS (On For Service) date. Turns red when overdue.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-stripe" style="color:#fde047;">X-ING</span><div class="hdesc">A special crossing is present on this project (road bore, railroad, waterway, etc.). Extra permits and restoration scope may apply — verify with the vendor.</div></div>
+        </div>
+
+        <!-- FIELD VELOCITY CARD -->
+        <div class="help-sec">
+          <div class="help-sec-title">Field Velocity &amp; Production</div>
+          <div class="hdesc">Real-time production progress pulled from the daily report.</div>
+          <div class="help-row"><span class="hbadge hbadge-gray">UG / Fiber / Splicing / NAP</span><div class="hdesc">Each bar shows completed vs. BOM quantity and the daily pace needed to finish on time.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Days Left</span><div class="hdesc">Calendar days remaining until the target date. Zero or negative means the project is at or past its deadline.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">BSLs</span><div class="hdesc">Total homes in scope for this project.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">Pending Light</span><div class="hdesc">Light has not yet been confirmed at cabinets. No fiber or splicing can begin until light is present.</div></div>
+        </div>
+
+        <!-- DIAGNOSTIC & MANAGER REVIEW -->
+        <div class="help-sec">
+          <div class="help-sec-title">Diagnostic &amp; Manager Review</div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Vendor Update</span><div class="hdesc">The most recent comment submitted by the vendor in their daily report. This is unedited — it reflects exactly what the crew reported.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">System Diagnostics</span><div class="hdesc">Auto-detected flags generated by the engine. Each flag represents a data discrepancy or condition that may require action. See the Flag Glossary below.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-purple">OMNI Manager Note</span><div class="hdesc">Your field for the daily decision or action taken on this project. The AI pre-drafts a note based on the flags — shown in muted italic text. Edit it before committing. Once you type, the draft is replaced with your words.</div></div>
+        </div>
+
+        <!-- CD INTELLIGENCE -->
+        <div class="help-sec">
+          <div class="help-sec-title">CD Intelligence</div>
+          <div class="help-row"><span class="hbadge hbadge-stripe" style="color:#fde047;">CD Intel</span><div class="hdesc">Only appears when a construction drawing has been analyzed by AI (Gemini). Summarizes complexity factors from the CD — bore depths, crossing counts, restoration scope, special conditions. Use this to verify whether the vendor's reported scope matches the design intent.</div></div>
+        </div>
+
+        <!-- GLOBAL TIMELINE -->
+        <div class="help-sec">
+          <div class="help-sec-title">Global Construction Timeline (Gantt)</div>
+          <div class="hdesc">Shows all active projects as bars across a shared calendar. Automatically sizes to fit the number of projects.</div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Bar Color</span><div class="hdesc">Matches the project's current stage/status. Overdue projects display in red. Hover a bar to see a summary HUD.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Beads</span><div class="hdesc">Small markers on the bar: <b>L</b> = Locates called, <b>C</b> = Cabinets set, <b>⚡</b> = Light present, <b>★</b> = Phase 100% complete.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">EOM Spike</span><div class="hdesc">A concentration of projects ending at or near end-of-month. Hover for a breakdown of which vendors and BSL counts are involved.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Theater Mode</span><div class="hdesc">Click any project row in the Gantt to highlight it and dim others. Click again or press Escape to exit. Use Fullscreen to expand the Gantt edge-to-edge.</div></div>
+        </div>
+
+        <!-- FLAG GLOSSARY -->
+        <div class="help-sec">
+          <div class="help-sec-title">Flag Glossary</div>
+          <div class="help-row"><span class="hbadge hbadge-red">ID Auto-Corrected</span><div class="hdesc">The vendor submitted under a slightly different FDH ID. The engine matched it to the correct project automatically — confirm the vendor is using the right ID going forward.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-red">Status Mismatch</span><div class="hdesc">The project's QB status does not match what the field report indicates. Admin action required: update the status in QuickBase.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-red">Missing QB Status</span><div class="hdesc">No status was found in QB for this project. The record may be missing or incorrectly named. Admin action required.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">Check Crossings</span><div class="hdesc">One or more special crossings detected on this project. Confirm permit status, bore depths, and restoration plan with the vendor.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">BOM Discrepancy</span><div class="hdesc">Reported quantities exceed the BOM (Bill of Materials). Either the scope has expanded or the vendor over-reported. Verify with the PM.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">Scope Deviation (NAP)</span><div class="hdesc">NAP count reported by the vendor does not match the BOM. Could indicate a scope change, a partial installation, or a reporting error.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">Possible Reroute</span><div class="hdesc">Field conditions suggest the route may have changed from the original design. A new CD or field sketch may be needed.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-yellow">Lighting Risk</span><div class="hdesc">Light-to-cabinets is not confirmed and the project is approaching or past the point where fiber work should have started. Escalate if blocking production.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Pending Light</span><div class="hdesc">Light has been called for but not yet confirmed at the cabinet. No fiber or splice work can begin.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-red">Refresh Ref Data</span><div class="hdesc">An admin action cleared a mismatch flag — the reference data in the system has been updated and a fresh sync is recommended to reflect the correction.</div></div>
+        </div>
+
+      </div>
+    </div>
+
     <div class="mobile-action-bar" id="mobile-action-bar" style="display:none;">
       <button class="btn btn-skip" style="flex:0.7; font-size:13px;" onclick="backToQueue()">◀</button>
       <button class="btn btn-skip" style="flex:1;" onclick="skipReview()">Skip</button>
@@ -685,6 +817,12 @@
           strip.classList.toggle('hidden');
           let isHidden = strip.classList.contains('hidden');
           if (btn) btn.classList.toggle('btn-filters-active', !isHidden);
+      }
+      function toggleHelpPanel() {
+          let panel = getEl('help-panel'); let overlay = getEl('help-overlay');
+          if (!panel) return;
+          let isOpen = panel.classList.toggle('open');
+          if (overlay) overlay.classList.toggle('open', isOpen);
       }
       
       let hudLocked = false;
