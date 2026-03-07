@@ -290,16 +290,13 @@
 
       /* 📱 PORTRAIT MOBILE */
       @media screen and (max-width: 768px) {
-          /* NAV: brand + toggle on one row, KPIs + filters scroll below */
-          .top-nav { padding: 10px 14px; gap: 6px; flex-wrap: wrap; min-height: unset; align-items: center; }
-          .nav-brand { flex: 1; font-size: 14px; }
-          .mobile-menu-toggle { display: flex !important; align-items: center; padding: 6px 12px; background: var(--border); border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; color: var(--text-main); flex-shrink: 0; }
-          .kpi-nav-container { width: 100%; margin-left: 0; order: 3; justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-          .nav-actions { display: none; }
-          .filter-strip { display: none; }
-          .filter-strip.show-mobile { display: flex; }
-          .filter-strip input[type="text"] { min-width: 130px; width: 130px; }
-          select { min-width: 110px; width: 110px; }
+          /* NAV: single compact row — brand + actions only */
+          .top-nav { padding: 0 14px; height: 46px; }
+          .nav-brand { font-size: 14px; }
+          .kpi-nav-container { display: none; }
+          .filter-strip { padding: 5px 14px; }
+          .filter-strip input[type="text"] { min-width: 120px; width: 120px; }
+          select { min-width: 100px; width: 100px; }
 
           /* WORKSPACE: sliding panels */
           .workspace { position: relative; overflow: hidden; flex-direction: row; }
@@ -376,7 +373,6 @@
     
     <div class="top-nav">
       <div class="nav-brand">Dailies Command Center</div>
-      <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">Filters ⚙️</div>
 
       <div class="kpi-nav-container">
           <div class="kpi-nav-header"><span class="kpi-dot"></span> Active Today</div>
@@ -385,12 +381,12 @@
           <div class="kpi-nav-box crit-box has-tooltip" data-tooltip="Toggle Critical Filter" onclick="toggleCriticalFilter()">
               <div class="kpi-val" id="kpi-active-crit">0</div><div class="kpi-label">Critical</div>
           </div>
-          <span id="nav-ref-age" style="font-size:9px; font-weight:900; padding:3px 8px; border-radius:10px; border:1px solid; display:none; white-space:nowrap; margin-left: 6px;"></span>
+          <span id="nav-ref-age" style="font-size:9px; font-weight:900; padding:3px 8px; border-radius:10px; border:1px solid; display:none; white-space:nowrap; margin-left:6px;"></span>
       </div>
 
       <div class="nav-actions">
-        <button class="btn-nav" onclick="triggerRefresh()" id="btn-refresh">Sync Engine</button>
-        <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme">Dark Mode</button>
+        <button class="btn-nav" onclick="triggerRefresh()" id="btn-refresh">⟳ Sync</button>
+        <button class="btn-icon has-tooltip" onclick="toggleDarkMode()" id="btn-theme" data-tooltip="Toggle dark mode">🌙</button>
       </div>
     </div>
 
@@ -507,6 +503,13 @@
                                <div class="section-label">System Diagnostics</div>
                                <div id="p-action" class="action-box hover-trigger" style="flex-grow:1; display:flex; flex-direction:column;" onmouseenter="hl('Health Flags')" onmouseleave="hl('')"></div>
                            </div>
+                       </div>
+                       <div id="p-cd-intel" style="display:none; background:rgba(109,33,168,0.07); border:1px solid rgba(109,33,168,0.25); border-radius:8px; padding:10px 14px; margin-bottom:10px;">
+                           <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                               <span style="font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; color:#7c3aed; background:rgba(109,33,168,0.12); padding:2px 8px; border-radius:4px; border:1px solid rgba(109,33,168,0.3);">CD Intelligence</span>
+                               <span style="font-size:9px; color:#a78bfa; font-weight:600;">AI-Analyzed Construction Drawing</span>
+                           </div>
+                           <div id="p-cd-intel-text" style="font-size:11px; line-height:1.55; color:var(--text-main); white-space:pre-wrap;"></div>
                        </div>
                        <div class="comment-area hover-trigger" onmouseenter="hl('Action Required')" onmouseleave="hl('')">
                            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; padding:0 4px;">
@@ -648,6 +651,12 @@
           getEl('kpi-admin-status').classList.toggle('active', activeAdminFilter === 'status');
           applyFilters();
       }
+      function toggleListView() {
+          isListView = !isListView;
+          let list = getEl('inbox-list'); let btn = getEl('view-toggle-btn');
+          if (list) list.classList.toggle('list-view', isListView);
+          if (btn) { btn.setAttribute('data-tooltip', isListView ? 'Card View' : 'List View'); btn.innerHTML = isListView ? '⊞' : '☰'; }
+      }
       
       let hudLocked = false;
       function toggleHudLock(e) {
@@ -666,7 +675,7 @@
       }
       
       function toggleDarkMode() {
-          document.body.classList.toggle('dark-mode'); let btn = getEl('btn-theme'); if(btn) btn.innerText = document.body.classList.contains('dark-mode') ? "Light Mode" : "Dark Mode";
+          document.body.classList.toggle('dark-mode'); let btn = getEl('btn-theme'); if(btn) btn.innerText = document.body.classList.contains('dark-mode') ? "☀️" : "🌙";
       }
 
       function triggerRefresh() {
@@ -886,10 +895,6 @@
             const vVen = getEl('filter-vendor')?.value || 'ALL'; const vCit = getEl('filter-city')?.value || 'ALL'; const vOfs = getEl('filter-ofs')?.value || 'ALL'; const vSev = getEl('filter-severity')?.value || 'ALL'; 
             const sortVal = getEl('sort-queue')?.value || 'default'; const searchTerm = (getEl('search-input')?.value || '').toLowerCase();
 
-            // Update admin badge counts from full unfiltered list
-            setTxt('kpi-crossings-val', allActionItems.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS")).length);
-            setTxt('kpi-status-val', allActionItems.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS")).length);
-
             let filtered = allActionItems.filter(i => {
                 let matchOfs = true;
                 if(vOfs !== 'ALL') { try { let d = new Date(i.ofsDate); let mStr = !isNaN(d) ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : ""; matchOfs = (mStr === vOfs); } catch(e) { matchOfs = false; } }
@@ -900,6 +905,10 @@
                 else if (activeAdminFilter === 'status') matchAdmin = i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS");
                 return (vVen==='ALL' || i.vendor===vVen) && (vCit==='ALL' || i.city===vCit) && matchOfs && matchSearch && matchSev && matchAdmin;
             });
+
+            // Admin badge counts reflect the current filtered view
+            setTxt('kpi-crossings-val', filtered.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS")).length);
+            setTxt('kpi-status-val', filtered.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS")).length);
 
             let activeProjCount = 0; let activeBslsCount = 0; let activeCritCount = 0; let today = new Date(); today.setHours(0,0,0,0);
             filtered.forEach(item => {
@@ -1139,10 +1148,10 @@
 
           let parts = [];
 
-          // 1. Primary action from engine-generated draft (has specific reasons built-in)
-          if (item.draft && item.draft.trim() !== "" &&
-              !item.draft.includes("No specific action") && !item.draft.includes("No Anomalies")) {
-              parts.push(item.draft.trim());
+          // 1. Primary action from engine-generated draft (strip CD Intelligence — shown separately in UI)
+          let cleanDraft = (item.draft || "").replace(/\n*\[CD Intelligence\]:\s*[\s\S]*$/, '').trim();
+          if (cleanDraft !== "" && !cleanDraft.includes("No specific action") && !cleanDraft.includes("No Anomalies")) {
+              parts.push(cleanDraft);
           }
 
           // 2. Production velocity detail
@@ -1321,12 +1330,19 @@
               let vComment = item.vendorComment ? item.vendorComment.trim() : ""; let vBubble = getEl('p-vendor-bubble');
               if (vBubble) { if (vComment !== "") { vBubble.style.display = 'flex'; setTxt('p-vendor-comment', `"${vComment}"`); } else { vBubble.style.display = 'none'; } }
 
+              // Parse and surface CD Intelligence separately from the action draft
+              let cdIntelText = ""; let mainDraft = item.draft || "";
+              let cdMatch = mainDraft.match(/\n*\[CD Intelligence\]:\s*([\s\S]*)$/);
+              if (cdMatch) { cdIntelText = cdMatch[1].trim(); mainDraft = mainDraft.replace(/\n*\[CD Intelligence\]:\s*[\s\S]*$/, '').trim(); }
+              let cdPanel = getEl('p-cd-intel');
+              if (cdPanel) { cdPanel.style.display = cdIntelText ? 'block' : 'none'; if (cdIntelText) setTxt('p-cd-intel-text', cdIntelText); }
+
               let actionBox = getEl('p-action');
               if (actionBox) {
                   actionBox.className = 'action-box hover-trigger';
                   if (isCritical) actionBox.classList.add('crit'); else if (isWarn) actionBox.classList.add('warn');
-                  
-                  let draftMain = item.draft ? `<div style="font-weight:normal; color:var(--text-main); line-height:1.4;">${item.draft.replace(/\n/g, '<br>')}</div>` : "<div style='font-style:italic; font-weight:normal; color:var(--text-muted);'>No specific action flagged.</div>";
+
+                  let draftMain = mainDraft ? `<div style="font-weight:normal; color:var(--text-main); line-height:1.4;">${mainDraft.replace(/\n/g, '<br>')}</div>` : "<div style='font-style:italic; font-weight:normal; color:var(--text-muted);'>No specific action flagged.</div>";
                   let adminBtn = needsAdminCheck ? `<button class="btn hover-trigger" id="btn-admin-check" onclick="markChecked('${item.fdh}')" style="padding:4px 8px; font-size:9px; width:fit-content; background:#0f172a; color:#ffffff; border-color:#0f172a; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🛡️ VERIFY CROSSINGS</button>` : "";
                   let qbBtn = needsQbSync ? `<button class="btn hover-trigger" id="btn-qb-update" onclick="markQbUpdated('${item.fdh}')" style="padding:4px 8px; font-size:9px; width:fit-content; background:#2563eb; color:#ffffff; border-color:#1d4ed8; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🛠️ MARK QB UPDATED</button>` : "";
                   let btnContainer = (adminBtn !== "" || qbBtn !== "") ? `<div style="display:flex; gap:8px; margin-top:8px; margin-left:auto; width:fit-content;">${adminBtn}${qbBtn}</div>` : "";
