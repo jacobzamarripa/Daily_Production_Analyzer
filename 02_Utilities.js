@@ -172,7 +172,8 @@ function applyFormatting(targetSheet = null) {
   const styleSheet = ss.getSheetByName(STYLE_MASTER);
   if (!styleSheet) return;
   
-  const sheetsToFormat = targetSheet ? [targetSheet] : [ss.getSheetByName(QB_UPLOAD_SHEET), ss.getSheetByName(HISTORY_SHEET), ss.getSheetByName(MIRROR_SHEET)];
+  // 🧠 Added XING_SHEET to the master formatter
+  const sheetsToFormat = targetSheet ? [targetSheet] : [ss.getSheetByName(QB_UPLOAD_SHEET), ss.getSheetByName(HISTORY_SHEET), ss.getSheetByName(MIRROR_SHEET), ss.getSheetByName(XING_SHEET)];
   
   sheetsToFormat.forEach(sh => {
     if (!sh) return;
@@ -186,7 +187,7 @@ function applyFormatting(targetSheet = null) {
     let rawStyleHeaders = styleSheet.getRange(1, 1, 1, styleSheet.getLastColumn()).getValues()[0];
     let styleHeaders = rawStyleHeaders.map(h => h.toString().trim());
     
-    // 1. Clear old bandings, apply fresh striping
+    // Clear old bandings, apply fresh striping
     sh.getBandings().forEach(b => b.remove());
     if (trueLastRow > 1) {
         sh.getRange(2, 1, trueLastRow - 1, expectedCols).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, false, false);
@@ -196,7 +197,7 @@ function applyFormatting(targetSheet = null) {
       let lookupHeader = header.trim();
       let styleCol = styleHeaders.indexOf(lookupHeader) + 1;
       
-      // 🧠 THE FIX: Check exact match FIRST. If not found, THEN fallback to aliases.
+      // Check exact match FIRST. If not found, THEN fallback to aliases.
       if (styleCol === 0) {
           if (lookupHeader === "Construction Comments" || lookupHeader === "Field Production") {
               styleCol = styleHeaders.indexOf("Vendor Comment") + 1;
@@ -204,11 +205,9 @@ function applyFormatting(targetSheet = null) {
       }
       
       if (styleCol > 0) {
-        // Copy the Header format perfectly
         styleSheet.getRange(1, styleCol).copyTo(sh.getRange(1, index + 1), SpreadsheetApp.CopyPasteType.PASTE_FORMAT);
         sh.setColumnWidth(index + 1, styleSheet.getColumnWidth(styleCol));
         
-        // Extract specific styles from the Style Master data row
         let styleCell = styleSheet.getRange(2, styleCol);
         let bg = styleCell.getBackground();
         let font = styleCell.getFontFamily();
@@ -219,24 +218,20 @@ function applyFormatting(targetSheet = null) {
         if (trueLastRow > 1) {
             let targetRange = sh.getRange(2, index + 1, trueLastRow - 1, 1);
             targetRange.setFontFamily(font).setFontSize(size).setHorizontalAlignment(align).setNumberFormat(numFormat);
-            
-            // Paint background if explicitly colored (like yellow), else transparent for striping
-            if (bg !== '#ffffff' && bg !== '#000000') {
-                targetRange.setBackground(bg);
-            } else {
-                targetRange.setBackground(null);
-            }
+            if (bg !== '#ffffff' && bg !== '#000000') targetRange.setBackground(bg);
+            else targetRange.setBackground(null);
         }
       }
       
-      // Force width and wrap for long comment fields
-      if (header.trim() === "Construction Comments" || header.trim() === "Vendor Comment") {
+      // 🧠 Force width and wrap for long comment fields and AI Summaries
+      if (header.trim() === "Construction Comments" || header.trim() === "Vendor Comment" || header.includes("Summary") || header.includes("Locations")) {
           sh.setColumnWidth(index + 1, 400); 
       }
     });
     
     sh.setFrozenRows(1);
-    sh.setFrozenColumns(7);
+    // Don't freeze 7 columns on the Xing sheet, only the main trackers
+    if (sh.getName() !== XING_SHEET) sh.setFrozenColumns(7);
     
     if (trueLastRow > 1) {
       let dataRange = sh.getRange(2, 1, trueLastRow - 1, expectedCols);
@@ -245,11 +240,9 @@ function applyFormatting(targetSheet = null) {
       
       let rules = [];
       
-      // STRICT EXCLUSION: The QuickBase tab skips checkboxes entirely.
-      if (sh.getName() === QB_UPLOAD_SHEET) {
+      if (sh.getName() === QB_UPLOAD_SHEET || sh.getName() === XING_SHEET) {
         sh.getRange(2, 1, trueLastRow - 1, expectedCols).clearDataValidations();
       } else {
-        // Process Checkboxes for Archive & Mirror tabs
         let fdhColIdx = activeHeaders.indexOf("FDH Engineering ID") + 1;
         if (fdhColIdx > 0 && sh.getName() === MIRROR_SHEET) {
             sh.getRange(2, fdhColIdx, trueLastRow - 1, 1).setBackground(null).setFontColor(null).setFontWeight("bold");

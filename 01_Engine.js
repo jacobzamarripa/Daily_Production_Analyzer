@@ -109,6 +109,34 @@ function getReferenceDictionary() {
   return refDict;
 }
 
+// 🧠 NEW: Reads the AI CD Analysis Sheet
+function getSpecialXingsDictionary() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(XING_SHEET);
+  let dict = {};
+  if (!sheet || sheet.getLastRow() < 2) return dict;
+
+  let data = sheet.getDataRange().getValues();
+  let headers = data[0].map(h => h.toString().trim());
+
+  let fdhIdx = headers.indexOf("Project ID / FDH");
+  let sumIdx = headers.indexOf("AI Summary / Major Flags");
+  let hwIdx = headers.indexOf("Highway / RR / Bridge Crossings");
+
+  if (fdhIdx === -1) return dict;
+
+  for (let i = 1; i < data.length; i++) {
+    let fdh = data[i][fdhIdx] ? data[i][fdhIdx].toString().trim().toUpperCase() : "";
+    if (fdh) {
+      dict[fdh] = {
+        summary: sumIdx > -1 ? data[i][sumIdx].toString().trim() : "",
+        highway: hwIdx > -1 ? data[i][hwIdx].toString().trim() : ""
+      };
+    }
+  }
+  return dict;
+}
+
 function parseTrackerPct(val) {
     if (val === "" || val === null || val === undefined) return 0;
     if (typeof val === 'number') return val > 1 ? val / 100 : val;
@@ -679,6 +707,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   
   let refDict = optionalRefDict || getReferenceDictionary();
   let vendorDict = getVendorLiveDictionary(refDict); 
+  let xingsDict = getSpecialXingsDictionary(); // 🧠 FETCH CD AI DATA
   
   const histData = histSheet.getDataRange().getValues();
   let benchmarkDict = buildBenchmarkDictionary(histData, HISTORY_HEADERS, refDict);
@@ -706,7 +735,6 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           diag.draft = diag.draft.replace(/QB shows 0 BOM for NAP, but vendor reported activity\. Verify if a reroute occurred\./g, "Vendor reported Splicing activity, but BOM shows 0 NAPs. Verify if scope was expanded.");
       }
       
-      // 🧠 NEW: STRICT QB REFERENCE WORDING
       if (diag.flags.includes("NOT IN QB")) {
           diag.flags = diag.flags.replace(/NOT IN QB/g, "NOT IN QB REFERENCE");
           diag.draft = diag.draft.replace(/Not found in QuickBase/g, "Not found in QuickBase Reference Data");
@@ -714,6 +742,19 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
 
       if (benchmarkDict[fdhId] && benchmarkDict[fdhId].includes("Possible Reroute")) {
           benchmarkDict[fdhId] = benchmarkDict[fdhId].replace(/NAP: Pending \[Possible Reroute\]/g, "NAP: Pending [Scope Deviation]");
+      }
+
+      // 🧠 INJECT CD AI INTELLIGENCE HERE
+      if (xingsDict[fdhId]) {
+          let cdData = xingsDict[fdhId];
+          if (cdData.summary !== "") {
+              diag.draft += `\n\n[CD Intelligence]: ${cdData.summary}`;
+          }
+          if (cdData.highway && cdData.highway.toLowerCase() !== "none" && cdData.highway.trim() !== "") {
+              if (diag.flags !== "✅ No Anomalies" && diag.flags !== "") diag.flags += "\n🚧 CD: MAJOR CROSSING RISK";
+              else diag.flags = "🚧 CD: MAJOR CROSSING RISK";
+              diag.flagColors.push("#b45309"); 
+          }
       }
 
       let refData = null;
@@ -750,13 +791,6 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       let dFIB = parseNum(row[HISTORY_HEADERS.indexOf("Daily Fiber Footage")]);
       let dNAP = parseNum(row[HISTORY_HEADERS.indexOf("Daily NAPs/Encl. Completed")]);
       let hasActivity = hasLocates || dUG > 0 || dAE > 0 || dFIB > 0 || dNAP > 0;
-      let activityReasons = [];
-      if (hasLocates) activityReasons.push("Locates called in");
-      if (dUG > 0) activityReasons.push(dUG + " ft UG");
-      if (dAE > 0) activityReasons.push(dAE + " ft Strand");
-      if (dFIB > 0) activityReasons.push(dFIB + " ft Fiber");
-      if (dNAP > 0) activityReasons.push(dNAP + " NAPs");
-      let activitySummary = activityReasons.join(", ");
 
       let adminGapsStr = diag.gaps; 
       if (refData) {
@@ -799,7 +833,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
                   if (diag.flags !== "✅ No Anomalies" && diag.flags !== "") diag.flags += "\n🚩 STATUS MISMATCH";
                   else diag.flags = "🚩 STATUS MISMATCH";
                   diag.flagColors.push("#991b1b"); 
-                  diag.draft = `Activity detected (${activitySummary}), but QB shows ${refData.stage} | ${refData.status}. Please update QB to Field CX | In Progress.`;
+                  diag.draft = `Vendor reported activity, but QB shows ${refData.stage} | ${refData.status}. Please update QB to Field CX | In Progress.`;
               }
           }
       }
@@ -875,6 +909,8 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           colorizeText(richText, hData.draft, "Strand", TEXT_COLORS.AE); 
           colorizeText(richText, hData.draft, "Fiber", TEXT_COLORS.FIB); 
           colorizeText(richText, hData.draft, "NAP", TEXT_COLORS.NAP); 
+          // 🧠 Colorize the new AI note tag
+          colorizeText(richText, hData.draft, "\\[CD Intelligence\\]:", "#6b21a8"); 
           mirrorSheet.getRange(rowNum, draftIdx).setRichTextValue(richText.build()); 
       }
       
@@ -910,7 +946,6 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
               styleAfter(richText, hData.summary, "AE: ", TEXT_COLORS.AE);
               styleAfter(richText, hData.summary, "FIB: ", TEXT_COLORS.FIB);
               styleAfter(richText, hData.summary, "NAP: ", TEXT_COLORS.NAP);
-              
               colorizeText(richText, hData.summary, "★", TEXT_COLORS.STAR);
 
               let linkIdx = hData.summary.indexOf("[📡 Tracker Linked]");
@@ -929,7 +964,6 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           colorizeText(richText, hData.cleanComment, "UG", TEXT_COLORS.UG); 
           colorizeText(richText, hData.cleanComment, "Strand", TEXT_COLORS.AE); 
           colorizeText(richText, hData.cleanComment, "Fiber", TEXT_COLORS.FIB); 
-          
           let trkNoteIdx = hData.cleanComment.indexOf("[Tracker Note]:");
           if (trkNoteIdx > -1) {
               let trkStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#0284c7").setBold(true).build();
@@ -971,7 +1005,6 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           styleBenchLine(richText, benchStr, "AE: ", TEXT_COLORS.AE);
           styleBenchLine(richText, benchStr, "FIB: ", TEXT_COLORS.FIB);
           styleBenchLine(richText, benchStr, "NAP: ", TEXT_COLORS.NAP);
-          
           colorizeText(richText, benchStr, "★", TEXT_COLORS.STAR);
 
           let labelStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#000000").setBold(true).build();
