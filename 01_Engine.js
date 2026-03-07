@@ -744,11 +744,13 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           benchmarkDict[fdhId] = benchmarkDict[fdhId].replace(/NAP: Pending \[Possible Reroute\]/g, "NAP: Pending [Scope Deviation]");
       }
 
+      let cdIntelText = ""; // 🧠 Create an empty bucket for the row
+      
       // 🧠 INJECT CD AI INTELLIGENCE HERE
       if (xingsDict[fdhId]) {
           let cdData = xingsDict[fdhId];
           if (cdData.summary !== "") {
-              diag.draft += `\n\n[CD Intelligence]: ${cdData.summary}`;
+              cdIntelText = cdData.summary; // Store it separately, don't mix into draft
           }
           if (cdData.highway && cdData.highway.toLowerCase() !== "none" && cdData.highway.trim() !== "") {
               if (diag.flags !== "✅ No Anomalies" && diag.flags !== "") diag.flags += "\n🚧 CD: MAJOR CROSSING RISK";
@@ -839,7 +841,8 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       }
       
       rowObj["Health Flags"] = diag.flags; 
-      rowObj["Action Required"] = diag.draft; 
+      rowObj["Action Required"] = diag.draft;
+      rowObj["CD Intelligence"] = cdIntelText; // 🧠 MAP THE NEW COLUMN HERE 
       rowObj["Field Production"] = diag.summary; 
       rowObj["QB Context & Gaps"] = adminGapsStr; 
       rowObj["Historical Milestones"] = benchmarkDict[fdhId] || "No history logged.";

@@ -102,6 +102,7 @@ function getDashboardData() {
   const ofsIdx = getIdx("Forecasted OFS"), benchIdx = getIdx("Historical Milestones"), dateIdx = getIdx("Date");
   const targetIdx = getIdx("Target Completion Date"), cxStartIdx = getIdx("CX Start"), cxEndIdx = getIdx("CX Complete");
   const xingIdx = getIdx("QB Context & Gaps"), bslsIdx = getIdx("BSLs"), lightIdx = getIdx("Light to Cabinets");
+  const cdIntelIdx = getIdx("CD Intelligence");
 
   // 🧠 Grab Vendor Comment
   const vcIdx1 = getIdx("Vendor Comment");
@@ -140,8 +141,9 @@ function getDashboardData() {
              cxStart: parseDate(cxStartIdx > -1 ? data[i][cxStartIdx] : ""), cxEnd: parseDate(cxEndIdx > -1 ? data[i][cxEndIdx] : ""),
              isXing: xingIdx > -1 && String(data[i][xingIdx]).includes("X-ING"), gaps: xingIdx > -1 ? String(data[i][xingIdx]) : "", flags: flags, draft: draftIdx > -1 ? data[i][draftIdx] : "", bench: benchIdx > -1 ? data[i][benchIdx] : "",
              
-             // 🧠 Pass the Vendor Comment!
+             // 🧠 Pass the Vendor Comment and CD Intelligence column
              vendorComment: vcIdx > -1 ? data[i][vcIdx] : "",
+             cdIntel: cdIntelIdx > -1 ? String(data[i][cdIntelIdx] || "").trim() : "",
              
              vel: {
                  ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },

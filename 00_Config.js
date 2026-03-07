@@ -22,7 +22,7 @@ const HISTORY_HEADERS = ["Date", "Contractor", "FDH Engineering ID", "Locates Ca
 const QB_HEADERS = ["Date", "Contractor", "FDH Engineering ID", "Locates Called In", "Cabinets Set", "Light to Cabinets", "Target Completion Date", "Daily UG Footage", "Daily Strand Footage", "Daily Fiber Footage", "Daily NAPs/Encl. Completed", "Drills", "Missles", "AE Crews", "Fiber Pulling Crews", "Splicing Crews", "Construction Comments"];
 
 // 🧠 ADDED: CX Start and CX Complete
-const REVIEW_EXTRA_HEADERS = ["City", "Stage", "Status", "BSLs", "Forecasted OFS", "CX Start", "CX Complete"];
+const REVIEW_EXTRA_HEADERS = ["City", "Stage", "Status", "BSLs", "Forecasted OFS", "CX Start", "CX Complete", "CD Intelligence"];
 
 const ANALYTICS_QUADRANT = ["Historical Milestones", "Health Flags", "Action Required", "Field Production", "QB Context & Gaps"];
 

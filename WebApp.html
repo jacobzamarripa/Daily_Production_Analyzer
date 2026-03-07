@@ -176,13 +176,16 @@
       .action-box.crit { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
 
       /* 📐 CD Intelligence card */
-      .cd-intel-card { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; }
-      body.dark-mode .cd-intel-card { background: rgba(37,99,235,0.07); border-color: rgba(37,99,235,0.25); border-left-color: #3b82f6; }
-      .cd-intel-card .qb-module-header { background: transparent; border-bottom: 1px solid #bfdbfe; color: #1d4ed8; }
-      body.dark-mode .cd-intel-card .qb-module-header { color: #93c5fd; border-bottom-color: rgba(37,99,235,0.25); }
-      .cd-badge { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; color: #1d4ed8; background: rgba(37,99,235,0.12); padding: 2px 7px; border-radius: 3px; border: 1px solid rgba(37,99,235,0.3); flex-shrink: 0; }
-      body.dark-mode .cd-badge { color: #93c5fd; background: rgba(37,99,235,0.2); border-color: rgba(37,99,235,0.4); }
-      .cd-intel-text { font-size: 11px; line-height: 1.6; color: #1e3a5f; white-space: pre-wrap; overflow-y: auto; max-height: 160px; }
+      .cd-intel-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; overflow: hidden; display: flex; flex-direction: row; margin-top: 10px; }
+      body.dark-mode .cd-intel-card { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.2); }
+      .cd-intel-stripe { width: 7px; flex-shrink: 0; background: repeating-linear-gradient(-45deg, #facc15 0px, #facc15 4px, #0f172a 4px, #0f172a 8px); }
+      .cd-intel-inner { flex: 1; padding: 8px 12px; min-width: 0; }
+      .cd-badge { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; color: #854d0e; background: rgba(250,204,21,0.25); padding: 2px 7px; border-radius: 3px; border: 1px solid rgba(250,204,21,0.6); flex-shrink: 0; }
+      body.dark-mode .cd-badge { color: #fde047; background: rgba(250,204,21,0.15); border-color: rgba(250,204,21,0.35); }
+      .cd-intel-text { font-size: 11px; line-height: 1.6; color: #451a03; white-space: pre-wrap; overflow-y: auto; max-height: 120px; }
+      body.dark-mode .cd-intel-text { color: #fde68a; }
+      #p-comment[data-generated="true"] { color: #94a3b8; font-style: italic; }
+      body.dark-mode #p-comment[data-generated="true"] { color: rgba(233,213,255,0.45); }
       body.dark-mode .cd-intel-text { color: #bfdbfe; }
 
       /* Filter strip toggle */
@@ -220,7 +223,7 @@
       .hover-trigger:hover { transform: translateY(-2px); }
 
       /* 🧠 THEATER MODE GANTT STYLING (REBUILT FOR PERFECT LAYERING) */
-      .timeline-wrapper { flex: 0 0 auto; height: 35vh; min-height: 200px; background: var(--card-bg); border-top: 1px solid var(--border); position: relative; z-index: 10; display: flex; flex-direction: column; transition: all 0.3s ease; }
+      .timeline-wrapper { flex: 0 0 auto; height: 20vh; min-height: 120px; background: var(--card-bg); border-top: 1px solid var(--border); position: relative; z-index: 10; display: flex; flex-direction: column; transition: all 0.3s ease; }
       .timeline-wrapper.minimized { height: 40px; min-height: 40px; overflow: hidden; }
       .timeline-wrapper.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
       .gantt-controls { display: flex; justify-content: space-between; padding: 8px 24px; background: var(--bg); border-bottom: 1px solid var(--border); align-items: center; cursor: pointer; transition: background 0.3s, border-color 0.3s;}
@@ -504,14 +507,6 @@
                    </div>
                </div>
 
-               <div id="p-cd-intel" class="qb-module cd-intel-card" style="grid-column: span 2; padding:12px 16px; display:none;">
-                   <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #bfdbfe;">
-                       <span class="cd-badge">CD Intelligence</span>
-                       <span style="font-size:10px; font-weight:600; color:#3b82f6;">AI-Analyzed Construction Drawing</span>
-                   </div>
-                   <div id="p-cd-intel-text" class="cd-intel-text"></div>
-               </div>
-
                <div class="qb-module" style="grid-column: span 2; padding:16px 20px;">
                    <div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border);">Diagnostic & Manager Review</div>
                    <div class="review-grid">
@@ -526,13 +521,22 @@
                                <div class="section-label">System Diagnostics</div>
                                <div id="p-action" class="action-box hover-trigger" style="flex-grow:1; display:flex; flex-direction:column;" onmouseenter="hl('Health Flags')" onmouseleave="hl('')"></div>
                            </div>
+                           <div id="p-cd-intel" class="cd-intel-card" style="display:none;">
+                               <div class="cd-intel-stripe"></div>
+                               <div class="cd-intel-inner">
+                                   <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                       <span class="cd-badge">CD Intelligence</span>
+                                   </div>
+                                   <div id="p-cd-intel-text" class="cd-intel-text"></div>
+                               </div>
+                           </div>
                        </div>
                        <div class="comment-area hover-trigger" onmouseenter="hl('Action Required')" onmouseleave="hl('')">
                            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; padding:0 4px;">
                                <div class="section-label" style="color:var(--color-insight); margin:0;">OMNI Manager Note</div>
                                <div id="p-review-date" style="font-size:9px; font-weight:bold; color:var(--text-muted);"></div>
                            </div>
-                           <textarea id="p-comment" class="chat-bubble"></textarea>
+                           <textarea id="p-comment" class="chat-bubble" oninput="this.dataset.generated='false'"></textarea>
                        </div>
                    </div>
                    <div class="pane-footer">
@@ -1365,12 +1369,16 @@
               if (vBubble) { if (vComment !== "") { vBubble.style.display = 'flex'; setTxt('p-vendor-comment', `"${vComment}"`); } else { vBubble.style.display = 'none'; } }
 
               // Parse and surface CD Intelligence separately from the action draft
-              let cdIntelText = ""; let mainDraft = item.draft || "";
-              let cdMatch = mainDraft.match(/\n*\[CD Intelligence\]:\s*([\s\S]*)$/);
-              if (cdMatch) { cdIntelText = cdMatch[1].trim(); mainDraft = mainDraft.replace(/\n*\[CD Intelligence\]:\s*[\s\S]*$/, '').trim(); }
+              let cdIntelText = item.cdIntel || "";
+              let mainDraft = item.draft || "";
+              if (!cdIntelText) {
+                  let cdMatch = mainDraft.match(/\n*\[CD Intelligence\]:\s*([\s\S]*)$/);
+                  if (cdMatch) { cdIntelText = cdMatch[1].trim(); }
+              }
+              mainDraft = mainDraft.replace(/\n*\[CD Intelligence\]:\s*[\s\S]*$/, '').trim();
               let cdPanel = getEl('p-cd-intel');
               if (cdPanel) {
-                  cdPanel.style.display = cdIntelText ? 'block' : 'none';
+                  cdPanel.style.display = cdIntelText ? 'flex' : 'none';
                   if (cdIntelText) setTxt('p-cd-intel-text', cdIntelText);
               }
 
@@ -1408,7 +1416,11 @@
               
               // 🧠 CRASH FIX RESTORED
               let smartNote = generateSmartComment(item, daysLeft, isOverdue);
-              setVal('p-comment', item.comment || smartNote);
+              let pComment = getEl('p-comment');
+              if (pComment) {
+                  pComment.value = item.comment || smartNote;
+                  pComment.dataset.generated = item.comment ? 'false' : 'true';
+              }
 
               let ganttArea = getEl('gantt-area-main');
               if (ganttArea) {
