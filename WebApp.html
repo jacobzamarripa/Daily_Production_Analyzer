@@ -317,14 +317,16 @@
       .mob-sheet-list { overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
       .mob-sheet-footer { padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); flex-shrink: 0; }
 
-      /* 📱 TABLET (iPad portrait + small desktop) */
-      @media screen and (min-width: 769px) and (max-width: 1100px) {
+      /* 📱 TABLET (touch devices: iPad portrait + landscape) */
+      @media screen and (pointer: coarse) and (min-width: 769px) {
           .inbox-sidebar { width: 280px; min-width: 240px; }
           .outbox-pane { display: none; }
           .reading-pane { padding: 16px; }
           .qb-grid { gap: 12px; }
           .kpi-nav-container { gap: 4px; }
           .kpi-nav-box { padding: 3px 8px; min-width: 38px; }
+          /* Gantt starts as minimized bar — user can expand via Fullscreen */
+          .timeline-wrapper:not(.fullscreen) { height: 40px !important; min-height: 40px !important; overflow: hidden; }
       }
 
       /* 📱 PORTRAIT MOBILE */
@@ -1279,9 +1281,10 @@
           });
           html += `</div>`; container.innerHTML = html;
 
-          // Dynamic height: fit rows + header, cap at 40vh
+          // Dynamic height: fit rows + header, cap at 40vh (skip on touch tablets — CSS controls height)
+          let isTouch = window.matchMedia('(pointer: coarse)').matches;
           let wrapper = document.querySelector('.timeline-wrapper');
-          if (wrapper && !wrapper.classList.contains('fullscreen') && !wrapper.classList.contains('minimized')) {
+          if (wrapper && !isTouch && !wrapper.classList.contains('fullscreen') && !wrapper.classList.contains('minimized')) {
               let dynH = Math.max(items.length * 40 + 140, 120);
               dynH = Math.min(dynH, Math.floor(window.innerHeight * 0.4));
               wrapper.style.height = dynH + 'px';
@@ -1290,10 +1293,11 @@
           setTimeout(() => {
               let scrollContainer = getEl('gantt-scroll');
               if(scrollContainer) {
-                  let centerOffset = (chartWidth * (todayPct / 100)) + 140 - (scrollContainer.clientWidth / 2);
+                  let containerW = scrollContainer.clientWidth || window.innerWidth;
+                  let centerOffset = (chartWidth * (todayPct / 100)) + 140 - (containerW / 2);
                   scrollContainer.scrollLeft = Math.max(0, centerOffset);
               }
-          }, 100);
+          }, 150);
       }
 
       function renderList(items) {
@@ -1437,15 +1441,15 @@
           <div class="qb-vel-item">
               <div class="qb-vel-labels">
                   <span style="display:flex; align-items:center; white-space:nowrap;">${name}:
-                      <span class="has-tooltip hover-trigger" data-tooltip="${cols.tot}" style="color:${textCol}; margin-left:4px; font-family:monospace; cursor:default;" onmouseenter="hl('${cols.tot}')" onmouseleave="hl('')">${totalVal.toLocaleString()}</span>
+                      <span style="color:${textCol}; margin-left:4px; font-family:monospace;" onmouseenter="hl('${cols.tot}')" onmouseleave="hl('')">${totalVal.toLocaleString()}</span>
                       <span style="color:var(--text-muted); margin:0 2px;">/</span>
-                      <span class="has-tooltip hover-trigger" data-tooltip="${cols.bom}" style="color:${textCol}; font-family:monospace; cursor:default;" onmouseenter="hl('${cols.bom}')" onmouseleave="hl('')">${bomVal.toLocaleString()}</span>
-                      <span class="has-tooltip hover-trigger" data-tooltip="${cols.daily}" style="cursor:default; margin-left:4px;" onmouseenter="hl('${cols.daily}')" onmouseleave="hl('')">${dailyBadge}</span>
+                      <span style="color:${textCol}; font-family:monospace;" onmouseenter="hl('${cols.bom}')" onmouseleave="hl('')">${bomVal.toLocaleString()}</span>
+                      <span style="margin-left:4px;" onmouseenter="hl('${cols.daily}')" onmouseleave="hl('')">${dailyBadge}</span>
                   </span>
                   <span style="color:${textCol}; font-family:monospace; font-size:10px; font-weight:900; display:flex; align-items:center;">${Math.round(totalPct)}% ${starStr}</span>
               </div>
               <div class="qb-vel-bar" style="background:${barTrackBg}; overflow:visible;"><div class="qb-vel-fill" style="width:${totalPct}%; background:${bgStyle};"></div>${beadHtml}</div>
-              <div class="has-tooltip hover-trigger" data-tooltip="${cols.daily}" style="font-size:9px; color:${paceColor}; font-weight:800; margin-top:2px; cursor:default;" onmouseenter="hl('${cols.daily}')" onmouseleave="hl('')">PACE: ${formattedPace} ${paceUnit}</div>
+              <div style="font-size:9px; color:${paceColor}; font-weight:800; margin-top:2px;" onmouseenter="hl('${cols.daily}')" onmouseleave="hl('')">PACE: ${formattedPace} ${paceUnit}</div>
           </div>`;
       }
 
