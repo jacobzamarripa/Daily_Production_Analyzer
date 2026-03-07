@@ -29,7 +29,15 @@ function importReferenceData() {
   let importDateStr = Utilities.formatDate(newestDate, "GMT-5", "MM/dd/yyyy");
   PropertiesService.getScriptProperties().setProperty('refDataImportDate', importDateStr);
   PropertiesService.getScriptProperties().setProperty('refDataFileName', newestFile.getName());
-  SpreadsheetApp.getUi().alert(`✅ Successfully imported Reference Data: \n${newestFile.getName()}`);
+
+  // 🧠 Clear crossing check history — new ref data is the source of truth.
+  // If Special Crossings? is still blank after import, it never made it to QB and needs re-checking.
+  let adminSheet = ss.getSheetByName("Admin_Logs");
+  if (adminSheet && adminSheet.getLastRow() > 1) {
+    adminSheet.getRange(2, 2, adminSheet.getLastRow() - 1, 1).clearContent();
+  }
+
+  SpreadsheetApp.getUi().alert(`✅ Successfully imported Reference Data: \n${newestFile.getName()}\n\nCrossing check history has been reset — projects with blank Special Crossings? will be flagged for review.`);
 }
 
 function getReferenceDictionary() {

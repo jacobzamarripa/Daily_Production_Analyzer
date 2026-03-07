@@ -184,6 +184,8 @@
       body.dark-mode .cd-badge { color: #93c5fd; background: rgba(37,99,235,0.2); border-color: rgba(37,99,235,0.4); }
       .cd-intel-text { font-size: 11px; line-height: 1.6; color: #1e3a5f; white-space: pre-wrap; overflow-y: auto; max-height: 120px; }
       body.dark-mode .cd-intel-text { color: #bfdbfe; }
+      .cd-subtitle { font-size: 10px; font-weight: 600; color: #2563eb; }
+      body.dark-mode .cd-subtitle { color: #93c5fd; }
       /* X-ING modifier — hazard stripe when special crossing detected */
       .cd-intel-card.has-xing { background: #fffbeb; border-color: #fde68a; }
       body.dark-mode .cd-intel-card.has-xing { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.2); }
@@ -192,6 +194,8 @@
       body.dark-mode .cd-intel-card.has-xing .cd-badge { color: #fde047; background: rgba(250,204,21,0.15); border-color: rgba(250,204,21,0.35); }
       .cd-intel-card.has-xing .cd-intel-text { color: #451a03; }
       body.dark-mode .cd-intel-card.has-xing .cd-intel-text { color: #fde68a; }
+      .cd-intel-card.has-xing .cd-subtitle { color: #92400e; }
+      body.dark-mode .cd-intel-card.has-xing .cd-subtitle { color: #fde047; }
       #p-comment[data-generated="true"] { color: #94a3b8; font-style: italic; }
       body.dark-mode #p-comment[data-generated="true"] { color: rgba(233,213,255,0.45); }
 
@@ -313,6 +317,16 @@
       .mob-sheet-list { overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
       .mob-sheet-footer { padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); flex-shrink: 0; }
 
+      /* 📱 TABLET (iPad portrait + small desktop) */
+      @media screen and (min-width: 769px) and (max-width: 1100px) {
+          .inbox-sidebar { width: 280px; min-width: 240px; }
+          .outbox-pane { display: none; }
+          .reading-pane { padding: 16px; }
+          .qb-grid { gap: 12px; }
+          .kpi-nav-container { gap: 4px; }
+          .kpi-nav-box { padding: 3px 8px; min-width: 38px; }
+      }
+
       /* 📱 PORTRAIT MOBILE */
       @media screen and (max-width: 768px) {
           /* NAV: single compact row — brand + actions only */
@@ -360,6 +374,10 @@
           /* Admin badges compact */
           .admin-strip { padding: 6px 10px; gap: 6px; }
           .admin-kpi-val { font-size: 16px; }
+
+          /* Darker dividers between queue cards on mobile */
+          .email-card { border-bottom: 1.5px solid #cbd5e1; }
+          body.dark-mode .email-card { border-bottom: 1.5px solid #3f3f46; }
 
           /* Mobile action bar visible */
           .mobile-action-bar { display: flex; }
@@ -584,7 +602,7 @@
                    <div class="cd-intel-inner">
                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                            <span class="cd-badge">CD Intelligence</span>
-                           <span style="font-size:10px; font-weight:600; color:#92400e;">AI-Analyzed Construction Drawing</span>
+                           <span class="cd-subtitle">AI-Analyzed Construction Drawing</span>
                        </div>
                        <div id="p-cd-intel-text" class="cd-intel-text"></div>
                    </div>
@@ -1407,17 +1425,27 @@
           let barTrackBg = (typeKey === 'FIB' || typeKey === 'NAP') ? 'var(--border)' : 'var(--bg)';
           let beadHtml = ''; if (!isDone && totalPct > 0) beadHtml = `<div class="qb-vel-bead" style="left: calc(${totalPct}% - 7px); border-color: ${beadBorder}; box-shadow: ${beadShadow};"></div>`;
 
-          let headerMap = { 'UG': 'Total UG Footage Completed', 'AE': 'Total Strand Footage Complete?', 'FIB': 'Total Fiber Footage Complete', 'NAP': 'Total NAPs Completed' };
-          let hName = headerMap[typeKey];
+          let colMap = {
+              'UG':  { tot: 'Total UG Footage Completed',       bom: 'UG BOM Quantity',        daily: 'Daily UG Footage' },
+              'AE':  { tot: 'Total Strand Footage Complete?',   bom: 'Strand BOM Quantity',     daily: 'Daily Strand Footage' },
+              'FIB': { tot: 'Total Fiber Footage Complete',     bom: 'Fiber BOM Quantity',      daily: 'Daily Fiber Footage' },
+              'NAP': { tot: 'Total NAPs Completed',             bom: 'NAP/Encl. BOM Qty.',      daily: 'Daily NAPs/Encl. Completed' }
+          };
+          let cols = colMap[typeKey] || { tot: '', bom: '', daily: '' };
 
           return `
-          <div class="qb-vel-item hover-trigger" onmouseenter="hl('${hName}')" onmouseleave="hl('')">
+          <div class="qb-vel-item">
               <div class="qb-vel-labels">
-                  <span style="display:flex; align-items:center; white-space:nowrap;">${name}: <span style="color:${textCol}; margin-left:4px; font-family:monospace;">${totalVal.toLocaleString()} / ${bomVal.toLocaleString()}</span> ${dailyBadge}</span>
+                  <span style="display:flex; align-items:center; white-space:nowrap;">${name}:
+                      <span class="has-tooltip hover-trigger" data-tooltip="${cols.tot}" style="color:${textCol}; margin-left:4px; font-family:monospace; cursor:default;" onmouseenter="hl('${cols.tot}')" onmouseleave="hl('')">${totalVal.toLocaleString()}</span>
+                      <span style="color:var(--text-muted); margin:0 2px;">/</span>
+                      <span class="has-tooltip hover-trigger" data-tooltip="${cols.bom}" style="color:${textCol}; font-family:monospace; cursor:default;" onmouseenter="hl('${cols.bom}')" onmouseleave="hl('')">${bomVal.toLocaleString()}</span>
+                      <span class="has-tooltip hover-trigger" data-tooltip="${cols.daily}" style="cursor:default; margin-left:4px;" onmouseenter="hl('${cols.daily}')" onmouseleave="hl('')">${dailyBadge}</span>
+                  </span>
                   <span style="color:${textCol}; font-family:monospace; font-size:10px; font-weight:900; display:flex; align-items:center;">${Math.round(totalPct)}% ${starStr}</span>
               </div>
               <div class="qb-vel-bar" style="background:${barTrackBg}; overflow:visible;"><div class="qb-vel-fill" style="width:${totalPct}%; background:${bgStyle};"></div>${beadHtml}</div>
-              <div style="font-size: 9px; color: ${paceColor}; font-weight: 800; margin-top: 2px;">PACE: ${formattedPace} ${paceUnit}</div>
+              <div class="has-tooltip hover-trigger" data-tooltip="${cols.daily}" style="font-size:9px; color:${paceColor}; font-weight:800; margin-top:2px; cursor:default;" onmouseenter="hl('${cols.daily}')" onmouseleave="hl('')">PACE: ${formattedPace} ${paceUnit}</div>
           </div>`;
       }
 
