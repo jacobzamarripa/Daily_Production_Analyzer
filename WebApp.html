@@ -132,7 +132,7 @@
       body.dark-mode .tag-admin { background: rgba(250, 204, 21, 0.1); color: #fde047; border-color: #facc15; }
 
       .reading-pane { flex-grow: 1; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
-      .pane-content { width: 100%; max-width: 1000px; display: none; flex-direction: column; gap: 16px; position: relative; }
+      .pane-content { width: 100%; max-width: 1000px; display: none; flex-direction: column; gap: 16px; position: relative; padding-bottom: 16px; align-self: flex-start; }
       .qb-grid { display: grid; grid-template-columns: 4fr 6fr; gap: 20px; }
 
       .qb-module { background: var(--card-bg); border-radius: 12px; border: 1.5px solid var(--border); padding: 14px 18px; display: flex; flex-direction: column; position: relative; transition: outline 0.2s, background 0.3s, border-color 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);}
@@ -510,16 +510,16 @@
                <div class="qb-module" style="grid-column: span 2; padding:16px 20px;">
                    <div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border);">Diagnostic & Manager Review</div>
                    <div class="review-grid">
-                       <div style="display:flex; flex-direction:column; gap:16px; height:100%;">
+                       <div style="display:flex; flex-direction:column; gap:16px;">
                            <div>
                                <div class="section-label">Vendor Update</div>
                                <div class="vendor-bubble hover-trigger" id="p-vendor-bubble" onmouseenter="hl('Vendor Comment')" onmouseleave="hl('')">
                                    <div id="p-vendor-comment">"No update provided."</div>
                                </div>
                            </div>
-                           <div style="flex-grow:1; display:flex; flex-direction:column;">
+                           <div>
                                <div class="section-label">System Diagnostics</div>
-                               <div id="p-action" class="action-box hover-trigger" style="flex-grow:1; display:flex; flex-direction:column;" onmouseenter="hl('Health Flags')" onmouseleave="hl('')"></div>
+                               <div id="p-action" class="action-box hover-trigger" onmouseenter="hl('Health Flags')" onmouseleave="hl('')"></div>
                            </div>
                            <div id="p-cd-intel" class="cd-intel-card" style="display:none;">
                                <div class="cd-intel-stripe"></div>
