@@ -16,22 +16,7 @@ const QB_PAGE_SIZE    = 1000;
 const QB_MAX_PAGES    = 20;
 
 
-// --- 2. CUSTOM MENU ---
-
-function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu("Daily Analyzer")
-    .addItem("Sync from QuickBase",    "importFDHProjects")
-    .addItem("Discover QB Fields",     "discoverQBFields")
-    .addSeparator()
-    .addItem("Run CD Analysis",        "runCDAnalysis")
-    .addItem("Check Gemini API Usage", "checkCDApiUsage")
-    .addItem("Clear CD Sheet",         "clearCDSheet")
-    .addToUi();
-}
-
-
-// --- 3. FIELD DISCOVERY (run once to identify field IDs) ---
+// --- 2. FIELD DISCOVERY (run once to identify field IDs) ---
 
 function discoverQBFields() {
   const token = PropertiesService.getScriptProperties().getProperty("QB_USER_TOKEN");
