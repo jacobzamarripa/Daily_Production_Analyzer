@@ -11,7 +11,7 @@ const CD_CONFIG = {
   get GEMINI_API_KEY() { return PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY"); },
   GEMINI_MODEL:    "gemini-1.5-pro-latest",
   DAILY_API_LIMIT: 50,   // Gemini 1.5 Pro free tier: 50 req/day — raise if on paid plan
-  SOURCE_FOLDER_ID: "1BxKhfNAXo32TPEvrTBsGi69lVo9njDU8",
+  SOURCE_FOLDER_ID: "1NewUIbcjXzlKhlTTCMmkWes3oiOnej0Y", // To_Analyze subfolder
   SPREADSHEET_ID:   "1Wd5nk87iLYiYj1EomGOXCeErRUSoNLFta_bKYZnnovk",
   TARGET_SHEET:     "7-CD_Special_Xings",
   // Column order MUST match your sheet headers left-to-right
@@ -72,10 +72,11 @@ function runCDAnalysis() {
 
   // Collect PDFs from the source folder
   const folder = DriveApp.getFolderById(CD_CONFIG.SOURCE_FOLDER_ID);
+  Logger.log("CD Analyzer: searching folder '" + folder.getName() + "' (ID: " + CD_CONFIG.SOURCE_FOLDER_ID + ")");
   const files  = _getPDFsFromFolder(folder);
 
   if (files.length === 0) {
-    ui.alert("No PDF files found in the specified folder.");
+    ui.alert("No PDF files found in '" + folder.getName() + "' (ID: " + CD_CONFIG.SOURCE_FOLDER_ID + ").\n\nMake sure PDFs are placed directly in the To_Analyze folder, not in a subfolder.");
     return;
   }
 
