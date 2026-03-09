@@ -11,6 +11,7 @@ const CD_CONFIG = {
   get GEMINI_API_KEY() { return PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY"); },
   GEMINI_MODEL_PRIMARY:  "gemini-3.1-pro-preview",  // cutting-edge, 1M context window
   GEMINI_MODEL_FALLBACK: "gemini-2.5-pro",           // fallback if primary is rate-limited or unavailable
+  GEMINI_MODEL_FLASH:    "gemini-2.5-flash",         // final fallback — high free-tier quota (~500 req/day)
   DAILY_API_LIMIT: 50,   // conservative estimate — alert will tell you your real limit when you hit it
   SOURCE_FOLDER_ID: "1NewUIbcjXzlKhlTTCMmkWes3oiOnej0Y", // To_Analyze subfolder
   SPREADSHEET_ID:   "1Wd5nk87iLYiYj1EomGOXCeErRUSoNLFta_bKYZnnovk",
@@ -92,7 +93,7 @@ function runCDAnalysis() {
   const canProcess = Math.min(files.length, remaining);
   const skipped    = files.length - canProcess;
   const confirmMsg = `Found ${files.length} PDF(s).\n` +
-    `Model: ${CD_CONFIG.GEMINI_MODEL_PRIMARY} (fallback: ${CD_CONFIG.GEMINI_MODEL_FALLBACK})\n` +
+    `Model: ${CD_CONFIG.GEMINI_MODEL_PRIMARY} → ${CD_CONFIG.GEMINI_MODEL_FALLBACK} → ${CD_CONFIG.GEMINI_MODEL_FLASH} (cascade)\n` +
     `API calls today: ${usedToday} / ${CD_CONFIG.DAILY_API_LIMIT} (${remaining} remaining)\n` +
     (skipped > 0 ? `⚠️ Only ${canProcess} can be processed today (${skipped} will be skipped).\n` : "") +
     `\nStart analysis? This may take several minutes.`;
@@ -216,7 +217,13 @@ function _callGemini(pdfBase64, modelOverride) {
     return _callGemini(pdfBase64, CD_CONFIG.GEMINI_MODEL_FALLBACK);
   }
 
-  // Fallback also rate-limited — surface to caller for user-facing alert
+  // Fallback (2.5-pro) rate-limited or not found — try Flash (high free-tier quota)
+  if ((code === 429 || code === 404) && model === CD_CONFIG.GEMINI_MODEL_FALLBACK) {
+    Logger.log(`CD Analyzer: ${model} returned HTTP ${code} — falling back to ${CD_CONFIG.GEMINI_MODEL_FLASH}`);
+    return _callGemini(pdfBase64, CD_CONFIG.GEMINI_MODEL_FLASH);
+  }
+
+  // Flash also exhausted — surface to caller for user-facing alert
   if (code === 429) {
     throw new Error(`RATE_LIMIT_HIT:${model}`);
   }

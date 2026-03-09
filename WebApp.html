@@ -104,7 +104,7 @@
 
       /* Grid tile view — compact rounded tiles in a 2-col grid */
       .inbox-list.grid-view { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; align-content: start; }
-      .inbox-list.grid-view .email-card { border-bottom: none; border: 1px solid var(--border); border-radius: 10px; border-left: 4px solid transparent; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; min-height: 76px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); gap: 0; }
+      .inbox-list.grid-view .email-card { border-bottom: none; border: 1px solid var(--border); border-radius: 10px; border-left: 4px solid transparent; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; min-height: unset; aspect-ratio: 1 / 1; box-shadow: 0 1px 3px rgba(0,0,0,0.07); gap: 0; }
       .inbox-list.grid-view .email-card.crit { border-left-color: var(--color-critical); }
       .inbox-list.grid-view .email-card.warn { border-left-color: var(--color-review); }
       .inbox-list.grid-view .email-card.info { border-left-color: var(--color-insight); }
@@ -113,7 +113,11 @@
       .inbox-list.grid-view .em-fdh { font-size: 12px; }
       .inbox-list.grid-view .em-vendor { font-size: 8px; }
       .inbox-list.grid-view .glass-pill { font-size: 7px; padding: 2px 5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 4px; }
-      .inbox-list.grid-view .em-tags { flex-wrap: wrap; overflow: hidden; max-height: 32px; margin-top: auto; }
+      .inbox-list.grid-view .em-tags { flex-wrap: nowrap; overflow: hidden; margin-top: auto; }
+      .inbox-list.grid-view .em-tags .tag:nth-child(n+2) { display: none; }
+      .em-pill-short { display: none; }
+      .inbox-list.grid-view .em-pill-full { display: none; }
+      .inbox-list.grid-view .em-pill-short { display: inline-flex; }
 
       .email-card.crit { border-left-color: var(--color-critical); }
       .email-card.warn { border-left-color: var(--color-review); }
@@ -238,7 +242,7 @@
       .outbox-pane { position: fixed; right: 0; top: 52px; height: calc(100% - 52px); width: 280px; z-index: 500; background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s; box-shadow: -2px 0 16px rgba(0,0,0,0.1); }
       .outbox-pane.open { transform: translateX(0); }
       /* Sibling fixed drawer-tab-handle — always visible, not inside the pane */
-      .drawer-tab-handle { position: fixed; right: 0; top: 60px; z-index: 501; transform: rotate(90deg) translateX(50%); transform-origin: right top; background: var(--card-bg); border: 1px solid var(--border); border-bottom: none; border-radius: 6px 6px 0 0; padding: 6px 14px; cursor: pointer; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); white-space: nowrap; display: flex; align-items: center; gap: 6px; user-select: none; transition: color 0.2s, border-color 0.2s, background 0.3s; box-shadow: -2px -2px 8px rgba(0,0,0,0.06); }
+      .drawer-tab-handle { position: fixed; right: 0; top: 52px; z-index: 10001; writing-mode: vertical-rl; transform: rotate(180deg); background: var(--card-bg); border: 1px solid var(--border); border-right: none; border-radius: 6px 0 0 6px; padding: 14px 8px; cursor: pointer; font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); white-space: nowrap; display: flex; align-items: center; gap: 6px; user-select: none; transition: color 0.2s, border-color 0.2s, background 0.3s; box-shadow: -2px 0 8px rgba(0,0,0,0.1); }
       .drawer-tab-handle:hover { color: var(--text-main); }
       .drawer-tab-handle.active { color: var(--accent); border-color: var(--accent); }
       .ob-header { padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: background 0.3s, border-color 0.3s;}
@@ -248,13 +252,13 @@
       .ob-footer { padding: 12px; border-top: 1px solid var(--border); background: var(--card-bg); transition: background 0.3s, border-color 0.3s;}
 
       /* Mobile hamburger menu panel */
-      .mobile-menu-panel { display: flex; flex-direction: column; position: fixed; top: 46px; right: 0; left: 0; background: var(--card-bg); border-bottom: 1px solid var(--border); z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 0; overflow: hidden; transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s; }
+      .mobile-menu-panel { display: flex; flex-direction: column; position: fixed; top: 58px; right: 0; left: 0; background: var(--card-bg); border-bottom: 1px solid var(--border); z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 0; overflow: hidden; transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s; }
       .mobile-menu-panel.open { max-height: 400px; }
       .mobile-menu-panel button { padding: 14px 20px; font-size: 14px; font-weight: 700; text-align: left; background: none; border: none; border-bottom: 1px solid var(--border); cursor: pointer; color: var(--text-main); transition: background 0.15s; }
       .mobile-menu-panel button:hover { background: var(--bg); }
       .mobile-menu-panel button:last-child { border-bottom: none; }
 
-      .raw-data-strip { height: 60px; min-height: 60px; background: var(--bg); border-top: 1px solid var(--border); overflow-x: auto; overflow-y: hidden; display: flex; align-items: center; padding: 0 12px; flex-shrink: 0; z-index: 8; transition: background 0.3s, border-color 0.3s;}
+      .raw-data-strip { height: 60px; min-height: 60px; background: var(--bg); border-top: 1px solid var(--border); overflow-x: auto; overflow-y: hidden; display: flex; align-items: center; padding: 0 12px; flex-shrink: 0; z-index: 600; transition: background 0.3s, border-color 0.3s;}
 
       /* Resize handles — thin 2px line + grip indicator; transparent hit target */
       .resize-handle { width: 8px; flex-shrink: 0; cursor: col-resize; position: relative; z-index: 10; background: transparent; }
@@ -344,11 +348,19 @@
       .mobile-menu-toggle { display: none; }
       .mobile-back-btn { display: none; }
       .mobile-action-bar {
-          display: none; position: fixed; bottom: 0; left: 0; right: 0;
-          padding: 10px 12px; padding-bottom: max(24px, calc(16px + env(safe-area-inset-bottom)));
-          background: var(--card-bg); border-top: 2px solid var(--border);
-          flex-direction: column; gap: 6px; z-index: 200; box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+          display: none; position: fixed; bottom: 10px; left: 8px; right: 8px;
+          padding: 10px 12px; padding-bottom: max(20px, calc(12px + env(safe-area-inset-bottom)));
+          background: rgba(255,255,255,0.72);
+          backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+          border: 1px solid rgba(255,255,255,0.4); border-radius: 20px;
+          flex-direction: column; gap: 6px; z-index: 200;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
           transition: background 0.3s, border-color 0.3s;
+      }
+      body.dark-mode .mobile-action-bar {
+          background: rgba(30,30,35,0.78);
+          border-color: rgba(255,255,255,0.1);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
       }
       .mobile-nav-row { display: flex; gap: 8px; width: 100%; }
       .mobile-action-row { display: flex; gap: 8px; width: 100%; }
@@ -359,6 +371,11 @@
       .swipe-label { position: absolute; top: 24px; padding: 8px 18px; border-radius: 10px; font-size: 18px; font-weight: 900; letter-spacing: 2px; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 10; border: 3px solid; }
       .swipe-label.commit-label { left: 20px; color: var(--text-muted); border-color: var(--text-muted); transform: rotate(-12deg); }
       .swipe-label.skip-label { right: 20px; color: var(--text-muted); border-color: var(--text-muted); transform: rotate(12deg); }
+      /* Swipe peek panes — slide in from sides during card swipe */
+      .swipe-peek-pane { display: none; position: fixed; top: 58px; bottom: 0; left: 0; right: 0; padding: 32px 24px; box-sizing: border-box; background: var(--card-bg); pointer-events: none; flex-direction: column; justify-content: center; align-items: center; z-index: 195; }
+      #swipe-peek-prev { transform: translateX(-100vw); }
+      #swipe-peek-next { transform: translateX(100vw); }
+      @media screen and (max-width: 768px) { .swipe-peek-pane { display: flex; } }
 
       .mobile-outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 290; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
       .mobile-outbox-overlay.open { display: block; }
@@ -381,8 +398,8 @@
       /* 📱 PORTRAIT MOBILE */
       @media screen and (max-width: 768px) {
           /* NAV: brand + hamburger only; hide desktop action buttons */
-          .top-nav { padding: 0 14px; height: 46px; }
-          .nav-brand { font-size: 14px; }
+          .top-nav { padding: 0 16px; height: 58px; }
+          .nav-brand { font-size: 16px; }
           .kpi-nav-container { display: none; }
           .drawer-tab-handle { display: none; }
           .outbox-pane { display: none !important; }
@@ -402,7 +419,7 @@
           .reading-pane {
               position: absolute; top: 0; left: 0; right: 0; bottom: 0;
               width: 100%; display: flex !important; flex-direction: column;
-              overflow-y: auto; padding: 12px; padding-bottom: 90px; box-sizing: border-box;
+              overflow-y: auto; padding: 12px; padding-bottom: 130px; box-sizing: border-box;
               justify-content: flex-start;
               transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           }
@@ -510,7 +527,7 @@
       </div>
 
       <div class="nav-actions">
-        <span class="gemini-badge" id="gemini-badge" title="Gemini API calls used today">AI: <span id="gemini-used">0</span>/<span id="gemini-limit">50</span></span>
+        <span class="gemini-badge ai-ok" id="gemini-badge" title="Gemini API calls used today" style="display:none"></span>
         <button class="btn-nav" onclick="triggerQBSync()"    id="btn-qb-sync">⟳ Sync QB</button>
         <button class="btn-nav" onclick="triggerRunReview()" id="btn-run-review">▶ Run Review</button>
         <button class="btn-nav" onclick="triggerUIRefresh()" id="btn-refresh">↻ Refresh</button>
@@ -828,6 +845,10 @@
         <button class="btn btn-skip" style="flex:1; position:relative;" onclick="toggleMobileOutbox()">Reviewed <span id="mobile-ob-count" style="display:none; background:var(--color-insight); color:#fff; border-radius:8px; padding:1px 5px; font-size:9px; margin-left:2px;"></span></button>
       </div>
     </div>
+
+    <!-- Swipe peek panes — body-level fixed elements, populated by initSwipeGestures() -->
+    <div id="swipe-peek-prev" class="swipe-peek-pane" aria-hidden="true"></div>
+    <div id="swipe-peek-next" class="swipe-peek-pane" aria-hidden="true"></div>
 
     <div class="mobile-outbox-overlay" id="mobile-outbox-overlay" onclick="toggleMobileOutbox()"></div>
     <div class="mobile-outbox-sheet" id="mobile-outbox-sheet">
@@ -1222,10 +1243,15 @@
       function updateGeminiBadge(u) {
           if (!u) return;
           let badge = getEl('gemini-badge');
-          let pct   = u.used / u.limit;
-          setTxt('gemini-used', u.used);
-          setTxt('gemini-limit', u.limit);
-          badge.className = 'gemini-badge ' + (pct >= 0.95 ? 'ai-crit' : pct >= 0.8 ? 'ai-warn' : 'ai-ok');
+          if (!badge) return;
+          let used = u.used || 0;
+          if (used === 0) {
+              badge.textContent = 'AI: ready';
+              badge.className = 'gemini-badge ai-ok';
+          } else {
+              badge.textContent = `AI: ${used} call${used !== 1 ? 's' : ''}`;
+              badge.className = 'gemini-badge ' + (used >= 45 ? 'ai-crit' : used >= 30 ? 'ai-warn' : 'ai-ok');
+          }
           badge.style.display = 'inline';
       }
       window.onload = function() {
@@ -1621,7 +1647,7 @@
                   <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
                       <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div><div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
                   </div>
-                  <div class="glass-pill ${pillCls}" style="flex-shrink: 0; margin-left: 8px;">${combinedPill}</div>
+                  <span class="glass-pill em-pill-full ${pillCls}" style="flex-shrink: 0; margin-left: 8px;">${combinedPill}</span><span class="glass-pill em-pill-short ${pillCls}" style="flex-shrink: 0; margin-left: 8px;">${combinedPill.split('|')[0].trim()}</span>
                </div><div class="em-tags">${tagsHtml}</div>`;
             list.appendChild(card);
         });
@@ -2010,6 +2036,7 @@
           let pane = getEl('pane-content'); if(!pane) return;
           let startX = 0, startY = 0, isDragging = false, isHorizontal = null;
           let labelCommit = getEl('swipe-label-commit'), labelSkip = getEl('swipe-label-skip');
+          let peekPrev = getEl('swipe-peek-prev'), peekNext = getEl('swipe-peek-next');
 
           function resetPane(animate) {
               pane.style.transition = animate ? 'transform 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none';
@@ -2018,11 +2045,28 @@
               if(labelSkip) labelSkip.style.opacity = '0';
           }
 
+          function resetPeeks(animate) {
+              let tr = animate ? 'transform 0.3s cubic-bezier(0.4,0,0.2,1)' : 'none';
+              if(peekPrev) { peekPrev.style.transition = tr; peekPrev.style.transform = 'translateX(-100vw)'; }
+              if(peekNext) { peekNext.style.transition = tr; peekNext.style.transform = 'translateX(100vw)'; }
+          }
+
           pane.addEventListener('touchstart', e => {
               if (!currentActiveItem || window.innerWidth > 768) return;
               startX = e.touches[0].clientX; startY = e.touches[0].clientY;
               isDragging = true; isHorizontal = null;
               pane.style.transition = 'none';
+              // Populate adjacent peek panes
+              let prevItem = filteredItems[currentQueueIndex - 1];
+              let nextItem = filteredItems[currentQueueIndex + 1];
+              if(peekPrev) {
+                  peekPrev.style.transition = 'none';
+                  peekPrev.innerHTML = prevItem ? `<div style="font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">‹ PREV</div><div style="font-size:24px;font-weight:900;color:var(--text-main)">${prevItem.fdh||prevItem.id||''}</div>` : '';
+              }
+              if(peekNext) {
+                  peekNext.style.transition = 'none';
+                  peekNext.innerHTML = nextItem ? `<div style="font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">NEXT ›</div><div style="font-size:24px;font-weight:900;color:var(--text-main)">${nextItem.fdh||nextItem.id||''}</div>` : '';
+              }
           }, { passive: true });
 
           pane.addEventListener('touchmove', e => {
@@ -2038,21 +2082,27 @@
               let labelOpacity = Math.min(1, (Math.abs(dx) - 30) / 50);
               if (labelCommit) labelCommit.style.opacity = dx > 30 ? labelOpacity : '0';
               if (labelSkip)   labelSkip.style.opacity   = dx < -30 ? labelOpacity : '0';
+              // Slide peek panes in from the opposite side
+              if(peekPrev) peekPrev.style.transform = `translateX(${dx - window.innerWidth}px)`;
+              if(peekNext) peekNext.style.transform = `translateX(${dx + window.innerWidth}px)`;
           }, { passive: false });
 
           pane.addEventListener('touchend', e => {
               if (!isDragging) return;
               isDragging = false;
-              if (!currentActiveItem || window.innerWidth > 768 || !isHorizontal) { resetPane(true); return; }
+              if (!currentActiveItem || window.innerWidth > 768 || !isHorizontal) { resetPane(true); resetPeeks(true); return; }
               let dx = e.changedTouches[0].clientX - startX;
               if (Math.abs(dx) < 60) {
-                  resetPane(true);
+                  resetPane(true); resetPeeks(true);
               } else {
                   let dir = dx > 0 ? 1 : -1;
                   pane.style.transition = 'transform 0.22s ease-in';
                   pane.style.transform = `translateX(${dir * 105}vw)`;
+                  // Snap the incoming peek to final position
+                  if(peekPrev) { peekPrev.style.transition = 'transform 0.22s ease-in'; peekPrev.style.transform = dir > 0 ? 'translateX(0)' : `translateX(-${window.innerWidth}px)`; }
+                  if(peekNext) { peekNext.style.transition = 'transform 0.22s ease-in'; peekNext.style.transform = dir < 0 ? 'translateX(0)' : `translateX(${window.innerWidth}px)`; }
                   setTimeout(() => {
-                      resetPane(false);
+                      resetPane(false); resetPeeks(false);
                       if (dir > 0) goPrevItem(); else goNextItem();
                   }, 220);
               }
