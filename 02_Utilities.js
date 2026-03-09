@@ -102,6 +102,12 @@ function exportInboxReviewsCSV() {
 }
 
 function getDashboardData() {
+  // 30-minute server-side cache — skips sheet read on warm loads
+  const CACHE_KEY = 'dashboard_data_cache';
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get(CACHE_KEY);
+  if (cached) { try { return JSON.parse(cached); } catch(e) { /* fall through to live read */ } }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
   if (!mirrorSheet || mirrorSheet.getLastRow() < 2) return { actionItems: [], totalRows: 0, headers: [] };
@@ -150,7 +156,10 @@ function getDashboardData() {
 
      if (flags !== "" && !flags.includes("✅ No Anomalies") && !flags.includes("COMPLETE") && !stageStr.includes("OFS") && !statStr.includes("OPEN FOR SALE")) {
          const parseDate = (val) => val ? ((val instanceof Date) ? Utilities.formatDate(val, "GMT-5", "MM-dd-yyyy") : String(val).split('T')[0]) : "";
-         let safeRawRow = data[i].map(cell => (cell instanceof Date) ? Utilities.formatDate(cell, "GMT-5", "MM/dd/yy") : cell);
+         // Phase 1B/1C: use ISO strings (no Utilities.formatDate per-cell); strip empty cells as {h,v} pairs
+         let safeRawRow = data[i]
+             .map((cell, idx) => ({ h: headers[idx], v: (cell instanceof Date) ? cell.toISOString() : cell }))
+             .filter(({ v }) => v !== null && v !== undefined && v !== '');
 
          actionItems.push({
              fdh: fdhIdx > -1 ? data[i][fdhIdx] : "", vendor: vendorIdx > -1 ? data[i][vendorIdx] : "", city: cityIdx > -1 ? data[i][cityIdx] : "",
@@ -179,7 +188,9 @@ function getDashboardData() {
   // Read reference data import date (set by importReferenceData() in 01_Engine.js)
   let refDataDate = PropertiesService.getScriptProperties().getProperty('refDataImportDate') || "";
 
-  return { actionItems: actionItems, totalRows: data.length - 1, headers: headers, refDataDate: refDataDate };
+  let payload = { actionItems: actionItems, totalRows: data.length - 1, headers: headers, refDataDate: refDataDate };
+  try { cache.put(CACHE_KEY, JSON.stringify(payload), 1800); } catch(e) {}
+  return payload;
 }
 
 function promptLoadSpecificDateToQB() { const ui = SpreadsheetApp.getUi(); const response = ui.prompt('Load QuickBase Tab', 'Enter the date to load (YYYY-MM-DD):', ui.ButtonSet.OK_CANCEL); if (response.getSelectedButton() === ui.Button.OK) populateQuickBaseTabCore(response.getResponseText().trim()); }
@@ -340,6 +351,7 @@ function webAppTrigger3a(targetDateStr) {
 
 // 🧠 WEB APP BRIDGE: Logs the Admin Check permanently and cleans the Daily Review sheet instantly
 function markAdminCheckComplete(fdhId) {
+  CacheService.getScriptCache().remove('dashboard_data_cache');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if(!adminSheet) return false;
@@ -385,6 +397,7 @@ function markAdminCheckComplete(fdhId) {
 }
 
 function verifySpecialCrossings(fdhId) {
+  CacheService.getScriptCache().remove('dashboard_data_cache');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if (!adminSheet) return false;
@@ -431,6 +444,7 @@ function verifySpecialCrossings(fdhId) {
 
 // 🧠 NEW: Status Sync Log Bridge
 function markStatusSyncComplete(fdhId) {
+  CacheService.getScriptCache().remove('dashboard_data_cache');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if(!adminSheet) return false;

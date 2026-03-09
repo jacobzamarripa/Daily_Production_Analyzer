@@ -115,10 +115,10 @@
       .email-card.warn { border-left-color: var(--color-review); }
       .email-card.info { border-left-color: var(--color-insight); }
       .em-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0;}
-      .em-fdh { font-size: 14px; font-weight: 900; color: var(--text-main); letter-spacing: -0.2px;}
+      .em-fdh { font-size: 14px; font-weight: 600; color: var(--text-main); letter-spacing: -0.2px;}
       .em-vendor { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;}
       
-      .glass-pill { font-size: 9px; font-weight: bold; padding: 3px 8px; border-radius: 6px; border: 1.5px solid; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: inline-flex; }
+      .glass-pill { font-size: 9px; font-weight: bold; padding: 3px 8px; border-radius: 6px; border: none; text-transform: uppercase; white-space: nowrap; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: inline-flex; }
       .pill-default { color: #854d0e; background: rgba(253, 224, 71, 0.2); border-color: #facc15; }
       .pill-ofs { color: #1d4ed8; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
       .pill-permit { color: #7e22ce; background: rgba(168, 85, 247, 0.15); border-color: #a855f7; }
@@ -136,11 +136,11 @@
       .tag { display: inline-flex; padding: 2px 4px; border-radius: 3px; font-size: 8px; font-weight: 900; white-space: nowrap; border: 1px solid; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);}
       .tag-red { background: rgba(254, 226, 226, 0.5); color: #991b1b; border-color: #fca5a5; }
       .tag-yellow { background: rgba(254, 252, 232, 0.5); color: #854d0e; border-color: #fde047; }
-      .tag-purple { background: rgba(250, 245, 255, 0.5); color: #6b21a8; border-color: #d8b4fe; }
+      .tag-purple { background: #27272a; color: #a1a1aa; border: none; }
       .tag-admin { background: #171717; color: #facc15; border-color: #facc15; }
       body.dark-mode .tag-red { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: #ef4444;}
       body.dark-mode .tag-yellow { background: rgba(234, 179, 8, 0.15); color: #fde047; border-color: #eab308;}
-      body.dark-mode .tag-purple { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border-color: #a855f7;}
+      body.dark-mode .tag-purple { background: #27272a; color: #a1a1aa; border: none; }
       body.dark-mode .tag-admin { background: rgba(250, 204, 21, 0.1); color: #fde047; border-color: #facc15; }
 
       .reading-pane { flex-grow: 1; overflow-y: auto; padding: 24px; display: flex; justify-content: center; }
@@ -223,7 +223,7 @@
       body.dark-mode .chat-bubble { background: rgba(46, 16, 101, 0.3); color: #e9d5ff; border: 1px solid #6b21a8; }
       body.dark-mode .chat-bubble:focus { outline: none; border-color: #a855f7; background: var(--card-bg); box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3);}
 
-      .pane-footer { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;}
+      .pane-footer { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px; position: sticky; bottom: 0; background: var(--card-bg); z-index: 10; }
       .btn { padding: 6px 14px; border-radius: 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; border: 1.5px solid; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;}
       .btn-primary { background: var(--qb-done); color: white; border-color: #16a34a;}
       .btn-primary:hover { opacity: 0.9; transform: translateY(-1px);}
@@ -246,14 +246,36 @@
       .drawer-tab-group.open .drawer-tab-handle:last-child  { border-radius: 0 0 0 6px; border-top: none; }
       .drawer-tab-handle:hover  { color: var(--text-main); background: var(--bg); }
       .drawer-tab-handle.active { color: var(--accent); border-color: var(--accent); background: var(--bg); }
-      /* Badges inside vertical handles: float to top, force horizontal text */
+      /* Active tab when drawer open — match panel surface so tab merges visually */
+      .drawer-tab-group.open .drawer-tab-handle.active { background: var(--card-bg); color: var(--accent); }
+      /* Inactive tab when drawer open — recessed appearance */
+      .drawer-tab-group.open .drawer-tab-handle:not(.active) { background: rgba(0,0,0,0.15); opacity: 0.7; }
+      /* iOS-style corner badges — absolute, overlap top-right corner of handle */
       .drawer-tab-handle .ob-tab-badge,
       .drawer-tab-handle #ob-tab-count {
-          position: absolute; top: 5px; left: 50%; transform: translateX(-50%);
-          writing-mode: horizontal-tb; min-width: 16px; height: 16px; border-radius: 8px;
-          padding: 0 4px; display: flex; align-items: center; justify-content: center;
-          font-size: 9px; font-weight: 900;
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          left: auto;
+          transform: none;
+          writing-mode: horizontal-tb;
+          min-width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #ef4444;
+          color: #fff;
+          font-size: 11px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 4px;
+          border: 2px solid var(--bg);
+          line-height: 1;
+          z-index: 1;
       }
+      /* Reviewed badge uses insight color, not red */
+      .drawer-tab-handle #ob-tab-count { background: var(--color-insight); }
       .ob-header { padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: background 0.3s, border-color 0.3s;}
       .ob-list { padding: 12px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 8px;}
       .ob-card { padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text-main);}
@@ -261,6 +283,9 @@
       .ob-footer { padding: 12px; border-top: 1px solid var(--border); background: var(--card-bg); transition: background 0.3s, border-color 0.3s;}
       .ob-tab-badge { background: var(--border); color: var(--text-main); padding: 1px 6px; border-radius: 10px; font-size: 10px; }
       .ob-tab-badge-crit { background: var(--color-critical); color: #fff; }
+      /* Hide drawer tabs/pane during Gantt fullscreen */
+      body.gantt-fullscreen .drawer-tab-group,
+      body.gantt-fullscreen .outbox-pane { display: none; }
 
       /* Mobile hamburger menu panel */
       .mobile-menu-panel { display: flex; flex-direction: column; position: fixed; top: 58px; right: 0; left: 0; background: var(--card-bg); border-bottom: 1px solid var(--border); z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 0; overflow: hidden; transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s; }
@@ -313,7 +338,7 @@
       body.dark-mode .tl-header-dates { background: rgba(30, 30, 36, 0.9); }
 
       /* The Grid Lines Container */
-      .gantt-grid-container { position: absolute; left: 140px; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
+      .gantt-grid-container { position: absolute; left: 140px; top: 0; bottom: 0; pointer-events: none; z-index: 5; background-image: repeating-linear-gradient(to right, transparent, transparent calc(700% / var(--gantt-total-days, 365) - 1px), var(--border) calc(700% / var(--gantt-total-days, 365) - 1px), var(--border) calc(700% / var(--gantt-total-days, 365))); opacity: 0.5; }
 
       .gantt-today-line { position: absolute; top: 30px; bottom: 0; width: 2px; background: rgba(239,68,68,0.8); z-index: 10; border-left: 1px dashed #ef4444; pointer-events: none;}
       .gantt-today-label { position: absolute; top: -2px; transform: translateX(-50%); font-size: 10px; font-weight: 900; color: #ffffff; background: #ef4444; padding: 4px 8px; border-radius: 6px; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; z-index: 50;}
@@ -347,7 +372,9 @@
 
       /* Bar wrapper removed — bars live directly in gantt-row via absolute px positioning */
 
-      .gantt-bar-fill { position: absolute; top: 8px; height: 18px; border-radius: 9px; transition: width 0.3s, transform 0.4s, box-shadow 0.4s; display: flex; align-items: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.15);}
+      .gantt-bar-fill { position: absolute; top: 8px; height: 18px; border-radius: 9px; transition: width 0.3s, transform 0.4s, box-shadow 0.4s; display: flex; align-items: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.15); opacity: 0.75; }
+      .gantt-row.is-active .gantt-bar-fill { opacity: 1; }
+      .gantt-bar-text { position: relative; z-index: 1; }
       .gantt-bar-text { color: #ffffff; font-size: 10px; font-weight: bold; padding: 0 10px; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6);}
       
       .gantt-bead { position: absolute; top: 8px; width: 18px; height: 18px; background: var(--card-bg); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); border: 2px solid; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; z-index: 8; pointer-events: auto; cursor: pointer; font-size: 8px; font-weight: 900; box-sizing: border-box;}
@@ -606,7 +633,7 @@
     </div>
 
     <div class="filter-strip hidden" id="filter-strip">
-        <input type="text" id="search-input" placeholder="Search FDH..." onkeyup="applyFilters()">
+        <input type="text" id="search-input" placeholder="Search FDH...">
         <select id="filter-severity" onchange="applyFilters()">
            <option value="ALL">All Health</option>
            <option value="crit">Critical</option>
@@ -616,6 +643,7 @@
         <select id="filter-vendor" onchange="applyFilters()"><option value="ALL">All Vendors</option></select>
         <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
         <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
+        <button class="btn-nav" id="btn-clear-filters" onclick="clearAllFilters()" style="display:none; font-size:11px; padding:5px 10px; color:var(--text-muted);">✕ Clear</button>
     </div>
 
     <div class="workspace" id="main-workspace">
@@ -1002,6 +1030,7 @@
               wrapper.style.top = '';
               wrapper.style.height = '';
           }
+          document.body.classList.toggle('gantt-fullscreen', isFs);
           let fsBtn = getEl('btn-fullscreen'); if(fsBtn) fsBtn.innerText = isFs ? 'Exit Fullscreen' : 'Fullscreen';
           let minBtn = getEl('btn-minimize'); if(minBtn) minBtn.style.display = isFs ? 'none' : 'inline-flex';
       }
@@ -1159,6 +1188,15 @@
           let _icon = getEl('gantt-expand-icon');
           if (_icon) _icon.textContent = '▶';
       }
+      // Debounced search filter (300ms delay prevents re-render on every keystroke)
+      let _filterDebounce;
+      let _searchInput = getEl('search-input');
+      if (_searchInput) {
+          _searchInput.addEventListener('input', () => {
+              clearTimeout(_filterDebounce);
+              _filterDebounce = setTimeout(applyFilters, 300);
+          });
+      }
       // Sync drawer top to account for filter strip height on load
       _syncDrawerTop();
 
@@ -1263,6 +1301,11 @@
           </div>`;
       }
 
+      function selectItemForNav(fdh) {
+          let item = (allActionItems || []).find(i => i.fdh === fdh);
+          if (item) openPane(item, null);
+      }
+
       function renderAdminPane(items) {
           let pane = getEl('admin-pane-content');
           if (!pane) return;
@@ -1285,7 +1328,7 @@
                   let xVal = item.rawSpecialX || (item.isXing ? 'YES' : '—');
                   let xDet = item.specXDetails ? `<div style="font-size:10px; color:var(--text-muted); margin-top:3px; line-height:1.4;">${item.specXDetails.substring(0,120)}${item.specXDetails.length > 120 ? '…' : ''}</div>` : '';
                   let cd   = item.cdIntel ? `<div style="font-size:10px; color:var(--color-insight); margin-top:4px; line-height:1.3;">${item.cdIntel.substring(0,120)}${item.cdIntel.length > 120 ? '…' : ''}</div>` : '';
-                  return `<div id="admin-card-${item.fdh}" style="padding:10px 14px; border-top:1px solid var(--border); background:var(--card-bg);">
+                  return `<div id="admin-card-${item.fdh}" style="padding:10px 14px; border-top:1px solid var(--border); background:var(--card-bg); cursor:pointer;" onclick="selectItemForNav('${item.fdh}')">
                       <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
                           <div>
                               <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
@@ -1293,7 +1336,7 @@
                               <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">QB Crossings: <span style="font-weight:bold; color:var(--text-main);">${xVal}</span></div>
                               ${xDet}${cd}
                           </div>
-                          <button id="admin-verify-${item.fdh}" class="btn" onclick="verifyXingFromAdmin('${item.fdh}')" style="padding:5px 10px; font-size:10px; font-weight:900; background:#0f172a; color:#fff; border-color:#0f172a; white-space:nowrap; flex-shrink:0;">✓ Verify</button>
+                          <button id="admin-verify-${item.fdh}" class="btn" onclick="event.stopPropagation(); verifyXingFromAdmin('${item.fdh}')" style="padding:5px 10px; font-size:10px; font-weight:900; background:#0f172a; color:#fff; border-color:#0f172a; white-space:nowrap; flex-shrink:0;">✓ Verify</button>
                       </div>
                   </div>`;
               }).join('');
@@ -1325,14 +1368,14 @@
 
           if ((!activeAdminFilter || activeAdminFilter === 'status') && status.length > 0) {
               html += _adminSection('Status Mismatches', status, function(item) {
-                  return `<div style="padding:10px 14px; border-top:1px solid var(--border); background:var(--card-bg);">
+                  return `<div style="padding:10px 14px; border-top:1px solid var(--border); background:var(--card-bg); cursor:pointer;" onclick="selectItemForNav('${item.fdh}')">
                       <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
                           <div>
                               <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
                               <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.city} · ${item.vendor}</div>
                               <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">QB Status: <span style="font-weight:bold; color:var(--text-main);">${item.status}</span></div>
                           </div>
-                          <button class="btn" onclick="markQbUpdatedFromAdmin('${item.fdh}', this)" style="padding:5px 10px; font-size:10px; font-weight:900; background:#2563eb; color:#fff; border-color:#1d4ed8; white-space:nowrap; flex-shrink:0;">🛠 Updated</button>
+                          <button class="btn" onclick="event.stopPropagation(); markQbUpdatedFromAdmin('${item.fdh}', this)" style="padding:5px 10px; font-size:10px; font-weight:900; background:#2563eb; color:#fff; border-color:#1d4ed8; white-space:nowrap; flex-shrink:0;">🛠 Updated</button>
                       </div>
                   </div>`;
               });
@@ -1528,6 +1571,16 @@
           let d = new Date(str);
           return isNaN(d.getTime()) ? null : d;
       }
+      // Format any date value (ISO, MM-dd-yyyy, or MM/dd/yy) for display as MM/DD/YY
+      function formatDate(val) {
+          if (!val || val === '-' || val === 'Unknown') return 'TBD';
+          let d = safeDate(val);
+          if (!d) return String(val);
+          try {
+              return new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit', year: '2-digit', timeZone: 'America/Chicago' }).format(d);
+          } catch(e) { return String(val); }
+      }
+
       let activeAdminFilter = null;
 
       const QB_STYLES = {
@@ -1756,15 +1809,24 @@
             } else { filtered.sort((a, b) => a.rowNum - b.rowNum); }
             
             // Highlight Filters button when any non-default filter is active
+            let anyActive = vVen !== 'ALL' || vCit !== 'ALL' || vOfs !== 'ALL' || vSev !== 'ALL' || searchTerm !== '' || activeAdminFilter !== null;
             let filtersBtn = getEl('btn-filters');
             if (filtersBtn) {
-                let anyActive = vVen !== 'ALL' || vCit !== 'ALL' || vOfs !== 'ALL' || vSev !== 'ALL' || searchTerm !== '' || activeAdminFilter !== null;
                 filtersBtn.classList.toggle('btn-filters-active', anyActive);
                 filtersBtn.textContent = anyActive ? 'Filters ●' : 'Filters';
             }
+            let clearBtn = getEl('btn-clear-filters');
+            if (clearBtn) clearBtn.style.display = anyActive ? 'inline-flex' : 'none';
             filteredItems = filtered;
             renderList(filtered); renderGantt(filtered);
         });
+      }
+
+      function clearAllFilters() {
+          let s = getEl('search-input'); if (s) s.value = '';
+          ['filter-severity','filter-vendor','filter-city','filter-ofs'].forEach(id => { let el = getEl(id); if (el) el.value = 'ALL'; });
+          activeAdminFilter = null;
+          applyFilters();
       }
 
       // 🧠 GANTT CHART ENGINE (REBUILT FOR PERFECT LAYERING)
@@ -1808,7 +1870,7 @@
                 <div class="tl-header-corner"></div>
                 <div class="tl-header-dates" style="width:${chartWidth}px; flex-shrink:0;">
           `;
-          let gridLines = `<div class="gantt-grid-container" style="width:${chartWidth}px;">`;
+          let gridLines = `<div class="gantt-grid-container" style="width:${chartWidth}px; --gantt-total-days:${totalDays};">`;
           let spikeCount = 0;
 
           for(let i=0; i<=totalDays; i++) {
@@ -1836,9 +1898,9 @@
                  if (pct >= 4) dateHtml += `<div class="gantt-eom-label" style="left:${pct}%; top:32px;">EOM | PROJECTED BSLs: ${projBsl.toLocaleString()}</div>`;
              }
 
-             if(curr.getDay() === 1) { 
+             if(curr.getDay() === 1) {
                  dateHtml += `<div style="position:absolute; left:${pct}%; top:8px; font-size:10px; font-weight:900; color:var(--text-muted); transform:translateX(-50%); background:transparent; padding:0 4px; border-radius:4px;">${curr.getMonth()+1}/${curr.getDate()}</div>`;
-                 if(!isEOM) gridLines += `<div style="position:absolute; left:${pct}%; top:0; bottom:0; width:1px; background:var(--border); z-index:0; opacity:0.5;"></div>`;
+                 // Monday grid lines now rendered via CSS repeating-linear-gradient on .gantt-grid-container
              }
           }
           
@@ -1976,10 +2038,11 @@
       }
 
       function renderDiagnosticStrip(rowArray) {
-          let strip = getEl('raw-data-strip'); if(!strip) return; if(!rowArray || !globalHeaders) { strip.innerHTML = ''; return; }
+          let strip = getEl('raw-data-strip'); if(!strip) return; if(!rowArray || !rowArray.length) { strip.innerHTML = ''; return; }
           let html = `<table class="raw-table"><tr>`;
-          globalHeaders.forEach(h => { let safeH = h.replace(/"/g, '&quot;'); html += `<th data-header="${safeH}">${h}</th>`; }); html += `</tr><tr>`;
-          rowArray.forEach((c, i) => { let h = globalHeaders[i]; let safeH = h ? h.replace(/"/g, '&quot;') : ''; let val = c === null || c === undefined ? '' : c; html += `<td data-header="${safeH}">${val}</td>`; });
+          rowArray.forEach(entry => { let safeH = (entry.h || '').replace(/"/g, '&quot;'); html += `<th data-header="${safeH}">${entry.h || ''}</th>`; });
+          html += `</tr><tr>`;
+          rowArray.forEach(entry => { let safeH = (entry.h || '').replace(/"/g, '&quot;'); let val = entry.v === null || entry.v === undefined ? '' : entry.v; html += `<td data-header="${safeH}">${val}</td>`; });
           html += `</tr></table>`; strip.innerHTML = html;
       }
 
@@ -2096,6 +2159,15 @@
               
               renderDiagnosticStrip(item.rawRow);
 
+              // 3E: Dim diagnostics strip when no actionable anomalies
+              let _diagStrip = getEl('raw-data-strip');
+              if (_diagStrip) {
+                  let _rawFlags = (item.flags || "").split('\n').filter(f => f.trim() !== '');
+                  let _anomalyCount = _rawFlags.filter(f => f.startsWith('ADMIN:') || f.includes('MISMATCH') || f.includes('MISSING') || f.includes('🚨') || f.includes('🛑') || f.includes('🚩') || f.includes('⚠️')).length;
+                  _diagStrip.style.opacity = _anomalyCount === 0 ? '0.4' : '1';
+                  _diagStrip.style.pointerEvents = _anomalyCount === 0 ? 'none' : '';
+              }
+
               setTxt('p-fdh', item.fdh || "N/A"); setTxt('p-meta', item.city || "Unknown City");
               
               let pill = getEl('p-status');
@@ -2115,8 +2187,8 @@
               setStyle('project-schedule-card', 'boxShadow', getCardGlow(item.stage, item.status, isOverdue));
 
               let hasStart = item.cxStart && item.cxStart !== "";
-              setHtml('p-cx-start', `CX START: <span style="color:var(--text-main)">${hasStart ? item.cxStart : "TBD"}</span>`);
-              setHtml('p-cx-end', `CX COMPLETE: <span style="color:var(--text-main)">${hasEnd ? item.cxEnd : "TBD"}</span>`);
+              setHtml('p-cx-start', `CX START: <span style="color:var(--text-main)">${hasStart ? formatDate(item.cxStart) : "TBD"}</span>`);
+              setHtml('p-cx-end', `CX COMPLETE: <span style="color:var(--text-main)">${hasEnd ? formatDate(item.cxEnd) : "TBD"}</span>`);
               
               let scheduleFill = getEl('p-time-fill'); let scheduleBead = getEl('p-time-bead');
               let daysLeft = 0; let pStart = safeDate(item.cxStart); let pEnd = safeDate(item.cxEnd);
@@ -2166,7 +2238,7 @@
 
               let targetWrap = getEl('p-target-wrap'); let targetInner = getEl('p-target-inner');
               let starHtml = isComplete ? `<span style="color:var(--starGold); font-size:14px; margin-left:4px; line-height:1;">★</span>` : "";
-              let targetText = item.targetDate ? item.targetDate : "TBD";
+              let targetText = item.targetDate ? formatDate(item.targetDate) : "TBD";
               
               setHtml('p-target', targetText + starHtml); setStyle('p-target', 'color', targetColor);
 
@@ -2243,7 +2315,7 @@
               let chkMatch = (item.gaps || "").match(/\[Chk:\s*([^\]]+)\]/); let lastCheckedStr = chkMatch ? chkMatch[1] : "NEVER";
               let d = new Date(); let dateStr = (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear().toString().slice(-2);
               
-              setTxt('p-date', `REPORT DATE: ${item.reportDate || dateStr}`); setTxt('p-last-check', `LAST CHECKED: ${lastCheckedStr}`);
+              setTxt('p-date', `REPORT DATE: ${item.reportDate ? formatDate(item.reportDate) : dateStr}`); setTxt('p-last-check', `LAST CHECKED: ${lastCheckedStr}`);
               updateRefDataIndicator(); 
               
               // 🧠 CRASH FIX RESTORED
