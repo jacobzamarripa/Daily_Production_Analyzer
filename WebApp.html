@@ -6,7 +6,7 @@
     <style>
       /* 🧠 RESTORED PREMIUM THEME */
       :root {
-        --bg: #09090b; --card-bg: #18181b; --border: rgba(255,255,255,0.08); --text-main: #fafafa; --text-muted: #a1a1aa;
+        --bg: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --text-main: #0f172a; --text-muted: #64748b;
         --color-critical: #ef4444; --color-review: #f59e0b; --color-insight: #a855f7; 
         --qb-ug: #f97316; --qb-ae: #94a3b8; --qb-fib: #000000; --qb-nap: #4338ca; --qb-done: #22c55e;
         --qb-ae-bg: repeating-linear-gradient(115deg, #cbd5e1, #cbd5e1 3px, #f1f5f9 3px, #f1f5f9 6px);
@@ -155,7 +155,7 @@
       .upper-workspace { flex: 1; min-height: 0; display: flex; overflow: hidden; position: relative; }
       .detail-layout { flex: 1; min-height: 0; min-width: 0; display: none; align-items: stretch; gap: 18px; overflow: hidden; position: relative; }
       .detail-main { flex: 1; min-width: 0; display: flex; overflow: hidden; }
-      .pane-content { flex: 1; overflow-y: auto; padding: 20px; width: 100%; max-width: 100%; display: flex; flex-direction: column; gap: 16px; position: relative; box-sizing: border-box; transition: padding-right 0.26s cubic-bezier(0.22, 1, 0.36, 1); }
+      .pane-content { flex: 1; overflow-y: auto; padding: 10px 4px 0 4px; width: 100%; max-width: 100%; display: none; flex-direction: column; align-items: center; gap: 16px; position: relative; box-sizing: border-box; transition: padding-right 0.26s cubic-bezier(0.22, 1, 0.36, 1); }
       #welcome-screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
       .admin-dock { position: absolute; top: 10px; right: 8px; width: min(360px, 34vw); max-width: calc(100% - 16px); display: flex; justify-content: flex-end; pointer-events: none; z-index: 8; }
       .reading-pane.admin-open .admin-dock { pointer-events: auto; }
@@ -296,7 +296,7 @@
       .resize-handle:hover::before, .resize-handle.dragging::before { background: var(--accent); }
       .resize-handle:hover::after, .resize-handle.dragging::after { color: var(--accent); }
       /* 📐 HAIRLINE RESIZE HANDLES */
-      .resize-handle, .gantt-resize-grip { border-top: 1px solid var(--border); box-shadow: 0 -1px 3px rgba(0,0,0,0.2); cursor: ns-resize; background: var(--bg); }
+      .resize-handle { border-top: 1px solid var(--border); box-shadow: 0 -1px 3px rgba(0,0,0,0.2); cursor: ns-resize; background: var(--bg); }
       #sidebar-resize-handle { cursor: col-resize; border-top: none; box-shadow: none; background: transparent; }
 
       .toast-msg { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:8px 20px; border-radius:20px; font-size:12px; font-weight:700; transition:opacity 0.4s; opacity:0; z-index:99999; pointer-events:none; white-space:nowrap; }
@@ -316,7 +316,7 @@
       .gantt-panel.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
       .gantt-controls { display: flex; justify-content: space-between; padding: 4px 12px; min-height: 34px; background: transparent; border-bottom: none; align-items: center; cursor: pointer; transition: background 0.3s, border-color 0.3s; }
       .gantt-mini-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0 10px !important; min-height: 26px; font-size: 9px !important; border-radius: 12px; margin-right: 6px !important; letter-spacing: 0.05em; background: color-mix(in srgb, var(--card-bg) 84%, transparent) !important; border: 1px solid var(--border) !important; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06); }
-      .gantt-resize-grip { width: 88px; height: 10px; border-radius: 999px; background: transparent; margin: 2px auto 0; cursor: ns-resize; flex-shrink: 0; position: relative; touch-action: none; }
+      .gantt-resize-grip { width: 88px; height: 10px; border-radius: 999px; background: transparent; margin: 2px auto 0; cursor: ns-resize; flex-shrink: 0; position: relative; touch-action: none; pointer-events: auto; }
       .gantt-resize-grip::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 46px; height: 4px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 26%, transparent); }
       .gantt-resize-grip:hover::before { background: color-mix(in srgb, var(--accent) 34%, transparent); }
       .gantt-panel.minimized .gantt-resize-grip { display: none; }
@@ -1349,10 +1349,10 @@
           if (!pane) return;
           if (!items || items.length === 0) { pane.innerHTML = '<div class="empty-msg" style="padding:40px 16px;">No admin tasks.</div>'; return; }
 
-          let crossings = items.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS"));
-          let bomInput  = items.filter(i => i.flags.includes("PLEASE INPUT BOM"));
-          let bomCheck  = items.filter(i => i.flags.includes("CHECK BOM (UG/AE)"));
-          let status    = items.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS"));
+          let crossings = items.filter(i => (i.flags || '').includes("ADMIN: CHECK CROSSINGS"));
+          let bomInput  = items.filter(i => (i.flags || '').includes("PLEASE INPUT BOM"));
+          let bomCheck  = items.filter(i => (i.flags || '').includes("CHECK BOM (UG/AE)"));
+          let status    = items.filter(i => (i.flags || '').includes("STATUS MISMATCH") || (i.flags || '').includes("MISSING QB STATUS"));
           let bomsTotal = bomInput.length + bomCheck.length;
 
           let totalAdmin = crossings.length + bomsTotal + status.length;
@@ -1487,11 +1487,11 @@
       function updateAdminBadge() {
           if (!allActionItems) return;
           let count = allActionItems.filter(i =>
-              i.flags.includes('ADMIN: CHECK CROSSINGS') ||
-              i.flags.includes('PLEASE INPUT BOM') ||
-              i.flags.includes('CHECK BOM (UG/AE)') ||
-              i.flags.includes('STATUS MISMATCH') ||
-              i.flags.includes('MISSING QB STATUS')
+              (i.flags || '').includes('ADMIN: CHECK CROSSINGS') ||
+              (i.flags || '').includes('PLEASE INPUT BOM') ||
+              (i.flags || '').includes('CHECK BOM (UG/AE)') ||
+              (i.flags || '').includes('STATUS MISMATCH') ||
+              (i.flags || '').includes('MISSING QB STATUS')
           ).length;
           let badge = getEl('admin-badge');
           if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-flex' : 'none'; }
@@ -2369,7 +2369,7 @@
                       let xVal = item.rawSpecialX || "—";
                       let xDet = item.specXDetails ? `<div style="font-size:10px; color:var(--text-muted); margin-top:3px; line-height:1.4;">${item.specXDetails}</div>` : "";
                       xingCardHtml = `<div style="margin-bottom:8px; padding:8px 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px;">
-                          <div style="font-size:9px; font-weight:900; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">QB Crossings Data</div>
+                          <div style="font-size:9px; font-weight:900; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">Special X-ings Data</div>
                           <div style="font-size:11px; font-weight:700;">Special Crossings? <span style="color:var(--text-main);">${xVal}</span></div>
                           ${xDet}
                       </div>`;
