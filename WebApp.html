@@ -148,10 +148,9 @@
       body.dark-mode .tag-purple { background: #27272a; color: #a1a1aa; border: none; }
       body.dark-mode .tag-admin { background: rgba(250, 204, 21, 0.1); color: #fde047; border-color: #facc15; }
 
-      .reading-pane { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; }
-      .pane-content { flex: 1; overflow-y: auto; padding: 24px; width: 100%; max-width: 100%; display: none; flex-direction: column; align-items: center; gap: 16px; position: relative; box-sizing: border-box; }
-      #welcome-screen { flex: 1; display: flex; align-items: center; justify-content: center; }
-      .pane-footer { flex-shrink: 0; background: var(--card-bg); border-top: 1px solid var(--border); padding: 12px 24px; display: none; justify-content: flex-end; align-items: center; gap: 12px; }
+      .reading-pane { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+      .pane-content { flex: 1; overflow-y: auto; padding: 88px 24px 24px; width: 100%; max-width: 100%; display: none; flex-direction: column; align-items: center; gap: 16px; position: relative; box-sizing: border-box; }
+      #welcome-screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 88px 24px 24px; box-sizing: border-box; }
       .qb-grid { display: grid; grid-template-columns: 4fr 6fr; gap: 20px; }
 
       .qb-module { background: var(--card-bg); border-radius: 12px; border: 1.5px solid var(--border); padding: 14px 18px; display: flex; flex-direction: column; position: relative; transition: outline 0.2s, background 0.3s, border-color 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);}
@@ -222,7 +221,11 @@
       .filter-strip.hidden { display: none !important; }
       .btn-filters-active { background: rgba(239,68,68,0.1) !important; border-color: rgba(239,68,68,0.4) !important; color: var(--color-critical) !important; }
 
-      .comment-area { display: flex; flex-direction: column; flex-grow: 1; transition: transform 0.2s;}
+      .comment-area { display: flex; flex-direction: column; flex-grow: 1; transition: transform 0.2s; min-width: 0; }
+      .comment-area-footer { margin-top: 12px; padding: 12px 14px 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .review-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 9px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; min-width: 220px; flex: 1 1 260px; }
+      .review-meta-sep { color: var(--border); }
+      .review-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 0 0 auto; }
       .inbox-header { padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 6px; transition: background 0.3s, border-color 0.3s;}
       .chat-bubble { flex-grow: 1; padding: 14px; border-radius: 12px 12px 2px 12px; font-family: monospace; font-size: 12px; min-height: 100px; resize: none; transition: all 0.2s;}
       body:not(.dark-mode) .chat-bubble { background: #faf5ff; color: #4c1d95; border: 1px solid #d8b4fe; box-shadow: 3px 3px 0px rgba(0,0,0,0.05);}
@@ -236,14 +239,26 @@
       .btn-skip { background: transparent; color: var(--text-main); border-color: var(--border);}
       .btn-skip:hover { background: var(--bg); transform: translateY(-1px);}
 
-      /* Admin panel — permanently visible on desktop; hidden on mobile */
-      .outbox-pane { position: fixed; right: 0; top: 52px; height: calc(100% - 52px); width: 320px; z-index: 500; background: var(--card-bg); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -2px 0 16px rgba(0,0,0,0.1); }
-      @media screen and (max-width: 768px) { .outbox-pane { display: none; } }
+      /* Admin/Reviewed panel — overlay slide-in (FAB-triggered, works on all screen sizes) */
       .ob-header { padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: background 0.3s, border-color 0.3s;}
       .ob-tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; border-radius: 10px; background: #ef4444; color: #fff; font-size: 11px; font-weight: 700; padding: 0 6px; line-height: 1; }
       .ob-tab-badge-crit { background: var(--color-critical); color: #fff; }
-      /* Hide admin panel during Gantt fullscreen */
-      body.gantt-fullscreen .outbox-pane { display: none; }
+      /* Panel tab bar */
+      .panel-tab-bar { display: flex; align-items: center; padding: 0 8px; background: var(--bg); border-bottom: 2px solid var(--border); gap: 4px; height: 44px; flex-shrink: 0; }
+      .panel-tab { flex: 1; height: 32px; border-radius: 6px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border: none; background: transparent; color: var(--text-muted); transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+      .panel-tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+      .panel-tab-close { width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent; cursor: pointer; color: var(--text-muted); font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      .panel-tab-close:hover { background: var(--border); color: var(--text-main); }
+
+      /* Admin/review FAB menu */
+      .admin-fab-anchor { position: absolute; top: 18px; right: 24px; z-index: 125; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+      .admin-fab { position: relative; z-index: 126; min-width: 56px; height: 56px; padding: 0 18px; border-radius: 18px; background: linear-gradient(135deg, #111827 0%, #1f2937 100%); color: #f8fafc; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24); display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; transition: transform 0.15s, box-shadow 0.15s; }
+      .admin-fab:hover { transform: translateY(-2px); box-shadow: 0 22px 44px rgba(15, 23, 42, 0.28); }
+      .admin-fab:active { transform: scale(0.97); }
+      .admin-fab-icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px; background: rgba(255,255,255,0.1); font-size: 15px; line-height: 1; }
+      .admin-fab-badge { position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; border-radius: 10px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 900; padding: 0 6px; display: none; align-items: center; justify-content: center; line-height: 1; box-sizing: border-box; }
+      /* Hide FAB during Gantt fullscreen */
+      body.gantt-fullscreen .admin-fab-anchor { display: none !important; }
 
       /* Mobile hamburger menu panel */
       .mobile-menu-panel { display: flex; flex-direction: column; position: fixed; top: 58px; right: 0; left: 0; background: var(--card-bg); border-bottom: 1px solid var(--border); z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 0; overflow: hidden; transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s; }
@@ -252,7 +267,7 @@
       .mobile-menu-panel button:hover { background: var(--bg); }
       .mobile-menu-panel button:last-child { border-bottom: none; }
 
-      .gantt-panel { position: relative; z-index: 600; display: flex; flex-direction: column; border-top: 2px solid var(--border); background: var(--card-bg); transition: background 0.3s, border-color 0.3s; }
+      .gantt-panel { position: relative; z-index: 600; display: flex; flex-direction: column; background: var(--card-bg); transition: background 0.3s, border-color 0.3s; height: clamp(260px, 34vh, 420px); min-height: 260px; border-top: 1px solid var(--border); }
       .raw-data-strip { height: 60px; min-height: 60px; background: var(--bg); overflow-x: auto; overflow-y: hidden; display: flex; align-items: center; padding: 0 12px; flex-shrink: 0; transition: background 0.3s;}
 
       /* Resize handles — thin 2px line + grip indicator; transparent hit target */
@@ -267,21 +282,16 @@
       .toast-error { background:#991b1b; color:#fff; }
       .raw-table { border-collapse: collapse; font-family: monospace; font-size: 10px; background: var(--card-bg); margin: auto 0; border: 1px solid var(--border);}
       .raw-table th { background: var(--bg); color: var(--text-muted); font-weight: bold; padding: 4px 8px; border: 1px solid var(--border); white-space: nowrap;}
-      .raw-table td { padding: 4px 8px; border: 1px solid var(--border); white-space: nowrap; color: var(--text-main); transition: background-color 0.2s;}
+      .raw-table td { padding: 4px 8px; border: 1px solid var(--border); white-space: nowrap; color: var(--text-main); transition: background-color 0.2s; }
       .raw-highlight { background-color: rgba(59, 130, 246, 0.15) !important; outline: 2px solid #3b82f6 !important; outline-offset: -2px; color: #1d4ed8 !important; font-weight: 900 !important; }
       body.dark-mode .raw-highlight { background-color: rgba(96, 165, 250, 0.2) !important; color: #93c5fd !important; }
       .hover-trigger:hover { transform: translateY(-2px); }
 
       /* 🧠 THEATER MODE GANTT STYLING (REBUILT FOR PERFECT LAYERING) */
-      .timeline-wrapper { flex: 0 0 auto; height: 20vh; min-height: 120px; background: var(--card-bg); position: relative; display: flex; flex-direction: column; transition: all 0.3s ease; }
+      .timeline-wrapper { flex-grow: 1; min-height: 0; background: var(--card-bg); position: relative; display: flex; flex-direction: column; transition: all 0.3s ease; }
 
-      /* Gantt resize handle — hairline divider; click = toggle minimize, drag = resize */
-      .gantt-resize-handle { height: 12px; flex-shrink: 0; cursor: row-resize; display: flex; align-items: center; justify-content: center; position: relative; z-index: 601; background: transparent; }
-      .gantt-resize-handle::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,0.08); box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: all 0.2s; }
-      .gantt-resize-handle:hover::before { background: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-      .gantt-resize-handle.dragging::before { background: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-      .timeline-wrapper.minimized { height: 40px; min-height: 40px; overflow: hidden; }
-      .timeline-wrapper.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
+      .gantt-panel.minimized { height: 40px !important; min-height: 40px; overflow: hidden; }
+      .gantt-panel.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
       .gantt-controls { display: flex; justify-content: space-between; padding: 0 24px; height: 40px; background: var(--bg); border-bottom: 1px solid var(--border); align-items: center; cursor: pointer; transition: background 0.3s, border-color 0.3s; }
       
       .timeline-container { flex-grow: 1; overflow: auto; position: relative; padding: 0 24px 20px 24px;}
@@ -399,10 +409,6 @@
           .resize-handle:hover::before, .resize-handle.dragging::before { opacity: 1; background: var(--accent); height: 32px; }
 
           /* Gantt resize: taller hit target + subtle bump */
-          .gantt-resize-handle { height: 24px; background: rgba(128,128,128,0.05); }
-          .gantt-resize-handle::before { left: 50%; right: auto; width: 24px; height: 6px; transform: translate(-50%, -50%); border-radius: 4px; background: var(--text-muted); opacity: 0.35; }
-          .gantt-resize-handle::after { display: none; }
-          .gantt-resize-handle:hover::before, .gantt-resize-handle.dragging::before { opacity: 1; background: var(--accent); width: 32px; }
       }
 
       /* iPad handles fallback — (hover: none) catches Edge which may not report pointer:coarse */
@@ -411,25 +417,38 @@
           .resize-handle::before { top: 50%; bottom: auto; height: 24px; width: 6px; transform: translate(-50%, -50%); border-radius: 4px; background: var(--text-muted); opacity: 0.35; }
           .resize-handle::after { display: none; }
           .resize-handle:hover::before, .resize-handle.dragging::before { opacity: 1; background: var(--accent); height: 32px; }
-          .gantt-resize-handle { height: 24px; background: rgba(128,128,128,0.05); }
-          .gantt-resize-handle::before { left: 50%; right: auto; width: 24px; height: 6px; transform: translate(-50%, -50%); border-radius: 4px; background: var(--text-muted); opacity: 0.35; }
-          .gantt-resize-handle::after { display: none; }
-          .gantt-resize-handle:hover::before, .gantt-resize-handle.dragging::before { opacity: 1; background: var(--accent); width: 32px; }
       }
       /* JS-injected touch-tablet class catches Edge and any other browser that reports neither */
       .touch-tablet .resize-handle { width: 24px; background: rgba(128,128,128,0.05); }
       .touch-tablet .resize-handle::before { top: 50%; bottom: auto; height: 24px; width: 6px; transform: translate(-50%, -50%); border-radius: 4px; background: var(--text-muted); opacity: 0.35; }
       .touch-tablet .resize-handle::after { display: none; }
       .touch-tablet .resize-handle:hover::before, .touch-tablet .resize-handle.dragging::before { opacity: 1; background: var(--accent); height: 32px; }
-      .touch-tablet .gantt-resize-handle { height: 24px; background: rgba(128,128,128,0.05); }
-      .touch-tablet .gantt-resize-handle::before { left: 50%; right: auto; width: 24px; height: 6px; transform: translate(-50%, -50%); border-radius: 4px; background: var(--text-muted); opacity: 0.35; }
-      .touch-tablet .gantt-resize-handle::after { display: none; }
-      .touch-tablet .gantt-resize-handle:hover::before, .touch-tablet .gantt-resize-handle.dragging::before { opacity: 1; background: var(--accent); width: 32px; }
 
-      /* Desktop: workspace always offset right for permanent admin panel */
-      @media screen and (min-width: 769px) and (pointer: fine) {
-          .workspace { padding-right: 320px; }
+      /* Admin menu popover */
+      .outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.18); z-index: 119; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+      .outbox-overlay.open { display: block; }
+      .outbox-pane {
+          display: flex;
+          flex-direction: column;
+          position: absolute;
+          top: 70px;
+          right: 0;
+          width: min(380px, calc(100vw - 48px));
+          max-height: min(720px, calc(100vh - 180px));
+          background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          box-shadow: 0 28px 60px rgba(15,23,42,0.24);
+          overflow: hidden;
+          opacity: 0;
+          transform: translateY(-8px) scale(0.98);
+          transform-origin: top right;
+          pointer-events: none;
+          transition: opacity 0.2s ease, transform 0.2s ease, background 0.3s, border-color 0.3s;
+          z-index: 121;
       }
+      .outbox-pane.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
 
       /* 📱 PORTRAIT MOBILE */
       @media screen and (max-width: 768px) {
@@ -437,7 +456,7 @@
           .top-nav { padding: 0 16px; height: 58px; }
           .nav-brand { font-size: 16px; }
           .kpi-nav-container { display: none; }
-          .outbox-pane { display: none !important; }
+
           #btn-qb-sync, #btn-run-review, #btn-refresh, #btn-theme, #btn-help { display: none; }
           .mobile-menu-toggle { display: flex !important; }
           .filter-strip { padding: 5px 14px; }
@@ -469,8 +488,12 @@
           .qb-grid > * { grid-column: span 1 !important; }
           .review-grid { grid-template-columns: 1fr; gap: 12px; }
 
+          .admin-fab-anchor { top: 12px; right: 12px; }
+          .admin-fab { min-width: 48px; height: 48px; padding: 0 14px; border-radius: 16px; }
+          .admin-fab-label { display: none; }
+          .outbox-pane { top: 58px; width: min(360px, calc(100vw - 24px)); max-height: calc(100vh - 96px); }
+
           /* Hide desktop footer — mobile-action-bar takes its place */
-          .pane-footer { display: none !important; }
           .gantt-panel { display: none; }
 
           /* Touch-friendly text + disable hover lifts */
@@ -491,6 +514,8 @@
           /* Hamburger larger hit target */
           #btn-hamburger { font-size: 22px; padding: 10px 14px; min-width: 44px; min-height: 44px; }
       }
+
+      body.gantt-fullscreen .outbox-pane { display: none !important; }
 
       /* PORTRAIT: hide Gantt entirely */
       @media screen and (max-width: 768px) and (orientation: portrait) {
@@ -623,6 +648,57 @@
       <div class="resize-handle" id="sidebar-resize-handle" title="Drag to resize"></div>
 
       <div class="reading-pane">
+        <div class="admin-fab-anchor">
+          <button class="admin-fab" id="admin-fab" onclick="toggleAdminPanel()" title="Admin / Reviewed" aria-label="Open admin panel">
+              <span class="admin-fab-icon">☰</span>
+              <span class="admin-fab-label">Review Hub</span>
+              <span class="admin-fab-badge" id="admin-fab-badge"></span>
+          </button>
+          <div class="outbox-pane" id="outbox-pane">
+             <div class="panel-tab-bar">
+                <button class="panel-tab active" id="panel-tab-admin" onclick="switchPanelTab('admin')">
+                   Admin
+                   <span id="admin-badge" class="ob-tab-badge ob-tab-badge-crit" style="display:none;">0</span>
+                </button>
+                <button class="panel-tab" id="panel-tab-reviewed" onclick="switchPanelTab('reviewed')">
+                   Reviewed
+                   <span id="ob-count" style="background:var(--border); padding:1px 7px; border-radius:10px; font-size:10px; font-weight:900; color:var(--text-main);">0</span>
+                </button>
+                <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel">✕</button>
+             </div>
+
+             <div id="ob-panel-admin" style="display:flex; flex-grow:1; flex-direction:column; overflow:hidden;">
+                <div class="admin-strip" style="flex-shrink:0;">
+                   <div class="admin-kpi crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')" title="Filter: Crossings to verify">
+                      <div class="admin-kpi-val" id="kpi-crossings-val">0</div>
+                      <div class="admin-kpi-label">Check Crossings</div>
+                   </div>
+                   <div class="admin-kpi status" id="kpi-admin-status" onclick="toggleAdminFilter('status')" title="Filter: QB status issues">
+                      <div class="admin-kpi-val" id="kpi-status-val">0</div>
+                      <div class="admin-kpi-label">QB Status</div>
+                   </div>
+                   <div class="admin-kpi boms" id="kpi-admin-boms" onclick="toggleAdminFilter('boms')" title="Filter: BOM reviews needed">
+                      <div class="admin-kpi-val" id="kpi-boms-val">0</div>
+                      <div class="admin-kpi-label">Check BOMs</div>
+                   </div>
+                </div>
+                <div id="admin-pane-content" style="flex-grow:1; overflow-y:auto;"></div>
+             </div>
+
+             <div id="ob-panel-reviewed" style="display:none; flex-direction:column; flex-grow:1; overflow:hidden;">
+                <div class="ob-header" style="flex-shrink:0;">
+                   <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+                      Reviewed
+                      <span id="ob-tab-count" style="display:none;"></span>
+                   </div>
+                   <button class="btn" style="font-size:10px; padding:3px 8px;" onclick="promptEmailExport()">↑ Export</button>
+                </div>
+                <div class="ob-list" id="outbox-list" style="flex-grow:1; overflow-y:auto;">
+                   <div class="empty-msg" style="margin-top:20px; font-size:11px;">No items reviewed.</div>
+                </div>
+             </div>
+          </div>
+        </div>
         <div id="welcome-screen" class="empty-msg"><div style="font-size:32px; margin-bottom:12px;">Select a Project</div></div>
         
         <div class="pane-content" id="pane-content">
@@ -690,11 +766,24 @@
                            </div>
                        </div>
                        <div class="comment-area hover-trigger" onmouseenter="hl('Action Required')" onmouseleave="hl('')">
-                           <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; padding:0 4px;">
+                       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; padding:0 4px;">
                                <div class="section-label" style="color:var(--color-insight); margin:0;">OMNI Manager Note</div>
                                <div id="p-review-date" style="font-size:9px; font-weight:bold; color:var(--text-muted);"></div>
                            </div>
                            <textarea id="p-comment" class="chat-bubble" oninput="this.dataset.generated='false'"></textarea>
+                           <div class="comment-area-footer">
+                               <div class="review-meta">
+                                   <span id="p-date" class="hover-trigger" onmouseenter="hl('Date')" onmouseleave="hl('')" style="cursor:pointer;">REPORT DATE: TBD</span>
+                                   <span class="review-meta-sep">|</span>
+                                   <span id="p-last-check" class="hover-trigger" onmouseenter="hl('QB Context & Gaps')" onmouseleave="hl('')" style="cursor:pointer;">LAST CHECKED: NEVER</span>
+                                   <span class="review-meta-sep">|</span>
+                                   <span id="p-ref-data" style="cursor:default;">REF DATA: —</span>
+                               </div>
+                               <div class="review-actions">
+                                   <button class="btn btn-skip" onclick="skipReview()">Skip (Clear)</button>
+                                   <button class="btn btn-primary" id="btn-commit" onclick="commitReview()">✔ Commit</button>
+                               </div>
+                           </div>
                        </div>
                    </div>
                </div>
@@ -711,54 +800,9 @@
                </div>
            </div>
         </div>
-        <div class="pane-footer" id="pane-footer" style="display:none;">
-            <div style="font-size:9px; font-weight:900; color:var(--text-muted); align-self:center; margin-right:auto; text-transform:uppercase;">
-                <span id="p-date" class="hover-trigger" onmouseenter="hl('Date')" onmouseleave="hl('')" style="cursor:pointer;">REPORT DATE: TBD</span>
-                <span style="margin: 0 6px; color:var(--border);">|</span>
-                <span id="p-last-check" class="hover-trigger" onmouseenter="hl('QB Context & Gaps')" onmouseleave="hl('')" style="cursor:pointer;">LAST CHECKED: NEVER</span>
-                <span style="margin: 0 6px; color:var(--border);">|</span>
-                <span id="p-ref-data" style="cursor:default;">REF DATA: —</span>
-            </div>
-            <button class="btn btn-skip" onclick="skipReview()">Skip (Clear)</button>
-            <button class="btn btn-primary" id="btn-commit" onclick="commitReview()">✔ Commit</button>
-        </div>
       </div>
-
-      <div class="outbox-pane" id="outbox-pane">
-         <div id="ob-panel-admin" style="display:flex; flex-grow:1; flex-direction:column; overflow:hidden;">
-            <div class="ob-header">
-               <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px;">Admin <span id="admin-badge" class="ob-tab-badge ob-tab-badge-crit" style="display:none;">0</span></div>
-            </div>
-            <div class="admin-strip" style="flex-shrink:0;">
-               <div class="admin-kpi crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')" title="Filter: Crossings to verify">
-                  <div class="admin-kpi-val" id="kpi-crossings-val">0</div>
-                  <div class="admin-kpi-label">Check Crossings</div>
-               </div>
-               <div class="admin-kpi status" id="kpi-admin-status" onclick="toggleAdminFilter('status')" title="Filter: QB status issues">
-                  <div class="admin-kpi-val" id="kpi-status-val">0</div>
-                  <div class="admin-kpi-label">QB Status</div>
-               </div>
-               <div class="admin-kpi boms" id="kpi-admin-boms" onclick="toggleAdminFilter('boms')" title="Filter: BOM reviews needed">
-                  <div class="admin-kpi-val" id="kpi-boms-val">0</div>
-                  <div class="admin-kpi-label">Check BOMs</div>
-               </div>
-            </div>
-            <div id="admin-pane-content" style="flex-grow:1; overflow-y:auto;"></div>
-         </div>
-         <div id="ob-panel-reviewed" style="display:flex; flex-direction:column; flex-shrink:0; max-height:40%; border-top:1px solid var(--border);">
-            <div class="ob-header" style="flex-shrink:0;">
-               <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
-                  Reviewed
-                  <span id="ob-count" style="background:var(--border); padding:1px 7px; border-radius:10px; font-size:10px; font-weight:900; color:var(--text-main);">0</span>
-                  <span id="ob-tab-count" style="display:none;"></span>
-               </div>
-               <button class="btn" style="font-size:10px; padding:3px 8px;" onclick="promptEmailExport()">↑ Export</button>
-            </div>
-            <div class="ob-list" id="outbox-list" style="flex-grow:1; overflow-y:auto;">
-               <div class="empty-msg" style="margin-top:20px; font-size:11px;">No items reviewed.</div>
-            </div>
-         </div>
-      </div>
+      <!-- Overlay backdrop (mobile/tablet only) -->
+      <div class="outbox-overlay" id="outbox-overlay" onclick="toggleAdminPanel()"></div>
     </div>
 
     <!-- HELP OVERLAY + PANEL -->
@@ -914,24 +958,23 @@
     </div>
 
     <div class="gantt-panel" id="gantt-panel">
-    <div class="raw-data-strip" id="raw-data-strip"></div>
-    <div class="gantt-resize-handle" id="gantt-resize-handle" title="Drag to resize timeline"></div>
-    <div class="timeline-wrapper" id="gantt-wrapper">
-       <div class="gantt-controls" onclick="toggleMinimize()">
-           <div style="display:flex; align-items:center; gap:8px;">
-               <span id="gantt-expand-icon" style="font-size:10px; color:var(--text-muted);">▲</span>
-               <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--text-muted);">Global Construction Timeline</div>
+        <div class="gantt-controls" onclick="toggleMinimize()">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span id="gantt-expand-icon" style="font-size:10px; color:var(--text-muted);">▲</span>
+                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--text-muted);">Global Construction Timeline</div>
+            </div>
+            <div>
+                <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; margin-right:6px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); exitTheaterMode()">Exit Focus</button>
+                <button class="btn btn-nav" id="btn-minimize" style="display:inline-flex; padding: 4px 8px; font-size: 9px; margin-right:6px;" onclick="event.stopPropagation(); toggleMinimize()">Minimize</button>
+                <button class="btn btn-nav" id="btn-fullscreen" style="display:inline-flex; padding: 4px 8px; font-size: 9px;" onclick="event.stopPropagation(); toggleFullscreen()">Fullscreen</button>
+            </div>
+        </div>
+        <div class="raw-data-strip" id="raw-data-strip"></div>
+        <div class="timeline-wrapper" id="gantt-wrapper">
+           <div class="timeline-container" id="gantt-scroll" onclick="exitTheaterMode(event)">
+               <div id="gantt-container"><div class="empty-msg" style="margin-top:20px;">Loading Timeline...</div></div>
            </div>
-           <div>
-               <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; margin-right:6px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); exitTheaterMode()">Exit Focus</button>
-               <button class="btn btn-nav" id="btn-minimize" style="display:inline-flex; padding: 4px 8px; font-size: 9px; margin-right:6px;" onclick="event.stopPropagation(); toggleMinimize()">Minimize</button>
-               <button class="btn btn-nav" id="btn-fullscreen" style="display:inline-flex; padding: 4px 8px; font-size: 9px;" onclick="event.stopPropagation(); toggleFullscreen()">Fullscreen</button>
-           </div>
-       </div>
-       <div class="timeline-container" id="gantt-scroll" onclick="exitTheaterMode(event)">
-           <div id="gantt-container"><div class="empty-msg" style="margin-top:20px;">Loading Timeline...</div></div>
-       </div>
-    </div>
+        </div>
     </div>
 
     <script>
@@ -978,25 +1021,25 @@
       }
 
       function toggleFullscreen() {
-          let wrapper = getEl('gantt-wrapper'); if(!wrapper) return;
-          wrapper.classList.remove('minimized'); wrapper.classList.toggle('fullscreen');
-          let isFs = wrapper.classList.contains('fullscreen');
+          let panel = getEl('gantt-panel'); if(!panel) return;
+          panel.classList.remove('minimized'); panel.classList.toggle('fullscreen');
+          let isFs = panel.classList.contains('fullscreen');
           if (isFs) {
               let navH = (document.querySelector('.top-nav') || {offsetHeight: 0}).offsetHeight;
               let filterH = (getEl('filter-strip') || {offsetHeight: 0}).offsetHeight;
               let totalTopOffset = navH + filterH;
-              wrapper.style.top = totalTopOffset + 'px';
-              wrapper.style.height = `calc(100vh - ${totalTopOffset}px)`;
+              panel.style.top = totalTopOffset + 'px';
+              panel.style.height = `calc(100vh - ${totalTopOffset}px)`;
           } else {
-              wrapper.style.top = '';
-              wrapper.style.height = '';
+              panel.style.top = '';
+              panel.style.height = '';
           }
-          document.body.classList.toggle('gantt-fullscreen', isFs);
+          document.body.classList.toggle('gantt-fullscreen', isFs); // This class hides other UI elements
           let fsBtn = getEl('btn-fullscreen'); if(fsBtn) fsBtn.innerText = isFs ? 'Exit Fullscreen' : 'Fullscreen';
           let minBtn = getEl('btn-minimize'); if(minBtn) minBtn.style.display = isFs ? 'none' : 'inline-flex';
       }
       function toggleMinimize() {
-          let wrapper = getEl('gantt-wrapper');
+          let wrapper = getEl('gantt-panel');
           if (wrapper && !wrapper.classList.contains('fullscreen')) {
               wrapper.classList.toggle('minimized');
               let icon = getEl('gantt-expand-icon');
@@ -1028,11 +1071,30 @@
           const tips  = { regular: 'Switch to Dense', dense: 'Switch to Relaxed', relaxed: 'Switch to Regular' };
           if (btn) { btn.innerHTML = icons[currentViewMode]; btn.setAttribute('data-tooltip', tips[currentViewMode]); }
       }
-      function _syncDrawerTop() {
-          let strip = getEl('filter-strip'), pane = getEl('outbox-pane');
-          let navH = 52, stripH = (strip && !strip.classList.contains('hidden')) ? strip.offsetHeight : 0;
-          let top = navH + stripH;
-          if (pane) { pane.style.top = top + 'px'; pane.style.height = 'calc(100% - ' + top + 'px)'; }
+      function _syncDrawerTop() { /* no-op: admin menu is now anchored in-pane */ }
+
+      let currentPanelTab = 'admin';
+      function toggleAdminPanel() {
+          let pane = getEl('outbox-pane'), overlay = getEl('outbox-overlay');
+          let isOpen = pane && pane.classList.contains('open');
+          if (pane) pane.classList.toggle('open', !isOpen);
+          if (overlay) overlay.classList.toggle('open', !isOpen);
+      }
+      function switchPanelTab(tab) {
+          currentPanelTab = tab;
+          let adminPanel = getEl('ob-panel-admin'), reviewedPanel = getEl('ob-panel-reviewed');
+          let adminTab = getEl('panel-tab-admin'), reviewedTab = getEl('panel-tab-reviewed');
+          if (tab === 'admin') {
+              if (adminPanel) adminPanel.style.display = 'flex';
+              if (reviewedPanel) reviewedPanel.style.display = 'none';
+              if (adminTab) adminTab.classList.add('active');
+              if (reviewedTab) reviewedTab.classList.remove('active');
+          } else {
+              if (adminPanel) adminPanel.style.display = 'none';
+              if (reviewedPanel) reviewedPanel.style.display = 'flex';
+              if (adminTab) adminTab.classList.remove('active');
+              if (reviewedTab) reviewedTab.classList.add('active');
+          }
       }
       function toggleFilterStrip() {
           let strip = getEl('filter-strip'); let btn = getEl('btn-filters');
@@ -1040,7 +1102,6 @@
           strip.classList.toggle('hidden');
           let isHidden = strip.classList.contains('hidden');
           if (btn) btn.classList.toggle('btn-filters-active', !isHidden);
-          _syncDrawerTop();
       }
       function toggleHelpPanel() {
           let panel = getEl('help-panel'); let overlay = getEl('help-overlay');
@@ -1067,8 +1128,6 @@
       });
       function initTabletLayout() {
           if (!isIPadLike()) return;
-          let wrapper = document.querySelector('.timeline-wrapper');
-          if (wrapper && !wrapper.classList.contains('fullscreen')) wrapper.classList.add('minimized');
       }
 
       let hudLocked = false;
@@ -1102,13 +1161,6 @@
       _sysDark.addEventListener('change', e => applyTheme(e.matches));
       applyViewMode(); // restore persisted queue view (card/list/grid)
       if (navigator.maxTouchPoints > 1 && window.innerWidth >= 769) document.body.classList.add('touch-tablet');
-      // Auto-minimize Gantt on load (all platforms)
-      let _ganttWrapper = getEl('gantt-wrapper');
-      if (_ganttWrapper && !_ganttWrapper.classList.contains('fullscreen')) {
-          _ganttWrapper.classList.add('minimized');
-          let _icon = getEl('gantt-expand-icon');
-          if (_icon) _icon.textContent = '▶';
-      }
       // Debounced search filter (300ms delay prevents re-render on every keystroke)
       let _filterDebounce;
       let _searchInput = getEl('search-input');
@@ -1118,9 +1170,6 @@
               _filterDebounce = setTimeout(applyFilters, 300);
           });
       }
-      // Sync drawer top to account for filter strip height on load
-      _syncDrawerTop();
-
       // ── ⟳ Sync QB — pulls fresh reference data from QuickBase API ──────────
       function triggerQBSync() {
           const queueCount = document.querySelectorAll('#inbox-list .inbox-item').length;
@@ -1159,7 +1208,7 @@
           let dateInput = prompt("Run System Diagnostics (Fn 3a)\n\nEnter the date to review (YYYY-MM-DD):", localDateStr); if (!dateInput) return;
           let btn = getEl('btn-run-review'); if(btn) { btn.innerText = "Running..."; btn.disabled = true; }
           setHtml('gantt-container', `<div class="empty-msg" style="margin-top:20px;">Running Engine...</div>`); setHtml('inbox-list', `<div class="empty-msg">Fetching new data...</div>`);
-          setStyle('pane-content', 'display', 'none'); setStyle('pane-footer', 'display', 'none'); setStyle('welcome-screen', 'display', 'block'); setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">Running Engine Diagnostics...</div>`);
+          setStyle('pane-content', 'display', 'none'); setStyle('welcome-screen', 'display', 'block'); setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">Running Engine Diagnostics...</div>`);
           google.script.run.withSuccessHandler((data) => {
               if(btn) { btn.innerText = "▶ Run Review"; btn.disabled = false; }
               setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">Select a Project</div>`); initDashboard(data);
@@ -1347,6 +1396,8 @@
           ).length;
           let badge = getEl('admin-badge');
           if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-flex' : 'none'; }
+          let fabBadge = getEl('admin-fab-badge');
+          if (fabBadge) { fabBadge.textContent = count; fabBadge.style.display = count > 0 ? 'inline-flex' : 'none'; }
       }
 
       function commitStagedCrossings(btn) {
@@ -1533,49 +1584,6 @@
           initSwipeGestures();
           google.script.run.withSuccessHandler(initDashboard).getDashboardData();
           google.script.run.withSuccessHandler(updateGeminiBadge).getGeminiUsage();
-          // Gantt height resize handle (RAF-throttled + touch support + click-to-toggle)
-          (function() {
-              const handle = getEl('gantt-resize-handle');
-              const gantt  = getEl('gantt-wrapper');
-              if (!handle || !gantt) return;
-              let dragging = false, didMove = false, startY = 0, startH = 0, rafPending = false;
-              function startGanttDrag(clientY) {
-                  didMove = false; dragging = true; startY = clientY; startH = gantt.offsetHeight;
-                  handle.classList.add('dragging');
-                  gantt.style.willChange = 'height'; gantt.style.pointerEvents = 'none';
-                  document.body.style.cursor = 'row-resize'; document.body.style.userSelect = 'none';
-              }
-              function moveGanttDrag(clientY) {
-                  if (!dragging || rafPending) return;
-                  didMove = true;
-                  rafPending = true;
-                  requestAnimationFrame(() => {
-                      // If currently minimized, remove minimized class and start from a default height
-                      if (gantt.classList.contains('minimized')) {
-                          gantt.classList.remove('minimized');
-                          gantt.style.height = '200px';
-                          startH = 200; startY = clientY;
-                      }
-                      const newH = Math.min(Math.max(startH - (clientY - startY), 80), window.innerHeight * 0.6);
-                      gantt.style.height = newH + 'px';
-                      rafPending = false;
-                  });
-              }
-              function endGanttDrag() {
-                  if (!dragging) return;
-                  let moved = didMove; didMove = false; dragging = false;
-                  handle.classList.remove('dragging');
-                  gantt.style.willChange = ''; gantt.style.pointerEvents = '';
-                  document.body.style.cursor = ''; document.body.style.userSelect = '';
-                  if (!moved) toggleMinimize(); // tap without drag = toggle minimize
-              }
-              handle.addEventListener('mousedown', e => startGanttDrag(e.clientY));
-              document.addEventListener('mousemove', e => { if (dragging) moveGanttDrag(e.clientY); });
-              document.addEventListener('mouseup', endGanttDrag);
-              handle.addEventListener('touchstart', e => { e.preventDefault(); startGanttDrag(e.touches[0].clientY); }, { passive: false });
-              document.addEventListener('touchmove', e => { if (dragging) { e.preventDefault(); moveGanttDrag(e.touches[0].clientY); } }, { passive: false });
-              document.addEventListener('touchend', endGanttDrag);
-          })();
           // Sidebar resize handle (touch support added)
           (function() {
               const handle = getEl('sidebar-resize-handle');
@@ -1607,7 +1615,7 @@
 
       function initDashboard(data) {
         safeExecute('initDashboard', () => {
-            if (!data || !data.actionItems || data.actionItems.length === 0) { setHtml('gantt-container', `<div class="empty-msg" style="margin-top:40px;">All clear.</div>`); setHtml('inbox-list', `<div class="empty-msg">All clear.</div>`); return; }
+            if (!data || !data.actionItems || data.actionItems.length === 0) { setHtml('gantt-container', `<div class="empty-msg" style="margin-top:40px;">All clear.</div>`); setHtml('inbox-list', `<div class="empty-msg">All clear.</div>`); setStyle('welcome-screen', 'display', 'block'); return; }
             allActionItems = data.actionItems; globalHeaders = data.headers;
             globalRefDataDate = data.refDataDate || "";
             updateRefDataIndicator();
@@ -2067,9 +2075,7 @@
               if(cardEl) cardEl.classList.add('selected');
               updateMobileNavButtons();
 
-              setStyle('welcome-screen', 'display', 'none');
-              setStyle('pane-content', 'display', 'flex');
-              setStyle('pane-footer', 'display', 'flex');
+              setStyle('welcome-screen', 'display', 'none'); setStyle('pane-content', 'display', 'flex');
               
               renderDiagnosticStrip(item.rawRow);
 
@@ -2269,7 +2275,7 @@
           setHtml('raw-data-strip', ''); exitTheaterMode();
           applyFilters(); renderOutbox(); updateMobileObCount();
           if (allActionItems.length === 0) {
-              setStyle('pane-content', 'display', 'none'); setStyle('pane-footer', 'display', 'none'); setStyle('welcome-screen', 'display', 'block');
+              setStyle('pane-content', 'display', 'none'); setStyle('welcome-screen', 'display', 'block');
               setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">All Clear ✓</div>`);
               if (window.innerWidth <= 768) backToQueue();
           }
@@ -2292,7 +2298,7 @@
               currentActiveItem = null; // null first so renderList auto-advances
               allActionItems = allActionItems.filter(i => i.fdh !== item.fdh);
               committedItems = committedItems.filter(i => i.fdh !== item.fdh);
-              committedItems.unshift(item); advanceAfterAction();
+              committedItems.unshift(item); advanceAfterAction(); showToast(`✔ ${item.fdh} Committed`);
           });
       }
 
