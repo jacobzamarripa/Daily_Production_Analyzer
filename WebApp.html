@@ -4,7 +4,7 @@
     <base target="_top">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <style>
-      /* 🧠 RESTORED PREMIUM THEME */
+      /* 🧠 PREMIUM ENTERPRISE COLOR PALETTE */
       :root {
         --bg: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --text-main: #0f172a; --text-muted: #64748b;
         --color-critical: #ef4444; --color-review: #f59e0b; --color-insight: #a855f7; 
@@ -295,9 +295,6 @@
       .resize-handle::after { content: '⋮'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--border); font-size: 12px; line-height: 1; transition: color 0.15s; pointer-events: none; }
       .resize-handle:hover::before, .resize-handle.dragging::before { background: var(--accent); }
       .resize-handle:hover::after, .resize-handle.dragging::after { color: var(--accent); }
-      /* 📐 HAIRLINE RESIZE HANDLES */
-      .resize-handle { border-top: 1px solid var(--border); box-shadow: 0 -1px 3px rgba(0,0,0,0.2); cursor: ns-resize; background: var(--bg); }
-      #sidebar-resize-handle { cursor: col-resize; border-top: none; box-shadow: none; background: transparent; }
 
       .toast-msg { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:8px 20px; border-radius:20px; font-size:12px; font-weight:700; transition:opacity 0.4s; opacity:0; z-index:99999; pointer-events:none; white-space:nowrap; }
       .toast-ok    { background:#166534; color:#fff; }
@@ -316,7 +313,7 @@
       .gantt-panel.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
       .gantt-controls { display: flex; justify-content: space-between; padding: 4px 12px; min-height: 34px; background: transparent; border-bottom: none; align-items: center; cursor: pointer; transition: background 0.3s, border-color 0.3s; }
       .gantt-mini-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0 10px !important; min-height: 26px; font-size: 9px !important; border-radius: 12px; margin-right: 6px !important; letter-spacing: 0.05em; background: color-mix(in srgb, var(--card-bg) 84%, transparent) !important; border: 1px solid var(--border) !important; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06); }
-      .gantt-resize-grip { width: 88px; height: 10px; border-radius: 999px; background: transparent; margin: 2px auto 0; cursor: ns-resize; flex-shrink: 0; position: relative; touch-action: none; pointer-events: auto; }
+      .gantt-resize-grip { width: 88px; height: 10px; border-radius: 999px; background: transparent; margin: 2px auto 0; cursor: ns-resize; flex-shrink: 0; position: relative; touch-action: none; }
       .gantt-resize-grip::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 46px; height: 4px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 26%, transparent); }
       .gantt-resize-grip:hover::before { background: color-mix(in srgb, var(--accent) 34%, transparent); }
       .gantt-panel.minimized .gantt-resize-grip { display: none; }
@@ -1293,9 +1290,7 @@
           setStyle('pane-content', 'display', 'none'); setStyle('detail-layout', 'display', 'none'); setStyle('welcome-screen', 'display', 'block'); setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">Running Engine Diagnostics...</div>`);
           google.script.run.withSuccessHandler((data) => {
               if(btn) { btn.innerText = "▶ Run Review"; btn.disabled = false; }
-              setStyle('welcome-screen', 'display', 'none');
-              setStyle('detail-layout', 'display', 'flex');
-              initDashboard(data);
+              setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">Select a Project</div>`); initDashboard(data);
           }).withFailureHandler((err) => {
               if(btn) { btn.innerText = "▶ Run Review"; btn.disabled = false; } alert("Engine Error: " + err.message);
           }).webAppTrigger3a(dateInput.trim());
@@ -1349,10 +1344,10 @@
           if (!pane) return;
           if (!items || items.length === 0) { pane.innerHTML = '<div class="empty-msg" style="padding:40px 16px;">No admin tasks.</div>'; return; }
 
-          let crossings = items.filter(i => (i.flags || '').includes("ADMIN: CHECK CROSSINGS"));
-          let bomInput  = items.filter(i => (i.flags || '').includes("PLEASE INPUT BOM"));
-          let bomCheck  = items.filter(i => (i.flags || '').includes("CHECK BOM (UG/AE)"));
-          let status    = items.filter(i => (i.flags || '').includes("STATUS MISMATCH") || (i.flags || '').includes("MISSING QB STATUS"));
+          let crossings = items.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS"));
+          let bomInput  = items.filter(i => i.flags.includes("PLEASE INPUT BOM"));
+          let bomCheck  = items.filter(i => i.flags.includes("CHECK BOM (UG/AE)"));
+          let status    = items.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS"));
           let bomsTotal = bomInput.length + bomCheck.length;
 
           let totalAdmin = crossings.length + bomsTotal + status.length;
@@ -1366,21 +1361,6 @@
           if (kpiBv) kpiBv.textContent = bomsTotal;
 
           let html = '';
-          if (crossings.length > 0 || status.length > 0) {
-              html += `<div style="padding:10px 14px; border-bottom:1px solid var(--border); background:var(--bg);">
-                  <div style="font-size:10px; font-weight:900; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; letter-spacing:0.04em;">Pinned Admin Tasks</div>
-                  <div style="display:grid; grid-template-columns:1fr; gap:8px;">
-                      <div style="padding:10px 12px; border:1px solid #facc15; background:rgba(250,204,21,0.08); border-radius:8px; cursor:pointer;" onclick="toggleAdminFilter('crossings')">
-                          <div style="font-size:11px; font-weight:900; color:var(--text-main);">Check Crossings</div>
-                          <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${crossings.length} item(s) require crossing verification.</div>
-                      </div>
-                      <div style="padding:10px 12px; border:1px solid #ef4444; background:rgba(239,68,68,0.08); border-radius:8px; cursor:pointer;" onclick="toggleAdminFilter('status')">
-                          <div style="font-size:11px; font-weight:900; color:var(--text-main);">QB Status</div>
-                          <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${status.length} item(s) have status mismatches.</div>
-                      </div>
-                  </div>
-              </div>`;
-          }
 
           if ((!activeAdminFilter || activeAdminFilter === 'crossings') && crossings.length > 0) {
               let commitBtn = `<button onclick="commitStagedCrossings(this)" style="padding:3px 8px; font-size:9px; font-weight:900; background:#0f172a; color:#fff; border:1px solid #0f172a; border-radius:4px; cursor:pointer; white-space:nowrap;">Commit Staged →</button>`;
@@ -1487,11 +1467,11 @@
       function updateAdminBadge() {
           if (!allActionItems) return;
           let count = allActionItems.filter(i =>
-              (i.flags || '').includes('ADMIN: CHECK CROSSINGS') ||
-              (i.flags || '').includes('PLEASE INPUT BOM') ||
-              (i.flags || '').includes('CHECK BOM (UG/AE)') ||
-              (i.flags || '').includes('STATUS MISMATCH') ||
-              (i.flags || '').includes('MISSING QB STATUS')
+              i.flags.includes('ADMIN: CHECK CROSSINGS') ||
+              i.flags.includes('PLEASE INPUT BOM') ||
+              i.flags.includes('CHECK BOM (UG/AE)') ||
+              i.flags.includes('STATUS MISMATCH') ||
+              i.flags.includes('MISSING QB STATUS')
           ).length;
           let badge = getEl('admin-badge');
           if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-flex' : 'none'; }
@@ -1718,7 +1698,6 @@
               let dragging = false, dragged = false, startY = 0, startH = 0;
               function startDrag(clientY) {
                   if (panel.classList.contains('fullscreen') || panel.classList.contains('minimized')) return;
-                  panel.style.transition = 'none';
                   dragging = true; dragged = false; startY = clientY; startH = panel.offsetHeight;
                   document.body.style.cursor = 'ns-resize'; document.body.style.userSelect = 'none';
               }
@@ -1732,7 +1711,6 @@
               function endDrag() {
                   if (!dragging) return;
                   dragging = false;
-                  panel.style.transition = '';
                   document.body.style.cursor = ''; document.body.style.userSelect = '';
               }
               grip.addEventListener('mousedown', e => { e.stopPropagation(); startDrag(e.clientY); });
@@ -1860,13 +1838,13 @@
                 let matchSev = true; if (vSev !== 'ALL') matchSev = (getSeverity(i.flags) === vSev);
                 return (vVen==='ALL' || i.vendor===vVen) && (vCit==='ALL' || i.city===vCit) && matchOfs && matchSearch && matchSev;
             });
-            setTxt('kpi-crossings-val', baseFiltered.filter(i => (i.flags || '').includes("ADMIN: CHECK CROSSINGS")).length);
-            setTxt('kpi-status-val', baseFiltered.filter(i => (i.flags || '').includes("STATUS MISMATCH") || (i.flags || '').includes("MISSING QB STATUS")).length);
+            setTxt('kpi-crossings-val', baseFiltered.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS")).length);
+            setTxt('kpi-status-val', baseFiltered.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS")).length);
 
             // Apply admin filter on top for the actual queue list
             let filtered = baseFiltered.filter(i => {
-                if (activeAdminFilter === 'crossings') return (i.flags || '').includes("ADMIN: CHECK CROSSINGS");
-                if (activeAdminFilter === 'status') return (i.flags || '').includes("STATUS MISMATCH") || (i.flags || '').includes("MISSING QB STATUS");
+                if (activeAdminFilter === 'crossings') return i.flags.includes("ADMIN: CHECK CROSSINGS");
+                if (activeAdminFilter === 'status') return i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS");
                 return true;
             });
 
