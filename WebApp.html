@@ -1718,6 +1718,7 @@
               let dragging = false, dragged = false, startY = 0, startH = 0;
               function startDrag(clientY) {
                   if (panel.classList.contains('fullscreen') || panel.classList.contains('minimized')) return;
+                  panel.style.transition = 'none';
                   dragging = true; dragged = false; startY = clientY; startH = panel.offsetHeight;
                   document.body.style.cursor = 'ns-resize'; document.body.style.userSelect = 'none';
               }
@@ -1731,6 +1732,7 @@
               function endDrag() {
                   if (!dragging) return;
                   dragging = false;
+                  panel.style.transition = '';
                   document.body.style.cursor = ''; document.body.style.userSelect = '';
               }
               grip.addEventListener('mousedown', e => { e.stopPropagation(); startDrag(e.clientY); });
@@ -1858,13 +1860,13 @@
                 let matchSev = true; if (vSev !== 'ALL') matchSev = (getSeverity(i.flags) === vSev);
                 return (vVen==='ALL' || i.vendor===vVen) && (vCit==='ALL' || i.city===vCit) && matchOfs && matchSearch && matchSev;
             });
-            setTxt('kpi-crossings-val', baseFiltered.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS")).length);
-            setTxt('kpi-status-val', baseFiltered.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS")).length);
+            setTxt('kpi-crossings-val', baseFiltered.filter(i => (i.flags || '').includes("ADMIN: CHECK CROSSINGS")).length);
+            setTxt('kpi-status-val', baseFiltered.filter(i => (i.flags || '').includes("STATUS MISMATCH") || (i.flags || '').includes("MISSING QB STATUS")).length);
 
             // Apply admin filter on top for the actual queue list
             let filtered = baseFiltered.filter(i => {
-                if (activeAdminFilter === 'crossings') return i.flags.includes("ADMIN: CHECK CROSSINGS");
-                if (activeAdminFilter === 'status') return i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS");
+                if (activeAdminFilter === 'crossings') return (i.flags || '').includes("ADMIN: CHECK CROSSINGS");
+                if (activeAdminFilter === 'status') return (i.flags || '').includes("STATUS MISMATCH") || (i.flags || '').includes("MISSING QB STATUS");
                 return true;
             });
 
