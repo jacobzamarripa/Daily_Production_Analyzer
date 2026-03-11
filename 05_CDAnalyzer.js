@@ -342,3 +342,78 @@ function clearCDSheet() {
   }
   ui.alert("Sheet cleared.");
 }
+
+function generateAndSaveFDHNarrative(payload) {
+  const apiKey = PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
+  if (!apiKey) throw new Error("API Key not found. Please add GEMINI_API_KEY in Script Properties.");
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  
+  const prompt = `Act as a practical Outside Plant (OSP) Project Manager providing a clear, narrative status update for a fiber construction project. Read the provided daily data and write a concise, 2-3 sentence summary.
+  
+  Rules for the summary:
+  1. DO NOT include the FDH ID or project name. (We already know which project this is).
+  2. Focus on the actual progress and any clear blockers based on the data.
+  3. Translate construction acronyms into plain English (e.g., instead of "AE/UG/FIB/NAP", use "aerial", "underground", "fiber placement", or "splicing"). You MUST keep and use the term "BOM".
+  4. Handling BOMs and Scope:
+     - If the BOM is missing entirely, simply request that the BOM be entered into QuickBase so progress can be accurately tracked.
+     - If reported production significantly exceeds the BOM, note it as a potential scope change or field reroute that needs verification with the vendor.
+     - Ignore minor data discrepancies; do not over-analyze or invent hypothetical field scenarios (e.g., do not guess why a reroute happened).
+  5. Synthesize the system flags and the vendor's notes into one smooth update.
+  6. Do not use conversational filler like "Here is the update" or "The data shows". 
+  7. If the project is progressing normally without blockers, state that clearly and simply.
+  
+  Project Data:
+  ${JSON.stringify(payload, null, 2)}`;
+
+  const data = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.2 }
+  };
+
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(data),
+    muteHttpExceptions: true
+  };
+
+  const response = UrlFetchApp.fetch(url, options);
+  if (response.getResponseCode() !== 200) throw new Error("Gemini API Error: " + response.getContentText());
+  
+  const json = JSON.parse(response.getContentText());
+  const insightText = json.candidates[0].content.parts[0].text.trim();
+  
+  // Save to Admin_Logs for persistence
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let adminSheet = ss.getSheetByName("Admin_Logs");
+  
+  let headers = adminSheet.getRange(1, 1, 1, adminSheet.getMaxColumns()).getValues()[0];
+  let fdhIdx = headers.indexOf("FDH Engineering ID");
+  let insightIdx = headers.indexOf("Gemini Insight");
+  let dateIdx = headers.indexOf("Gemini Insight Date");
+  
+  // Auto-create columns in Admin_Logs if they don't exist yet
+  if (insightIdx === -1) { insightIdx = headers.filter(String).length; adminSheet.getRange(1, insightIdx + 1).setValue("Gemini Insight"); }
+  if (dateIdx === -1) { dateIdx = headers.filter(String).length; adminSheet.getRange(1, dateIdx + 1).setValue("Gemini Insight Date"); }
+  
+  let adminData = adminSheet.getDataRange().getValues();
+  let dateStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy hh:mm a");
+  let found = false;
+  
+  for (let i = 1; i < adminData.length; i++) {
+      if (adminData[i][fdhIdx].toString().toUpperCase() === payload.fdh.toUpperCase()) {
+          adminSheet.getRange(i + 1, insightIdx + 1).setValue(insightText);
+          adminSheet.getRange(i + 1, dateIdx + 1).setValue(dateStr);
+          found = true; break;
+      }
+  }
+  if (!found) {
+      let newRow = new Array(Math.max(headers.length, dateIdx + 1)).fill("");
+      newRow[fdhIdx] = payload.fdh.toUpperCase(); newRow[insightIdx] = insightText; newRow[dateIdx] = dateStr;
+      adminSheet.appendRow(newRow);
+  }
+  
+  CacheService.getScriptCache().remove('dashboard_data_cache');
+  return { text: insightText, date: dateStr };
+}

@@ -102,37 +102,29 @@ function exportInboxReviewsCSV() {
 }
 
 function getDashboardData() {
-  // 30-minute server-side cache — skips sheet read on warm loads
-  const CACHE_KEY = 'dashboard_data_cache';
+  const CACHE_KEY = 'dashboard_data_cache_v6'; // 🧠 CHANGE THIS TO v6
   const cache = CacheService.getScriptCache();
   const cached = cache.get(CACHE_KEY);
-  if (cached) { try { return JSON.parse(cached); } catch(e) { /* fall through to live read */ } }
+  if (cached) { try { return JSON.parse(cached); } catch(e) {} }
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
   if (!mirrorSheet || mirrorSheet.getLastRow() < 2) return { actionItems: [], totalRows: 0, headers: [] };
+  const refDict = getReferenceDictionary();
 
   const data = mirrorSheet.getDataRange().getValues();
-  const headers = data[0];
+  const headers = data[0].map(String); // Force strings
 
   const getIdx = name => headers.indexOf(name);
   const fdhIdx = getIdx("FDH Engineering ID"), flagsIdx = getIdx("Health Flags"), draftIdx = getIdx("Action Required");
   const vendorIdx = getIdx("Contractor"), statusIdx = getIdx("Status"), cityIdx = getIdx("City"), stageIdx = getIdx("Stage");
-  const ofsIdx = getIdx("Forecasted OFS"), benchIdx = getIdx("Historical Milestones"), dateIdx = getIdx("Date");
+  const ofsIdx = getIdx("Budget OFS"), benchIdx = getIdx("Historical Milestones"), dateIdx = getIdx("Date");
   const targetIdx = getIdx("Target Completion Date"), cxStartIdx = getIdx("CX Start"), cxEndIdx = getIdx("CX Complete");
   const xingIdx = getIdx("QB Context & Gaps"), bslsIdx = getIdx("BSLs"), lightIdx = getIdx("Light to Cabinets");
-  const cdIntelIdx = getIdx("CD Intelligence");
-  const specXIdx    = getIdx("Special Crossings?");
-  const specXDetIdx = (() => {
-    let i = headers.indexOf("Special Crossing Details");
-    if (i > -1) return i;
-    return headers.indexOf("Sepcial Crossings Details");
-  })();
-
-  // 🧠 Grab Vendor Comment
-  const vcIdx1 = getIdx("Vendor Comment");
-  const vcIdx2 = getIdx("Construction Comments");
-  const vcIdx = vcIdx1 > -1 ? vcIdx1 : vcIdx2;
+  const cdIntelIdx = getIdx("CD Intelligence"), geminiInsightIdx = getIdx("Gemini Insight"), geminiDateIdx = getIdx("Gemini Insight Date");
+  const specXIdx = getIdx("Special Crossings?");
+  const specXDetIdx = (() => { let i = headers.indexOf("Special Crossing Details"); return i > -1 ? i : headers.indexOf("Sepcial Crossings Details"); })();
+  const vcIdx = getIdx("Vendor Comment") > -1 ? getIdx("Vendor Comment") : getIdx("Construction Comments");
 
   const ugTotIdx = getIdx("Total UG Footage Completed"), ugBomIdx = getIdx("UG BOM Quantity"), ugDailyIdx = getIdx("Daily UG Footage");
   const aeTotIdx = getIdx("Total Strand Footage Complete?"), aeBomIdx = getIdx("Strand BOM Quantity"), aeDailyIdx = getIdx("Daily Strand Footage");
@@ -140,62 +132,120 @@ function getDashboardData() {
   const napTotIdx = getIdx("Total NAPs Completed"), napBomIdx = getIdx("NAP/Encl. BOM Qty."), napDailyIdx = getIdx("Daily NAPs/Encl. Completed");
 
   const parseNum = (val) => {
-      if (val === null || val === undefined || val === "") return 0;
+      if (val == null || val === "") return 0;
       if (typeof val === 'number') return val;
-      let cleanStr = String(val).split('(')[0].replace(/,/g, '').trim();
-      let match = cleanStr.match(/-?\d+(\.\d+)?/);
+      let match = String(val).split('(')[0].replace(/,/g, '').trim().match(/-?\d+(\.\d+)?/);
       return match ? Number(match[0]) : 0;
   };
 
   let actionItems = [];
 
   for (let i = 1; i < data.length; i++) {
-     let flags = data[i][flagsIdx] || "";
+     let flags = data[i][flagsIdx] ? String(data[i][flagsIdx]) : "";
      let stageStr = stageIdx > -1 ? String(data[i][stageIdx]).toUpperCase() : "";
      let statStr = statusIdx > -1 ? String(data[i][statusIdx]).toUpperCase() : "";
+     let fdhKey = fdhIdx > -1 ? String(data[i][fdhIdx] || "").trim().toUpperCase() : "";
+     let refData = refDict[fdhKey] || null;
 
      if (flags !== "" && !flags.includes("✅ No Anomalies") && !flags.includes("COMPLETE") && !stageStr.includes("OFS") && !statStr.includes("OPEN FOR SALE")) {
          const parseDate = (val) => val ? ((val instanceof Date) ? Utilities.formatDate(val, "GMT-5", "MM-dd-yyyy") : String(val).split('T')[0]) : "";
-         // Phase 1B/1C: use ISO strings (no Utilities.formatDate per-cell); strip empty cells as {h,v} pairs
+         
+         // 🧠 FIX: Ensure no Date objects make it into the raw row
          let safeRawRow = data[i]
-             .map((cell, idx) => ({ h: headers[idx], v: (cell instanceof Date) ? cell.toISOString() : cell }))
-             .filter(({ v }) => v !== null && v !== undefined && v !== '');
+             .map((cell, idx) => ({ h: headers[idx], v: (cell instanceof Date) ? cell.toISOString() : String(cell || "") }))
+             .filter(({ v }) => v !== '');
 
          actionItems.push({
-             fdh: fdhIdx > -1 ? data[i][fdhIdx] : "", vendor: vendorIdx > -1 ? data[i][vendorIdx] : "", city: cityIdx > -1 ? data[i][cityIdx] : "",
-             stage: stageIdx > -1 ? data[i][stageIdx] : "", status: statusIdx > -1 ? data[i][statusIdx] : "", bsls: bslsIdx > -1 ? data[i][bslsIdx] : "-",
+             fdh: fdhIdx > -1 ? String(data[i][fdhIdx] || "") : "", 
+             vendor: vendorIdx > -1 ? String(data[i][vendorIdx] || "") : "", 
+             city: cityIdx > -1 ? String(data[i][cityIdx] || "") : "",
+             stage: stageIdx > -1 ? String(data[i][stageIdx] || "") : "", 
+             status: statusIdx > -1 ? String(data[i][statusIdx] || "") : "", 
+             bsls: bslsIdx > -1 ? String(data[i][bslsIdx] || "-") : "-",
              isLight: lightIdx > -1 ? (data[i][lightIdx] === true || String(data[i][lightIdx]).toLowerCase() === 'true') : false,
-             ofsDate: parseDate(ofsIdx > -1 ? data[i][ofsIdx] : ""), reportDate: parseDate(dateIdx > -1 ? data[i][dateIdx] : ""), targetDate: parseDate(targetIdx > -1 ? data[i][targetIdx] : ""),
-             cxStart: parseDate(cxStartIdx > -1 ? data[i][cxStartIdx] : ""), cxEnd: parseDate(cxEndIdx > -1 ? data[i][cxEndIdx] : ""),
-             isXing: xingIdx > -1 && String(data[i][xingIdx]).includes("X-ING YES"), gaps: xingIdx > -1 ? String(data[i][xingIdx]) : "", flags: flags, draft: draftIdx > -1 ? data[i][draftIdx] : "", bench: benchIdx > -1 ? data[i][benchIdx] : "",
-
-             // 🧠 Pass the Vendor Comment, CD Intelligence, and Special Crossings columns
-             vendorComment: vcIdx > -1 ? data[i][vcIdx] : "",
+             ofsDate: parseDate(ofsIdx > -1 ? data[i][ofsIdx] : ""), 
+             reportDate: parseDate(dateIdx > -1 ? data[i][dateIdx] : ""), 
+             targetDate: parseDate(targetIdx > -1 ? data[i][targetIdx] : ""),
+             cxStart: parseDate(cxStartIdx > -1 ? data[i][cxStartIdx] : ""), 
+             cxEnd: parseDate(cxEndIdx > -1 ? data[i][cxEndIdx] : ""),
+             isXing: xingIdx > -1 && String(data[i][xingIdx]).includes("X-ING YES"), 
+             gaps: xingIdx > -1 ? String(data[i][xingIdx] || "") : "", 
+             flags: flags, 
+             draft: draftIdx > -1 ? String(data[i][draftIdx] || "") : "", 
+             bench: benchIdx > -1 ? String(data[i][benchIdx] || "") : "",
+             vendorComment: vcIdx > -1 ? String(data[i][vcIdx] || "") : "",
              cdIntel: cdIntelIdx > -1 ? String(data[i][cdIntelIdx] || "").trim() : "",
-             rawSpecialX:  specXIdx    > -1 ? String(data[i][specXIdx]    || "").trim() : "",
+             geminiInsight: geminiInsightIdx > -1 ? String(data[i][geminiInsightIdx] || "").trim() : "",
+             geminiDate: geminiDateIdx > -1 ? String(data[i][geminiDateIdx] || "").trim() : "",
+             rawSpecialX:  specXIdx > -1 ? String(data[i][specXIdx] || "").trim() : "",
              specXDetails: specXDetIdx > -1 ? String(data[i][specXDetIdx] || "").trim() : "",
-
+             rid: refData ? String(refData.rid || "") : "",
+             hasBOMDel: refData ? refData.hasBOMDel : false,
+             hasSpliceDel: refData ? refData.hasSpliceDel : false,
+             hasStandDel: refData ? refData.hasStandDel : false,
+             hasCDDel: refData ? refData.hasCDDel : false,
+             hasSpliceDist: refData ? refData.hasSpliceDist : false,
+             hasStrandDist: refData ? refData.hasStrandDist : false,
+             hasCDDist: refData ? refData.hasCDDist : false,
+             hasBOMPo: refData ? refData.hasBOMPo : false,
+             hasSOW: refData ? refData.hasSOW : false,
              vel: {
                  ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },
                  ae: { tot: parseNum(data[i][aeTotIdx]), bom: parseNum(data[i][aeBomIdx]), daily: parseNum(data[i][aeDailyIdx]) },
                  fib: { tot: parseNum(data[i][fibTotIdx]), bom: parseNum(data[i][fibBomIdx]), daily: parseNum(data[i][fibDailyIdx]) },
                  nap: { tot: parseNum(data[i][napTotIdx]), bom: parseNum(data[i][napBomIdx]), daily: parseNum(data[i][napDailyIdx]) }
              },
-             rawRow: safeRawRow, rowNum: i + 1
+             rawRow: safeRawRow, 
+             rowNum: i + 1
          });
      }
   }
-  // Read reference data import date (set by importReferenceData() in 01_Engine.js)
-  let refDataDate = PropertiesService.getScriptProperties().getProperty('refDataImportDate') || "";
 
+  let refDataDate = String(PropertiesService.getScriptProperties().getProperty('refDataImportDate') || "");
   let payload = { actionItems: actionItems, totalRows: data.length - 1, headers: headers, refDataDate: refDataDate };
   try { cache.put(CACHE_KEY, JSON.stringify(payload), 1800); } catch(e) {}
   return payload;
 }
 
-function promptLoadSpecificDateToQB() { const ui = SpreadsheetApp.getUi(); const response = ui.prompt('Load QuickBase Tab', 'Enter the date to load (YYYY-MM-DD):', ui.ButtonSet.OK_CANCEL); if (response.getSelectedButton() === ui.Button.OK) populateQuickBaseTabCore(response.getResponseText().trim()); }
+function promptLoadSpecificDateToQB() { 
+  const ui = SpreadsheetApp.getUi(); 
+  const response = ui.prompt(
+    'Load QuickBase Tab', 
+    'Enter the date to load (YYYY-MM-DD or M/D/YYYY)\n\nLeave this box completely BLANK to automatically run yesterday.', 
+    ui.ButtonSet.OK_CANCEL
+  ); 
+  
+  if (response.getSelectedButton() === ui.Button.OK) {
+    let dateStr = response.getResponseText().trim();
+    // If blank, default to yesterday
+    if (dateStr === "") {
+      let d = new Date();
+      d.setDate(d.getDate() - 1);
+      dateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd");
+    }
+    populateQuickBaseTabCore(dateStr); 
+  }
+}
 function promptExportQuickBaseCSV() { exportQuickBaseCSVCore(false); }
-function promptGenerateDailyReview() { const ui = SpreadsheetApp.getUi(); const response = ui.prompt('Generate Daily Review', 'Enter the date to review (YYYY-MM-DD):', ui.ButtonSet.OK_CANCEL); if (response.getSelectedButton() === ui.Button.OK) generateDailyReviewCore(response.getResponseText().trim(), null, false); }
+function promptGenerateDailyReview() { 
+  const ui = SpreadsheetApp.getUi(); 
+  const response = ui.prompt(
+    'Generate Daily Review', 
+    'Enter the date to review (YYYY-MM-DD or M/D/YYYY)\n\nLeave this box completely BLANK to automatically run yesterday.', 
+    ui.ButtonSet.OK_CANCEL
+  ); 
+  
+  if (response.getSelectedButton() === ui.Button.OK) {
+    let dateStr = response.getResponseText().trim();
+    // If blank, default to yesterday
+    if (dateStr === "") {
+      let d = new Date();
+      d.setDate(d.getDate() - 1);
+      dateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd");
+    }
+    generateDailyReviewCore(dateStr, null, false); 
+  }
+}
 function importArchiveFolder() { const keys = getExistingKeys(); const refDict = getReferenceDictionary(); processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null); SpreadsheetApp.getUi().alert("✅ Master Archive Updated."); }
 function setupDailyTrigger() { const triggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < triggers.length; i++) ScriptApp.deleteTrigger(triggers[i]); ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(12).everyDays(1).create(); ScriptApp.newTrigger('moveIncomingFoldersToArchive').timeBased().atHour(0).everyDays(1).create(); SpreadsheetApp.getUi().alert("✅ Daily Automations Enabled."); }
 function runMiddayAutomation() { logMsg("🤖 STARTING MIDDAY AUTOMATION..."); setupSheets(); const keys = getExistingKeys(); const refDict = getReferenceDictionary(); let rowCollector = []; processFolderRecursive(DriveApp.getFolderById(INCOMING_FOLDER_ID), keys, refDict, "", false, rowCollector); let targetDateStr = Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd"); if (rowCollector.length > 0) { let maxTime = 0; rowCollector.forEach(row => { let d = new Date(row[0]); if (d.getTime() > maxTime) { maxTime = d.getTime(); targetDateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd"); } }); } populateQuickBaseTabCore(targetDateStr); generateDailyReviewCore(targetDateStr, refDict, true); exportDirectorReviewXLSX(true); exportVendorCorrectionsXLSX(true); logMsg(`✅ MIDDAY AUTOMATION COMPLETE for Date: ${targetDateStr}`); }

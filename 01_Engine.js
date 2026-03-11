@@ -116,7 +116,6 @@ function getReferenceDictionary() {
   const refSheet = ss.getSheetByName(REF_SHEET);
   let refDict = {};
   
-  // 🧠 ENHANCED PERSISTENT ADMIN LOGS
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if (!adminSheet) {
     adminSheet = ss.insertSheet("Admin_Logs");
@@ -125,31 +124,40 @@ function getReferenceDictionary() {
     adminSheet.setFrozenRows(1);
     adminSheet.hideSheet();
   }
-  // Ensure 3 columns exist for older sheets
   if (adminSheet.getLastColumn() < 3) adminSheet.getRange(1, 3).setValue("Status Sync Date");
 
   let adminData = adminSheet.getDataRange().getValues();
+  let aHeaders = adminData[0];
+  let aInsightIdx = aHeaders.indexOf("Gemini Insight");
+  let aInsightDateIdx = aHeaders.indexOf("Gemini Insight Date");
+
   let adminDict = {};
   for (let i = 1; i < adminData.length; i++) {
       let fdhKey = adminData[i][0].toString().trim().toUpperCase();
       if (fdhKey) adminDict[fdhKey] = {
           xingDate: adminData[i][1],
-          statusDate: adminData[i][2]
+          statusDate: adminData[i][2],
+          geminiInsight: aInsightIdx > -1 ? adminData[i][aInsightIdx].toString().trim() : "",
+          geminiDate: aInsightDateIdx > -1 ? adminData[i][aInsightDateIdx].toString().trim() : ""
       };
   }
 
   if (refSheet && refSheet.getLastRow() > 1) {
-    let refHeaders = refSheet.getRange(1, 1, 1, refSheet.getLastColumn()).getValues()[0];
-    let fdhIdx = refHeaders.findIndex(h => h.toString().toUpperCase().includes("FDH")); 
+    let refHeaders = refSheet.getRange(1, 1, 1, refSheet.getLastColumn()).getValues()[0].map(String);
+    let fdhIdx = refHeaders.findIndex(h => h.toUpperCase().includes("FDH")); 
     
-    let getIdx = (name) => refHeaders.findIndex(h => h.toString().trim().toUpperCase() === name.toUpperCase());
-    let cityIdx = getIdx("City"), stageIdx = getIdx("Stage"), statusIdx = getIdx("Status"), bslIdx = getIdx("HHPs"); 
-    let ofsIdx = getIdx("Forecasted OFS");
-    let cxStartIdx = getIdx("CX Start"), cxEndIdx = getIdx("CX Complete");
+    // 🧠 FIX: Bulletproof indexing against nulls
+    let getIdx = (name) => refHeaders.findIndex(h => h != null && h.trim().toUpperCase() === name.toUpperCase());
+    
+    let cityIdx = getIdx("City"), stageIdx = getIdx("Stage"), statusIdx = getIdx("Status"), bslIdx = Math.max(getIdx("BSLs"), getIdx("HHPs"), getIdx("BSL")); 
+    let ofsIdx = getIdx("Budget OFS"), cxStartIdx = getIdx("CX Start"), cxEndIdx = getIdx("CX Complete");
     let bomUGIdx = getIdx("UG BOM Qty."), bomAEIdx = getIdx("AE BOM Qty."), bomFIBIdx = getIdx("Fiber BOM Qty."), bomNAPIdx = getIdx("NAPs BOM Qty.");
-    let sowIdx = getIdx("SOW sent"), bomPoIdx = getIdx("BOM & PO sent"), cdIdx = getIdx("CD Distributed"), specXIdx = getIdx("Special Crossings?"), specXDetailsIdx = getIdx("Special Crossing Details");
+    let ridIdx = getIdx("Record ID#"), bomDelIdx = getIdx("BOM in Deliverables"), spliceDelIdx = getIdx("Splice Sheet in Deliverables");
+    let standDelIdx = getIdx("Stand Map in Deliverables"), cdDelIdx = getIdx("CD in Deliverables"), spliceDistIdx = getIdx("Splice Docs Distributed");
+    let strandDistIdx = getIdx("Strand Maps"), cdDistIdx = getIdx("CD Distributed"), bomPoIdx = getIdx("BOM & PO sent"), sowIdx = getIdx("SOW sent");
+    let cdIdx = cdDistIdx, specXIdx = getIdx("Special Crossings?"), specXDetailsIdx = getIdx("Special Crossing Details");
 
-    const isChecked = (val) => ["true", "1", "yes", "checked"].includes(val.toString().toLowerCase().trim());
+    const isChecked = (val) => val != null && ["true", "1", "yes", "checked"].includes(String(val).toLowerCase().trim());
     const safeDate = (val) => {
         if (!val) return "";
         if (val instanceof Date) return Utilities.formatDate(val, "GMT-5", "MM/dd/yyyy");
@@ -161,13 +169,13 @@ function getReferenceDictionary() {
     if (fdhIdx > -1) {
       let refData = refSheet.getRange(2, 1, refSheet.getLastRow() - 1, refSheet.getLastColumn()).getValues();
       refData.forEach(r => {
-         let f = r[fdhIdx].toString().trim().toUpperCase();
-         let xingVal = specXIdx > -1 ? (r[specXIdx] || "").toString().trim() : "";
+         let f = r[fdhIdx] != null ? String(r[fdhIdx]).trim().toUpperCase() : "";
+         let xingVal = specXIdx > -1 ? String(r[specXIdx] || "").trim() : "";
          if (f) refDict[f] = { 
-           city: cityIdx > -1 ? r[cityIdx].toString() : "-", 
-           stage: stageIdx > -1 ? r[stageIdx].toString() : "-", 
-           status: statusIdx > -1 ? r[statusIdx].toString() : "-", 
-           bsls: bslIdx > -1 ? r[bslIdx].toString() : "-",
+           city: cityIdx > -1 ? String(r[cityIdx] || "-") : "-", 
+           stage: stageIdx > -1 ? String(r[stageIdx] || "-") : "-", 
+           status: statusIdx > -1 ? String(r[statusIdx] || "-") : "-", 
+           bsls: bslIdx > -1 ? String(r[bslIdx] || "-") : "-",
            forecastedOFS: ofsIdx > -1 ? safeDate(r[ofsIdx]) : "-",
            cxStart: cxStartIdx > -1 ? safeDate(r[cxStartIdx]) : "",
            cxComplete: cxEndIdx > -1 ? safeDate(r[cxEndIdx]) : "",
@@ -175,15 +183,25 @@ function getReferenceDictionary() {
            aeBOM: bomAEIdx > -1 ? Number(r[bomAEIdx]) || 0 : 0,
            fibBOM: bomFIBIdx > -1 ? Number(r[bomFIBIdx]) || 0 : 0, 
            napBOM: bomNAPIdx > -1 ? Number(r[bomNAPIdx]) || 0 : 0,
+           rid: ridIdx > -1 ? String(r[ridIdx] || "").trim() : "",
            hasSOW: sowIdx > -1 ? isChecked(r[sowIdx]) : true, 
            hasBOM: bomPoIdx > -1 ? isChecked(r[bomPoIdx]) : true,
            hasCD: cdIdx > -1 ? isChecked(r[cdIdx]) : true, 
+           hasBOMDel: bomDelIdx > -1 ? isChecked(r[bomDelIdx]) : false,
+           hasSpliceDel: spliceDelIdx > -1 ? isChecked(r[spliceDelIdx]) : false,
+           hasStandDel: standDelIdx > -1 ? isChecked(r[standDelIdx]) : false,
+           hasCDDel: cdDelIdx > -1 ? isChecked(r[cdDelIdx]) : false,
+           hasSpliceDist: spliceDistIdx > -1 ? isChecked(r[spliceDistIdx]) : false,
+           hasStrandDist: strandDistIdx > -1 ? isChecked(r[strandDistIdx]) : false,
+           hasCDDist: cdDistIdx > -1 ? isChecked(r[cdDistIdx]) : false,
+           hasBOMPo: bomPoIdx > -1 ? isChecked(r[bomPoIdx]) : false,
            rawSpecialX: xingVal,
            isSpecialX: (xingVal.toLowerCase() === "yes" || xingVal.toLowerCase() === "true"),
-           specXDetails: specXDetailsIdx > -1 ? r[specXDetailsIdx].toString().trim() : "",
-           // Pull both memory dates
+           specXDetails: specXDetailsIdx > -1 ? String(r[specXDetailsIdx] || "").trim() : "",
            adminDate: adminDict[f] ? safeDate(adminDict[f].xingDate) : "",
-           statusSyncDate: adminDict[f] && adminDict[f].statusDate ? safeDate(adminDict[f].statusDate) : ""
+           statusSyncDate: adminDict[f] && adminDict[f].statusDate ? safeDate(adminDict[f].statusDate) : "",
+           geminiInsight: adminDict[f] ? String(adminDict[f].geminiInsight || "") : "",
+           geminiDate: adminDict[f] ? String(adminDict[f].geminiDate || "") : ""
          };
       });
     }
@@ -230,6 +248,12 @@ function parseTrackerPct(val) {
     return num > 1 ? num / 100 : num;
 }
 
+/**
+ * FILE: 01_Engine.gs
+ * Updated: getVendorLiveDictionary
+ * Purpose: Robust extraction of percentages, multiple notes, and milestone dates.
+ */
+
 function getVendorLiveDictionary(refDict) {
   let vendorDict = {};
   let officialFDHs = refDict ? Object.keys(refDict) : [];
@@ -245,50 +269,89 @@ function getVendorLiveDictionary(refDict) {
       
       let headers = [];
       let headerRowIdx = -1;
+      let fdhIdx = -1;
+      
+      // 🧠 FIX: Smarter Header Detection (Don't rely just on "FDH")
       for(let i=0; i<Math.min(10, vData.length); i++){
-        if (vData[i].map(h => h.toString().trim().toUpperCase()).includes("FDH")) { 
+        let rowUpper = vData[i].map(h => h.toString().trim().toUpperCase());
+        if (rowUpper.includes("FDH") || rowUpper.includes("ISSUE DATE") || rowUpper.includes("UNDERGROUND")) { 
             headerRowIdx = i; 
             headers = vData[i].map(h => h.toString().trim()); 
+            
+            fdhIdx = rowUpper.indexOf("FDH");
+            // If the vendor deleted the "FDH" header (like in Bucyrus), default to Column A
+            if (fdhIdx === -1) fdhIdx = 0;
             break; 
         }
       }
       if (headerRowIdx === -1) continue;
       
-      let fdhIdx = headers.findIndex(h => h.toUpperCase() === "FDH");
-      let ugStart = headers.findIndex(h => h.toUpperCase().includes("UNDERGROUND"));
-      let ugPctIdx = ugStart > -1 ? headers.indexOf("% Com.", ugStart) : -1;
-      let aeStart = headers.findIndex(h => h.toUpperCase().includes("AERIAL"));
-      let aePctIdx = aeStart > -1 ? headers.indexOf("% Com.", aeStart) : -1;
-      let fibStart = headers.findIndex(h => h.toUpperCase().includes("FIBER PLACEMENT"));
-      let fibPctIdx = fibStart > -1 ? headers.indexOf("% Com.", fibStart) : -1;
-      let napStart = headers.findIndex(h => h.toUpperCase().includes("SPLICING"));
-      let napPctIdx = napStart > -1 ? headers.indexOf("% Com.", napStart) : -1;
-      let notesIdx = headers.findIndex(h => h.toUpperCase() === "NOTES");
+      const findFlexiblePctCol = (colKeywordsArray) => {
+          return headers.findIndex(h => {
+              let hUpper = h.toUpperCase();
+              let containsAllKeywords = colKeywordsArray.every(kw => hUpper.includes(kw));
+              let containsPct = hUpper.includes("%") || hUpper.includes("PCT");
+              let containsCom = hUpper.includes("C"); 
+              return containsAllKeywords && containsPct && containsCom;
+          });
+      };
+
+      let ugPctIdx = findFlexiblePctCol(["UG"]);
+      let aePctIdx = findFlexiblePctCol(["AE"]);
+      let fibPctIdx = findFlexiblePctCol(["FIBER"]);
+      let napPctIdx = findFlexiblePctCol(["NAP"]);
+      
+      let cabSetIdx = headers.findIndex(h => h.toUpperCase().includes("CABINET SET"));
+      let locIdx = headers.findIndex(h => h.toUpperCase().includes("LOCATE"));
+
+      let noteIndices = [];
+      headers.forEach((h, idx) => { if (h.toUpperCase().includes("NOTE")) noteIndices.push(idx); });
 
       for (let i = headerRowIdx + 1; i < vData.length; i++) {
          let rawFdh = vData[i][fdhIdx] ? vData[i][fdhIdx].toString().trim().toUpperCase() : "";
          if (!rawFdh) continue;
          let finalFdh = rawFdh;
-         let matched = attemptFuzzyMatch(rawFdh, officialFDHs);
-         if (matched) finalFdh = matched;
-         else if (officialFDHs.length > 0) {
-             let fMatch = rawFdh.match(/F0*(\d+)/i);
-             if (fMatch) {
-                 let fNum = fMatch[1];
-                 let candidates = officialFDHs.filter(k => k.match(new RegExp(`F0*${fNum}$`)));
-                 for (let c of candidates) {
-                     let cCity = (refDict[c].city || "").toUpperCase().trim();
-                     if (cCity && cCity !== "-" && sheetName.includes(cCity)) { finalFdh = c; break; }
-                 }
+         
+         // 🧠 NEW: Advanced Triangulation Matching
+         let matched = attemptFuzzyMatch(rawFdh, officialFDHs, sheetName, refDict);
+         if (matched) {
+             finalFdh = matched;
+         }
+         
+         let combinedNotes = noteIndices
+             .map(idx => vData[i][idx].toString().trim())
+             .filter(n => n !== "")
+             .join(" | ");
+
+         let milestonesStr = "";
+         let milestonesArr = [];
+
+         if (cabSetIdx > -1) {
+             let cabVal = vData[i][cabSetIdx];
+             if (cabVal && cabVal.toString().trim() !== "" && cabVal.toString().trim() !== "FALSE") {
+                 let dateFormatted = cabVal instanceof Date ? Utilities.formatDate(cabVal, "GMT-5", "M/d") : cabVal;
+                 milestonesArr.push(`Cab Set: ${dateFormatted}`);
              }
          }
          
+         if (locIdx > -1) {
+             let locVal = vData[i][locIdx];
+             if (locVal && locVal.toString().trim() !== "" && locVal.toString().trim() !== "FALSE") {
+                 let dateFormatted = locVal instanceof Date ? Utilities.formatDate(locVal, "GMT-5", "M/d") : locVal;
+                 milestonesArr.push(`Locates: ${dateFormatted}`);
+             }
+         }
+
+         if (milestonesArr.length > 0) milestonesStr = `[${milestonesArr.join(" • ")}] `;
+
+         let finalTrackerNote = (milestonesStr + combinedNotes).trim();
+
          vendorDict[finalFdh] = { 
              ugPct: ugPctIdx > -1 ? parseTrackerPct(vData[i][ugPctIdx]) : 0,
              aePct: aePctIdx > -1 ? parseTrackerPct(vData[i][aePctIdx]) : 0,
              fibPct: fibPctIdx > -1 ? parseTrackerPct(vData[i][fibPctIdx]) : 0,
              napPct: napPctIdx > -1 ? parseTrackerPct(vData[i][napPctIdx]) : 0,
-             notes: notesIdx > -1 ? vData[i][notesIdx].toString().trim() : ""
+             notes: finalTrackerNote
          };
       }
     }
@@ -299,17 +362,45 @@ function getVendorLiveDictionary(refDict) {
 
 // --- 2. LOGIC & MATCHING ---
 
-function attemptFuzzyMatch(badId, officialKeys) {
-  let match = badId.match(/^([A-Z]{3}).*?F0*(\d+)/i);
-  if (!match) return null;
-  let market = match[1].toUpperCase();
-  let fNumInt = match[2]; 
-  let candidates = officialKeys.filter(dbKey => {
-      let dbMatch = dbKey.match(/^([A-Z]{3}).*?F0*(\d+)/i);
-      if (dbMatch) return dbMatch[1].toUpperCase() === market && dbMatch[2] === fNumInt;
-      return false;
+function attemptFuzzyMatch(badId, officialKeys, optionalCityContext = null, refDict = null) {
+  if (!badId) return null;
+  let cleanId = badId.toString().toUpperCase().trim();
+
+  // 1. Extract the F-Number
+  let fMatch = cleanId.match(/F[- ]*0*(\d+)/);
+  if (!fMatch) return null;
+  let fNum = fMatch[1]; 
+
+  // 2. Extract Market Prefix
+  let mMatch = cleanId.match(/^([A-Z]{3})/);
+  let marketPrefix = mMatch ? mMatch[1] : null;
+
+  // 3. Find candidates sharing the exact F-Number
+  let candidates = officialKeys.filter(k => {
+      let kMatch = k.match(/F[- ]*0*(\d+)$/);
+      return kMatch && kMatch[1] === fNum;
   });
-  if (candidates.length === 1) return candidates[0]; 
+
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0];
+
+  // 4. Triangulate with Market Prefix
+  if (marketPrefix) {
+      let marketCandidates = candidates.filter(k => k.startsWith(marketPrefix));
+      if (marketCandidates.length === 1) return marketCandidates[0];
+      if (marketCandidates.length > 1) candidates = marketCandidates; 
+  }
+
+  // 5. Triangulate with City Context (Saves "F-23" based on Sheet Tab Name)
+  if (optionalCityContext && refDict) {
+      let safeContext = optionalCityContext.toUpperCase().replace(/[^A-Z]/g, '');
+      let cityCandidates = candidates.filter(k => {
+          let city = (refDict[k] && refDict[k].city) ? refDict[k].city.toUpperCase().replace(/[^A-Z]/g, '') : "";
+          return city && (safeContext.includes(city) || city.includes(safeContext));
+      });
+      if (cityCandidates.length === 1) return cityCandidates[0];
+  }
+
   return null;
 }
 
@@ -828,8 +919,24 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   
   histData.forEach((row, idx) => {
     if (idx === 0) return; 
-    let rowDate = (row[0] instanceof Date) ? Utilities.formatDate(row[0], "GMT-5", "yyyy-MM-dd") : String(row[0]).split("T")[0].trim();
-    if (rowDate === targetDateStr || Utilities.formatDate(new Date(rowDate), "GMT-5", "M/d/yyyy") === targetDateStr) {
+    
+    // ⚡ PERFORMANCE FIX: Fast native JS date string matching
+    let rowDateStr = "";
+    let altDateStr = "";
+    if (row[0] instanceof Date) {
+        let d = row[0];
+        let yr = d.getFullYear();
+        let mo = String(d.getMonth() + 1).padStart(2, '0');
+        let day = String(d.getDate()).padStart(2, '0');
+        rowDateStr = `${yr}-${mo}-${day}`;
+        altDateStr = `${d.getMonth() + 1}/${d.getDate()}/${yr}`;
+    } else {
+        rowDateStr = String(row[0]).split("T")[0].trim();
+        let parts = rowDateStr.split('-');
+        if (parts.length === 3) altDateStr = `${parseInt(parts[1])}/${parseInt(parts[2])}/${parts[0]}`;
+    }
+    
+    if (rowDateStr === targetDateStr || altDateStr === targetDateStr) {
       let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")].toString().toUpperCase().trim();
       let diag = runBennyDiagnostics(row, refDict, vendorDict); 
       
@@ -847,13 +954,11 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           benchmarkDict[fdhId] = benchmarkDict[fdhId].replace(/NAP: Pending \[Possible Reroute\]/g, "NAP: Pending [Scope Deviation]");
       }
 
-      let cdIntelText = ""; // 🧠 Create an empty bucket for the row
-      
-      // 🧠 INJECT CD AI INTELLIGENCE HERE
+      let cdIntelText = ""; 
       if (xingsDict[fdhId]) {
           let cdData = xingsDict[fdhId];
           if (cdData.summary !== "") {
-              cdIntelText = cdData.summary; // Store it separately, don't mix into draft
+              cdIntelText = cdData.summary; 
           }
           if (cdData.highway && cdData.highway.toLowerCase() !== "none" && cdData.highway.trim() !== "") {
               if (diag.flags !== "✅ No Anomalies" && diag.flags !== "") diag.flags += "\n🚧 CD: MAJOR CROSSING RISK";
@@ -878,9 +983,12 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       rowObj["Stage"] = refData ? refData.stage : "-"; 
       rowObj["Status"] = refData ? refData.status : "-"; 
       rowObj["BSLs"] = refData ? refData.bsls : "-";
-      rowObj["Forecasted OFS"] = refData ? refData.forecastedOFS : "-";
+      rowObj["Budget OFS"] = refData ? refData.forecastedOFS : "-";
       rowObj["CX Start"] = refData && refData.cxStart ? refData.cxStart : "";
       rowObj["CX Complete"] = refData && refData.cxComplete ? refData.cxComplete : "";
+      rowObj["CD Intelligence"] = cdIntelText; 
+      rowObj["Gemini Insight"] = refData ? refData.geminiInsight : "";
+      rowObj["Gemini Insight Date"] = refData ? refData.geminiDate : "";
 
       const parseNum = (val) => {
           if (val === null || val === undefined || val === "") return 0;
@@ -945,7 +1053,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       
       rowObj["Health Flags"] = diag.flags; 
       rowObj["Action Required"] = diag.draft;
-      rowObj["CD Intelligence"] = cdIntelText; // 🧠 MAP THE NEW COLUMN HERE 
+      rowObj["CD Intelligence"] = cdIntelText; 
       rowObj["Field Production"] = diag.summary; 
       rowObj["QB Context & Gaps"] = adminGapsStr; 
       rowObj["Historical Milestones"] = benchmarkDict[fdhId] || "No history logged.";
@@ -957,7 +1065,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     }
   });
 
-  if (mirrorSheet.getLastRow() > 1) mirrorSheet.getRange(2,1,mirrorSheet.getLastRow()-1, mirrorSheet.getMaxColumns()).clearContent().clearDataValidations().setBackground(null).setFontColor(null).setFontWeight(null);
+  if (mirrorSheet.getLastRow() > 1) mirrorSheet.getRange(2,1,mirrorSheet.getLastRow()-1, mirrorSheet.getMaxColumns()).clearContent().clearDataValidations().setBackground(null).setFontColor(null).setFontWeight(null).setFontStyle("normal");
   
   if (reviewData.length > 0) {
     ensureCapacity(mirrorSheet, reviewData.length + 1, finalMirrorHeaders.length); 
@@ -981,24 +1089,88 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     let vCommentIdx = finalMirrorHeaders.indexOf("Vendor Comment") + 1;
     let fdhIdx = finalMirrorHeaders.indexOf("FDH Engineering ID") + 1;
     let benchIdx = finalMirrorHeaders.indexOf("Historical Milestones") + 1; 
+
+    // ⚡ PERFORMANCE FIX: 2D Array Batching for Formatting
+    let numRows = highlightsData.length;
+    let numCols = finalMirrorHeaders.length;
+    
+    let bgGrid = Array(numRows).fill().map(() => Array(numCols).fill(null));
+    let colorGrid = Array(numRows).fill().map(() => Array(numCols).fill(null));
+    let weightGrid = Array(numRows).fill().map(() => Array(numCols).fill("normal"));
+    let styleGrid = Array(numRows).fill().map(() => Array(numCols).fill("normal"));
     
     highlightsData.forEach((hData, rIdx) => {
       let rowNum = rIdx + 2;
-      if (fdhIdx > 0) mirrorSheet.getRange(rowNum, fdhIdx).setBackground(null).setFontColor(null).setFontWeight("bold");
-      
+
+      // 1. BASE ROW FORMATTING
       if (hData.rowState !== "ACTIVE") {
         let rTheme = ROW_THEMES[hData.rowState];
-        mirrorSheet.getRange(rowNum, 1, 1, finalMirrorHeaders.length).setBackground(rTheme.bg).setFontColor(rTheme.text).setFontWeight("normal");
+        for (let c = 0; c < numCols; c++) {
+            bgGrid[rIdx][c] = rTheme.bg;
+            colorGrid[rIdx][c] = rTheme.text;
+        }
+        if (hData.rowState === "COMPLETE" && flagsIdx > 0) {
+            styleGrid[rIdx][flagsIdx - 1] = "italic";
+        }
       } else {
         let pillTheme = BENNY_COLORS[hData.adaePaletteIdx];
         if (hData.adaePaletteIdx !== "CLEAN") {
-            mirrorSheet.getRange(rowNum, flagsIdx, 1, 2).setBackground(pillTheme.bg).setFontColor(pillTheme.text).setFontWeight("bold");
-        } else { 
-            mirrorSheet.getRange(rowNum, flagsIdx).setFontColor(BENNY_COLORS.CLEAN.text).setFontWeight("bold"); 
-            mirrorSheet.getRange(rowNum, draftIdx).setFontColor(ROW_THEMES.ACTIVE.text); 
+            if (flagsIdx > 0) { bgGrid[rIdx][flagsIdx - 1] = pillTheme.bg; colorGrid[rIdx][flagsIdx - 1] = pillTheme.text; weightGrid[rIdx][flagsIdx - 1] = "bold"; }
+            if (draftIdx > 0) { bgGrid[rIdx][draftIdx - 1] = pillTheme.bg; colorGrid[rIdx][draftIdx - 1] = pillTheme.text; weightGrid[rIdx][draftIdx - 1] = "bold"; }
+        } else {
+            if (flagsIdx > 0) { colorGrid[rIdx][flagsIdx - 1] = BENNY_COLORS.CLEAN.text; weightGrid[rIdx][flagsIdx - 1] = "bold"; }
+            if (draftIdx > 0) { colorGrid[rIdx][draftIdx - 1] = ROW_THEMES.ACTIVE.text; }
         }
+        
+        // Apply Red/Yellow override colors to specific warning columns
+        const applyColor = (colsArray, paletteColor) => {
+            colsArray.forEach(colName => {
+                let cIdx = finalMirrorHeaders.indexOf(colName);
+                if (cIdx > -1) {
+                    bgGrid[rIdx][cIdx] = paletteColor.bg;
+                    colorGrid[rIdx][cIdx] = paletteColor.text;
+                    weightGrid[rIdx][cIdx] = "bold";
+                }
+            });
+        };
+        applyColor(hData.colors.warn, BENNY_COLORS.RED); 
+        applyColor(hData.colors.mismatch, BENNY_COLORS.YELLOW); 
+        applyColor(hData.colors.ug, BENNY_COLORS.UG); 
+        applyColor(hData.colors.ae, BENNY_COLORS.AE); 
+        applyColor(hData.colors.fib, BENNY_COLORS.FIB); 
+        applyColor(hData.colors.nap, BENNY_COLORS.NAP);
       }
 
+      if (fdhIdx > 0) weightGrid[rIdx][fdhIdx - 1] = "bold";
+      
+      // 2. SPECIFIC CELL FORMATTING FIX (Cognitive Load Fix)
+      if (summaryIdx > 0) {
+          if (hData.summary.includes("No new production")) {
+              colorGrid[rIdx][summaryIdx - 1] = "#a78bfa";
+          } else {
+              if (hData.rowState === "ACTIVE") bgGrid[rIdx][summaryIdx - 1] = "#faf5ff";
+              colorGrid[rIdx][summaryIdx - 1] = "#000000";
+              weightGrid[rIdx][summaryIdx - 1] = "bold";
+          }
+      }
+      
+      if (vCommentIdx > 0 && hData.cleanComment !== "") {
+          if (hData.rowState === "ACTIVE") bgGrid[rIdx][vCommentIdx - 1] = "#fef3c7";
+          colorGrid[rIdx][vCommentIdx - 1] = "#854d0e";
+          weightGrid[rIdx][vCommentIdx - 1] = "bold";
+      }
+      
+      if (benchIdx > 0 && hData.benchmark !== "") {
+          if (hData.rowState === "ACTIVE") bgGrid[rIdx][benchIdx - 1] = "#f8fafc";
+          colorGrid[rIdx][benchIdx - 1] = "#334155";
+      }
+
+      if (gapsIdx > 0 && hData.gaps !== "-") {
+          colorGrid[rIdx][gapsIdx - 1] = "#475569";
+          weightGrid[rIdx][gapsIdx - 1] = "bold";
+      }
+
+      // 3. RICH TEXT APPLICATION (Kept per-cell as it involves string offsets)
       if (flagsIdx > 0 && hData.flags !== "✅ No Anomalies" && hData.flags !== "") {
            let richText = SpreadsheetApp.newRichTextValue().setText(hData.flags);
            let parts = hData.flags.split("\n"), start = 0;
@@ -1015,57 +1187,45 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           colorizeText(richText, hData.draft, "Strand", TEXT_COLORS.AE); 
           colorizeText(richText, hData.draft, "Fiber", TEXT_COLORS.FIB); 
           colorizeText(richText, hData.draft, "NAP", TEXT_COLORS.NAP); 
-          // 🧠 Colorize the new AI note tag
           colorizeText(richText, hData.draft, "\\[CD Intelligence\\]:", "#6b21a8"); 
           mirrorSheet.getRange(rowNum, draftIdx).setRichTextValue(richText.build()); 
       }
       
-      if(summaryIdx > 0) {
-          if (hData.summary.includes("No new production")) {
-              mirrorSheet.getRange(rowNum, summaryIdx).setFontColor("#a78bfa").setFontWeight("normal");
-          } else {
-              let cell = mirrorSheet.getRange(rowNum, summaryIdx); 
-              cell.setBackground("#faf5ff").setFontColor("#000000").setFontWeight("bold");
-              let richText = SpreadsheetApp.newRichTextValue().setText(hData.summary);
-              
-              const styleAfter = (rt, fullText, prefix, defaultColor) => {
-                  let idx = 0;
-                  fullText.split('\n').forEach(line => {
-                      let isComplete = line.includes("★");
-                      let activeColor = isComplete ? TEXT_COLORS.DONE : defaultColor;
+      if(summaryIdx > 0 && !hData.summary.includes("No new production")) {
+          let richText = SpreadsheetApp.newRichTextValue().setText(hData.summary);
+          const styleAfter = (rt, fullText, prefix, defaultColor) => {
+              let idx = 0;
+              fullText.split('\n').forEach(line => {
+                  let isComplete = line.includes("★");
+                  let activeColor = isComplete ? TEXT_COLORS.DONE : defaultColor;
+                  if (line.startsWith(prefix)) {
+                      let style = SpreadsheetApp.newTextStyle().setForegroundColor(activeColor).setBold(true).build();
+                      rt.setTextStyle(idx + prefix.length, idx + line.length, style);
+                  } else if (line.startsWith("[Tracker] " + prefix)) {
+                      let tPrefix = "[Tracker] " + prefix;
+                      let style = SpreadsheetApp.newTextStyle().setForegroundColor(activeColor).setBold(true).build();
+                      rt.setTextStyle(idx + tPrefix.length, idx + line.length, style);
+                      let trkStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#0284c7").setBold(true).build();
+                      rt.setTextStyle(idx, idx + "[Tracker]".length, trkStyle);
+                  }
+                  idx += line.length + 1;
+              });
+          };
+          styleAfter(richText, hData.summary, "UG: ", TEXT_COLORS.UG);
+          styleAfter(richText, hData.summary, "AE: ", TEXT_COLORS.AE);
+          styleAfter(richText, hData.summary, "FIB: ", TEXT_COLORS.FIB);
+          styleAfter(richText, hData.summary, "NAP: ", TEXT_COLORS.NAP);
+          colorizeText(richText, hData.summary, "★", TEXT_COLORS.STAR);
 
-                      if (line.startsWith(prefix)) {
-                          let style = SpreadsheetApp.newTextStyle().setForegroundColor(activeColor).setBold(true).build();
-                          rt.setTextStyle(idx + prefix.length, idx + line.length, style);
-                      } else if (line.startsWith("[Tracker] " + prefix)) {
-                          let tPrefix = "[Tracker] " + prefix;
-                          let style = SpreadsheetApp.newTextStyle().setForegroundColor(activeColor).setBold(true).build();
-                          rt.setTextStyle(idx + tPrefix.length, idx + line.length, style);
-                          let trkStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#0284c7").setBold(true).build();
-                          rt.setTextStyle(idx, idx + "[Tracker]".length, trkStyle);
-                      }
-                      idx += line.length + 1;
-                  });
-              };
-
-              styleAfter(richText, hData.summary, "UG: ", TEXT_COLORS.UG);
-              styleAfter(richText, hData.summary, "AE: ", TEXT_COLORS.AE);
-              styleAfter(richText, hData.summary, "FIB: ", TEXT_COLORS.FIB);
-              styleAfter(richText, hData.summary, "NAP: ", TEXT_COLORS.NAP);
-              colorizeText(richText, hData.summary, "★", TEXT_COLORS.STAR);
-
-              let linkIdx = hData.summary.indexOf("[📡 Tracker Linked]");
-              if (linkIdx > -1) {
-                  let linkStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#64748b").setBold(false).build();
-                  richText.setTextStyle(linkIdx, linkIdx + "[📡 Tracker Linked]".length, linkStyle);
-              }
-              cell.setRichTextValue(richText.build());
+          let linkIdx = hData.summary.indexOf("[📡 Tracker Linked]");
+          if (linkIdx > -1) {
+              let linkStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#64748b").setBold(false).build();
+              richText.setTextStyle(linkIdx, linkIdx + "[📡 Tracker Linked]".length, linkStyle);
           }
+          mirrorSheet.getRange(rowNum, summaryIdx).setRichTextValue(richText.build());
       }
       
       if(vCommentIdx > 0 && hData.cleanComment !== "") {
-          let cell = mirrorSheet.getRange(rowNum, vCommentIdx); 
-          cell.setBackground("#fef3c7").setFontColor("#854d0e").setFontWeight("bold");
           let richText = SpreadsheetApp.newRichTextValue().setText(hData.cleanComment); 
           colorizeText(richText, hData.cleanComment, "UG", TEXT_COLORS.UG); 
           colorizeText(richText, hData.cleanComment, "Strand", TEXT_COLORS.AE); 
@@ -1075,13 +1235,10 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
               let trkStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#0284c7").setBold(true).build();
               richText.setTextStyle(trkNoteIdx, trkNoteIdx + "[Tracker Note]:".length, trkStyle);
           }
-          cell.setRichTextValue(richText.build());
+          mirrorSheet.getRange(rowNum, vCommentIdx).setRichTextValue(richText.build());
       }
       
       if(benchIdx > 0 && hData.benchmark !== "") {
-          let cell = mirrorSheet.getRange(rowNum, benchIdx);
-          cell.setBackground("#f8fafc").setFontColor("#334155").setFontWeight("normal");
-          
           let benchStr = hData.benchmark.replace(/\(100\%\)/g, "(100%) ★");
           let richText = SpreadsheetApp.newRichTextValue().setText(benchStr);
           
@@ -1092,21 +1249,17 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
                       let isComplete = line.includes("(100%)");
                       let isPending = line.includes("Pending");
                       let isReroute = line.includes("[Possible Reroute]") || line.includes("[Scope Deviation]");
-                      
                       let activeColor = isComplete ? TEXT_COLORS.DONE : 
                                         isReroute ? TEXT_COLORS.MISMATCH : 
                                         isPending ? "#94a3b8" : defaultColor;
-
                       let style = SpreadsheetApp.newTextStyle().setForegroundColor(activeColor).setBold(!isPending).build();
                       rt.setTextStyle(idx + prefix.length, idx + line.length, style);
-
                       let prefixStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#000000").setBold(true).build();
                       rt.setTextStyle(idx, idx + prefix.length, prefixStyle);
                   }
                   idx += line.length + 1;
               });
           };
-
           styleBenchLine(richText, benchStr, "UG: ", TEXT_COLORS.UG);
           styleBenchLine(richText, benchStr, "AE: ", TEXT_COLORS.AE);
           styleBenchLine(richText, benchStr, "FIB: ", TEXT_COLORS.FIB);
@@ -1121,30 +1274,27 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           let litIdx = benchStr.indexOf("Lit:");
           if (litIdx > -1) richText.setTextStyle(litIdx, litIdx + 4, labelStyle);
           
-          cell.setRichTextValue(richText.build());
+          mirrorSheet.getRange(rowNum, benchIdx).setRichTextValue(richText.build());
       }
       
       if(gapsIdx > 0 && hData.gaps !== "-") {
-          let cell = mirrorSheet.getRange(rowNum, gapsIdx);
-          cell.setFontColor("#475569").setFontWeight("bold");
           let gRich = SpreadsheetApp.newRichTextValue().setText(hData.gaps);
           let dangerStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#991b1b").setBold(true).build();
           let warnStyle = SpreadsheetApp.newTextStyle().setForegroundColor("#b45309").setBold(true).build();
-          
           let alertIdx = hData.gaps.indexOf("🚨");
           if(alertIdx > -1) gRich.setTextStyle(alertIdx, hData.gaps.length, dangerStyle);
-          
           let warnIdx = hData.gaps.indexOf("⚠️");
           if(warnIdx > -1) gRich.setTextStyle(warnIdx, hData.gaps.length, warnStyle);
-          
-          cell.setRichTextValue(gRich.build());
-      }
-      
-      if (hData.rowState === "ACTIVE") {
-          const applyColor = (colsArray, paletteColor) => { colsArray.forEach(colName => { let cIdx = finalMirrorHeaders.indexOf(colName); if (cIdx > -1) mirrorSheet.getRange(rowNum, cIdx + 1).setBackground(paletteColor.bg).setFontColor(paletteColor.text).setFontWeight("bold"); }); };
-          applyColor(hData.colors.warn, BENNY_COLORS.RED); applyColor(hData.colors.mismatch, BENNY_COLORS.YELLOW); applyColor(hData.colors.ug, BENNY_COLORS.UG); applyColor(hData.colors.ae, BENNY_COLORS.AE); applyColor(hData.colors.fib, BENNY_COLORS.FIB); applyColor(hData.colors.nap, BENNY_COLORS.NAP);
+          mirrorSheet.getRange(rowNum, gapsIdx).setRichTextValue(gRich.build());
       }
     });
+    
+    // ⚡ BATCH WRITE FORMATTING GRIDS (Massive Speedup)
+    let updateRange = mirrorSheet.getRange(2, 1, numRows, numCols);
+    updateRange.setBackgrounds(bgGrid);
+    updateRange.setFontColors(colorGrid);
+    updateRange.setFontWeights(weightGrid);
+    updateRange.setFontStyles(styleGrid);
     
     mirrorSheet.hideColumns(finalMirrorHeaders.indexOf("Archive_Row") + 1);
     try { mirrorSheet.getRange(1, 1, 1, mirrorSheet.getMaxColumns()).shiftColumnGroupDepth(-10); } catch(e){} 
