@@ -582,13 +582,7 @@
       }
       .mobile-nav-row { display: flex; gap: 8px; width: 100%; }
       .mobile-action-row { display: flex; gap: 8px; width: 100%; }
-      @media screen and (max-width: 768px) {
-        .mobile-nav-row .btn, .mobile-action-row .btn { padding: 10px 16px; font-size: 13px; font-weight: 900; min-height: 48px; border-radius: 14px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1); transition: transform 0.15s, box-shadow 0.15s; }
-        .mobile-nav-row .btn:active, .mobile-action-row .btn:active { transform: scale(0.97); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
-        .mobile-action-bar .btn-skip { background: var(--card-bg); color: var(--text-main); }
-        body.dark-mode .mobile-action-bar .btn-skip { background: rgba(60,60,70,0.9); }
-        .mobile-action-bar .btn-primary { background: var(--qb-done); color: #fff; border: none; font-size: 14px; }
-      }
+      /* Dock button styles now in the main mobile media block above */
 
       .swipe-label { position: absolute; top: 24px; padding: 8px 18px; border-radius: 10px; font-size: 18px; font-weight: 900; letter-spacing: 2px; pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 10; border: 3px solid; }
       .swipe-label.commit-label { left: 20px; color: var(--text-muted); border-color: var(--text-muted); transform: rotate(-12deg); }
@@ -597,7 +591,7 @@
       .swipe-peek-pane { display: none; position: fixed; top: 58px; bottom: 0; left: 0; right: 0; padding: 32px 24px; box-sizing: border-box; background: var(--card-bg); pointer-events: none; flex-direction: column; justify-content: center; align-items: center; z-index: 195; }
       #swipe-peek-prev { transform: translateX(-100vw); }
       #swipe-peek-next { transform: translateX(100vw); }
-      @media screen and (max-width: 768px) { .swipe-peek-pane { display: flex; } }
+      /* swipe-peek-pane deprecated — hidden in main mobile block */
 
       .mobile-outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 290; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
       .mobile-outbox-overlay.open { display: block; }
@@ -670,75 +664,226 @@
       }
 
 
-      /* 📱 PORTRAIT MOBILE */
+      /* ============================================================
+         📱 PORTRAIT MOBILE — iPhone 17 Pro Clean Slate
+         ============================================================ */
       @media screen and (max-width: 768px) {
-          /* NAV: brand + hamburger only; hide desktop action buttons */
-          .top-nav { padding: 0 16px; height: 58px; gap: 4px !important; }
+
+          /* --- Design Tokens (mobile overrides) --- */
+          :root {
+              --r-module: 30px;
+              --dock-bg: rgba(255,255,255,0.78);
+              --dock-border: rgba(255,255,255,0.42);
+              --sheet-overlay-bg: rgba(0,0,0,0.15);
+          }
+          body.dark-mode {
+              --dock-bg: rgba(16,16,20,0.84);
+              --dock-border: rgba(255,255,255,0.1);
+          }
+
+          /* --- Navigation Header: heavy blur glass --- */
+          .top-nav {
+              padding: 0 16px;
+              height: 58px;
+              gap: 4px !important;
+              backdrop-filter: blur(20px) !important;
+              -webkit-backdrop-filter: blur(20px) !important;
+              background: color-mix(in srgb, var(--card-bg) 80%, transparent) !important;
+              border-bottom: 1px solid var(--border) !important;
+          }
           .nav-brand { display: flex !important; }
           .kpi-nav-container { display: none; }
-
           #btn-qb-sync, #btn-run-review, #btn-refresh, #btn-theme, #btn-help { display: none; }
           .mobile-menu-toggle { display: flex !important; }
-          #search-input { font-size: 16px !important; height: 44px !important; width: 100% !important; flex-shrink: 0 !important; background: rgba(0,0,0,0.05) !important; border-radius: 10px !important; margin-bottom: 4px !important; }
-          .filter-strip { position: sticky !important; top: 6px !important; background: var(--card-bg) !important; flex-direction: column !important; height: auto !important; max-height: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; padding: 0 12px !important; border-bottom: none !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; border-radius: 0 !important; align-items: stretch !important; justify-content: flex-start !important; }
+          #btn-hamburger { font-size: 20px; padding: 10px 12px; min-width: 44px; min-height: 44px; }
+          #search-input {
+              font-size: 16px !important; height: 44px !important;
+              width: 100% !important; flex-shrink: 0 !important;
+              background: rgba(0,0,0,0.05) !important;
+              border-radius: 12px !important; margin-bottom: 4px !important;
+          }
+          .filter-strip {
+              position: sticky !important; top: 6px !important;
+              background: color-mix(in srgb, var(--card-bg) 92%, transparent) !important;
+              backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important;
+              flex-direction: column !important; height: auto !important;
+              max-height: 0; overflow: hidden;
+              transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+              padding: 0 12px !important; border-bottom: none !important;
+              width: 100% !important; max-width: 100% !important;
+              margin: 0 !important; border-radius: 0 !important;
+              align-items: stretch !important; justify-content: flex-start !important;
+          }
           .filter-strip.hidden { display: flex !important; }
           .filter-strip:not(.hidden) { max-height: 200px; padding: 12px !important; border-bottom: 1px solid var(--border) !important; }
           select { min-width: 100px; width: 100px; }
           .filter-strip > * { flex: 0 0 auto; width: 100%; }
           .filter-tools { flex-wrap: nowrap; width: 100%; margin-left: 0; padding-left: 0 !important; border-left: none !important; justify-content: flex-end; }
 
-          /* WORKSPACE: sliding panels */
-          .workspace { width: 100vw !important; overflow: hidden !important; position: relative; flex-direction: row; padding: 0; gap: 0; }
+          /* --- Sliding Panel Architecture (push-navigation, no carousel) --- */
+          .workspace {
+              width: 100vw !important;
+              overflow: hidden !important;
+              position: relative;
+              flex-direction: row;
+              padding: 0;
+              gap: 0;
+          }
           .inbox-sidebar {
               position: absolute !important;
-              top: 0; left: 0; right: 0; bottom: 0;
+              inset: 0;
               margin: 0 !important;
               height: 100% !important;
               width: 100% !important;
               max-width: 100% !important;
               background: var(--bg) !important;
               border: none !important;
-              border-right: none;
-              flex-shrink: 0;
               border-radius: 0;
               transform: translateX(0);
-              transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
           }
           .reading-pane {
-              position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-              width: 100%; display: flex !important; flex-direction: column;
+              position: absolute;
+              inset: 0;
+              width: 100%;
+              display: flex !important;
+              flex-direction: column;
               margin-left: 0;
-              overflow-y: auto; padding: 12px; padding-bottom: 130px; box-sizing: border-box;
+              overflow-y: auto;
+              padding: 12px;
+              padding-bottom: calc(92px + env(safe-area-inset-bottom));
+              box-sizing: border-box;
               justify-content: flex-start;
-              transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              transform: translateX(100%);
+              transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+              scroll-padding-bottom: 120px;
           }
           .workspace.view-detail .inbox-sidebar { transform: translateX(-100%); }
-          .workspace.view-detail .reading-pane { transform: translateX(0); }
-
-          /* BACK BUTTON: now lives in action bar — hide the in-pane one */
+          .workspace.view-detail .reading-pane  { transform: translateX(0); }
           .mobile-back-btn { display: none !important; }
 
-          /* GRIDS collapse to single column */
-          .qb-grid {
-              display: flex !important;
-              flex-direction: column !important;
-              gap: 16px !important;
-          }
-
+          /* --- Layout & Content --- */
+          .qb-grid { display: flex !important; flex-direction: column !important; gap: 16px !important; }
           .upper-workspace { padding-top: 0; }
           .detail-layout { position: relative; }
           .detail-main { width: 100%; }
           .admin-dock { position: absolute; top: 0; right: 0; bottom: 0; min-width: 0; max-width: none; width: 100%; pointer-events: none; }
-          .reading-pane.admin-open .admin-dock { pointer-events: auto; width: 100%; min-width: 0; flex-basis: auto; }
-          .reading-pane.admin-open .pane-content { padding-right: 4px; }
-          .admin-fab-anchor { align-items: flex-end; }
-          .admin-fab { min-width: 30px; height: 30px; width: auto; }
-          .admin-fab-label { display: none; }
-          /* 2. Reduce Card Padding for Carousel Feel */
-          .pane-content { padding: 10px 12px 180px !important; gap: 12px !important; width: 100vw !important; max-width: 100vw !important; box-sizing: border-box !important; overflow-x: hidden !important; }
-          .qb-module { padding: 12px 10px !important; border-radius: 28px !important; border: 1px solid var(--border) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important; }
+          .admin-fab-anchor { display: none !important; }
+          .review-actions { display: none !important; }
 
-          /* 3. Transform Outbox Pane into Bottom Sheet */
+          /* --- qb-module: iPhone 17 Pro 30px radius + blur glass --- */
+          .pane-content {
+              padding: 10px 12px calc(92px + env(safe-area-inset-bottom)) !important;
+              gap: 14px !important;
+              width: 100vw !important;
+              max-width: 100vw !important;
+              box-sizing: border-box !important;
+              overflow-x: hidden !important;
+          }
+          .qb-module {
+              border-radius: var(--r-module) !important;
+              padding: 16px 14px !important;
+              border: 1px solid var(--border) !important;
+              backdrop-filter: blur(14px) !important;
+              -webkit-backdrop-filter: blur(14px) !important;
+              box-shadow: 0 6px 24px rgba(0,0,0,0.06) !important;
+          }
+
+          /* --- Floating Glassmorphic Action Dock (single-row pill) --- */
+          .mobile-action-bar {
+              display: flex !important;
+              flex-direction: row !important;
+              align-items: center !important;
+              position: fixed !important;
+              bottom: max(12px, calc(100dvh - var(--vvh, 100dvh) + 12px + env(safe-area-inset-bottom))) !important;
+              left: 10px !important;
+              right: 10px !important;
+              padding: 7px 8px !important;
+              gap: 5px !important;
+              z-index: 200 !important;
+              background: var(--dock-bg) !important;
+              backdrop-filter: blur(20px) saturate(1.6) !important;
+              -webkit-backdrop-filter: blur(20px) saturate(1.6) !important;
+              border: 1px solid var(--dock-border) !important;
+              border-radius: 26px !important;
+              box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.45) inset !important;
+          }
+          /* Both inner rows become flat flex groups side-by-side */
+          .mobile-nav-row {
+              display: flex !important;
+              flex-direction: row !important;
+              gap: 5px !important;
+              flex: 1 !important;
+              align-items: center !important;
+          }
+          .mobile-action-row {
+              display: flex !important;
+              flex-direction: row !important;
+              gap: 5px !important;
+              flex: 0 0 auto !important;
+              align-items: center !important;
+          }
+          /* Subtle divider between nav and action groups */
+          .mobile-action-row::before {
+              content: '';
+              display: block;
+              width: 1px;
+              height: 26px;
+              background: var(--border);
+              flex-shrink: 0;
+              margin-right: 1px;
+          }
+          /* All dock buttons: base style */
+          .mobile-action-bar .btn {
+              min-height: 52px !important;
+              height: 52px !important;
+              border-radius: 18px !important;
+              font-size: 13px !important;
+              font-weight: 700 !important;
+              padding: 0 10px !important;
+              cursor: pointer;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              gap: 4px !important;
+              transition: opacity 0.15s, transform 0.12s !important;
+              white-space: nowrap;
+              pointer-events: auto !important;
+              flex: 1 !important;
+              background: transparent !important;
+              border: none !important;
+              color: var(--text-main) !important;
+              box-shadow: none !important;
+          }
+          .mobile-action-bar .btn:active { opacity: 0.65; transform: scale(0.96) !important; }
+          /* Back button: compact icon-only */
+          .mob-btn-back { flex: 0 0 42px !important; font-size: 15px !important; }
+          /* Hub button: compact icon-only */
+          .mob-btn-hub { flex: 0 0 48px !important; font-size: 14px !important; }
+          /* Skip */
+          .mobile-action-bar .btn-skip {
+              background: rgba(0,0,0,0.06) !important;
+              color: var(--text-main) !important;
+              border: none !important;
+          }
+          body.dark-mode .mobile-action-bar .btn-skip {
+              background: rgba(255,255,255,0.08) !important;
+              color: #fafafa !important;
+          }
+          /* Commit: prominent green */
+          .mobile-action-bar .btn-primary {
+              flex: 1.5 !important;
+              background: rgba(34,197,94,0.9) !important;
+              color: #fff !important;
+              border: none !important;
+              box-shadow: 0 2px 14px rgba(34,197,94,0.35) !important;
+              font-weight: 800 !important;
+          }
+
+          /* PM Note: above dock layer, keyboard-accessible */
+          #p-comment { position: relative; z-index: 1; }
+
+          /* --- Admin Hub: Spring Sheet (no full-screen dim/blur) --- */
           .outbox-pane {
               display: flex !important;
               position: fixed !important;
@@ -747,61 +892,47 @@
               left: 0 !important;
               right: 0 !important;
               width: 100vw !important;
-              height: 80vh !important;
-              max-height: 80vh !important;
+              height: 78vh !important;
+              max-height: 78vh !important;
               margin: 0 !important;
               border-radius: 32px 32px 0 0 !important;
               border: none !important;
               border-top: 1px solid var(--border) !important;
               transform: translateY(100%);
               opacity: 1 !important;
-              transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+              transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1) !important;
               z-index: 9999 !important;
               box-shadow: 0 -10px 40px rgba(0,0,0,0.1) !important;
-              background: var(--card-bg) !important;
+              background: color-mix(in srgb, var(--card-bg) 88%, transparent) !important;
+              backdrop-filter: blur(20px) !important;
+              -webkit-backdrop-filter: blur(20px) !important;
           }
-          .outbox-pane.open {
-              transform: translateY(0) !important;
+          .outbox-pane.open { transform: translateY(0) !important; }
+          /* Spring overlay: subtle 0.15 opacity ONLY — no full dim, no blur */
+          .outbox-overlay.open {
+              display: block;
+              background: var(--sheet-overlay-bg) !important;
+              backdrop-filter: none !important;
+              -webkit-backdrop-filter: none !important;
           }
 
-          /* Hide desktop footer — mobile-action-bar takes its place */
-          .gantt-panel { display: none; }
+          /* --- Deprecated / Hidden Elements --- */
+          #swipe-peek-prev, #swipe-peek-next { display: none !important; }
+          #swipe-label-commit, #swipe-label-skip { display: none !important; }
+          .swipe-peek-pane { display: none !important; }
+          .gantt-panel { display: none !important; }
 
-          /* Touch-friendly text + disable hover lifts */
+          /* --- Touch polish --- */
           .chat-bubble { min-height: 100px; font-size: 15px; }
           .hover-trigger:hover { transform: none !important; }
-
-          /* Admin badges compact */
           .admin-strip { padding: 6px 10px; gap: 6px; }
           .admin-kpi-val { font-size: 16px; }
-
-          /* 1. Restore Mail App Inbox Look */
-          .email-card { margin: 0 !important; border-radius: 0 !important; border: none !important; border-bottom: 1px solid rgba(0,0,0,0.03) !important; background: var(--card-bg) !important; padding: 18px 20px !important; }
-          .email-card.selected { background: rgba(59, 130, 246, 0.05) !important; }
+          .email-card { margin: 0 !important; border-radius: 0 !important; border: none !important; border-bottom: 1px solid rgba(0,0,0,0.04) !important; background: var(--card-bg) !important; padding: 18px 20px !important; }
+          .email-card.selected { background: rgba(59,130,246,0.05) !important; }
           .em-fdh { font-size: 14px !important; font-weight: 800 !important; }
           body.dark-mode .email-card { border-bottom: 1px solid #3f3f46; }
-
-          /* Mobile action bar visible */
-          .mobile-action-bar { display: flex; }
-
-          /* Hamburger larger hit target */
-          #btn-hamburger { font-size: 22px; padding: 10px 14px; min-width: 44px; min-height: 44px; }
-
-          .admin-fab-anchor { display: none !important; }
-          .review-actions { display: none !important; }
-
-          /* Floating Glassmorphic Action Bar */
-          .mobile-action-bar { pointer-events: none; padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important; background: transparent !important; border: none !important; box-shadow: none !important; }
-          .mobile-action-bar .btn { pointer-events: auto; }
-          .mobile-action-bar .btn-skip { background: rgba(255, 255, 255, 0.85) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(0,0,0,0.1) !important; color: var(--text-main) !important; }
-          body.dark-mode .mobile-action-bar .btn-skip { background: rgba(30, 30, 36, 0.85) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #fafafa !important; }
-          .mobile-action-bar .btn-primary { background: rgba(34, 197, 94, 0.9) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff !important; border: 1px solid rgba(22, 163, 74, 0.5) !important; }
-
-          /* High-Contrast Active Filter */
-          #btn-filters.btn-filters-active { background: var(--color-critical) !important; color: #ffffff !important; border-color: var(--color-critical) !important; }
-          .swipe-peek-pane { display: flex !important; z-index: 210 !important; box-shadow: 0 0 40px rgba(0,0,0,0.2); }
-          #mobile-ob-count { display: inline-flex !important; align-items: center; justify-content: center; background: var(--color-critical) !important; color: #fff !important; min-width: 16px; height: 16px; font-size: 9px; border-radius: 50%; margin-left: 4px; vertical-align: middle; }
-          .outbox-overlay { background: rgba(15, 23, 42, 0.15) !important; backdrop-filter: blur(4px) !important; -webkit-backdrop-filter: blur(4px) !important; }
+          #btn-filters.btn-filters-active { background: var(--color-critical) !important; color: #fff !important; border-color: var(--color-critical) !important; }
+          #mobile-ob-count { display: inline-flex !important; align-items: center; justify-content: center; background: var(--color-critical) !important; color: #fff !important; min-width: 16px; height: 16px; font-size: 9px; border-radius: 50%; }
       }
 
       .outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 119; backdrop-filter: none; -webkit-backdrop-filter: none; }
@@ -1238,18 +1369,18 @@
     </div>
 
     <div class="mobile-action-bar" id="mobile-action-bar" style="display:none;">
-      <div class="mobile-action-row">
-        <button class="btn btn-skip" style="flex:1;" onclick="skipReview()">Skip (Clear)</button>
-        <button class="btn btn-primary" style="flex:1.6;" onclick="commitReview()">✔ Commit</button>
-      </div>
       <div class="mobile-nav-row">
-        <button class="btn btn-skip" style="flex:0.5; font-size:13px;" onclick="backToQueue()">◀</button>
-        <button class="btn btn-skip" id="btn-mob-prev" style="flex:1;" onclick="goPrevItem()">‹ Prev</button>
-        <button class="btn btn-skip" id="btn-mob-next" style="flex:1;" onclick="goNextItem()">Next ›</button>
-        <button class="btn btn-skip" style="flex:1; display:flex; align-items:center; justify-content:center; gap:4px;" onclick="toggleAdminPanel()">
-          <span style="font-size: 18px;">☰</span>
+        <button class="btn btn-skip mob-btn-back" aria-label="Back to queue" onclick="backToQueue()">◀</button>
+        <button class="btn btn-skip" id="btn-mob-prev" onclick="goPrevItem()">‹ Prev</button>
+        <button class="btn btn-skip" id="btn-mob-next" onclick="goNextItem()">Next ›</button>
+        <button class="btn btn-skip mob-btn-hub" aria-label="Open hub" onclick="toggleAdminPanel()">
+          <span style="font-size:18px;">☰</span>
           <span id="mobile-ob-count" style="display:none;">0</span>
         </button>
+      </div>
+      <div class="mobile-action-row">
+        <button class="btn btn-skip" onclick="skipReview()">Skip</button>
+        <button class="btn btn-primary" onclick="commitReview()">✔ Commit</button>
       </div>
     </div>
 
@@ -2047,6 +2178,12 @@
       }
       window.onload = function() {
           initSwipeGestures();
+          /* Keyboard avoidance: float dock above iOS software keyboard */
+          if (window.visualViewport) {
+              const setVvh = () => document.documentElement.style.setProperty('--vvh', window.visualViewport.height + 'px');
+              setVvh();
+              window.visualViewport.addEventListener('resize', setVvh);
+          }
           google.script.run
               .withSuccessHandler(initDashboard)
               .withFailureHandler(err => {
