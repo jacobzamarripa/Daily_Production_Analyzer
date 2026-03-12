@@ -563,7 +563,7 @@
       height: 100%;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: calc(var(--safe-top) + 12px) 14px calc(var(--dock-height) + var(--safe-bottom) + 30px);
+      padding: calc(var(--safe-top) + 12px) 14px 0px;
       z-index: 20;
       opacity: 1;
       pointer-events: auto;
@@ -591,8 +591,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      flex: 1;
-      min-height: 0;
+      min-height: fit-content;
     }
     .hub-title {
       font-size: 18px;
@@ -654,16 +653,16 @@
       padding-bottom: 0;
     }
     .email-card {
-      padding: 14px 16px 12px;
+      padding: 14px 16px;
       border: none;
       border-bottom: 1px solid var(--border);
       border-left: 4px solid transparent;
-      background: color-mix(in srgb, var(--card-bg) 92%, transparent);
+      background: var(--card-bg);
       cursor: pointer;
-      transition: background 0.1s, border-color 0.2s;
       display: flex;
       flex-direction: column;
       gap: 7px;
+      transition: all 0.15s ease;
       touch-action: manipulation;
     }
     .email-card:active { background: var(--card-bg-2); }
@@ -672,21 +671,20 @@
     .email-card.info { border-left-color: var(--color-insight); }
     .em-header {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
-      gap: 10px;
+      align-items: center;
     }
     .em-fdh {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 900;
-      letter-spacing: -0.4px;
+      letter-spacing: -0.5px;
       color: var(--text-main);
-      line-height: 1.1;
     }
     .em-vendor {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
     }
     .em-tags {
       display: flex;
@@ -696,21 +694,17 @@
     }
     .tag {
       display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 18px;
       padding: 2px 6px;
-      border-radius: 999px;
+      border-radius: 4px;
       font-size: 8px;
       font-weight: 900;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      border: 1px solid transparent;
-      line-height: 1;
       white-space: nowrap;
+      border: 1px solid;
     }
     .tag-red { background: rgba(254, 226, 226, 0.5); color: #991b1b; border-color: #fca5a5; }
     .tag-yellow { background: rgba(254, 252, 232, 0.5); color: #854d0e; border-color: #fde047; }
+    .tag-purple { background: rgba(250, 245, 255, 0.7); color: #6b21a8; border-color: #d8b4fe; }
+    .tag-admin { background: #171717; color: #facc15; border-color: #facc15; }
     .tag-muted { background: #27272a; color: #a1a1aa; border-color: #3f3f46; }
     .hub-empty {
       font-size: 12px;
@@ -1031,16 +1025,9 @@
       z-index: 2100;
       display: none;
       flex-direction: column;
-      padding: calc(var(--safe-top) + 14px) 16px calc(var(--safe-bottom) + 14px);
+      padding: calc(var(--safe-top) + 14px) 0 calc(var(--safe-bottom) + 14px);
     }
     #gantt-panel.fullscreen { display: flex; }
-    .gantt-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      flex-shrink: 0;
-    }
     #gantt-ui-overlay {
       position: fixed;
       inset: 0;
@@ -1057,107 +1044,35 @@
       border: var(--hairline);
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
     }
-    #gantt-content {
-      overflow: auto;
-      flex: 1;
-      position: relative;
-      -webkit-overflow-scrolling: touch;
-    }
-    .gantt-area {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-height: 100%;
-    }
-    .gantt-timeline-header {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      background: linear-gradient(to bottom, rgba(241,245,249,0.98), rgba(241,245,249,0.92));
-      padding-bottom: 10px;
-      backdrop-filter: blur(8px);
-    }
-    .gantt-timeline-grid {
-      position: relative;
-      min-width: 720px;
-      border-radius: 20px;
-      padding-top: 30px;
-    }
-    .gantt-grid-lines {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background-image: repeating-linear-gradient(
-        to right,
-        rgba(148, 163, 184, 0.16) 0,
-        rgba(148, 163, 184, 0.16) 1px,
-        transparent 1px,
-        transparent calc(100% / var(--gantt-days))
-      );
-      border-radius: 20px;
-    }
-    .gantt-date-markers {
-      position: relative;
-      height: 26px;
-      min-width: 720px;
-    }
+    .gantt-hud { position: fixed; pointer-events: none; z-index: 999999; background: rgba(9, 9, 11, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #333338; border-radius: 8px; padding: 12px; color: #fafafa; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: none; flex-direction: column; gap: 8px; min-width: 220px; }
+    .timeline-container { flex-grow: 1; overflow: auto; position: relative; padding: 0 24px 20px 24px; }
+    .gantt-area { position: relative; padding-bottom: 20px; transition: background 0.3s; display: block; }
+    .tl-header-bar { position: sticky; top: 0; display: flex; z-index: 60; height: 30px; }
+    .tl-header-corner { position: sticky; left: 0; width: 140px; height: 100%; flex-shrink: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); z-index: 65; border-right: 1px solid rgba(148,163,184,0.08); }
+    .tl-header-dates { position: relative; height: 100%; flex-grow: 1; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); }
+    .gantt-grid-container { position: absolute; left: 140px; top: 0; bottom: 0; pointer-events: none; z-index: 5; background-image: repeating-linear-gradient(to right, transparent, transparent calc(700% / var(--gantt-total-days, 365) - 1px), var(--border) calc(700% / var(--gantt-total-days, 365) - 1px), var(--border) calc(700% / var(--gantt-total-days, 365))); opacity: 0.5; }
     .gantt-date-pill {
       position: absolute;
-      top: 0;
+      top: 8px;
       transform: translateX(-50%);
       font-size: 10px;
       font-weight: 900;
       color: var(--text-muted);
-      background: rgba(255,255,255,0.9);
-      border: var(--hairline);
-      border-radius: 999px;
-      padding: 2px 8px;
-    }
-    .gantt-row {
-      background: var(--card-bg);
-      border: var(--hairline);
-      border-radius: 18px;
-      padding: 12px 14px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-      transition: opacity 0.2s ease, filter 0.2s ease;
-      cursor: pointer;
-    }
-    .gantt-row-top {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .gantt-row-id {
-      font-size: 14px;
-      font-weight: 900;
-      color: var(--text-main);
-    }
-    .gantt-row-meta {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-    .gantt-bar-track {
-      position: relative;
-      height: 12px;
-      border-radius: 999px;
-      border: var(--hairline);
-      background: rgba(226, 232, 240, 0.8);
-      overflow: visible;
-      margin-bottom: 8px;
+      background: transparent;
+      padding: 0 4px;
+      border-radius: 4px;
     }
     .gantt-bar-fill {
       position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      border-radius: 999px;
-      transition: box-shadow 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
-      opacity: 0.88;
+      top: 8px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      opacity: 0.75;
+      transition: transform 0.2s;
     }
     .gantt-today-line {
       position: absolute;
@@ -1167,16 +1082,26 @@
       background: rgba(239,68,68,0.8);
       z-index: 10;
       border-left: 1px dashed #ef4444;
-      pointer-events: none;
     }
-    .gantt-row-dates {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-secondary);
-    }
+    .gantt-today-label { position: absolute; top: -2px; transform: translateX(-50%); font-size: 10px; font-weight: 900; color: #ffffff; background: #ef4444; padding: 4px 8px; border-radius: 6px; z-index: 50;}
+    .gantt-eom-line { position: absolute; top: 0; bottom: 0; width: 1px; border-left: 1px dashed #3b82f6; opacity: 0.7; }
+    .gantt-eom-label { position: absolute; transform: translateX(-50%); top: 32px; font-size: 10px; font-weight: 900; color: #1d4ed8; background: #eff6ff; padding: 4px 8px; border-radius: 6px; border: 1px solid #93c5fd; z-index: 12; white-space: nowrap; }
+    .gantt-spike-bg { position: absolute; top: 0; bottom: 0; width: 25px; background: rgba(245, 158, 11, 0.1); z-index: 0; transform: translateX(-50%); border-left: 1px dashed rgba(245, 158, 11, 0.4); border-right: 1px dashed rgba(245, 158, 11, 0.4);}
+    .gantt-spike-label { position: absolute; transform: translateX(-50%); font-size: 10px; font-weight: 900; color: #b45309; background: #fefce8; padding: 4px 8px; border-radius: 6px; border: 1.5px solid #fde047; white-space: nowrap; }
+    .gantt-row { position: relative; height: 34px; margin-bottom: 6px; cursor: pointer; z-index: 15; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .gantt-row.is-active { z-index: 50; }
+    .gantt-row.is-active .gantt-bar-fill { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--text-main), 0 10px 20px rgba(0,0,0,0.3) !important; transform: scaleY(1.15); opacity: 1; }
+    .gantt-row.is-active .gantt-label { background: var(--text-main) !important; }
+    .gantt-row.is-active .gantt-label-fdh { color: var(--bg) !important; }
+    .gantt-label { position: sticky; left: 0; width: 140px; height: 100%; flex-shrink: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); z-index: 30; padding: 0 12px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--bg); border-left: 4px solid transparent; display: flex; flex-direction: column; justify-content: center; }
+    .gantt-label.crit { border-left-color: var(--color-critical); }
+    .gantt-label.warn { border-left-color: var(--color-review); }
+    .gantt-label.info { border-left-color: var(--color-insight); }
+    .gantt-label-fdh { font-size: 11px; font-weight: 900; color: var(--text-main); letter-spacing: -0.2px; }
+    .gantt-label-ven { font-size: 8px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px; }
+    .gantt-bar-text { color: #ffffff; font-size: 10px; font-weight: bold; padding: 0 10px; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6);}
+    .gantt-bead { position: absolute; top: 8px; width: 18px; height: 18px; background: var(--card-bg); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); border: 2px solid; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; z-index: 8; font-size: 8px; font-weight: 900; box-sizing: border-box;}
+    .g-color-blue { background-color: #3b82f6; } .g-color-purple { background-color: #a855f7; } .g-color-green { background-color: #22c55e; } .g-color-gray { background-color: #94a3b8; } .g-color-red { background-color: #ef4444; } .g-color-yellow { background-color: #facc15; }
     .gantt-area.has-focus .gantt-row:not(.is-active) {
       opacity: 0.35;
       filter: grayscale(40%);
@@ -1791,13 +1716,22 @@
 
     <!-- 3. HUB CONTENT -->
     <div id="hub-content">
-      <div class="hub-header">
-        <div class="hub-title">Diagnostics Queue</div>
-        <div id="scene-count-label" class="scene-count">-- projects</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div style="font-size:15px; font-weight:900; letter-spacing:-0.5px; background:var(--card-bg); padding:10px 14px; border-radius:18px; border:1px solid var(--border); box-shadow:0 8px 20px rgba(15,23,42,0.06); color:var(--text-main);">
+          Dailies Command Center
+        </div>
+        <div style="font-size:9px; font-weight:900; color:#ef4444; text-transform:uppercase; display:flex; align-items:center; gap:6px; background:var(--card-bg); padding:8px 12px; border-radius:16px; border:1px solid var(--border); box-shadow:0 8px 20px rgba(15,23,42,0.06); letter-spacing:0.5px;">
+          <span style="height:6px; width:6px; background:#ef4444; border-radius:50%; box-shadow:0 0 6px #ef4444;"></span> Active Today
+        </div>
       </div>
-      <div id="unified-list-container">
-        <div id="unified-list" class="inbox-list"></div>
+      <div id="unified-list-container" style="background:var(--card-bg); border:1px solid var(--border); border-radius:24px; box-shadow:0 12px 34px rgba(15,23,42,0.08); display:flex; flex-direction:column; overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; background:var(--bg);">
+          <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.5px;">Diagnostics Queue</div>
+          <div id="scene-count-label" style="background:var(--card-bg); padding:2px 8px; border-radius:999px; font-size:11px; font-weight:900; border:1px solid var(--border);">0</div>
+        </div>
+        <div id="unified-list" class="inbox-list" style="overflow:visible; flex:none;"></div>
       </div>
+      <div style="height: 160px; flex-shrink: 0; width: 100%;"></div>
     </div>
 
     <!-- 4. DETAIL SHEET -->
@@ -1895,13 +1829,14 @@
   </div>
 
   <div id="gantt-panel">
-    <div class="gantt-header">
-      <div class="hub-title">Schedule Gantt</div>
+    <div id="gantt-hud" class="gantt-hud"></div>
+    <div class="timeline-container" id="gantt-scroll" style="width:100%; height:100%; overflow:auto; -webkit-overflow-scrolling: touch; padding-bottom:40px;">
+      <div id="gantt-container"><div class="empty-msg" style="margin-top:20px;">Loading Timeline...</div></div>
     </div>
-    <div id="gantt-content"></div>
   </div>
   <div id="gantt-ui-overlay">
-    <div class="gantt-pill" style="position:fixed; bottom:24px; left:24px; z-index:10000; pointer-events:auto;">
+    <div class="gantt-pill" style="position:fixed; bottom:24px; left:24px; z-index:10000; pointer-events:auto; display:flex; align-items:center; gap:8px;">
+      <button class="btn" style="font-size:9px; padding:4px 8px; background:var(--text-main); color:var(--bg); border:none;" onclick="exitTheaterMode()">Exit Focus</button>
       <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted);">Global Construction Timeline</div>
     </div>
     <div class="gantt-pill" style="position:fixed; bottom:24px; right:24px; z-index:10000; background:rgba(168,85,247,0.15); border-color:var(--color-insight); pointer-events:auto;">
@@ -2027,6 +1962,10 @@ var state = {
   dragging:   false,
   activeItem: null,
 };
+
+var globalEndCounts = {};
+var globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
+var hudLocked = false;
 
 /* ═══════════════════════════════════════════════════
    4. DATA LAYER
@@ -2747,106 +2686,304 @@ function selectDeckForFdh(fdh) {
   renderDeck();
 }
 
-function onGanttRowClick(fdh) {
+function exitTheaterMode() {
   var ganttArea = document.getElementById('gantt-area-main');
-  var targetId = 'gantt-row-' + String(fdh || '').replace(/[^A-Za-z0-9_-]/g, '_');
-  var targetRow = document.getElementById(targetId);
+  if (ganttArea) ganttArea.classList.remove('has-focus');
+  document.querySelectorAll('.gantt-row').forEach(function(row) { row.classList.remove('is-active'); });
+  hudLocked = false;
+  hideHUD();
+}
+
+function safeParse(value) {
+  if (!value || value === '-' || value === 'Unknown') return null;
+  if (Object.prototype.toString.call(value) === '[object Date]') {
+    return isNaN(value.getTime()) ? null : new Date(value.getTime());
+  }
+  var str = String(value).trim();
+  if (!str) return null;
+  var parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) return parsed;
+  var parts = str.match(/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{2,4})/);
+  if (!parts) return null;
+  var year = parts[3].length === 2 ? Number('20' + parts[3]) : Number(parts[3]);
+  parsed = new Date(year, Number(parts[1]) - 1, Number(parts[2]));
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function positionHUD(evt, hud) {
+  if (!evt || !hud) return;
+  var source = evt.touches ? evt.touches[0] : evt;
+  var x = source.clientX + 15;
+  var y = source.clientY + 15;
+  if (x + 250 > window.innerWidth) x = Math.max(0, window.innerWidth - 265);
+  if (y + hud.offsetHeight > window.innerHeight) y = Math.max(0, window.innerHeight - hud.offsetHeight - 15);
+  hud.style.left = x + 'px';
+  hud.style.top = y + 'px';
+}
+
+function hideHUD() {
+  if (hudLocked) return;
+  var hud = document.getElementById('gantt-hud');
+  if (!hud) return;
+  hud.style.display = 'none';
+  hud.style.pointerEvents = 'none';
+  hud.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+}
+
+function moveHUD(evt) {
+  if (hudLocked) return;
+  var hud = document.getElementById('gantt-hud');
+  if (hud && hud.style.display === 'flex') positionHUD(evt, hud);
+}
+
+function moveSpikeHUD(evt) { moveHUD(evt); }
+function hideSpikeHUD() { hideHUD(); }
+
+function toggleHudLock(evt) {
+  if (evt) evt.stopPropagation();
+  hudLocked = !hudLocked;
+  var hud = document.getElementById('gantt-hud');
+  if (!hud) return;
+  if (hudLocked) {
+    hud.style.pointerEvents = 'auto';
+    hud.style.boxShadow = '0 0 0 2px var(--color-insight), 0 10px 25px rgba(0,0,0,0.5)';
+  } else {
+    hud.style.pointerEvents = 'none';
+    hud.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+    hideHUD();
+  }
+}
+
+function showHUD(evt, fdh) {
+  if (hudLocked) return;
+  var item = state.all.find(function(entry) { return entry.fdh === fdh; });
+  var hud = document.getElementById('gantt-hud');
+  if (!item || !hud) return;
+  var html = '<div style="font-size:14px; font-weight:900; color:#fff; border-bottom:1px solid #333338; padding-bottom:4px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;"><span>' + esc(item.fdh || '—') + '</span><span style="color:#a1a1aa; font-size:11px;">' + esc(item.vendor || 'Unknown') + '</span></div>' +
+    '<div style="font-size:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;"><div><span style="color:#a1a1aa;">CX START:</span><br/>' + esc(item.cxStart || 'TBD') + '</div><div><span style="color:#a1a1aa;">TARGET:</span><br/>' + esc(item.targetDate || item.cxEnd || 'TBD') + '</div></div>';
+  if (item.vel) {
+    var vels = [];
+    if (item.vel.ug && item.vel.ug.bom > 0) vels.push('<span style="color:var(--qb-ug);">UG: ' + Math.round((item.vel.ug.tot / item.vel.ug.bom) * 100) + '%</span>');
+    if (item.vel.ae && item.vel.ae.bom > 0) vels.push('<span style="color:#cbd5e1;">AE: ' + Math.round((item.vel.ae.tot / item.vel.ae.bom) * 100) + '%</span>');
+    if (item.vel.fib && item.vel.fib.bom > 0) vels.push('<span style="color:#ef4444;">FIB: ' + Math.round((item.vel.fib.tot / item.vel.fib.bom) * 100) + '%</span>');
+    if (item.vel.nap && item.vel.nap.bom > 0) vels.push('<span style="color:#6366f1;">NAP: ' + Math.round((item.vel.nap.tot / item.vel.nap.bom) * 100) + '%</span>');
+    if (vels.length) html += '<div style="font-size:10px; border-top:1px solid #333338; padding-top:6px; margin-top:4px; display:flex; gap:8px; flex-wrap:wrap;">' + vels.join(' | ') + '</div>';
+  }
+  var flags = String(item.flags || '').split('\n').filter(function(flag) { return flag.trim() !== ''; }).slice(0, 3);
+  if (flags.length && flags[0] !== '✅ No Anomalies') {
+    html += '<div style="display:flex; flex-direction:column; gap:4px; margin-top:6px; border-top:1px solid #333338; padding-top:6px;">';
+    flags.forEach(function(flag) {
+      var cleanText = flag.replace(/[🚨🛑🚩⚠️🖍️🚧]/g, '').trim();
+      var color = (flag.includes('🚨') || flag.includes('🚩') || flag.includes('STATUS MISMATCH') || flag.includes('MISSING QB STATUS')) ? '#fca5a5' : '#fde047';
+      html += '<span style="font-size:9px; font-weight:bold; color:' + color + ';">⚠️ ' + esc(cleanText) + '</span>';
+    });
+    html += '</div>';
+  }
+  hud.innerHTML = html;
+  hud.style.display = 'flex';
+  positionHUD(evt, hud);
+}
+
+function showSpikeHUD(evt, dateKey) {
+  if (hudLocked) return;
+  var data = globalEndCounts[dateKey];
+  var hud = document.getElementById('gantt-hud');
+  if (!data || !hud) return;
+  var vendorHtml = '';
+  Object.keys(data.vendors).forEach(function(vendor) {
+    var projs = data.projects.filter(function(project) { return project.vendor === vendor; }).map(function(project) { return project.fdh; }).join(', ');
+    vendorHtml += '<div style="margin-top:6px;"><span style="color:#facc15; font-weight:bold;">' + esc(vendor) + ' (' + data.vendors[vendor] + '):</span><br/><span style="color:#a1a1aa; font-size:9px; line-height:1.2; display:block; margin-top:2px;">' + esc(projs) + '</span></div>';
+  });
+  var parts = dateKey.split('-');
+  var html = '<div style="font-size:12px; font-weight:900; color:#facc15; border-bottom:1px solid #333338; padding-bottom:6px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;"><span>🔥 CLOSEOUT SURGE</span><span style="color:#a1a1aa; font-size:10px;">' + esc(parts[1] + '/' + parts[2] + '/' + parts[0]) + '</span></div>' +
+    '<div style="font-size:11px; display:flex; justify-content:space-between; margin-bottom:4px;"><span style="color:#a1a1aa;">Total Projects: <b style="color:#fff;">' + data.total + '</b></span><span style="color:#a1a1aa;">Projected BSLs: <b style="color:#fff;">' + data.bsls.toLocaleString() + '</b></span></div>' +
+    '<div style="border-top:1px solid #333338; padding-top:2px; max-height:300px; overflow-y:auto; padding-right:4px;">' + vendorHtml + '</div>';
+  hud.innerHTML = html;
+  hud.style.display = 'flex';
+  positionHUD(evt, hud);
+}
+
+function showTodayHUD(evt) {
+  if (hudLocked) return;
+  var data = globalTodayData;
+  var hud = document.getElementById('gantt-hud');
+  if (!data || !data.total || !hud) return;
+  var vendorArr = Object.keys(data.vendors).sort(function(a, b) { return data.vendors[b] - data.vendors[a]; });
+  var colors = ['#3b82f6', '#a855f7', '#f59e0b', '#10b981', '#ec4899', '#06b6d4', '#6366f1'];
+  var conicStr = [];
+  var legendHtml = '';
+  var currentPct = 0;
+  vendorArr.forEach(function(vendor, idx) {
+    var count = data.vendors[vendor];
+    var pct = (count / data.total) * 100;
+    var color = colors[idx % colors.length];
+    conicStr.push(color + ' ' + currentPct + '% ' + (currentPct + pct) + '%');
+    currentPct += pct;
+    legendHtml += '<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:6px;"><div style="display:flex; align-items:center; gap:8px;"><span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + color + ';"></span><span style="color:#fafafa; font-weight:bold;">' + esc(vendor) + '</span></div><span style="color:#a1a1aa; font-weight:bold; font-family:monospace;">' + count + '</span></div>';
+  });
+  var today = new Date();
+  var html = '<div style="min-width:300px; padding:6px;"><div style="font-size:14px; font-weight:900; color:#ef4444; border-bottom:1px solid #333338; padding-bottom:8px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;"><span>📍 ACTIVE TODAY</span><span style="color:#a1a1aa; font-size:11px;">' + esc((today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear()) + '</span></div>' +
+    '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px; text-align:center;"><div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;"><div style="font-size:18px; font-weight:900; color:#fff;">' + data.total + '</div><div style="font-size:9px; color:#a1a1aa; text-transform:uppercase; font-weight:bold; margin-top:2px;">Projects</div></div><div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;"><div style="font-size:18px; font-weight:900; color:#fff;">' + data.activeBsls.toLocaleString() + '</div><div style="font-size:9px; color:#a1a1aa; text-transform:uppercase; font-weight:bold; margin-top:2px;">BSLs</div></div><div style="background: rgba(239,68,68,0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(239,68,68,0.2);"><div style="font-size:18px; font-weight:900; color:#fca5a5;">' + data.criticalCount + '</div><div style="font-size:9px; color:#fca5a5; text-transform:uppercase; font-weight:bold; margin-top:2px;">Critical</div></div></div>' +
+    '<div style="display:flex; gap:20px; align-items:center; border-top: 1px solid #333338; padding-top: 16px;"><div style="background: conic-gradient(' + conicStr.join(', ') + '); border-radius: 50%; width: 120px; height: 120px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></div><div style="flex-grow:1; display:flex; flex-direction:column; max-height:220px; overflow-y:auto; padding-right:8px; gap:4px;">' + legendHtml + '</div></div></div>';
+  hud.innerHTML = html;
+  hud.style.display = 'flex';
+  positionHUD(evt, hud);
+}
+
+function getGanttClass(stage, status, isOverdue) {
+  var st = (stage || '').toLowerCase();
+  var stat = (status || '').toLowerCase();
+  if (st.includes('ofs')) return 'g-color-blue';
+  if (st.includes('permit')) return 'g-color-purple';
+  if (stat.includes('complete')) return 'g-color-green';
+  if (stat.includes('hold')) return 'g-color-gray';
+  if (isOverdue || stage === 'NOT IN QB REFERENCE' || stage === '-') return 'g-color-red';
+  return 'g-color-yellow';
+}
+
+function scrollGanttToToday() {
+  var scrollContainer = document.getElementById('gantt-scroll');
+  var ganttArea = document.getElementById('gantt-area-main');
+  if (!scrollContainer || !ganttArea) return;
+  var todayLine = ganttArea.querySelector('.gantt-today-line');
+  if (!todayLine) return;
+  var gridContainer = ganttArea.querySelector('.gantt-grid-container');
+  var chartWidth = gridContainer ? gridContainer.offsetWidth : (ganttArea.offsetWidth - 140);
+  var leftPct = parseFloat(todayLine.style.left) || 0;
+  var centerOffset = (chartWidth * (leftPct / 100)) + 140 - (scrollContainer.clientWidth / 2);
+  scrollContainer.scrollLeft = Math.max(0, centerOffset);
+}
+
+function focusGanttRow(fdh) {
+  var ganttArea = document.getElementById('gantt-area-main');
+  var targetRow = document.getElementById('gantt-row-' + String(fdh || '').replace(/[^A-Za-z0-9_-]/g, '_'));
   if (!ganttArea || !targetRow) return;
-  state.ganttSelectedFdh = fdh;
   ganttArea.classList.add('has-focus');
   document.querySelectorAll('.gantt-row').forEach(function(row) { row.classList.remove('is-active'); });
   targetRow.classList.add('is-active');
-  var idx = state.deck.findIndex(function(item) { return item.fdh === fdh; });
-  if (idx > -1) state.idx = idx;
+  state.ganttSelectedFdh = fdh;
+  var item = state.all.find(function(entry) { return entry.fdh === fdh; });
+  if (item) openCarouselAt(item);
+}
+
+function onGanttRowClick(fdh) {
+  focusGanttRow(fdh);
   haptic('light');
   toast('Selected ' + fdh + ' · Rotate to view card');
 }
 
 function renderGantt(items) {
-  var el = document.getElementById('gantt-content');
-  if (!el) return;
+  var container = document.getElementById('gantt-container');
+  if (!container) return;
   if (!items || !items.length) {
-    el.innerHTML = '<div class="hub-empty">No schedule data available.</div>';
+    container.innerHTML = '<div class="empty-msg" style="margin-top:20px;">No items with timeline data.</div>';
     return;
   }
-  function safeParseDate(value) {
-    if (!value || value === '-' || value === 'Unknown') return null;
-    if (Object.prototype.toString.call(value) === '[object Date]') {
-      return isNaN(value.getTime()) ? null : new Date(value.getTime());
-    }
-    var str = String(value).trim();
-    if (!str) return null;
-    var parsed = new Date(str);
-    if (!isNaN(parsed.getTime())) return parsed;
-    var parts = str.match(/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{2,4})/);
-    if (!parts) return null;
-    var year = parts[3].length === 2 ? Number('20' + parts[3]) : Number(parts[3]);
-    parsed = new Date(year, Number(parts[1]) - 1, Number(parts[2]));
-    return isNaN(parsed.getTime()) ? null : parsed;
-  }
-  var datedItems = items.map(function(item) {
-    var start = safeParseDate(item.cxStart);
-    var end = safeParseDate(item.targetDate || item.cxEnd);
-    if (!start || !end || end < start) return null;
-    return { item: item, start: start, end: end };
-  }).filter(Boolean);
-  if (!datedItems.length) {
-    el.innerHTML = '<div class="hub-empty">No usable schedule dates (Checking Reference Data)...</div>';
-    return;
-  }
+
+  globalEndCounts = {};
+  globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
   var today = new Date();
   today.setHours(0, 0, 0, 0);
-  var minDate = new Date(Math.min.apply(null, datedItems.map(function(entry) { return entry.start.getTime(); })));
-  var maxDate = new Date(Math.max.apply(null, datedItems.map(function(entry) { return entry.end.getTime(); })));
+  var minDate = new Date('2099-01-01');
+  var maxDate = new Date('2000-01-01');
+  var monthBsls = {};
+  var validItems = items.filter(function(item) { return safeParse(item.cxStart) && safeParse(item.cxEnd || item.targetDate); });
+  if (!validItems.length) {
+    container.innerHTML = "<div class='empty-msg'>No items with timeline data.</div>";
+    return;
+  }
+
+  validItems.forEach(function(item) {
+    var start = safeParse(item.cxStart);
+    var end = safeParse(item.cxEnd || item.targetDate);
+    if (end < start) end = new Date(start.getTime() + 86400000);
+    if (start < minDate) minDate = new Date(start);
+    if (end > maxDate) maxDate = new Date(end);
+
+    var endKey = end.getFullYear() + '-' + (end.getMonth() + 1) + '-' + end.getDate();
+    var monthKey = end.getFullYear() + '-' + (end.getMonth() + 1);
+    var vendor = item.vendor || 'Unknown';
+    if (!globalEndCounts[endKey]) globalEndCounts[endKey] = { total: 0, vendors: {}, bsls: 0, projects: [] };
+    globalEndCounts[endKey].total++;
+    globalEndCounts[endKey].vendors[vendor] = (globalEndCounts[endKey].vendors[vendor] || 0) + 1;
+
+    var bslNum = parseInt(String(item.bsls).replace(/,/g, ''), 10) || 0;
+    monthBsls[monthKey] = (monthBsls[monthKey] || 0) + bslNum;
+    globalEndCounts[endKey].bsls += bslNum;
+    globalEndCounts[endKey].projects.push({ fdh: item.fdh, vendor: vendor });
+  });
+
   var defaultPast = new Date(today);
   defaultPast.setDate(today.getDate() - 14);
   var defaultFuture = new Date(today);
   defaultFuture.setDate(today.getDate() + 28);
   if (minDate > defaultPast) minDate = defaultPast;
   if (maxDate < defaultFuture) maxDate = defaultFuture;
-  minDate.setDate(minDate.getDate() - 7);
-  maxDate.setDate(maxDate.getDate() + 14);
+
   var totalTime = Math.max(86400000, maxDate - minDate);
-  var totalDays = Math.max(1, Math.ceil(totalTime / 86400000));
-  var chartWidth = Math.max(760, totalDays * 22);
+  var totalDays = Math.ceil(totalTime / 86400000);
+  var chartWidth = Math.max(1200, totalDays * 25);
   var todayPct = ((today - minDate) / totalTime) * 100;
-  var markers = [];
-  for (var day = 0; day <= totalDays; day += 7) {
-    var mark = new Date(minDate.getTime() + (day * 86400000));
-    var left = (day / totalDays) * chartWidth;
-    markers.push('<div class="gantt-date-pill" style="left:' + left + 'px;">' + (mark.getMonth() + 1) + '/' + mark.getDate() + '</div>');
+
+  var dateHtml = '<div class="tl-header-bar" style="min-width:' + (chartWidth + 140) + 'px; width:' + (chartWidth + 140) + 'px;"><div class="tl-header-corner"></div><div class="tl-header-dates" style="width:' + chartWidth + 'px; flex-shrink:0;">';
+  var gridLines = '<div class="gantt-grid-container" style="width:' + chartWidth + 'px; --gantt-total-days:' + totalDays + ';">';
+  var spikeCount = 0;
+
+  for (var i = 0; i <= totalDays; i++) {
+    var curr = new Date(minDate.getTime() + (i * 86400000));
+    var pct = (i / totalDays) * 100;
+    var currKey = curr.getFullYear() + '-' + (curr.getMonth() + 1) + '-' + curr.getDate();
+    var monthKey = curr.getFullYear() + '-' + (curr.getMonth() + 1);
+    var spikeData = globalEndCounts[currKey];
+    var nextDay = new Date(curr.getTime() + 86400000);
+    var isEom = nextDay.getDate() === 1;
+
+    if (spikeData && spikeData.total >= 3) {
+      var tPos = [48, 66, 84][spikeCount % 3];
+      gridLines += '<div class="gantt-spike-bg" style="left:' + pct + '%;"></div>';
+      dateHtml += '<div class="gantt-spike-label" style="left:' + pct + '%; top:' + tPos + 'px;" onclick="showSpikeHUD(event, \'' + currKey + '\')">🔥 ' + spikeData.total + ' ENDING</div>';
+      spikeCount++;
+    }
+    if (isEom) {
+      gridLines += '<div class="gantt-eom-line" style="left:' + pct + '%;"></div>';
+      dateHtml += '<div class="gantt-eom-label" style="left:' + pct + '%; top:32px;">EOM | BSLs: ' + ((monthBsls[monthKey] || 0).toLocaleString()) + '</div>';
+    }
+    if (curr.getDay() === 1) {
+      dateHtml += '<div class="gantt-date-pill" style="left:' + pct + '%;">' + (curr.getMonth() + 1) + '/' + curr.getDate() + '</div>';
+    }
   }
-  var rows = datedItems.map(function(entry) {
-    var item = entry.item;
-    var start = entry.start;
-    var end = entry.end;
-    var startPct = ((start - minDate) / (maxDate - minDate)) * 100;
-    var widthPct = Math.max(2, ((end - start) / (maxDate - minDate)) * 100);
-    var color = statusColor(item);
-    var activeClass = state.ganttSelectedFdh === item.fdh ? ' is-active' : '';
+
+  dateHtml += '<div class="gantt-today-label" style="left:' + todayPct + '%;" onclick="showTodayHUD(event)">TODAY</div></div></div>';
+  gridLines += '<div class="gantt-today-line" style="left:' + todayPct + '%;"></div></div>';
+
+  var html = '<div class="gantt-area" id="gantt-area-main" style="width:' + (chartWidth + 140) + 'px; min-width:' + (chartWidth + 140) + 'px;">' + gridLines + dateHtml + '<div style="height:15px;"></div>';
+
+  validItems.forEach(function(item) {
+    var start = safeParse(item.cxStart);
+    var end = safeParse(item.cxEnd || item.targetDate);
+    var leftPct = ((start - minDate) / totalTime) * 100;
+    var widthPct = Math.max(0.5, ((end - start) / totalTime) * 100);
+    var leftPx = Math.round(leftPct / 100 * chartWidth);
+    var widthPx = Math.max(9, Math.round(widthPct / 100 * chartWidth));
+    var isOverdue = !isNaN(end) && today > end;
+    var ganttClass = getGanttClass(item.stage, item.status, isOverdue);
+    var highestSev = getSeverity(item.flags);
+    var barLeft = 140 + leftPx;
     var rowId = String(item.fdh || '').replace(/[^A-Za-z0-9_-]/g, '_');
-    return '<div class="gantt-row' + activeClass + '" id="gantt-row-' + rowId + '" onclick="onGanttRowClick(\'' + esc(item.fdh) + '\')">' +
-      '<div class="gantt-row-top"><div><div class="gantt-row-id">' + esc(item.fdh || '—') + '</div><div class="gantt-row-meta">' + esc((item.city || '') + (item.vendor ? ' · ' + item.vendor : '')) + '</div></div><div class="glass-pill ' + getQBStatusClass(item.stage, item.status, false) + '">' + esc((item.stage || '-') + ' | ' + (item.status || '-')) + '</div></div>' +
-      '<div class="gantt-bar-track"><div class="gantt-bar-fill" style="left:' + startPct + '%; width:' + widthPct + '%; background:' + color + ';"></div></div>' +
-      '<div class="gantt-row-dates"><span>Start: ' + formatDate(start) + '</span><span>Target: ' + formatDate(end) + '</span></div>' +
-    '</div>';
-  }).join('');
-  el.innerHTML =
-    '<div class="gantt-area' + (state.ganttSelectedFdh ? ' has-focus' : '') + '" id="gantt-area-main">' +
-      '<div class="gantt-timeline-header"><div class="gantt-date-markers" style="width:' + chartWidth + 'px;">' + markers.join('') + '</div></div>' +
-      '<div class="gantt-timeline-grid" style="width:' + chartWidth + 'px; --gantt-days:' + totalDays + ';">' +
-        '<div class="gantt-grid-lines"></div>' +
-        '<div class="gantt-today-line" style="left:' + todayPct + '%;"></div>' +
-        rows +
+    var pillStage = item.stage || '-';
+    var pillStatus = item.status || '-';
+    html += '<div class="gantt-row" id="gantt-row-' + rowId + '" style="width:' + (chartWidth + 140) + 'px;">' +
+      '<div class="gantt-label ' + highestSev + '" data-fdh="' + esc(item.fdh) + '" onclick="focusGanttRow(this.dataset.fdh)">' +
+        '<div class="gantt-label-fdh">' + esc(item.fdh) + '</div><div class="gantt-label-ven">' + esc(item.vendor || 'UNKNOWN') + '</div>' +
+      '</div>' +
+      '<div class="gantt-bar-fill ' + ganttClass + '" data-fdh="' + esc(item.fdh) + '" style="left:' + barLeft + 'px; width:' + widthPx + 'px; pointer-events:auto;" onclick="focusGanttRow(this.dataset.fdh)" onmousemove="moveHUD(event)" onmouseleave="hideHUD()" ontouchstart="showHUD(event, this.dataset.fdh)">' +
+        '<span class="gantt-bar-text">' + esc(item.fdh + ' • ' + pillStage + ' | ' + pillStatus) + '</span>' +
       '</div>' +
     '</div>';
-  setTimeout(function() {
-    var scrollContainer = document.getElementById('gantt-content');
-    var todayMarker = el.querySelector('.gantt-today-line');
-    if (!scrollContainer || !todayMarker) return;
-    var offset = todayMarker.offsetLeft - (scrollContainer.clientWidth / 2);
-    scrollContainer.scrollLeft = Math.max(0, offset);
-  }, 200);
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  setTimeout(scrollGanttToToday, 150);
 }
 
 function handleLandscapeChange() {
@@ -3149,31 +3286,49 @@ function getHubItemsByTab(tab) {
 function renderList(items) {
   var list = document.getElementById('unified-list');
   if (!list) return;
+  var countLabel = document.getElementById('scene-count-label');
+  if (countLabel) countLabel.innerText = items.length;
   list.innerHTML = '';
   items.forEach(function(item) {
-    var card = document.createElement('div');
-    var rawFlags = String(item.flags || '').split('\n').filter(Boolean);
-    var highestSev = getSeverity(item.flags);
+    var rawFlags = String(item.flags || '').split('\n').map(function(flag) { return flag.trim(); }).filter(function(flag) { return flag !== ''; });
+    var highestSev = 'info';
     var tagsHtml = '';
     rawFlags.slice(0, 3).forEach(function(f) {
       var cleanText = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
-      var tagClass = 'tag-muted';
-      if (f.includes('STATUS MISMATCH') || f.includes('MISSING QB STATUS') || f.includes('🚨') || f.includes('🛑') || f.includes('🚩')) {
-        tagClass = 'tag-red';
+      if (f.includes('ADMIN: CHECK CROSSINGS') || f.includes('ADMIN: REFRESH REF DATA')) {
+        highestSev = f.includes('REFRESH') ? 'warn' : 'crit';
+        tagsHtml += '<span class="tag tag-admin">' + esc(cleanText) + '</span>';
+      } else if (f.includes('STATUS MISMATCH') || f.includes('MISSING QB STATUS')) {
+        highestSev = 'crit';
+        tagsHtml += '<span class="tag tag-red">' + esc(cleanText) + '</span>';
+      } else if (f.includes('🚨') || f.includes('🛑') || f.includes('🚩')) {
+        highestSev = 'crit';
+        tagsHtml += '<span class="tag tag-red">' + esc(cleanText) + '</span>';
       } else if (f.includes('⚠️') || f.includes('🖍️') || f.includes('🚧')) {
-        tagClass = 'tag-yellow';
+        if (highestSev !== 'crit') highestSev = 'warn';
+        tagsHtml += '<span class="tag tag-yellow">' + esc(cleanText) + '</span>';
+      } else if (f.includes('🪄') || f.includes('🟣')) {
+        tagsHtml += '<span class="tag tag-purple">' + esc(cleanText) + '</span>';
+      } else {
+        tagsHtml += '<span class="tag tag-muted">' + esc(cleanText) + '</span>';
       }
-      tagsHtml += '<span class="tag ' + tagClass + '">' + esc(cleanText) + '</span>';
     });
     if (rawFlags.length > 3) tagsHtml += '<span class="tag tag-muted">+' + (rawFlags.length - 3) + '</span>';
+
+    var isNotInQb = String(item.flags || '').includes('NOT IN QB REFERENCE') || String(item.flags || '').includes('MISSING QB STATUS');
+    var combinedPill = isNotInQb ? 'NOT IN QB REFERENCE' : ((item.stage || '-') + ' | ' + (item.status || '-'));
+    if (String(item.flags || '').includes('MISSING QB STATUS') && !String(item.flags || '').includes('NOT IN QB REFERENCE')) combinedPill = 'MISSING QB STATUS';
+    var pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+
+    var card = document.createElement('div');
     card.className = 'email-card ' + highestSev;
     card.innerHTML =
       '<div class="em-header">' +
-        '<div style="display:flex; align-items:baseline; gap:8px; min-width:0;">' +
-          '<div class="em-fdh" style="flex-shrink:0;">' + esc(item.fdh || '—') + '</div>' +
-          '<div class="em-vendor" style="font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(item.vendor || '—') + '</div>' +
+        '<div style="display:flex; align-items:baseline; gap:8px;">' +
+          '<div class="em-fdh">' + esc(item.fdh || '—') + '</div>' +
+          '<div class="em-vendor">' + esc(item.vendor || '—') + '</div>' +
         '</div>' +
-        '<span class="glass-pill ' + pillClass(item.status, item.stage) + '">' + esc(pillLabel(item.status, item.stage)) + '</span>' +
+        '<span class="glass-pill ' + pillCls + '">' + esc(combinedPill) + '</span>' +
       '</div>' +
       '<div class="em-tags">' + tagsHtml + '</div>';
     card.onclick = function() { openCarouselAt(item); };
@@ -3184,7 +3339,7 @@ function renderList(items) {
 function updateHubCounts() {
   var diagCount = getDiagQueueItems().length;
   var sceneLabel = document.getElementById('scene-count-label');
-  if (sceneLabel) sceneLabel.textContent = diagCount + ' project' + (diagCount === 1 ? '' : 's');
+  if (sceneLabel) sceneLabel.textContent = String(diagCount);
 }
 
 function openCarouselAt(item) {
@@ -3355,7 +3510,7 @@ function init() {
   // Global touchmove guard: allow scrollable areas, block everything else
   document.body.addEventListener('touchmove',function(e){
     var t=e.target;
-    var ok=t.closest('#detail-scroll')||t.closest('#search-overlay')||t.closest('#hub-content')||t.closest('#search-input')||t.closest('.card-scroll-body')||t.closest('#outbox-scroll')||t.closest('#gantt-content')||t.closest('textarea');
+    var ok=t.closest('#detail-scroll')||t.closest('#search-overlay')||t.closest('#hub-content')||t.closest('#search-input')||t.closest('.card-scroll-body')||t.closest('#outbox-scroll')||t.closest('#gantt-scroll')||t.closest('textarea');
     if(!ok) e.preventDefault();
   },{passive:false});
 
