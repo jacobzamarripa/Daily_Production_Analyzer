@@ -796,6 +796,39 @@
       .hdesc b { font-weight: 900; }
       .help-wf-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 4px; }
       .help-wf-num { width: 20px; height: 20px; border-radius: 50%; background: var(--text-main); color: var(--card-bg); font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+      /* 1. True Global Floating Dock */
+      .filter-strip {
+          position: absolute !important;
+          top: 16px !important;
+          left: 50% !important;
+          transform: translateX(-50%) !important;
+          width: fit-content !important;
+          max-width: 95% !important;
+          margin: 0 !important;
+          z-index: 10000 !important;
+          flex-wrap: nowrap !important;
+      }
+      .filter-strip:hover {
+          transform: translateX(-50%) translateY(-2px) !important;
+      }
+
+      /* 2. Fix Single Card Clipping Bug */
+      .pane-content {
+          align-items: stretch !important;
+      }
+      .detail-main {
+          width: auto !important;
+      }
+
+      /* 3. Clear Dock & Gantt Fullscreen Cleanliness */
+      #pane-content, #grid-content, #welcome-screen {
+          padding-top: 80px !important;
+      }
+      body.gantt-fullscreen .upper-workspace { display: none !important; }
+      body.gantt-fullscreen .inbox-sidebar { display: none !important; }
+      body.gantt-fullscreen .gantt-controls { top: 80px !important; }
+      body.gantt-fullscreen .raw-data-strip { margin-top: 120px !important; }
     </style>
   </head>
   <body>
@@ -823,6 +856,30 @@
         <button class="btn-nav" onclick="toggleHelpPanel()" id="btn-help">?</button>
         <button class="btn-icon mobile-menu-toggle" id="btn-hamburger" onclick="toggleMobileMenu()" title="Menu" style="font-size:18px;">☰</button>
       </div>
+    </div>
+
+    <div class="filter-strip" id="filter-strip">
+        <input type="text" id="search-input" placeholder="Search projects..." autocomplete="off">
+        <select id="filter-severity" onchange="applyFilters()">
+           <option value="ALL">All Health</option>
+           <option value="crit">Critical</option>
+           <option value="warn">Warnings</option>
+           <option value="info">Clear</option>
+        </select>
+        <select id="filter-vendor" onchange="applyFilters()"><option value="ALL">All Vendors</option></select>
+        <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
+        <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
+        <div class="filter-tools">
+            <span id="nav-ref-age" style="font-size:9px; font-weight:900; padding:6px 10px; border-radius:12px; border:1px solid; display:none; white-space:nowrap;"></span>
+            <button class="btn hover-trigger" id="btn-grid-toggle" onclick="toggleGridMode()" style="font-size:10px; border-color:var(--border); background:var(--card-bg); color:var(--text-main); font-weight:900;">⊞ Grid View</button>
+            <select id="grid-pivot-select" onchange="updateGridPivot()" style="display:none; font-size:10px;">
+               <option value="velocity">Field Velocity</option>
+               <option value="schedule">Project Schedule</option>
+               <option value="notes">Manager Notes</option>
+               <option value="deliverables">Deliverables</option>
+            </select>
+            <button class="btn" id="btn-clear-filters" onclick="clearAllFilters()" style="display:none; font-size:10px; border-color:var(--border); background:var(--card-bg); color:var(--text-main);">Clear</button>
+        </div>
     </div>
 
     <!-- Mobile hamburger menu -->
@@ -857,29 +914,6 @@
         <div class="inbox-list" id="inbox-list"></div>
       </div>
       <div class="reading-pane">
-        <div class="filter-strip" id="filter-strip">
-            <input type="text" id="search-input" placeholder="Search projects..." autocomplete="off">
-            <select id="filter-severity" onchange="applyFilters()">
-               <option value="ALL">All Health</option>
-               <option value="crit">Critical</option>
-               <option value="warn">Warnings</option>
-               <option value="info">Clear</option>
-            </select>
-            <select id="filter-vendor" onchange="applyFilters()"><option value="ALL">All Vendors</option></select>
-            <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
-            <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
-            <div class="filter-tools">
-                <span id="nav-ref-age" style="font-size:9px; font-weight:900; padding:6px 10px; border-radius:12px; border:1px solid; display:none; white-space:nowrap;"></span>
-                <button class="btn hover-trigger" id="btn-grid-toggle" onclick="toggleGridMode()" style="font-size:10px; border-color:var(--border); background:var(--card-bg); color:var(--text-main); font-weight:900;">⊞ Grid View</button>
-                <select id="grid-pivot-select" onchange="updateGridPivot()" style="display:none; font-size:10px;">
-                   <option value="velocity">Field Velocity</option>
-                   <option value="schedule">Project Schedule</option>
-                   <option value="notes">Manager Notes</option>
-                   <option value="deliverables">Deliverables</option>
-                </select>
-                <button class="btn" id="btn-clear-filters" onclick="clearAllFilters()" style="display:none; font-size:10px; border-color:var(--border); background:var(--card-bg); color:var(--text-main);">Clear</button>
-            </div>
-        </div>
         <div class="upper-workspace">
           <div class="detail-layout" id="detail-layout" style="display:flex;">
             <div class="detail-main">
