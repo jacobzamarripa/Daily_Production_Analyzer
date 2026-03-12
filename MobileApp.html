@@ -398,14 +398,14 @@
     .glass-pill,
     .status-pill {
       font-size: 9px;
-      font-weight: 800;
+      font-weight: bold;
       display: inline-flex;
       align-items: center;
       text-transform: uppercase;
-      letter-spacing: 1.2px;
       white-space: nowrap;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
+      border: 1px solid;
     }
     .status-pill {
       padding: 5px 11px;
@@ -415,15 +415,22 @@
       margin-top: 4px;
     }
     .glass-pill {
-      padding: 3px 8px;
-      border-radius: 8px;
+      padding: 4px 8px;
+      border-radius: 6px;
     }
-    .pill-permitting { background: var(--pill-permitting-bg); color: var(--pill-permitting-txt); }
-    .pill-ofs        { background: var(--pill-ofs-bg);        color: var(--pill-ofs-txt); }
-    .pill-complete   { background: var(--pill-complete-bg);   color: var(--pill-complete-txt); }
-    .pill-hold       { background: var(--pill-hold-bg);       color: var(--pill-hold-txt); }
-    .pill-active     { background: var(--pill-active-bg);     color: var(--pill-active-txt); }
-    .pill-default    { background: var(--pill-default-bg);    color: var(--pill-default-txt); }
+    .pill-active { color: #b45309; background: rgba(253, 224, 71, 0.25); border-color: #facc15; }
+    .pill-ofs { color: #1d4ed8; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
+    .pill-permit { color: #7e22ce; background: rgba(168, 85, 247, 0.15); border-color: #a855f7; }
+    .pill-complete { color: #15803d; background: rgba(34, 197, 94, 0.15); border-color: #22c55e; }
+    .pill-hold { color: #475569; background: rgba(148, 163, 184, 0.15); border-color: #94a3b8; }
+    .pill-missing { color: #b91c1c; background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
+
+    body.dark-mode .pill-active { color: #fde047; background: rgba(253, 224, 71, 0.15); border-color: #ca8a04; }
+    body.dark-mode .pill-ofs { color: #93c5fd; background: rgba(59, 130, 246, 0.15); border-color: #2563eb; }
+    body.dark-mode .pill-permit { color: #d8b4fe; background: rgba(168, 85, 247, 0.15); border-color: #9333ea; }
+    body.dark-mode .pill-complete { color: #86efac; background: rgba(34, 197, 94, 0.15); border-color: #16a34a; }
+    body.dark-mode .pill-hold { color: #cbd5e1; background: rgba(148, 163, 184, 0.15); border-color: #64748b; }
+    body.dark-mode .pill-missing { color: #fca5a5; background: rgba(239, 68, 68, 0.15); border-color: #dc2626; }
 
     .card-sub {
       font-size: 12px;
@@ -1888,9 +1895,9 @@
    1. CONFIG
 ═══════════════════════════════════════════════════ */
 var CONFIG = {
-  CAROUSEL_THRESHOLD: 0.35,
+  CAROUSEL_THRESHOLD: 0.30,
   CAROUSEL_OFFSET: 0.92,
-  CAROUSEL_MS: 320,
+  CAROUSEL_MS: 400,
 };
 
 var FLAG_CRITICAL = ['🚨','🛑','🚩'];
@@ -2047,12 +2054,12 @@ function hideSplash() {
 ═══════════════════════════════════════════════════ */
 function pillClass(status, stage) {
   var s = (status||'').toUpperCase(), g = (stage||'').toUpperCase();
-  if (s.includes('PERMITTING')||g.includes('PERMITTING')) return 'pill-permitting';
+  if (s.includes('PERMITTING')||g.includes('PERMITTING')) return 'pill-permit';
   if (s.includes('OFS')||s.includes('OPEN FOR SALE')||g.includes('OFS')) return 'pill-ofs';
   if (s.includes('COMPLETE')) return 'pill-complete';
   if (s.includes('ON HOLD')||s.includes('HOLD')) return 'pill-hold';
   if (s.includes('ACTIVE')||g.includes('CONSTRUCTION')) return 'pill-active';
-  return 'pill-default';
+  return 'pill-missing';
 }
 
 function pillLabel(status, stage) {
@@ -2129,15 +2136,14 @@ function formatDate(val) {
 }
 
 function getQBStatusClass(stage, status, isMissing) {
-  if (isMissing) return 'pill-default';
+  if (isMissing) return 'pill-missing';
   var st = (stage || '').toLowerCase();
   var stat = (status || '').toLowerCase();
   if (st.includes('ofs')) return 'pill-ofs';
-  if (st.includes('permit')) return 'pill-permitting';
+  if (st.includes('permit')) return 'pill-permit';
   if (stat.includes('complete')) return 'pill-complete';
   if (stat.includes('hold') || stat.includes('assign')) return 'pill-hold';
-  if (stat.includes('active') || st.includes('construction')) return 'pill-active';
-  return 'pill-default';
+  return 'pill-active';
 }
 
 function getEditUrl(rid) {
@@ -2182,28 +2188,66 @@ function renderVelocityBars(item) {
   return html;
 }
 
-function renderVelocityBarsDesktopStyle(item) {
-  var vel = velPcts(item.vel);
-  var html = '<div class="velocity-grid">';
-  for (var vi = 0; vi < VEL_TYPES.length; vi++) {
-    var t = VEL_TYPES[vi];
-    var p = vel[t];
-    var bucket = item.vel && item.vel[t] ? item.vel[t] : { tot:0, bom:0, daily:0 };
-    var fill = t === 'ug' ? 'var(--qb-ug)' : t === 'ae' ? 'var(--qb-ae-bg)' : t === 'fib' ? 'var(--qb-fib-bg)' : 'var(--qb-nap-bg)';
-    var bead = '';
-    if (p > 0 && p < 100) {
-      var beadColor = t === 'fib' ? '#ef4444' : t === 'nap' ? '#6366f1' : t === 'ae' ? '#94a3b8' : 'var(--qb-ug)';
-      bead = '<div class="qb-vel-bead" style="left:calc(' + p + '% - 7px); border-color:' + beadColor + ';"></div>';
-    }
-    var unit = t === 'nap' ? 'NAPs' : 'ft';
-    html += '<div class="qb-vel-item">' +
-      '<div class="qb-vel-labels"><span>' + VEL_LABELS[t] + '</span><span>' + p + '%</span></div>' +
-      '<div class="qb-vel-bar"><div class="qb-vel-fill" style="width:' + p + '%; background:' + fill + ';"></div>' + bead + '</div>' +
-      '<div class="qb-vel-footer"><span>' + fmt(bucket.tot) + ' / ' + fmt(bucket.bom) + ' ' + unit + '</span><span>PACE ' + fmt(bucket.daily) + '/' + (t === 'nap' ? 'day' : 'day') + '</span></div>' +
-    '</div>';
+function buildVelocityBar(name, daily, tot, bom, typeKey, daysLeft) {
+  var dailyVal = daily || 0;
+  var rawTot = tot || 0;
+  var bomVal = bom || 0;
+  var totalVal = Math.max(rawTot, dailyVal);
+
+  if (bomVal === 0 && totalVal === 0 && dailyVal === 0) return '';
+  if (bomVal === 0 && totalVal > 0) bomVal = totalVal;
+
+  var totalPct = bomVal > 0 ? Math.min(100, (totalVal / bomVal) * 100) : 0;
+  var isDone = totalPct >= 100;
+
+  var colorDef = {
+    'UG': { color: 'var(--qb-ug)', bg: 'var(--qb-ug)', border: 'var(--qb-ug)' },
+    'AE': { color: 'var(--text-main)', bg: 'var(--qb-ae-bg)', border: '#94a3b8' },
+    'FIB': { color: 'var(--text-main)', bg: 'var(--qb-fib-bg)', border: '#ef4444' },
+    'NAP': { color: 'var(--text-main)', bg: 'var(--qb-nap-bg)', border: '#6366f1' }
+  }[typeKey] || { color: 'var(--text-main)', bg: '#94a3b8', border: '#94a3b8' };
+
+  var textCol = isDone ? '#22c55e' : colorDef.color;
+  var bgStyle = isDone ? '#22c55e' : colorDef.bg;
+  var beadBorder = isDone ? '#22c55e' : colorDef.border;
+  var beadShadow = '0 2px 4px rgba(0,0,0,0.2)';
+  if (typeKey === 'FIB' && !isDone) beadShadow = '0 0 10px ' + beadBorder;
+  if (typeKey === 'NAP' && !isDone) beadShadow = '0 0 8px rgba(99, 102, 241, 0.6)';
+
+  var paceDays = Math.max(1, daysLeft);
+  var paceVal = Math.max(0, bomVal - totalVal) / paceDays;
+  var paceColor = 'var(--text-muted)';
+  if (!isDone && bomVal > 0) {
+    if (typeKey === 'UG' && paceVal > 450) paceColor = '#ef4444';
+    else if (typeKey === 'AE' && paceVal > 5000) paceColor = '#ef4444';
+    else if (typeKey === 'NAP' && paceVal > 5) paceColor = '#ef4444';
+    else paceColor = textCol;
   }
-  html += '</div>';
-  return html;
+
+  var paceUnit = typeKey === 'NAP' ? 'NAPs/day' : 'ft/day';
+  var formattedPace = typeKey === 'NAP' ? Math.ceil(paceVal) : Math.round(paceVal);
+  var dailyBadge = dailyVal > 0 ? '<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:8px; border:1px solid #bbf7d0; display:inline-flex; align-items:center; line-height:1; white-space:nowrap; margin-left:6px;">+' + dailyVal.toLocaleString() + ' TODAY</span>' : '';
+  var starStr = isDone ? '<span style="color:var(--starGold); margin-left:4px; font-size:12px; line-height:1;">★</span>' : '';
+  var barTrackBg = (typeKey === 'FIB' || typeKey === 'NAP') ? 'var(--border)' : 'var(--bg)';
+  var beadHtml = (!isDone && totalPct > 0) ? '<div class="qb-vel-bead" style="left: calc(' + totalPct + '% - 7px); border-color: ' + beadBorder + '; box-shadow: ' + beadShadow + '; position:absolute; top:-2px; width:14px; height:14px; background:rgba(255,255,255,0.85); border-radius:50%; border:3px solid; z-index:2; box-sizing:border-box;"></div>' : '';
+
+  return '<div style="margin-bottom:12px; width:100%;">' +
+    '<div style="display:flex; justify-content:space-between; align-items:flex-end; gap:8px; margin-bottom:4px;">' +
+      '<div style="display:flex; align-items:center;">' +
+        '<span style="font-size:10px; font-weight:bold; color:var(--text-main); margin-right:6px;">' + name + ':</span>' +
+        '<span style="color:' + textCol + '; font-family:monospace; font-size:10px; font-weight:bold;">' + totalVal.toLocaleString() + '</span>' +
+        '<span style="color:var(--text-muted); font-size:10px; margin:0 4px;">/</span>' +
+        '<span style="color:' + textCol + '; font-family:monospace; font-size:10px; font-weight:bold;">' + bomVal.toLocaleString() + '</span>' +
+        dailyBadge +
+      '</div>' +
+      '<div style="color:' + textCol + '; font-family:monospace; font-size:10px; font-weight:900; white-space:nowrap;">' + Math.round(totalPct) + '% ' + starStr + '</div>' +
+    '</div>' +
+    '<div style="background:' + barTrackBg + '; height:10px; border-radius:5px; border:1px solid var(--border); position:relative; overflow:visible; margin-bottom:4px;">' +
+      '<div style="width:' + totalPct + '%; background:' + bgStyle + '; height:100%; border-radius:4px; position:absolute; left:0; top:0; transition:width 0.5s;"></div>' +
+      beadHtml +
+    '</div>' +
+    '<div style="font-size:9px; color:' + paceColor + '; font-weight:800; margin-top:4px;">PACE: ' + formattedPace.toLocaleString() + ' ' + paceUnit + '</div>' +
+  '</div>';
 }
 
 function renderDeliverableChip(label, status) {
@@ -2284,6 +2328,30 @@ function cardHTML(item) {
     var cdMatch = mainDraft.match(/\n*\[CD Intelligence\]:\s*([\s\S]*)$/);
     if (cdMatch) cdIntelText = cdMatch[1].trim();
   }
+  var pEnd = safeParse(item.cxEnd || item.targetDate);
+  var daysLeft = 0;
+  if (pEnd) daysLeft = Math.ceil((pEnd - new Date()) / 86400000);
+  var barsHtml = '';
+  var v = item.vel;
+  if (v) {
+    barsHtml += buildVelocityBar('Underground', v.ug && v.ug.daily, v.ug && v.ug.tot, v.ug && v.ug.bom, 'UG', daysLeft);
+    barsHtml += buildVelocityBar('Aerial', v.ae && v.ae.daily, v.ae && v.ae.tot, v.ae && v.ae.bom, 'AE', daysLeft);
+    barsHtml += buildVelocityBar('Fiber', v.fib && v.fib.daily, v.fib && v.fib.tot, v.fib && v.fib.bom, 'FIB', daysLeft);
+    barsHtml += buildVelocityBar('Splicing', v.nap && v.nap.daily, v.nap && v.nap.tot, v.nap && v.nap.bom, 'NAP', daysLeft);
+  }
+  if (!barsHtml) barsHtml = "<div style='font-size:11px; color:var(--text-muted); font-style:italic;'>No active production tracking.</div>";
+  var ofsMonthStr = 'TBD';
+  var isOFSMonth = false;
+  if (item.ofsDate && item.ofsDate !== '-' && item.ofsDate !== 'Unknown') {
+    var d = safeParse(item.ofsDate);
+    if (d && !isNaN(d.getTime())) {
+      ofsMonthStr = d.toLocaleString('default', { month: 'short', timeZone: 'UTC' }).toUpperCase();
+      var today = new Date();
+      if (d.getUTCMonth() === today.getMonth() && d.getUTCFullYear() === today.getFullYear()) isOFSMonth = true;
+    }
+  }
+  var ofsPillStyle = isOFSMonth ? 'color:#2563eb; background:rgba(239, 246, 255, 0.7); border-color:#2563eb;' : 'color:var(--text-main); background:var(--bg); border-color:var(--border);';
+  var daysLeftText = daysLeft < 0 ? 'OVERDUE BY: ' + Math.abs(daysLeft) + ' DAYS' : 'DAYS LEFT: ' + daysLeft;
   return '<div class="card-outer-container" style="height:100%; display:flex; flex-direction:column;">'+
     '<div class="card-header-sticky">'+
       '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">PROJECT SCHEDULE</div>'+
@@ -2306,7 +2374,14 @@ function cardHTML(item) {
       '</div>'+
       '<div class="qb-module" style="margin-bottom:16px;">'+
         '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">FIELD VELOCITY &amp; PRODUCTION</div>'+
-        renderVelocityBarsDesktopStyle(item)+
+        barsHtml +
+        '<div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:12px; margin-top:8px;">'+
+          '<div style="font-size:10px; font-weight:900; color:var(--text-muted);">'+daysLeftText+'</div>'+
+          '<div style="display:flex; gap:8px;">'+
+            '<div style="font-size:9px; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid var(--border); background:var(--bg); color:var(--text-main);">BSLS: '+esc(item.bsls || '—')+'</div>'+
+            (item.ofsDate && item.ofsDate !== '-' ? '<div style="font-size:9px; font-weight:800; padding:2px 8px; border-radius:4px; border:1px solid; '+ofsPillStyle+'">OFS: '+ofsMonthStr+'</div>' : '')+
+          '</div>'+
+        '</div>'+
       '</div>'+
       '<div class="qb-module" style="margin-bottom:16px;">'+
         '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">DIAGNOSTIC &amp; MANAGER REVIEW</div>'+
@@ -2397,7 +2472,7 @@ function carouselBasePx(offset) {
 function applyCarouselPositions(dx, animated) {
   var cards = document.querySelectorAll('#card-stack .project-card');
   cards.forEach(function(card) {
-    card.style.transition = animated ? 'transform '+CONFIG.CAROUSEL_MS+'ms cubic-bezier(0.16,1,0.3,1)' : 'none';
+    card.style.transition = animated ? 'transform ' + CONFIG.CAROUSEL_MS + 'ms cubic-bezier(0.25, 1, 0.5, 1), opacity ' + CONFIG.CAROUSEL_MS + 'ms ease' : 'none';
     var offset = Number(card.dataset.carouselOffset || 0);
     var x = carouselBasePx(offset) + dx;
     card.style.transform = 'translateX(calc(-50% + ' + x + 'px))';
