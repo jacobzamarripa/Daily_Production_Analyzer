@@ -831,8 +831,8 @@
       white-space: pre-wrap;
     }
     .chips-row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      display: flex !important;
+      flex-direction: column !important;
       gap: 10px;
       margin-bottom: 14px;
     }
@@ -917,7 +917,9 @@
       background: repeating-linear-gradient(45deg, #171717, #171717 8px, #facc15 8px, #facc15 16px);
     }
     .qb-target-wrap.xing .qb-target-inner {
-      border-radius: 12px 12px 0 0 !important;
+      background: var(--card-bg) !important;
+      border-radius: 9px 9px 0 0 !important;
+      padding: 12px !important;
     }
     .velocity-grid {
       display: grid;
@@ -2284,20 +2286,18 @@ function cardHTML(item) {
   }
   return '<div class="card-outer-container" style="height:100%; display:flex; flex-direction:column;">'+
     '<div class="card-header-sticky">'+
-      '<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">'+
-        '<div style="display:flex; flex-direction:column;">'+
-          '<div style="font-size:18px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px; line-height:1.2;">'+esc(item.fdh||'—')+'</div>'+
-          '<div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-top:2px;">'+esc((item.city || 'Unknown City')+(item.vendor ? ' · ' + item.vendor : ''))+'</div>'+
-        '</div>'+
-        '<div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">'+
-          '<div class="glass-pill '+pillClassName+'" style="font-size:9px; padding:3px 8px; border-radius:6px; font-weight:bold; text-transform:uppercase;">'+esc(combinedPill)+'</div>'+
-          (item.rid ? '<a href="'+getEditUrl(item.rid)+'" target="_blank" style="text-decoration:none; font-size:9px; font-weight:bold; color:var(--text-muted); background:var(--bg); padding:3px 8px; border-radius:6px; border:1px solid var(--border); display:inline-flex; align-items:center;">⚙ EDIT IN ENGINE</a>' : '')+
-        '</div>'+
+      '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">PROJECT SCHEDULE</div>'+
+      '<div style="display:flex; justify-content:space-between; align-items:flex-start;">'+
+        '<div style="font-size:22px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px; line-height:1;">'+esc(item.fdh||'—')+'</div>'+
+        '<div class="glass-pill '+pillClassName+'" style="font-size:9px; padding:4px 8px; border-radius:6px; font-weight:bold; text-transform:uppercase;">'+esc(combinedPill)+'</div>'+
+      '</div>'+
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">'+
+        '<div style="font-size:11px; font-weight:600; color:var(--text-muted);">'+esc((item.city || 'Unknown City')+(item.vendor ? ' · ' + item.vendor : ''))+'</div>'+
+        (item.rid ? '<a href="'+getEditUrl(item.rid)+'" target="_blank" style="text-decoration:none; font-size:9px; font-weight:bold; color:var(--text-muted); background:var(--bg); padding:4px 10px; border-radius:6px; border:1px solid var(--border); display:inline-flex; align-items:center;">⚙ EDIT IN ENGINE</a>' : '')+
       '</div>'+
     '</div>'+
     '<div class="card-scroll-body">'+
       '<div class="qb-module" style="margin-bottom:16px;">'+
-        '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">PROJECT SCHEDULE</div>'+
         '<div class="qb-time-labels"><span>CX START: <b style="color:var(--text-main);">'+formatDate(item.cxStart)+'</b></span><span>CX COMPLETE: <b style="color:var(--text-main);">'+formatDate(item.cxEnd)+'</b></span></div>'+
         '<div class="qb-time-bar"><div class="qb-time-fill" style="width:'+pct+'%; background:'+sColor+';"></div>' +
           (pct > 0 && pct < 100 ? '<div class="qb-time-bead" style="left:'+pct+'%; border-color:'+sColor+';"></div>' : '') +
@@ -2446,39 +2446,58 @@ function attachGestures(card) {
   card.addEventListener('touchcancel',onCancel,{passive:false});
 }
 
+var isHorizontalSwipe = null;
+
 function onStart(e) {
   if (!state.reviewOpen) return;
-  if (e.target.closest('textarea, button, a, .card-scroll-body')) return;
-  e.preventDefault();
-  if(state.dragging) return;
+  if (e.target.closest('textarea, button, a')) return;
+  if (state.dragging) return;
   var t = e.touches[0];
-  state.drag = { card:this, sx:t.clientX, dx:0 };
+  state.drag = { card:this, sx:t.clientX, sy:t.clientY, dx:0, dy:0 };
   this.style.transition = 'none';
+  isHorizontalSwipe = null;
 }
 
 function onMove(e) {
-  if(!state.drag || state.dragging) return;
-  e.preventDefault();
-  if(!state.drag||state.drag.card!==this) return;
+  if (!state.drag || state.dragging) return;
+  if (!state.drag || state.drag.card !== this) return;
   var t = e.touches[0];
   state.drag.dx = t.clientX - state.drag.sx;
-  applyCarouselPositions(state.drag.dx, false);
+  state.drag.dy = t.clientY - state.drag.sy;
+
+  if (isHorizontalSwipe === null) {
+    if (Math.abs(state.drag.dx) > Math.abs(state.drag.dy)) isHorizontalSwipe = true;
+    else isHorizontalSwipe = false;
+  }
+
+  if (isHorizontalSwipe) {
+    e.preventDefault();
+    applyCarouselPositions(state.drag.dx, false);
+  }
 }
 
 function onEnd(e) {
   if (!state.drag) return;
-  e.preventDefault();
-  if(!state.drag||state.drag.card!==this) return;
-  var dx = state.drag.dx;
-  var threshold = window.innerWidth * CONFIG.CAROUSEL_THRESHOLD;
-  state.drag = null;
-  if (dx < -threshold) advanceCarousel('next');
-  else if (dx > threshold) advanceCarousel('prev');
-  else snapBackCarousel();
+  if (isHorizontalSwipe) {
+    var dx = state.drag.dx;
+    var threshold = window.innerWidth * CONFIG.CAROUSEL_THRESHOLD;
+    state.drag = null;
+    if (dx < -threshold) advanceCarousel('next');
+    else if (dx > threshold) advanceCarousel('prev');
+    else snapBackCarousel();
+  } else {
+    state.drag = null;
+    snapBackCarousel();
+  }
+  isHorizontalSwipe = null;
 }
 
 function onCancel(e) {
-  if(state.drag){ state.drag = null; snapBackCarousel(); }
+  if (state.drag) {
+    state.drag = null;
+    snapBackCarousel();
+  }
+  isHorizontalSwipe = null;
 }
 
 function bumpPill() {
