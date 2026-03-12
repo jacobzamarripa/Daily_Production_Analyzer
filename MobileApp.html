@@ -1965,6 +1965,12 @@
         <div id="admin-pane-content" style="flex-grow:1; display:flex; flex-direction:column; gap:6px;"></div>
       </div>
       <div id="ob-panel-reviewed" class="review-hub-panel">
+        <div class="ob-header" style="flex-shrink:0; padding-bottom:8px;">
+           <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+              Session Reviewed Projects
+              <span id="ob-tab-count" style="display:none;"></span>
+           </div>
+        </div>
         <div id="reviewed-sheet-list" class="reviewed-sheet-list"></div>
       </div>
     </div>
@@ -2092,6 +2098,7 @@ var state = {
   idx:        0,
   committed:  [],
   stagedCrossings: [],
+  stagedStatus: [],
   count:      0,
   activeTab:  'admin',
   adminFilter: 'all',
@@ -2762,6 +2769,7 @@ function setDockMode() {
   var secondary = document.getElementById('dock-secondary-btn');
   var backBtn = document.getElementById('dock-back-btn');
   var hubBadge = document.getElementById('nav-hub-badge');
+
   if (!primaryMain || !primarySub || !secondary) return;
 
   var adminTotal = getAdminItems().length + getCrossingItems().length + getBomItems().length;
@@ -2771,15 +2779,47 @@ function setDockMode() {
   }
 
   if (state.reviewOpen) {
+    // ── DETAIL VIEW ──
     if (backBtn) backBtn.classList.add('show');
-    if (primaryPill) primaryPill.classList.add('commit-mode');
+    if (primaryPill) primaryPill.className = 'commit-mode';
     primaryMain.textContent = 'Commit';
     primarySub.textContent = (state.deck[state.idx] && state.deck[state.idx].fdh) ? state.deck[state.idx].fdh : 'Review';
     secondary.innerHTML = 'Skip';
     secondary.style.color = 'var(--text-main)';
-  } else {
+
+  } else if (state.adminSheetOpen) {
+    // ── ADMIN HUB OPEN ──
     if (backBtn) backBtn.classList.remove('show');
-    if (primaryPill) primaryPill.classList.remove('commit-mode');
+    secondary.innerHTML = 'Search';
+    secondary.style.color = 'var(--text-main)';
+
+    if (state.activeTab === 'admin') {
+      var stagedCount = (state.stagedCrossings ? state.stagedCrossings.length : 0) + (state.stagedStatus ? state.stagedStatus.length : 0);
+      if (stagedCount > 0) {
+        if (primaryPill) primaryPill.className = 'commit-mode';
+        primaryMain.textContent = 'Commit Staged';
+        primarySub.textContent = stagedCount + ' item' + (stagedCount > 1 ? 's' : '');
+      } else {
+        if (primaryPill) primaryPill.className = '';
+        primaryMain.textContent = 'No Staged Items';
+        primarySub.textContent = 'Swipe to verify';
+      }
+    } else if (state.activeTab === 'reviewed') {
+      if (state.committed && state.committed.length > 0) {
+        if (primaryPill) primaryPill.className = 'commit-mode';
+        primaryMain.textContent = 'Export All';
+        primarySub.textContent = state.committed.length + ' item' + (state.committed.length > 1 ? 's' : '');
+      } else {
+        if (primaryPill) primaryPill.className = '';
+        primaryMain.textContent = 'No Reviews';
+        primarySub.textContent = 'Nothing to export';
+      }
+    }
+
+  } else {
+    // ── MAIN QUEUE VIEW ──
+    if (backBtn) backBtn.classList.remove('show');
+    if (primaryPill) primaryPill.className = '';
     primaryMain.textContent = 'Review Queue';
     primarySub.textContent = state.deck.length + ' project' + (state.deck.length !== 1 ? 's' : '');
     if (state.searchOpen) {
@@ -2793,8 +2833,16 @@ function setDockMode() {
 }
 
 function handlePrimaryAction() {
-  if (state.reviewOpen) commitCurrentCard();
-  else {
+  if (state.reviewOpen) {
+    commitCurrentCard();
+  } else if (state.adminSheetOpen) {
+    if (state.activeTab === 'admin') {
+      var stagedCount = (state.stagedCrossings ? state.stagedCrossings.length : 0) + (state.stagedStatus ? state.stagedStatus.length : 0);
+      if (stagedCount > 0) commitStagedMobile();
+    } else if (state.activeTab === 'reviewed') {
+      if (state.committed && state.committed.length > 0) promptEmailExport();
+    }
+  } else {
     state.deck = getDiagQueueItems();
     state.idx = 0;
     syncCountLabel();
@@ -2942,6 +2990,7 @@ function switchMobileTab(tab) {
   if (reviewedTab) reviewedTab.classList.toggle('active', tab === 'reviewed');
   if (adminPanel) adminPanel.classList.toggle('active', tab === 'admin');
   if (reviewedPanel) reviewedPanel.classList.toggle('active', tab === 'reviewed');
+  setDockMode();
 }
 
 function renderAdminSheet() {
@@ -3607,6 +3656,7 @@ function renderAdminPaneContent() {
   var pane = document.getElementById('admin-pane-content');
   if (!pane) return;
   if (!state.stagedCrossings) state.stagedCrossings = [];
+  if (!state.stagedStatus) state.stagedStatus = [];
 
   var items = state.all;
   var crossings = items.filter(function(i) { return String(i.flags||'').includes('ADMIN: CHECK CROSSINGS'); });
@@ -3619,7 +3669,8 @@ function renderAdminPaneContent() {
   function makeSwipeCard(item, customDetails, listType, leftSwipe, rightSwipe) {
     var fdh = esc(item.fdh || '—');
     var vendor = esc((item.city||'') + (item.vendor ? ' · ' + item.vendor : ''));
-    var isStaged = state.stagedCrossings.indexOf(item.fdh) > -1;
+    var isStaged = (listType === 'admin-xing' && state.stagedCrossings.indexOf(item.fdh) > -1) ||
+                   (listType === 'admin-status' && state.stagedStatus.indexOf(item.fdh) > -1);
     var stagedPill = isStaged ? '<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:6px; font-size:9px; font-weight:900; border:1px solid #bbf7d0; margin-left:8px;">✓ STAGED</span>' : '';
     return `<div class="swipe-wrapper" data-fdh="${esc(item.fdh)}" data-list-type="${listType}" style="border-radius:12px; margin-bottom:8px;">
       ${leftSwipe || ''}
@@ -3640,13 +3691,8 @@ function renderAdminPaneContent() {
   var html = '';
 
   if ((mode === 'all' || mode === 'xing') && crossings.length > 0) {
-    var commitBtn = '';
-    if (state.stagedCrossings.length > 0) {
-      commitBtn = `<button onclick="commitStagedMobile(this)" style="padding:4px 10px; font-size:10px; font-weight:900; background:#0f172a; color:#fff; border:1px solid #0f172a; border-radius:6px; cursor:pointer; white-space:nowrap; box-shadow:0 4px 6px rgba(0,0,0,0.1);">Commit Staged →</button>`;
-    }
     html += `<div class="hub-section-title" style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; margin-bottom:12px;">
       <span>Crossings to Verify <span style="background:var(--border); padding:2px 6px; border-radius:10px; color:var(--text-main); font-size:9px;">${crossings.length}</span></span>
-      ${commitBtn}
     </div>`;
     html += crossings.map(function(item) {
       var xVal = item.rawSpecialX || (item.isXing ? 'YES' : '—');
@@ -3665,7 +3711,7 @@ function renderAdminPaneContent() {
       var detailsHtml = `<div style="font-size:10px; color:var(--text-muted);">QB Status: <span style="font-weight:900; color:var(--text-main); font-size:11px;">${esc(item.status||'—')}</span></div>`;
       return makeSwipeCard(item, detailsHtml, 'admin-status',
         '<div class="swipe-actions swipe-action-left" style="background:#2563eb;">🛠 Updated</div>',
-        '');
+        '<div class="swipe-actions swipe-action-uncommit" style="background:#f59e0b;">⟲ Unmark</div>');
     }).join('');
   }
 
@@ -3690,6 +3736,7 @@ function renderAdminPaneContent() {
 
   if (!html) {
     pane.innerHTML = '<div class="hub-empty" style="margin-top:20px;">All clear — no admin exceptions for this filter</div>';
+    setDockMode();
     return;
   }
   pane.innerHTML = html;
@@ -3701,6 +3748,7 @@ function renderAdminPaneContent() {
       closeAdminSheet();
     };
   });
+  setDockMode();
 }
 
 function renderList(items) {
@@ -4072,17 +4120,20 @@ document.addEventListener('touchend', function(e) {
     } else if (listType === 'admin-xing') {
       if (dx > threshold) {
         el.style.transform = 'translateX(100%)';
-        setTimeout(function() { verifyCrossingLocal(fdh); }, 250);
+        setTimeout(function() { stageXingLocal(fdh); }, 250);
       } else if (dx < -threshold) {
         el.style.transform = 'translateX(-100%)';
-        setTimeout(function() { unverifyCrossingLocal(fdh); }, 250);
+        setTimeout(function() { unstageXingLocal(fdh); }, 250);
       } else {
         el.style.transform = 'translateX(0)';
       }
     } else if (listType === 'admin-status') {
       if (dx > threshold) {
         el.style.transform = 'translateX(100%)';
-        setTimeout(function() { markQbUpdatedMobile(fdh); }, 250);
+        setTimeout(function() { stageStatusLocal(fdh); }, 250);
+      } else if (dx < -threshold) {
+        el.style.transform = 'translateX(-100%)';
+        setTimeout(function() { unstageStatusLocal(fdh); }, 250);
       } else {
         el.style.transform = 'translateX(0)';
       }
@@ -4092,7 +4143,7 @@ document.addEventListener('touchend', function(e) {
 
 // ─── ADMIN SWIPE & BATCH COMMIT LOGIC ───────────────────────────────────────
 
-function verifyCrossingLocal(fdh) {
+function stageXingLocal(fdh) {
   if (state.stagedCrossings.indexOf(fdh) === -1) {
     state.stagedCrossings.push(fdh);
   }
@@ -4100,11 +4151,24 @@ function verifyCrossingLocal(fdh) {
   renderAdminPaneContent();
 }
 
-function unverifyCrossingLocal(fdh) {
+function unstageXingLocal(fdh) {
   var idx = state.stagedCrossings.indexOf(fdh);
   if (idx > -1) {
     state.stagedCrossings.splice(idx, 1);
   }
+  haptic('light');
+  renderAdminPaneContent();
+}
+
+function stageStatusLocal(fdh) {
+  if (state.stagedStatus.indexOf(fdh) === -1) state.stagedStatus.push(fdh);
+  haptic('medium');
+  renderAdminPaneContent();
+}
+
+function unstageStatusLocal(fdh) {
+  var idx = state.stagedStatus.indexOf(fdh);
+  if (idx > -1) state.stagedStatus.splice(idx, 1);
   haptic('light');
   renderAdminPaneContent();
 }
@@ -4127,46 +4191,59 @@ function markQbUpdatedMobile(fdh) {
     .markStatusSyncComplete(fdh);
 }
 
-function commitStagedMobile(btn) {
-  if (!state.stagedCrossings || state.stagedCrossings.length === 0) return;
-  btn.innerText = 'Committing...';
-  btn.disabled = true;
-  var staged = state.stagedCrossings.slice();
+function commitStagedMobile() {
+  var xingQueue = (state.stagedCrossings || []).slice();
+  var statQueue = (state.stagedStatus || []).slice();
+  if (xingQueue.length === 0 && statQueue.length === 0) return;
+
+  var btnMain = document.getElementById('dock-primary-main');
+  var pill = document.getElementById('dock-primary-pill');
+  if (btnMain) btnMain.innerText = 'Committing...';
+  if (pill) pill.style.pointerEvents = 'none';
+
+  var tasks = [];
+  xingQueue.forEach(function(f) { tasks.push({type: 'xing', fdh: f}); });
+  statQueue.forEach(function(f) { tasks.push({type: 'status', fdh: f}); });
   var completed = 0;
-  function verifyNext() {
-    if (completed >= staged.length) {
-      google.script.run
-        .withSuccessHandler(function(r) {
-          state.stagedCrossings = [];
-          if (r.success) toast('✅ ' + r.count + ' crossings committed');
-          else alert('Commit failed: ' + r.error);
-          google.script.run.withSuccessHandler(function(d) {
-            state.all = d.actionItems;
-            renderAdminSheet();
-          }).getDashboardData();
-        })
-        .withFailureHandler(function(err) {
-          alert('Final commit failed: ' + err.message);
-          btn.innerText = 'Commit Staged →';
-          btn.disabled = false;
-        })
-        .commitToQueueWebApp();
+
+  function nextTask() {
+    if (completed >= tasks.length) {
+      if (xingQueue.length > 0) {
+        google.script.run
+          .withSuccessHandler(function() { finalizeCommit(); })
+          .withFailureHandler(function(e) { alert('Queue error: ' + e.message); finalizeCommit(); })
+          .commitToQueueWebApp();
+      } else {
+        finalizeCommit();
+      }
       return;
     }
-    var fdh = staged[completed];
-    google.script.run
-      .withSuccessHandler(function() {
-        completed++;
-        verifyNext();
-      })
-      .withFailureHandler(function(err) {
-        alert('Failed to verify ' + fdh + ': ' + err.message);
-        completed++;
-        verifyNext();
-      })
-      .verifySpecialCrossings(fdh);
+    var task = tasks[completed];
+    if (task.type === 'xing') {
+      google.script.run
+        .withSuccessHandler(function() { completed++; nextTask(); })
+        .withFailureHandler(function() { completed++; nextTask(); })
+        .verifySpecialCrossings(task.fdh);
+    } else {
+      google.script.run
+        .withSuccessHandler(function() { completed++; nextTask(); })
+        .withFailureHandler(function() { completed++; nextTask(); })
+        .markStatusSyncComplete(task.fdh);
+    }
   }
-  verifyNext();
+
+  function finalizeCommit() {
+    state.stagedCrossings = [];
+    state.stagedStatus = [];
+    toast('✅ All staged items committed');
+    if (pill) pill.style.pointerEvents = 'auto';
+    google.script.run.withSuccessHandler(function(d) {
+      state.all = d.actionItems;
+      renderAdminSheet();
+    }).getDashboardData();
+  }
+
+  nextTask();
 }
 
 function commitFromList(fdh) {
