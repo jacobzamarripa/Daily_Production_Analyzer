@@ -357,6 +357,24 @@
       transform: translate(-50%, -50%);
       box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
     }
+    .proj-bead {
+      position: absolute;
+      top: -4px;
+      width: 18px;
+      height: 18px;
+      background: var(--card-bg);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      border: 2px solid;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 8;
+      font-size: 8px;
+      font-weight: 900;
+      box-sizing: border-box;
+    }
     .qb-target-inner {
       display: flex;
       justify-content: space-between;
@@ -1163,7 +1181,7 @@
       box-shadow: 0 12px 32px rgba(15, 23, 42, 0.15);
       display: flex;
       align-items: center;
-      justify-content: space-around;
+      justify-content: space-between;
       padding: 0 10px;
       z-index: 10000;
     }
@@ -1244,6 +1262,13 @@
       min-width: 0;
       flex: 1;
     }
+    .dock-side {
+      display: flex;
+      flex-basis: 74px;
+      flex-shrink: 0;
+    }
+    .dock-side.left { justify-content: flex-start; }
+    .dock-side.right { justify-content: flex-end; }
     .dock-back-btn {
       width: 0;
       height: 44px;
@@ -1890,7 +1915,9 @@
 
     <!-- 6. COMMAND CENTER DOCK -->
     <div id="dock">
-      <button class="dock-action-btn" id="dock-secondary-btn" onclick="handleSecondaryAction()">Search</button>
+      <div class="dock-side left">
+        <button class="dock-action-btn" id="dock-secondary-btn" onclick="handleSecondaryAction()">Search</button>
+      </div>
       <div class="dock-center-group">
         <button class="dock-back-btn" id="dock-back-btn" onclick="showHubHome()">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -1902,12 +1929,14 @@
           <span id="dock-primary-sub">0 projects</span>
         </button>
       </div>
-      <button class="dock-btn" id="dock-home-btn" onclick="toggleAdminSheet()" aria-label="Menu">
-        <svg id="dock-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>
-        </svg>
-        <div class="nav-hub-badge" id="nav-hub-badge" style="display:none;">0</div>
-      </button>
+      <div class="dock-side right">
+        <button class="dock-btn" id="dock-home-btn" onclick="toggleAdminSheet()" aria-label="Menu">
+          <svg id="dock-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>
+          </svg>
+          <div class="nav-hub-badge" id="nav-hub-badge" style="display:none;">0</div>
+        </button>
+      </div>
       <div id="dock-session-count" style="display:none;">0</div>
     </div>
 
@@ -2395,7 +2424,48 @@ function cardHTML(item) {
     var cdMatch = mainDraft.match(/\n*\[CD Intelligence\]:\s*([\s\S]*)$/);
     if (cdMatch) cdIntelText = cdMatch[1].trim();
   }
+  var pStart = safeParse(item.cxStart);
   var pEnd = safeParse(item.cxEnd || item.targetDate);
+  var projBeadHtml = '';
+  var benchStr = item.bench || '';
+  if (pStart && pEnd && (pEnd - pStart > 0)) {
+    var makeProjBead = function(dateStr, icon, bgColor, borderColor) {
+      var d = safeParse(dateStr);
+      if (!d) return '';
+      var p = ((d - pStart) / (pEnd - pStart)) * 100;
+      if (p >= 0 && p <= 100) return '<div class="proj-bead" style="left:' + p + '%; background:' + bgColor + '; border-color:' + borderColor + '; color:' + borderColor + ';">' + icon + '</div>';
+      return '';
+    };
+    var locMatch = benchStr.match(/Loc:\s*([\d\/]+)/);
+    if (locMatch && locMatch[1]) projBeadHtml += makeProjBead(locMatch[1], 'L', 'var(--card-bg)', '#3b82f6');
+    var cabMatch = benchStr.match(/Cab:\s*([\d\/]+)/);
+    if (cabMatch && cabMatch[1]) projBeadHtml += makeProjBead(cabMatch[1], 'C', 'var(--card-bg)', '#a855f7');
+    var litMatch = benchStr.match(/Lit:\s*([\d\/]+)/);
+    if (litMatch && litMatch[1]) projBeadHtml += makeProjBead(litMatch[1], '⚡', 'var(--card-bg)', '#eab308');
+    var starMatches = benchStr.match(/(UG|AE|FIB|NAP):\s*[\d\/]+\s*->\s*([\d\/]+)\s*\(100%\)/g);
+    if (starMatches) {
+      starMatches.forEach(function(m) {
+        var phase = m.split(':')[0];
+        var dateExtract = m.match(/->\s*([\d\/]+)\s*\(/);
+        if (dateExtract && dateExtract[1]) {
+          var starDate = safeParse(dateExtract[1]);
+          if (starDate) {
+            var starPct = ((starDate - pStart) / (pEnd - pStart)) * 100;
+            if (starPct >= 0 && starPct <= 100) {
+              var sCol = '#94a3b8';
+              if (phase === 'UG') sCol = 'var(--qb-ug)';
+              if (phase === 'FIB') sCol = '#ef4444';
+              if (phase === 'NAP') sCol = '#6366f1';
+              var sShadow = '0 1px 3px rgba(0,0,0,0.3)';
+              if (phase === 'FIB') sShadow = '0 0 10px ' + sCol;
+              if (phase === 'NAP') sShadow = '0 0 8px rgba(99, 102, 241, 0.6)';
+              projBeadHtml += '<div class="proj-bead" style="left:' + starPct + '%; background:rgba(255,255,255,0.85); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); border-color:' + sCol + '; color:' + sCol + '; box-shadow:' + sShadow + '; font-size:9px;">★</div>';
+            }
+          }
+        }
+      });
+    }
+  }
   var daysLeft = 0;
   if (pEnd) daysLeft = Math.ceil((pEnd - new Date()) / 86400000);
   var barsHtml = '';
@@ -2435,6 +2505,7 @@ function cardHTML(item) {
       '<div class="qb-module" style="margin-bottom:16px;">'+
         '<div class="qb-time-labels"><span>CX START: <b style="color:var(--text-main);">'+formatDate(item.cxStart)+'</b></span><span>CX COMPLETE: <b style="color:var(--text-main);">'+formatDate(item.cxEnd)+'</b></span></div>'+
         '<div class="qb-time-bar"><div class="qb-time-fill" style="width:'+pct+'%; background:'+sColor+';"></div>' +
+          projBeadHtml +
           (pct > 0 && pct < 100 ? '<div class="qb-time-bead" style="left:'+pct+'%; border-color:'+sColor+';"></div>' : '') +
         '</div>'+
         '<div class="qb-target-wrap'+(item.isXing ? ' xing' : '')+'"><div class="qb-target-inner"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:'+sColor+'">'+formatDate(item.targetDate || item.cxEnd)+'</div></div></div>'+
