@@ -561,7 +561,7 @@
       height: 100%;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: calc(var(--safe-top) + 20px) 20px 100px;
+      padding: calc(var(--safe-top) + 12px) 14px 100px;
       z-index: 20;
       opacity: 1;
       pointer-events: auto;
@@ -580,6 +580,17 @@
       justify-content: space-between;
       margin-bottom: 16px;
       gap: 12px;
+    }
+    #unified-list-container {
+      background: var(--card-bg);
+      border: var(--hairline);
+      border-radius: 24px;
+      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
     }
     .hub-title {
       font-size: 18px;
@@ -638,7 +649,7 @@
     .inbox-list {
       overflow-y: auto;
       flex: 1;
-      padding-bottom: 12px;
+      padding-bottom: 0;
     }
     .email-card {
       padding: 14px 16px 12px;
@@ -697,7 +708,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 70vh;
+      height: 92vh;
       transform: translateY(100%);
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       border-radius: 32px 32px 0 0;
@@ -716,16 +727,275 @@
       flex-shrink: 0;
     }
     #outbox-handle {
-      width: 44px;
-      height: 5px;
+      width: 36px;
+      height: 6px;
       border-radius: 999px;
-      background: rgba(148, 163, 184, 0.55);
+      background: rgba(148, 163, 184, 0.65);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
     }
     #outbox-scroll {
       overflow-y: auto;
       flex: 1;
       -webkit-overflow-scrolling: touch;
       padding-right: 2px;
+    }
+    .review-hub-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .review-hub-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .review-hub-sub {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .review-hub-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .review-hub-panel {
+      display: none;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .review-hub-panel.active {
+      display: flex;
+      flex: 1;
+    }
+    .reviewed-sheet-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 6px;
+    }
+    .reviewed-card {
+      background: rgba(248, 250, 252, 0.9);
+      border: var(--hairline);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+    }
+    .reviewed-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .reviewed-card-fdh {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+    .reviewed-card-comment {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+    }
+    .chips-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .deliverable-group {
+      border: var(--hairline);
+      border-radius: 14px;
+      background: rgba(248, 250, 252, 0.92);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .deliverable-title {
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    .deliverable-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .deliverable-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--bg);
+      border: var(--hairline);
+      font-size: 9px;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+    .deliverable-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+    .deliverable-chip.ok .deliverable-dot { background: #22c55e; }
+    .btn-edit-engine {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 2px 0 12px;
+      align-self: flex-start;
+      background: rgba(248, 250, 252, 0.98);
+      border: var(--hairline);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    .qb-proj-title-inline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .qb-proj-city {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .qb-target-wrap {
+      margin-top: 2px;
+      border-radius: 16px 16px 0 0;
+      transition: transform 0.2s;
+    }
+    .qb-target-wrap.xing {
+      padding: 3px 3px 0 3px;
+      background: repeating-linear-gradient(45deg, #171717, #171717 8px, #facc15 8px, #facc15 16px);
+    }
+    .qb-target-wrap.xing .qb-target-inner {
+      border-radius: 12px 12px 0 0 !important;
+    }
+    .velocity-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .qb-vel-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .qb-vel-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .qb-vel-bar {
+      height: 10px;
+      background: var(--bg);
+      border-radius: 5px;
+      position: relative;
+      border: var(--hairline);
+      overflow: visible;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+    }
+    .qb-vel-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s;
+    }
+    .qb-vel-bead {
+      position: absolute;
+      top: -2px;
+      width: 14px;
+      height: 14px;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(2px);
+      border-radius: 50%;
+      border: 3px solid;
+      z-index: 2;
+      box-sizing: border-box;
+    }
+    .qb-vel-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+    .vendor-update-box {
+      font-size: 11px;
+      line-height: 1.45;
+      padding: 12px 14px;
+      border: 1.5px solid #fde047;
+      border-radius: 14px 14px 14px 4px;
+      background: rgba(255, 251, 235, 0.7);
+      color: var(--text-main);
+      font-style: italic;
+      margin-bottom: 14px;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.04);
+    }
+    .system-diag-box {
+      background: var(--bg);
+      border: var(--hairline);
+      border-left: 4px solid var(--text-muted);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .system-diag-box.warn {
+      border-left-color: var(--color-review);
+      background: rgba(245, 158, 11, 0.05);
+    }
+    .system-diag-box.crit {
+      border-left-color: var(--color-critical);
+      background: rgba(239, 68, 68, 0.05);
+    }
+    .xing-hazard-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: #78350f;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .xing-hazard-title {
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
     }
 
     #gantt-panel {
@@ -1320,7 +1590,9 @@
         <div class="hub-title">Diagnostics Queue</div>
         <div id="scene-count-label" class="scene-count">-- projects</div>
       </div>
-      <div id="unified-list" class="inbox-list"></div>
+      <div id="unified-list-container">
+        <div id="unified-list" class="inbox-list"></div>
+      </div>
     </div>
 
     <!-- 4. DETAIL SHEET -->
@@ -1392,14 +1664,26 @@
       <div id="outbox-handle"></div>
     </div>
     <div id="outbox-scroll">
-      <div class="hub-header" style="margin-bottom:12px;">
-        <div class="hub-title">Admin Panel</div>
+      <div class="review-hub-header">
+        <div class="review-hub-meta">
+          <div class="hub-title">Review Hub</div>
+          <div class="review-hub-sub">Admin and session-reviewed items</div>
+        </div>
         <button class="search-cancel-btn" onclick="closeAdminSheet()">Close</button>
       </div>
-      <div class="hub-section-title">QB Exceptions</div>
-      <div id="admin-sheet-list"></div>
-      <div class="hub-section-title">Crossings</div>
-      <div id="crossing-sheet-list"></div>
+      <div class="review-hub-tabs">
+        <button class="panel-tab active" id="tab-admin" onclick="switchMobileTab('admin')">Admin <span class="ob-tab-badge" id="badge-admin">0</span></button>
+        <button class="panel-tab" id="tab-reviewed" onclick="switchMobileTab('reviewed')">Reviewed <span class="ob-tab-badge" id="badge-reviewed">0</span></button>
+      </div>
+      <div id="ob-panel-admin" class="review-hub-panel active">
+        <div class="hub-section-title">QB Exceptions</div>
+        <div id="admin-sheet-list"></div>
+        <div class="hub-section-title">Crossings</div>
+        <div id="crossing-sheet-list"></div>
+      </div>
+      <div id="ob-panel-reviewed" class="review-hub-panel">
+        <div id="reviewed-sheet-list" class="reviewed-sheet-list"></div>
+      </div>
     </div>
   </div>
 
@@ -1517,6 +1801,7 @@ var state = {
   idx:        0,
   committed:  [],
   count:      0,
+  activeTab:  'admin',
   adminSheetOpen: false,
   landscapeGanttOpen: false,
   reviewOpen: false,
@@ -1703,6 +1988,70 @@ function renderVelocityBars(item) {
   return html;
 }
 
+function renderVelocityBarsDesktopStyle(item) {
+  var vel = velPcts(item.vel);
+  var html = '<div class="velocity-grid">';
+  for (var vi = 0; vi < VEL_TYPES.length; vi++) {
+    var t = VEL_TYPES[vi];
+    var p = vel[t];
+    var bucket = item.vel && item.vel[t] ? item.vel[t] : { tot:0, bom:0, daily:0 };
+    var fill = t === 'ug' ? 'var(--qb-ug)' : t === 'ae' ? 'var(--qb-ae-bg)' : t === 'fib' ? 'var(--qb-fib-bg)' : 'var(--qb-nap-bg)';
+    var bead = '';
+    if (p > 0 && p < 100) {
+      var beadColor = t === 'fib' ? '#ef4444' : t === 'nap' ? '#6366f1' : t === 'ae' ? '#94a3b8' : 'var(--qb-ug)';
+      bead = '<div class="qb-vel-bead" style="left:calc(' + p + '% - 7px); border-color:' + beadColor + ';"></div>';
+    }
+    var unit = t === 'nap' ? 'NAPs' : 'ft';
+    html += '<div class="qb-vel-item">' +
+      '<div class="qb-vel-labels"><span>' + VEL_LABELS[t] + '</span><span>' + p + '%</span></div>' +
+      '<div class="qb-vel-bar"><div class="qb-vel-fill" style="width:' + p + '%; background:' + fill + ';"></div>' + bead + '</div>' +
+      '<div class="qb-vel-footer"><span>' + fmt(bucket.tot) + ' / ' + fmt(bucket.bom) + ' ' + unit + '</span><span>PACE ' + fmt(bucket.daily) + '/' + (t === 'nap' ? 'day' : 'day') + '</span></div>' +
+    '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderDeliverableChip(label, status) {
+  return '<div class="deliverable-chip ' + (status ? 'ok' : '') + '">' +
+    '<span class="deliverable-dot"></span>' + esc(label) +
+  '</div>';
+}
+
+function renderDeliverableGrid(item) {
+  return '<div class="chips-row">' +
+    '<div class="deliverable-group"><div class="deliverable-title">Delivered</div><div class="deliverable-chip-row">' +
+      renderDeliverableChip('SPLICING', item.hasSpliceDel) +
+      renderDeliverableChip('STRAND', item.hasStandDel) +
+      renderDeliverableChip('CD', item.hasCDDel) +
+      renderDeliverableChip('BOM', item.hasBOMDel) +
+    '</div></div>' +
+    '<div class="deliverable-group"><div class="deliverable-title">Distributed</div><div class="deliverable-chip-row">' +
+      renderDeliverableChip('SPLICING', item.hasSpliceDist) +
+      renderDeliverableChip('STRAND', item.hasStrandDist) +
+      renderDeliverableChip('CD', item.hasCDDist) +
+      renderDeliverableChip('BOM/PO', item.hasBOMPo) +
+      renderDeliverableChip('SOW', item.hasSOW) +
+    '</div></div>' +
+  '</div>';
+}
+
+function renderFlags(flagsStr) {
+  var flags = parseFlags(flagsStr);
+  if (!flags.length) return '<div class="detail-section-body">No system diagnostics flagged.</div>';
+  return '<div class="detail-flag-list">' + flags.map(function(f) {
+    return '<div class="detail-flag-item ' + f.sev + '">' + esc(f.text) + '</div>';
+  }).join('') + '</div>';
+}
+
+function renderXingHazardBox(item) {
+  var detail = item.specXDetails || item.cdIntel || 'Special crossing detected. Verify permit status and restoration scope.';
+  return '<div class="xing-hazard-box">' +
+    '<div class="xing-hazard-title">Crossing Hazard</div>' +
+    '<div>' + esc(detail) + '</div>' +
+  '</div>';
+}
+
 function renderDiagnosticChips(item) {
   var flags = parseFlags(item.flags);
   return flags.length
@@ -1727,38 +2076,42 @@ function cardHTML(item) {
   var draftVal = item.comment || item.geminiInsight || item.draft || '';
   var pct = calcSchedulePct(item);
   var sColor = statusColor(item);
+  var diagClass = 'system-diag-box';
+  var severity = getSeverity(item.flags);
+  if (severity === 'crit') diagClass += ' crit';
+  else if (severity === 'warn') diagClass += ' warn';
   return '<div class="card-outer-container">'+
       '<div class="card-header-sticky">'+
         '<div class="card-persistent-header">'+
           '<div class="qb-module-header">PROJECT SCHEDULE</div>'+
-          '<div class="qb-proj-title">'+
+          '<div class="qb-proj-title-inline">'+
             '<div class="qb-proj-title-left">'+
               '<div class="qb-proj-id">'+esc(item.fdh||'—')+'</div>'+
-              '<div class="qb-proj-meta">'+esc(item.city || 'Unknown City')+'</div>'+
+              '<div class="qb-proj-city">'+esc(item.city || 'Unknown City')+(item.vendor ? ' · ' + esc(item.vendor) : '')+'</div>'+
             '</div>'+
-            '<div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">'+
-              '<div class="glass-pill '+pillClassName+'">'+esc((item.stage || '-') + ' | ' + (item.status || '-'))+'</div>'+
-              (item.rid ? '<a href="'+getEditUrl(item.rid)+'" target="_blank" class="edit-engine-link">⚙ EDIT IN ENGINE</a>' : '')+
-            '</div>'+
+            '<div class="glass-pill '+pillClassName+'">'+esc((item.stage || '-') + ' | ' + (item.status || '-'))+'</div>'+
           '</div>'+
+          (item.rid ? '<a href="'+getEditUrl(item.rid)+'" target="_blank" class="btn-edit-engine">⚙ EDIT IN ENGINE</a>' : '')+
         '</div>'+
       '</div>'+
       '<div class="card-scroll-body">'+
         '<div class="qb-module">'+
-          '<div class="qb-time-labels"><span>CX START: '+formatDate(item.cxStart)+'</span><span>CX COMPLETE: '+formatDate(item.cxEnd)+'</span></div>'+
+          '<div class="qb-time-labels"><span>CX START: <b>'+formatDate(item.cxStart)+'</b></span><span>CX COMPLETE: <b>'+formatDate(item.cxEnd)+'</b></span></div>'+
           '<div class="qb-time-bar"><div class="qb-time-fill" style="width:'+pct+'%; background:'+sColor+';"></div>' +
             (pct > 0 && pct < 100 ? '<div class="qb-time-bead" style="left:'+pct+'%; border-color:'+sColor+';"></div>' : '') +
           '</div>'+
-          '<div class="qb-target-inner"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:'+sColor+'">'+formatDate(item.targetDate || item.cxEnd)+'</div></div>'+
+          '<div class="qb-target-wrap'+(item.isXing ? ' xing' : '')+'"><div class="qb-target-inner"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:'+sColor+'">'+formatDate(item.targetDate || item.cxEnd)+'</div></div></div>'+
         '</div>'+
         '<div class="qb-module">'+
-          '<div class="qb-module-header">FIELD VELOCITY &amp; PRODUCTION</div>'+renderVelocityBars(item)+
+          '<div class="qb-module-header">FIELD VELOCITY &amp; PRODUCTION</div>'+renderVelocityBarsDesktopStyle(item)+
         '</div>'+
         '<div class="qb-module">'+
           '<div class="qb-module-header">DIAGNOSTIC &amp; MANAGER REVIEW</div>'+
-          renderDiagnosticChips(item)+
-          '<div class="section-label" style="margin-top:14px;">OMNI MANAGER NOTE</div>'+
-          '<textarea id="'+noteId+'" class="detail-textarea" placeholder="Type decision...">'+esc(draftVal)+'</textarea>'+
+          renderDeliverableGrid(item)+
+          '<div class="vendor-update-box">"'+esc(item.vendorComment || 'No update provided.')+'"</div>'+
+          '<div class="'+diagClass+'">'+renderFlags(item.flags)+(item.isXing ? renderXingHazardBox(item) : '')+'</div>'+
+          '<div class="section-label" style="margin-top:0;">OMNI MANAGER NOTE</div>'+
+          '<textarea id="'+noteId+'" class="chat-bubble detail-textarea" placeholder="Type decision...">'+esc(draftVal)+'</textarea>'+
           '<div style="display:flex; justify-content:flex-end; margin-top:10px;"><button class="btn-ai" onclick="askGeminiForDraftMobile(this)">DRAFT W/ GEMINI</button></div>'+
         '</div>'+
         (item.cdIntel ? '<div class="qb-module"><div class="qb-module-header">CD Intelligence</div><div class="detail-section-body">'+esc(item.cdIntel)+'</div></div>' : '')+
@@ -1970,11 +2323,11 @@ function setDockMode() {
   if (!primaryMain || !primarySub || !secondary || !homeBtn || !homeIcon) return;
 
   if (state.reviewOpen) {
-    homeBtn.classList.add('dock-back-active');
+    homeBtn.classList.remove('dock-back-active');
     primaryMain.textContent = 'Commit';
     primarySub.textContent = (state.deck[state.idx] && state.deck[state.idx].fdh) ? state.deck[state.idx].fdh : 'Review';
     secondary.textContent = 'Skip';
-    homeIcon.innerHTML = '<path d="M15 18l-6-6 6-6"/>';
+    homeIcon.innerHTML = '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>';
   } else {
     homeBtn.classList.remove('dock-back-active');
     primaryMain.textContent = 'Review Queue';
@@ -1985,8 +2338,8 @@ function setDockMode() {
 }
 
 function handleDockHome() {
-  if (state.reviewOpen) showHubHome();
-  else toggleAdminSheet();
+  if (state.reviewOpen) openReviewHub('reviewed');
+  else openReviewHub('admin');
 }
 
 function handlePrimaryAction() {
@@ -2081,27 +2434,71 @@ function renderAdminSheetList(containerId, items, emptyText) {
   });
 }
 
+function renderReviewedSheet() {
+  var box = document.getElementById('reviewed-sheet-list');
+  var badge = document.getElementById('badge-reviewed');
+  if (badge) badge.textContent = state.committed.length;
+  if (!box) return;
+  if (!state.committed.length) {
+    box.innerHTML = '<div class="hub-empty">No items reviewed in this session.</div>';
+    return;
+  }
+  box.innerHTML = '';
+  state.committed.slice().reverse().forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'reviewed-card';
+    card.innerHTML =
+      '<div class="reviewed-card-top">' +
+      '<div class="reviewed-card-fdh">' + esc(item.fdh || '—') + '</div>' +
+      '<span class="glass-pill ' + pillClass(item.status, item.stage) + '">' + esc(pillLabel(item.status, item.stage)) + '</span>' +
+      '</div>' +
+      '<div class="reviewed-card-comment">' + esc(item.comment || 'No comment logged.') + '</div>';
+    card.onclick = function() { jumpTo(item.fdh); closeReviewHub(); };
+    box.appendChild(card);
+  });
+}
+
+function switchMobileTab(tab) {
+  state.activeTab = tab;
+  var adminTab = document.getElementById('tab-admin');
+  var reviewedTab = document.getElementById('tab-reviewed');
+  var adminPanel = document.getElementById('ob-panel-admin');
+  var reviewedPanel = document.getElementById('ob-panel-reviewed');
+  if (adminTab) adminTab.classList.toggle('active', tab === 'admin');
+  if (reviewedTab) reviewedTab.classList.toggle('active', tab === 'reviewed');
+  if (adminPanel) adminPanel.classList.toggle('active', tab === 'admin');
+  if (reviewedPanel) reviewedPanel.classList.toggle('active', tab === 'reviewed');
+}
+
 function renderAdminSheet() {
   renderAdminSheetList('admin-sheet-list', getAdminItems(), 'All clear — no QB/admin exceptions');
   renderAdminSheetList('crossing-sheet-list', getCrossingItems(), 'All clear — no crossings to verify');
+  var adminBadge = document.getElementById('badge-admin');
+  if (adminBadge) adminBadge.textContent = getAdminItems().length + getCrossingItems().length;
+  renderReviewedSheet();
+  switchMobileTab(state.activeTab || 'admin');
 }
 
-function openAdminSheet() {
+function openReviewHub(defaultTab) {
   state.adminSheetOpen = true;
+  state.activeTab = defaultTab || state.activeTab || 'admin';
   renderAdminSheet();
   var pane = document.getElementById('outbox-pane');
   if (pane) pane.classList.add('open');
 }
 
-function closeAdminSheet() {
+function closeReviewHub() {
   state.adminSheetOpen = false;
   var pane = document.getElementById('outbox-pane');
   if (pane) pane.classList.remove('open');
 }
 
+function openAdminSheet() { openReviewHub('admin'); }
+function closeAdminSheet() { closeReviewHub(); }
+
 function toggleAdminSheet() {
-  if (state.adminSheetOpen) closeAdminSheet();
-  else openAdminSheet();
+  if (state.adminSheetOpen) closeReviewHub();
+  else openReviewHub(state.reviewOpen ? 'reviewed' : 'admin');
 }
 
 function renderGantt(items) {
@@ -2473,7 +2870,15 @@ function logCommit(item) {
   if(!item) return;
   var finalComment = item.comment || item.draft || '';
   var rev={ fdh:item.fdh||'', vendor:item.vendor||'', flags:item.flags||'', comment:finalComment };
-  state.committed.push(rev);
+  state.committed.push({
+    fdh: item.fdh || '',
+    vendor: item.vendor || '',
+    city: item.city || '',
+    stage: item.stage || '',
+    status: item.status || '',
+    flags: item.flags || '',
+    comment: finalComment
+  });
   state.count++;
   updatePill();
   renderHub();
