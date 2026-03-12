@@ -1738,7 +1738,6 @@
           <div style="font-size:10px; font-weight:900; letter-spacing:1px; color:var(--accent-hub); text-transform:uppercase;">Dailies Command Center</div>
           <div class="scene-title">Diagnostics Queue</div>
         </div>
-        <button class="search-cancel-btn" onclick="showHubHome()" style="font-size:12px; font-weight:800;">✕ Back</button>
       </div>
 
       <div id="card-stack">
@@ -2622,17 +2621,22 @@ function setDockMode() {
   var primarySub = document.getElementById('dock-primary-sub');
   var secondary = document.getElementById('dock-secondary-btn');
   var homeIcon = document.getElementById('dock-home-icon');
+  var hubBadge = document.getElementById('nav-hub-badge');
   if (!primaryMain || !primarySub || !secondary || !homeBtn || !homeIcon) return;
 
   if (state.reviewOpen) {
-    homeBtn.classList.remove('dock-back-active');
+    homeBtn.classList.add('dock-back-active');
+    homeIcon.innerHTML = '<line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>';
+    if (hubBadge) hubBadge.style.display = 'none';
     primaryMain.textContent = 'Commit';
     primarySub.textContent = (state.deck[state.idx] && state.deck[state.idx].fdh) ? state.deck[state.idx].fdh : 'Review';
     secondary.innerHTML = 'Skip';
     secondary.style.color = 'var(--text-main)';
-    homeIcon.innerHTML = '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>';
   } else {
     homeBtn.classList.remove('dock-back-active');
+    homeIcon.innerHTML = '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>';
+    var adminTotal = getAdminItems().length + getCrossingItems().length + getBomItems().length;
+    if (hubBadge) hubBadge.style.display = adminTotal ? 'flex' : 'none';
     primaryMain.textContent = 'Review Queue';
     primarySub.textContent = state.deck.length + ' project' + (state.deck.length !== 1 ? 's' : '');
     if (state.searchOpen) {
@@ -2642,13 +2646,15 @@ function setDockMode() {
       secondary.innerHTML = 'Search';
       secondary.style.color = 'var(--text-main)';
     }
-    homeIcon.innerHTML = '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>';
   }
 }
 
 function handleDockHome() {
-  if (state.reviewOpen) openReviewHub('reviewed');
-  else openReviewHub('admin');
+  if (state.reviewOpen) {
+    showHubHome();
+  } else {
+    openReviewHub('admin');
+  }
 }
 
 function handlePrimaryAction() {
