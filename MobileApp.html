@@ -1234,9 +1234,42 @@
       touch-action: manipulation;
     }
     .dock-action-btn:active { transform: scale(0.96); }
-    .dock-btn.dock-back-active {
-      background: rgba(59,130,246,0.12);
-      color: #2563eb;
+    .dock-center-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      flex: 1;
+    }
+    .dock-back-btn {
+      width: 0;
+      opacity: 0;
+      overflow: hidden;
+      padding: 0;
+      border: none;
+      margin-right: 0;
+      background: rgba(255,255,255,0.88);
+      border-radius: 22px;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.3s ease,
+        margin-right 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        transform 0.12s ease;
+      flex-shrink: 0;
+    }
+    .dock-back-btn.show {
+      width: 44px;
+      opacity: 1;
+      margin-right: 8px;
+      border: 1px solid var(--border);
+    }
+    .dock-back-btn:active {
+      transform: scale(0.92);
     }
     .nav-hub-badge {
       position: absolute;
@@ -1818,18 +1851,23 @@
 
     <!-- 6. COMMAND CENTER DOCK -->
     <div id="dock">
-      <button class="dock-btn" id="dock-home-btn" onclick="handleDockHome()" aria-label="Navigation">
+      <button class="dock-btn" id="dock-home-btn" onclick="toggleAdminSheet()" aria-label="Navigation">
         <svg id="dock-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 6h16"/>
-          <path d="M4 12h16"/>
-          <path d="M4 18h16"/>
+          <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>
         </svg>
-        <div class="nav-hub-badge" id="nav-hub-badge">0</div>
+        <div class="nav-hub-badge" id="nav-hub-badge" style="display:none;">0</div>
       </button>
-      <button id="dock-primary-pill" onclick="handlePrimaryAction()">
-        <span id="dock-primary-main">Review Queue</span>
-        <span id="dock-primary-sub">0 projects</span>
-      </button>
+      <div class="dock-center-group">
+        <button class="dock-back-btn" id="dock-back-btn" onclick="showHubHome()">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <button id="dock-primary-pill" onclick="handlePrimaryAction()">
+          <span id="dock-primary-main">Review Queue</span>
+          <span id="dock-primary-sub">0 projects</span>
+        </button>
+      </div>
       <button class="dock-action-btn" id="dock-secondary-btn" onclick="handleSecondaryAction()">Search</button>
       <div id="dock-session-count" style="display:none;">0</div>
       <button class="dock-btn" id="dock-search-btn" onclick="openSearch()" aria-label="Search" style="display:none;">
@@ -2616,27 +2654,27 @@ function showReviewQueue(startFdh) {
 }
 
 function setDockMode() {
-  var homeBtn = document.getElementById('dock-home-btn');
   var primaryMain = document.getElementById('dock-primary-main');
   var primarySub = document.getElementById('dock-primary-sub');
   var secondary = document.getElementById('dock-secondary-btn');
-  var homeIcon = document.getElementById('dock-home-icon');
+  var backBtn = document.getElementById('dock-back-btn');
   var hubBadge = document.getElementById('nav-hub-badge');
-  if (!primaryMain || !primarySub || !secondary || !homeBtn || !homeIcon) return;
+  if (!primaryMain || !primarySub || !secondary) return;
+
+  var adminTotal = getAdminItems().length + getCrossingItems().length + getBomItems().length;
+  if (hubBadge) {
+    hubBadge.textContent = adminTotal;
+    hubBadge.style.display = adminTotal ? 'flex' : 'none';
+  }
 
   if (state.reviewOpen) {
-    homeBtn.classList.add('dock-back-active');
-    homeIcon.innerHTML = '<line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>';
-    if (hubBadge) hubBadge.style.display = 'none';
+    if (backBtn) backBtn.classList.add('show');
     primaryMain.textContent = 'Commit';
     primarySub.textContent = (state.deck[state.idx] && state.deck[state.idx].fdh) ? state.deck[state.idx].fdh : 'Review';
     secondary.innerHTML = 'Skip';
     secondary.style.color = 'var(--text-main)';
   } else {
-    homeBtn.classList.remove('dock-back-active');
-    homeIcon.innerHTML = '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>';
-    var adminTotal = getAdminItems().length + getCrossingItems().length + getBomItems().length;
-    if (hubBadge) hubBadge.style.display = adminTotal ? 'flex' : 'none';
+    if (backBtn) backBtn.classList.remove('show');
     primaryMain.textContent = 'Review Queue';
     primarySub.textContent = state.deck.length + ' project' + (state.deck.length !== 1 ? 's' : '');
     if (state.searchOpen) {
@@ -2646,14 +2684,6 @@ function setDockMode() {
       secondary.innerHTML = 'Search';
       secondary.style.color = 'var(--text-main)';
     }
-  }
-}
-
-function handleDockHome() {
-  if (state.reviewOpen) {
-    showHubHome();
-  } else {
-    openReviewHub('admin');
   }
 }
 
