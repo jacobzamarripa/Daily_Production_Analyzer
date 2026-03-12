@@ -164,7 +164,7 @@
       flex-direction: column;
       align-items: center;
       padding-top: calc(var(--safe-top) + 24px);
-      padding-bottom: calc(var(--dock-height) + var(--safe-bottom) + 20px);
+      padding-bottom: 0;
       padding-left: var(--safe-left);
       padding-right: var(--safe-right);
       transition: transform 0.55s var(--ease-out-expo);
@@ -204,10 +204,9 @@
       position: relative;
       width: 100%;
       flex: 1;
-      max-height: 520px;
-      min-height: 280px;
+      max-height: none;
       overflow: hidden;
-      padding: 0 20px;
+      padding: 0 14px;
     }
 
     .project-card {
@@ -216,14 +215,15 @@
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: calc(100vw - 32px);
+      width: calc(100vw - 28px);
       max-width: none;
       margin: 0;
       background: var(--card-bg);
-      border: var(--hairline);
-      border-radius: 28px;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 24px 24px 0 0;
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
-      padding: 24px 20px 20px;
+      padding: 0;
       display: flex;
       flex-direction: column;
       will-change: transform, opacity;
@@ -242,16 +242,18 @@
     .card-header-sticky {
       position: sticky;
       top: 0;
-      z-index: 2;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.98), rgba(255,255,255,0.94));
-      padding-bottom: 12px;
-      border-bottom: var(--hairline);
-      margin-bottom: 16px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
     }
     .card-scroll-body {
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       flex: 1;
-      padding: 16px 20px 120px;
+      padding: 16px 16px calc(var(--safe-bottom) + 110px);
     }
     .card-scroll-body::-webkit-scrollbar { width: 0; }
     .qb-module {
@@ -974,37 +976,38 @@
       font-weight: 800;
       color: var(--text-muted);
     }
-    .vendor-update-box {
+    .vendor-bubble {
       font-size: 11px;
-      line-height: 1.45;
-      padding: 12px 14px;
+      line-height: 1.4;
+      padding: 10px 14px;
       border: 1.5px solid #fde047;
-      border-radius: 14px 14px 14px 4px;
+      border-radius: 12px 12px 12px 2px;
       background: rgba(255, 251, 235, 0.7);
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.05);
       color: var(--text-main);
       font-style: italic;
-      margin-bottom: 14px;
-      box-shadow: 3px 3px 0 rgba(0,0,0,0.04);
+      width: 100%;
+      box-sizing: border-box;
     }
-    .system-diag-box {
+    .action-box {
       background: var(--bg);
-      border: var(--hairline);
-      border-left: 4px solid var(--text-muted);
-      border-radius: 14px;
-      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      border-left-style: solid;
+      border-left-color: var(--text-muted);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-main);
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 8px;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .system-diag-box.warn {
-      border-left-color: var(--color-review);
-      background: rgba(245, 158, 11, 0.05);
-    }
-    .system-diag-box.crit {
-      border-left-color: var(--color-critical);
-      background: rgba(239, 68, 68, 0.05);
-    }
+    .action-box.warn { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+    .action-box.crit { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
     .xing-hazard-box {
       background: #fffbeb;
       border: 1px solid #fde68a;
@@ -1020,6 +1023,25 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 4px;
+    }
+    .chat-bubble {
+      width: 100%;
+      padding: 12px;
+      border-radius: 14px 14px 2px 14px;
+      font-family: monospace;
+      font-size: 12px;
+      min-height: 100px;
+      resize: none;
+      background: #faf5ff;
+      color: #4c1d95;
+      border: 1px solid #d8b4fe;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.05);
+      box-sizing: border-box;
+    }
+    .chat-bubble:focus {
+      outline: none;
+      border-color: #a855f7;
+      background: #ffffff;
     }
 
     #gantt-panel {
@@ -2241,54 +2263,70 @@ var VEL_TYPES  = ['ug','ae','fib','nap'];
 var VEL_LABELS = {ug:'UG',ae:'AE',fib:'FIB',nap:'NAP'};
 
 function cardHTML(item) {
-  var pillClassName = getQBStatusClass(item.stage, item.status, false);
+  var flagsText = String(item.flags || '');
+  var isNotInQb = flagsText.includes('NOT IN QB REFERENCE') || flagsText.includes('MISSING QB STATUS');
+  var pillClassName = getQBStatusClass(item.stage, item.status, isNotInQb);
+  var combinedPill = isNotInQb ? 'NOT IN QB REFERENCE' : ((item.stage || '-') + ' | ' + (item.status || '-'));
+  if (flagsText.includes('MISSING QB STATUS') && !flagsText.includes('NOT IN QB REFERENCE')) combinedPill = 'MISSING QB STATUS';
   var noteId = commentFieldId(item);
   var draftVal = item.comment || item.geminiInsight || item.draft || '';
   var pct = calcSchedulePct(item);
   var sColor = statusColor(item);
-  var diagClass = 'system-diag-box';
+  var diagClass = 'action-box';
   var severity = getSeverity(item.flags);
   if (severity === 'crit') diagClass += ' crit';
   else if (severity === 'warn') diagClass += ' warn';
-  return '<div class="card-outer-container">'+
-      '<div class="card-header-sticky">'+
-        '<div class="card-persistent-header">'+
-          '<div class="qb-module-header">PROJECT SCHEDULE</div>'+
-          '<div class="qb-proj-title-inline">'+
-            '<div class="qb-proj-title-left">'+
-              '<div class="qb-proj-id">'+esc(item.fdh||'—')+'</div>'+
-              '<div class="qb-proj-city">'+esc(item.city || 'Unknown City')+(item.vendor ? ' · ' + esc(item.vendor) : '')+'</div>'+
-            '</div>'+
-            '<div class="glass-pill '+pillClassName+'">'+esc((item.stage || '-') + ' | ' + (item.status || '-'))+'</div>'+
-          '</div>'+
-          (item.rid ? '<a href="'+getEditUrl(item.rid)+'" target="_blank" class="btn-edit-engine">⚙ EDIT IN ENGINE</a>' : '')+
+  var cdIntelText = item.cdIntel || '';
+  var mainDraft = item.draft || '';
+  if (!cdIntelText) {
+    var cdMatch = mainDraft.match(/\n*\[CD Intelligence\]:\s*([\s\S]*)$/);
+    if (cdMatch) cdIntelText = cdMatch[1].trim();
+  }
+  return '<div class="card-outer-container" style="height:100%; display:flex; flex-direction:column;">'+
+    '<div class="card-header-sticky">'+
+      '<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">'+
+        '<div style="display:flex; flex-direction:column;">'+
+          '<div style="font-size:18px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px; line-height:1.2;">'+esc(item.fdh||'—')+'</div>'+
+          '<div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-top:2px;">'+esc((item.city || 'Unknown City')+(item.vendor ? ' · ' + item.vendor : ''))+'</div>'+
+        '</div>'+
+        '<div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">'+
+          '<div class="glass-pill '+pillClassName+'" style="font-size:9px; padding:3px 8px; border-radius:6px; font-weight:bold; text-transform:uppercase;">'+esc(combinedPill)+'</div>'+
+          (item.rid ? '<a href="'+getEditUrl(item.rid)+'" target="_blank" style="text-decoration:none; font-size:9px; font-weight:bold; color:var(--text-muted); background:var(--bg); padding:3px 8px; border-radius:6px; border:1px solid var(--border); display:inline-flex; align-items:center;">⚙ EDIT IN ENGINE</a>' : '')+
         '</div>'+
       '</div>'+
-      '<div class="card-scroll-body">'+
-        '<div class="qb-module">'+
-          '<div class="qb-time-labels"><span>CX START: <b>'+formatDate(item.cxStart)+'</b></span><span>CX COMPLETE: <b>'+formatDate(item.cxEnd)+'</b></span></div>'+
-          '<div class="qb-time-bar"><div class="qb-time-fill" style="width:'+pct+'%; background:'+sColor+';"></div>' +
-            (pct > 0 && pct < 100 ? '<div class="qb-time-bead" style="left:'+pct+'%; border-color:'+sColor+';"></div>' : '') +
-          '</div>'+
-          '<div class="qb-target-wrap'+(item.isXing ? ' xing' : '')+'"><div class="qb-target-inner"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:'+sColor+'">'+formatDate(item.targetDate || item.cxEnd)+'</div></div></div>'+
+    '</div>'+
+    '<div class="card-scroll-body">'+
+      '<div class="qb-module" style="margin-bottom:16px;">'+
+        '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">PROJECT SCHEDULE</div>'+
+        '<div class="qb-time-labels"><span>CX START: <b style="color:var(--text-main);">'+formatDate(item.cxStart)+'</b></span><span>CX COMPLETE: <b style="color:var(--text-main);">'+formatDate(item.cxEnd)+'</b></span></div>'+
+        '<div class="qb-time-bar"><div class="qb-time-fill" style="width:'+pct+'%; background:'+sColor+';"></div>' +
+          (pct > 0 && pct < 100 ? '<div class="qb-time-bead" style="left:'+pct+'%; border-color:'+sColor+';"></div>' : '') +
         '</div>'+
-        '<div class="qb-module">'+
-          '<div class="qb-module-header">FIELD VELOCITY &amp; PRODUCTION</div>'+renderVelocityBarsDesktopStyle(item)+
-        '</div>'+
-        '<div class="qb-module">'+
-          '<div class="qb-module-header">DIAGNOSTIC &amp; MANAGER REVIEW</div>'+
-          renderDeliverableGrid(item)+
-          '<div class="vendor-update-box">"'+esc(item.vendorComment || 'No update provided.')+'"</div>'+
-          '<div class="'+diagClass+'">'+renderFlags(item.flags)+(item.isXing ? renderXingHazardBox(item) : '')+'</div>'+
-          '<div class="section-label" style="margin-top:0;">OMNI MANAGER NOTE</div>'+
-          '<textarea id="'+noteId+'" class="chat-bubble detail-textarea" placeholder="Type decision...">'+esc(draftVal)+'</textarea>'+
-          '<div style="display:flex; justify-content:flex-end; margin-top:10px;"><button class="btn-ai" onclick="askGeminiForDraftMobile(this)">DRAFT W/ GEMINI</button></div>'+
-        '</div>'+
-        (item.cdIntel ? '<div class="qb-module"><div class="qb-module-header">CD Intelligence</div><div class="detail-section-body">'+esc(item.cdIntel)+'</div></div>' : '')+
-        '<div class="qb-module"><div class="qb-module-header">Vendor Update</div><div class="detail-section-body">'+esc(item.vendorComment || 'No comment provided.')+'</div></div>'+
-        '<div class="qb-module"><div class="qb-module-header">Historical Milestones</div><div class="detail-section-body" style="font-family:monospace; font-size:11px;">'+esc(item.bench || 'No history logged.')+'</div></div>'+
+        '<div class="qb-target-wrap'+(item.isXing ? ' xing' : '')+'"><div class="qb-target-inner"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:'+sColor+'">'+formatDate(item.targetDate || item.cxEnd)+'</div></div></div>'+
       '</div>'+
-    '</div>';
+      '<div class="qb-module" style="margin-bottom:16px;">'+
+        '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">FIELD VELOCITY &amp; PRODUCTION</div>'+
+        renderVelocityBarsDesktopStyle(item)+
+      '</div>'+
+      '<div class="qb-module" style="margin-bottom:16px;">'+
+        '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">DIAGNOSTIC &amp; MANAGER REVIEW</div>'+
+        renderDeliverableGrid(item)+
+        '<div class="section-label" style="margin-top:12px; margin-bottom:4px;">VENDOR UPDATE</div>'+
+        '<div class="vendor-bubble">"'+esc(item.vendorComment || 'No update provided.')+'"</div>'+
+        '<div class="section-label" style="margin-top:12px; margin-bottom:4px;">SYSTEM DIAGNOSTICS</div>'+
+        '<div class="'+diagClass+'" style="margin-bottom:12px;">'+renderDiagnosticChips(item)+(item.isXing ? renderXingHazardBox(item) : '')+'</div>'+
+        '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">'+
+          '<div style="display:flex; align-items:center; gap:8px;">'+
+            '<div class="section-label" style="color:var(--color-insight); margin:0;">PM NOTE</div>'+
+            '<button class="btn-ai" onclick="askGeminiForDraftMobile(this)">DRAFT W/GEMINI</button>'+
+          '</div>'+
+        '</div>'+
+        '<textarea id="'+noteId+'" class="chat-bubble" placeholder="Type decision...">'+esc(draftVal)+'</textarea>'+
+      '</div>'+
+      (cdIntelText ? '<div class="cd-intel-card" style="margin-bottom:16px;"><div class="cd-intel-stripe"></div><div class="cd-intel-inner"><div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><span class="cd-badge">CD Intelligence</span></div><div class="cd-intel-text">'+esc(cdIntelText)+'</div></div></div>' : '')+
+      '<div class="qb-module"><div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">Historical Milestones</div><div class="detail-section-body" style="font-family:monospace; font-size:11px; background:var(--bg); padding:10px; border-radius:8px;">'+esc(item.bench || 'No history logged.').replace(/\n/g, '<br>')+'</div></div>'+
+    '</div>'+
+  '</div>';
 }
 
 function commentFieldId(item) {
