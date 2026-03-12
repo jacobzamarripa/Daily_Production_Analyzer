@@ -179,7 +179,7 @@
 
     /* ─── SCENE HEADER ──────────────────────────────────────────────── */
     #scene-header {
-      width: min(var(--card-max-w), calc(100vw - 32px));
+      width: calc(100vw - 32px);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -215,12 +215,13 @@
       top: 0;
       bottom: 0;
       left: 50%;
+      transform: translateX(-50%);
       width: calc(100vw - 32px);
       max-width: none;
-      margin: 0 16px;
+      margin: 0;
       background: var(--card-bg);
       border: var(--hairline);
-      border-radius: 24px;
+      border-radius: 28px;
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
       padding: 24px 20px 20px;
       display: flex;
@@ -250,7 +251,7 @@
     .card-scroll-body {
       overflow-y: auto;
       flex: 1;
-      padding: 16px 20px 100px;
+      padding: 16px 20px 120px;
     }
     .card-scroll-body::-webkit-scrollbar { width: 0; }
     .qb-module {
@@ -1245,20 +1246,23 @@
     }
     .nav-hub-badge {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: -6px;
+      left: -6px;
+      right: auto;
       background: #ef4444;
       color: white;
       font-size: 10px;
       font-weight: 900;
-      min-width: 18px;
-      height: 18px;
-      border-radius: 9px;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 50%;
       display: none;
       align-items: center;
       justify-content: center;
-      border: 2px solid white;
+      border: 2px solid var(--card-bg);
       line-height: 1;
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+      z-index: 10001;
     }
     .admin-strip {
       padding: 16px;
@@ -1716,8 +1720,11 @@
     <!-- 2. DECK SCENE -->
     <div id="deck-scene">
       <div id="scene-header">
-        <div class="scene-title">Review Queue</div>
-        <div class="scene-count" id="deck-count-label">— / —</div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="font-size:10px; font-weight:900; letter-spacing:1px; color:var(--accent-hub); text-transform:uppercase;">Daily Command Center</div>
+          <div class="scene-title">Diagnostics Queue</div>
+        </div>
+        <button class="search-cancel-btn" onclick="showHubHome()" style="font-size:12px; font-weight:800;">✕ Back</button>
       </div>
 
       <div id="card-stack">
@@ -2335,7 +2342,7 @@ function bindCard(card) {
 }
 
 function getCarouselCardWidth() {
-  return Math.min(390, Math.max(280, window.innerWidth - 72));
+  return Math.max(280, window.innerWidth - 32);
 }
 
 function carouselBasePx(offset) {
@@ -2689,13 +2696,15 @@ function selectDeckForFdh(fdh) {
 
 function onGanttRowClick(fdh) {
   var ganttArea = document.getElementById('gantt-area-main');
-  var targetRow = document.getElementById('gantt-row-' + String(fdh || '').replace(/[^A-Za-z0-9_-]/g, '_'));
+  var targetId = 'gantt-row-' + String(fdh || '').replace(/[^A-Za-z0-9_-]/g, '_');
+  var targetRow = document.getElementById(targetId);
   if (!ganttArea || !targetRow) return;
   state.ganttSelectedFdh = fdh;
   ganttArea.classList.add('has-focus');
   document.querySelectorAll('.gantt-row').forEach(function(row) { row.classList.remove('is-active'); });
   targetRow.classList.add('is-active');
-  selectDeckForFdh(fdh);
+  var idx = state.deck.findIndex(function(item) { return item.fdh === fdh; });
+  if (idx > -1) state.idx = idx;
   haptic('light');
   toast('Selected ' + fdh + ' · Rotate to view card');
 }
