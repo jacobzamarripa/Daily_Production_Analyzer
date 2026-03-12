@@ -1837,15 +1837,14 @@
   <div id="gantt-panel">
     <div class="gantt-header">
       <div class="hub-title">Schedule Gantt</div>
-      <button class="search-cancel-btn" onclick="handleLandscapeChange(true)">Close</button>
     </div>
     <div id="gantt-content"></div>
   </div>
   <div id="gantt-ui-overlay">
-    <div class="gantt-pill" style="position:fixed; bottom:20px; left:20px; z-index:10000; pointer-events:auto;">
+    <div class="gantt-pill" style="position:fixed; bottom:24px; left:24px; z-index:10000; pointer-events:auto;">
       <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted);">Global Construction Timeline</div>
     </div>
-    <div class="gantt-pill" style="position:fixed; bottom:20px; right:20px; z-index:10000; background:rgba(168,85,247,0.15); border-color:var(--color-insight); pointer-events:auto;">
+    <div class="gantt-pill" style="position:fixed; bottom:24px; right:24px; z-index:10000; background:rgba(168,85,247,0.15); border-color:var(--color-insight); pointer-events:auto;">
       <div style="font-size:10px; font-weight:800; color:var(--color-insight); text-transform:uppercase;">↻ Rotate to see card</div>
     </div>
   </div>
@@ -1995,7 +1994,7 @@ function onReady(items) {
   renderDeck();
   renderHub();
   renderAdminSheet();
-  handleLandscapeChange(false);
+  handleLandscapeChange();
   updatePill();
   showHubHome();
 }
@@ -2690,14 +2689,15 @@ function selectDeckForFdh(fdh) {
 
 function onGanttRowClick(fdh) {
   var ganttArea = document.getElementById('gantt-area-main');
-  var targetRow = document.getElementById('gantt-row-' + fdh);
+  var targetRow = document.getElementById('gantt-row-' + String(fdh || '').replace(/[^A-Za-z0-9_-]/g, '_'));
   if (!ganttArea || !targetRow) return;
+  state.ganttSelectedFdh = fdh;
   ganttArea.classList.add('has-focus');
   document.querySelectorAll('.gantt-row').forEach(function(row) { row.classList.remove('is-active'); });
   targetRow.classList.add('is-active');
-  state.ganttSelectedFdh = fdh;
   selectDeckForFdh(fdh);
   haptic('light');
+  toast('Selected ' + fdh + ' · Rotate to view card');
 }
 
 function renderGantt(items) {
@@ -2754,14 +2754,13 @@ function renderGantt(items) {
     '</div>';
 }
 
-function handleLandscapeChange(forceClose) {
+function handleLandscapeChange() {
   var gantt = document.getElementById('gantt-panel');
   var main = document.getElementById('main-workspace');
   var overlay = document.getElementById('gantt-ui-overlay');
   if (!gantt || !main) return;
   var isLandscape = window.innerWidth > window.innerHeight;
-  var wasShowing = state.landscapeGanttOpen;
-  var shouldShow = !forceClose && isLandscape && window.innerWidth < 1000;
+  var shouldShow = isLandscape && window.innerWidth < 1024;
   state.landscapeGanttOpen = shouldShow;
   gantt.classList.toggle('fullscreen', shouldShow);
   gantt.style.display = shouldShow ? 'flex' : 'none';
@@ -2769,9 +2768,8 @@ function handleLandscapeChange(forceClose) {
   main.style.display = shouldShow ? 'none' : 'flex';
   if (shouldShow) {
     renderGantt(state.all);
-  } else if (wasShowing && state.ganttSelectedFdh && !forceClose) {
+  } else if (state.ganttSelectedFdh) {
     showReviewQueue(state.ganttSelectedFdh);
-  } else if (forceClose) {
     state.ganttSelectedFdh = '';
   }
 }
@@ -3258,12 +3256,12 @@ function init() {
     else if(state.reviewOpen) showHubHome();
   });
 
-  window.addEventListener('resize', function(){ handleLandscapeChange(false); });
-  window.addEventListener('orientationchange', function(){ setTimeout(function(){ handleLandscapeChange(false); }, 250); });
+  window.addEventListener('resize', function(){ handleLandscapeChange(); });
+  window.addEventListener('orientationchange', function(){ setTimeout(function(){ handleLandscapeChange(); }, 250); });
 
   loadData();
   renderAdminSheet();
-  handleLandscapeChange(false);
+  handleLandscapeChange();
 }
 
 document.addEventListener('DOMContentLoaded', init);
