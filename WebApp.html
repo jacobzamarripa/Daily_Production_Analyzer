@@ -343,7 +343,7 @@
           transform: translateY(-2px);
       }
       .grid-vel-wrapper { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-bottom: 8px; }
-      .grid-vel-wrapper .qb-vel-item { margin-bottom: 0 !important; }
+      .grid-vel-wrapper .qb-vel-item { margin-bottom: 0 !important; flex: none !important; }
       .grid-vel-wrapper .qb-vel-labels { margin-bottom: 2px !important; }
       .grid-vel-wrapper .qb-vel-bar { height: 8px !important; margin-bottom: 2px !important; }
       .grid-card-header {
@@ -3249,7 +3249,7 @@
                   if (item.flags.includes("CHECK BOM")) dFlags.push("CHECK BOM");
                   if (item.flags.includes("MISSING QB STATUS") || item.flags.includes("STATUS MISMATCH")) dFlags.push("QB STATUS");
                   if (dFlags.length > 0) {
-                      topBadgeHtml = `<div style="display:flex; flex-direction:column; gap:4px; margin-top:6px; align-items:flex-end;">` + dFlags.map(f => `<span style="background:rgba(254,226,226,0.5); color:#991b1b; border:1px solid #fca5a5; padding:2px 6px; border-radius:4px; font-size:8px; font-weight:900; line-height:1;">🚩 ${f}</span>`).join('') + `</div>`;
+                      topBadgeHtml = `<div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:4px; margin-top:6px;">` + dFlags.map(f => `<span style="background:rgba(254,226,226,0.5); color:#991b1b; border:1px solid #fca5a5; padding:2px 6px; border-radius:4px; font-size:8px; font-weight:900; line-height:1;">🚩 ${f}</span>`).join('') + `</div>`;
                       glowCls = 'glow-danger';
                   }
                   bodyHtml = `
