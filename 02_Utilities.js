@@ -269,6 +269,7 @@ function saveDeckAnswers(payload) {
 
   const safePayload = payload || {};
   const safeAnswers = safePayload.answers || {};
+  const toBool = v => v === true || v === 'true';
   const data = sheet.getDataRange().getValues();
   const fdhIdx = DECK_HEADERS.indexOf("FDH Engineering ID");
   let targetRow = -1;
@@ -296,11 +297,11 @@ function saveDeckAnswers(payload) {
       case "DOT Paperwork Submitted": return safeAnswers.q_cross_sub || "";
       case "Special Crossing Approved": return safeAnswers.q_cross_appr || "";
       case "Approval Dist to Vendor": return safeAnswers.q_cross_dist || "";
-      case "Active Set": return safeAnswers.q_active_set || "";
-      case "Active Has Power": return safeAnswers.q_active_pwr || "";
+      case "Active Set": return toBool(safeAnswers.q_active_set);
+      case "Active Has Power": return toBool(safeAnswers.q_active_pwr);
       case "Leg ID": return safeAnswers.q_leg || "";
-      case "Transport Available": return safeAnswers.q_transport || "";
-      case "How is it Fed": return safeAnswers.q_how_fed || "";
+      case "Transport Available": return toBool(safeAnswers.q_transport);
+      case "How is it Fed": return toBool(safeAnswers.q_how_fed);
       case "What Does it Feed": return safeAnswers.q_what_feeds || "";
       case "Island Missing Components": return safeAnswers.q_island || "";
       case "OFS Changed Reason": return safeAnswers.q_ofs_change || "";

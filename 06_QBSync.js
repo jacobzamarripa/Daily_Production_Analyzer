@@ -15,6 +15,41 @@ const QB_API_BASE     = "https://api.quickbase.com/v1";
 const QB_PAGE_SIZE    = 1000;
 const QB_MAX_PAGES    = 20;
 
+// --- PHASE 2 SCAFFOLD (not active — write-back not enabled) ---
+// FIDs are unique PER TABLE only. Always pair with parent Table ID to avoid collision.
+// Overlapping FIDs: 192 (Active Set), 193 (Active Has Power), 188 (Manager Note)
+// exist in both write-permitted tables and must be addressed per namespace below.
+const QB_WRITE_MAPPING = {
+  "bts3c49e9": { // FDH Projects (Write-Permitted)
+    "517": "Sent for Permitting",
+    "459": "Permit Approved",
+    "527": "DOT Paperwork Submitted",
+    "528": "Special Crossing Approved",
+    "529": "Approval Dist to Vendor",
+    "192": "Active Set",
+    "193": "Active Has Power",
+    "518": "Transport Available",
+    "522": "What Does it Feed",
+    "524": "Island Missing Components",
+    "188": "Manager Note"
+  },
+  "bvieaendx": { // Project Management (Write-Permitted)
+    "612": "Sent for Permitting",
+    "653": "Permit Approved",
+    "622": "DOT Paperwork Submitted",
+    "623": "Special Crossing Approved",
+    "624": "Approval Dist to Vendor",
+    "192": "Active Set",
+    "193": "Active Has Power",
+    "613": "Transport Available",
+    "617": "What Does it Feed",
+    "619": "Island Missing Components",
+    "188": "Manager Note"
+  }
+  // bts8av3cw (Active Cabinets), bts3c49gt (Permits), bvterz4k4 (FDH Inspections)
+  // are READ-ONLY — intentionally excluded from this map.
+};
+
 
 // --- 2. FIELD DISCOVERY (run once to build the Data Dictionary) ---
 
