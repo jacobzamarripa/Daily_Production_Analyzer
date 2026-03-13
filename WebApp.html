@@ -577,30 +577,44 @@
       .qb-grid {
             display: flex !important;
             flex-direction: column !important;
-            gap: 20px !important;
+            gap: 0 !important;
             width: 100% !important;
             max-width: 1000px !important;
             margin: 0 auto !important;
+            background: var(--card-bg);
+            border-radius: 20px !important;
+            border: 1.5px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: outline 0.2s, background 0.3s, border-color 0.3s, box-shadow 0.3s;
         }
 
       .qb-top-row {
             display: flex !important;
             flex-wrap: wrap !important;
-            gap: 20px !important;
+            gap: 0 !important;
             width: 100% !important;
             align-items: stretch !important;
+            border-bottom: 1px solid var(--border);
         }
       #project-schedule-card {
             flex: 40 1 260px !important;
             min-width: 260px !important;
+            border-right: 1px solid var(--border);
         }
       #velocity-production-card {
             flex: 60 1 300px !important;
             min-width: 300px !important;
         }
 
-      .qb-module { background: var(--card-bg); border-radius: 20px !important; border: 1.5px solid var(--border); padding: 14px 18px; display: flex; flex-direction: column; position: relative; transition: outline 0.2s, background 0.3s, border-color 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);}
+      .qb-module { background: transparent; border-radius: 0 !important; border: none; padding: 16px 20px; display: flex; flex-direction: column; position: relative; }
       .qb-module-header { font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+      @media (max-width: 820px) {
+          #project-schedule-card {
+              border-right: none;
+              border-bottom: 1px solid var(--border);
+          }
+      }
 
       .qb-proj-title { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px;}
       .qb-proj-title-left { display: flex; flex-direction: column; }
@@ -1169,9 +1183,9 @@
                  <div id="welcome-screen" class="empty-msg"><div style="font-size:32px; margin-bottom:12px;">Select a Project</div></div>
                  <div id="grid-content" style="display:none; width:100%; flex:1; overflow-y:auto; padding:20px; align-content:flex-start; gap:16px; box-sizing:border-box;"></div>
               <div class="pane-content" id="pane-content">
-                 <div class="qb-grid">
+                 <div class="qb-grid" id="main-qb-grid">
                <div class="qb-top-row">
-               <div class="qb-module hover-trigger" id="project-schedule-card" style="padding:12px 14px;" onmouseenter="hl('Budget OFS')" onmouseleave="hl('')">
+               <div class="qb-module hover-trigger" id="project-schedule-card" onmouseenter="hl('Budget OFS')" onmouseleave="hl('')">
                    <div class="qb-module-header" style="background:transparent; border-bottom:none; margin-bottom:0;">Project Schedule</div>
                    <div class="qb-proj-title">
                        <div class="qb-proj-title-left">
@@ -1201,7 +1215,7 @@
                    </div>
                </div>
 
-               <div class="qb-module" id="velocity-production-card" style="padding:12px 14px;">
+               <div class="qb-module" id="velocity-production-card">
                    <div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                        <span>Field Velocity & Production</span>
                        <div id="p-light-pill" style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800;" onmouseenter="hl('Light to Cabinets')" onmouseleave="hl('')"></div>
@@ -1218,7 +1232,7 @@
 
                </div>
 
-               <div class="qb-module" style="padding:16px 20px;">
+               <div class="qb-module">
                   <div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border);">
                       Diagnostic & Manager Review
                   </div>
@@ -3070,14 +3084,15 @@
               else if (isOnHold) statusColor = "#94a3b8";
               else if (isOverdue) statusColor = "#ef4444";
 
-              document.querySelectorAll('.qb-module').forEach(m => {
-                  m.classList.remove('glow-complete', 'glow-permit', 'glow-overdue', 'glow-active');
-                  m.style.boxShadow = '';
-                  if (isComplete) m.classList.add('glow-complete');
-                  else if (isPermit) m.classList.add('glow-permit');
-                  else if (isOverdue) m.classList.add('glow-overdue');
-                  else m.classList.add('glow-active');
-              });
+              let unifiedCard = getEl('main-qb-grid');
+              if (unifiedCard) {
+                  unifiedCard.classList.remove('glow-complete', 'glow-permit', 'glow-overdue', 'glow-active');
+                  unifiedCard.style.boxShadow = '';
+                  if (isComplete) unifiedCard.classList.add('glow-complete');
+                  else if (isPermit) unifiedCard.classList.add('glow-permit');
+                  else if (isOverdue) unifiedCard.classList.add('glow-overdue');
+                  else unifiedCard.classList.add('glow-active');
+              }
 
               let hasStart = item.cxStart && item.cxStart !== "";
               setHtml('p-cx-start', `CX START: <span style="color:var(--text-main)">${hasStart ? formatDate(item.cxStart) : "TBD"}</span>`);
