@@ -3387,7 +3387,7 @@
 
       /* 🎭 MAIN STAGE */
       .deck-stage { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 60px 40px 10px; position: relative; }
-      .deck-center-column { width: 100%; max-width: 1500px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+      .deck-center-column { width: 100%; max-width: 1500px; display: flex; flex-direction: column; gap: 40px; position: relative; }
 
       /* 🃏 16:9 HYBRID PRESENTATION CARD */
       .deck-card {
@@ -3652,62 +3652,44 @@
             let ltm = b.match(/Lit:\s*([\d/]+)/); if (ltm) addMb(ltm[1], '#eab308');
           }
           let activeCls = realIdx === deckIndex ? 'active' : '';
-          let thumbId = copy === 'clone' ? `thumb-${realIdx}-clone` : `thumb-${realIdx}`;
-          return `<div class="deck-thumb ${activeCls}" id="${thumbId}" data-real-idx="${realIdx}" data-copy="${copy}" onclick="selectDeckThumb(${realIdx})" style="padding: 12px; gap: 8px;">
+          return `<div class="deck-thumb ${activeCls}" id="thumb-${realIdx}" data-real-idx="${realIdx}" data-copy="${copy}" onclick="selectDeckThumb(${realIdx})" style="padding: 10px 14px; gap: 4px; display: flex; flex-direction: column; height: auto;">
             <div style="position:absolute; top:8px; right:8px; font-size:9px; font-weight:900; color:var(--text-muted); z-index:5;">${realIdx + 1}</div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
-                <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
-                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item.vendor || 'Unknown'}</div>
+            <div style="font-size:9px; font-weight:bold; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Project Schedule</div>
+
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+              <div style="display:flex; flex-direction:column;">
+                <div style="font-size:16px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px; line-height:1.2;">${item.fdh}</div>
+                <div style="font-size:9px; font-weight:600; color:var(--text-muted);">${item.city}</div>
               </div>
-              <span class="glass-pill" style="font-size:8px; background:${tColor}22; color:${tColor}; border-color:${tColor}66;">${item.status || item.stage || '—'}</span>
+              <span class="glass-pill" style="font-size:7px; background:${tColor}22; color:${tColor}; border-color:${tColor}66; padding: 2px 6px;">${item.status || item.stage || '—'}</span>
             </div>
-            <div class="qb-time-bar" style="height:8px; margin:0;">
-              <div class="qb-time-fill" style="width:${tPct}%; background:${tColor}; border-radius:4px;"></div>
+
+            <div style="display:flex; justify-content:space-between; font-size:8px; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-top:8px; margin-bottom:2px;">
+              <span>CX START: <span style="color:var(--text-main);">${item.cxStart || 'TBD'}</span></span>
+              <span>CX COMPLETE: <span style="color:var(--text-main);">${item.cxEnd || 'TBD'}</span></span>
+            </div>
+
+            <div class="qb-time-bar" style="height:8px; margin-bottom:12px; min-height:8px;">
+              <div class="qb-time-fill" style="width:${tPct}%; background:${tColor};"></div>
               ${miniBeadHtml}
+            </div>
+
+            <div class="qb-target-wrap ${item.isXing ? 'xing' : ''}" style="margin-top:auto;">
+              <div class="qb-target-inner" style="padding: 8px 6px 6px 6px; box-shadow: none; border: 1px solid var(--border); border-bottom: none;">
+                <div class="qb-target-label" style="font-size:8px;">TARGET DATE</div>
+                <div class="qb-target-date" style="font-size:14px; color:${tColor}; line-height:1;">${item.targetDate || 'TBD'}</div>
+                ${item.isXing ? `<div style="position:absolute; bottom:2px; right:2px; background:#171717; color:#facc15; padding:1px 4px; border-radius:2px; font-size:7px; font-weight:900; border: 1px solid #facc15;">X-ING</div>` : ''}
+              </div>
             </div>
           </div>`;
         }
 
         let html = '';
         deckSource.forEach((item, idx) => html += buildThumb(item, idx, 'real'));
-        deckSource.forEach((item, idx) => html += buildThumb(item, idx, 'clone'));
         sidebar.innerHTML = html;
-
-        initInfiniteScroll(sidebar, n);
         updateThumbState();
       }
 
-      function initInfiniteScroll(sidebar, n) {
-        if (sidebar._deckScrollHandler) {
-          sidebar.removeEventListener('scroll', sidebar._deckScrollHandler);
-          sidebar._deckScrollHandler = null;
-        }
-        requestAnimationFrame(() => {
-          const padTop = parseFloat(getComputedStyle(sidebar).paddingTop) || 0;
-          const realThumbs = Array.from(sidebar.querySelectorAll('.deck-thumb[data-copy="real"]'));
-          if (realThumbs.length === 0) return;
-          const firstReal = realThumbs[0];
-          const lastReal = realThumbs[realThumbs.length - 1];
-          const primaryStart = firstReal.offsetTop;
-          const primaryEnd = lastReal.offsetTop + lastReal.offsetHeight;
-          const primaryHeight = primaryEnd - primaryStart;
-          sidebar._primaryStart = primaryStart;
-          sidebar._primaryEnd = primaryEnd;
-          sidebar._primaryHeight = primaryHeight;
-          sidebar.scrollTop = Math.max(0, padTop);
-          sidebar._deckScrollHandler = function() {
-            const st = sidebar.scrollTop;
-            if (!sidebar._primaryHeight) return;
-            if (st < padTop) {
-              sidebar.scrollTop = padTop;
-            } else if (st >= sidebar._primaryEnd) {
-              sidebar.scrollTop = st - sidebar._primaryHeight;
-            }
-          };
-          sidebar.addEventListener('scroll', sidebar._deckScrollHandler);
-        });
-      }
 
       function saveCurrentCardState() {
         const item = deckSource[deckIndex];
@@ -3867,7 +3849,7 @@
           : `<span style="height:6px; width:6px; background:#94a3b8; border-radius:50%; display:inline-block;"></span> <span style="color:#94a3b8;">PENDING LIGHT</span>`;
 
         const slideHtml = `
-          <div class="slide-header" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 16px 30px; background: var(--bg); border-bottom: 1px solid var(--border);">
+          <div class="slide-header" style="display: grid; grid-template-columns: 4fr 6fr; gap: 24px; padding: 16px 30px; background: var(--bg); border-bottom: 1px solid var(--border);">
             <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
               <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
@@ -3896,8 +3878,8 @@
                 <span style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Field Velocity & Production</span>
                 <div style="display:flex; align-items:center; gap:4px; font-size:9px; font-weight:800;">${lightHtml}</div>
               </div>
-              <div class="velocity-grid" style="gap: 6px;">
-                ${barsHtml || '<div style="font-size:10px; color:var(--text-muted); font-style:italic;">No active production tracking.</div>'}
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0px 20px;">
+                ${barsHtml || '<div style="font-size:10px; color:var(--text-muted); font-style:italic; grid-column: span 2;">No active production tracking.</div>'}
               </div>
             </div>
           </div>
