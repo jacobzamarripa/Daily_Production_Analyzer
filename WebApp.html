@@ -364,6 +364,24 @@
       .filter-strip.hidden { display: flex !important; }
       body.grid-mode-active .inbox-sidebar { display: none !important; }
       body.grid-mode-active .pane-content { max-width: none !important; padding: 20px 30px !important; }
+      body.deck-mode-active .inbox-sidebar { display: none !important; }
+      body.deck-mode-active #welcome-screen,
+      body.deck-mode-active #pane-content { display: none !important; }
+      body.deck-mode-active #deck-stage { display: flex !important; }
+      body.deck-mode-active #grid-content {
+          display: flex !important;
+          flex-direction: column !important;
+          width: min(35vw, 450px) !important;
+          min-width: 320px !important;
+          border-right: 1px solid var(--border);
+          padding: 80px 14px 20px !important;
+          gap: 12px !important;
+          background: var(--bg);
+      }
+      body.deck-mode-active .grid-card {
+          margin: 0 !important;
+          width: 100% !important;
+      }
       body.grid-mode-active .outbox-pane {
           position: absolute !important;
           right: 0 !important;
@@ -1043,6 +1061,10 @@
                        </div>
                        <div id="p-cd-intel-text" class="cd-intel-text"></div>
                    </div>
+               </div>
+               <div id="deck-stage" style="display:none; flex:1; flex-direction:column; padding:80px 40px 20px; overflow-y:auto; align-items:center;">
+                   <div id="deck-stage-card" style="width:100%; max-width:1200px; aspect-ratio:16/9; max-height:65vh; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden; z-index:5;"></div>
+                   <div id="deck-stage-notes" style="width:60%; margin-top:40px; padding:10px 18px; border:1px solid var(--border); border-radius:16px; background:var(--card-bg); display:flex; flex-direction:column; gap:10px; box-shadow:0 10px 30px rgba(15,23,42,0.05);"></div>
                </div>
                  </div>
               </div>
@@ -2285,7 +2307,8 @@
             if (filtersBtn) filtersBtn.classList.toggle('btn-filters-active', anyActive || !(getEl('filter-strip')?.classList.contains('hidden')));
             filteredItems = filtered;
             renderList(filtered); renderGantt(filtered);
-            if (isGridMode) renderGrid();
+            if (isGridMode || isDeckMode) renderGrid();
+            if (isDeckMode) renderDeckStage();
         });
       }
 
@@ -3092,6 +3115,7 @@
       let currentGridPivot = 'velocity';
 
       function toggleGridMode() {
+          if (isDeckMode) return;
           isGridMode = !isGridMode;
           const btn = getEl('btn-grid-toggle');
           const pivot = getEl('grid-pivot-select');
@@ -3139,7 +3163,7 @@
       }
 
       function renderGrid() {
-          if (!isGridMode) return;
+          if (!isGridMode && !isDeckMode) return;
           const grid = getEl('grid-content');
           if (!grid) return;
 
@@ -3304,89 +3328,18 @@
 
       function openPaneFromGrid(fdh) {
           let item = filteredItems.find(i => i.fdh === fdh);
-          if (item) {
-              let cardEl = getEl(`card-${item.fdh}`);
-              openPane(item, cardEl);
+          if (!item) return;
+          let cardEl = getEl(`card-${item.fdh}`);
+          openPane(item, cardEl);
+          if (isDeckMode) {
+              deckIndex = filteredItems.indexOf(item);
+              renderDeckStage();
           }
       }
 
     </script>
     <style>
-      #pm-deck-overlay {
-        position: fixed; inset: 0; background: radial-gradient(circle at center, var(--card-bg) 0%, var(--bg) 100%);
-        z-index: 100000; display: none; flex-direction: column; opacity: 0; transition: opacity 0.3s ease;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      }
-      body.dark-mode #pm-deck-overlay { background: radial-gradient(circle at center, var(--card-bg) 0%, #000000 100%); }
-      #pm-deck-overlay.active { display: flex; opacity: 1; }
-
-      /* 🛸 FLOATING HEADLESS DOCK */
-      .deck-dock {
-        position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
-        width: max-content; max-width: 95%; z-index: 100005; padding: 8px 12px; border-radius: 34px;
-        background: color-mix(in srgb, var(--card-bg) 75%, transparent);
-        backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
-        border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
-        display: flex; align-items: center; gap: 8px;
-      }
-      .deck-dock input, .deck-dock select {
-        border-radius: 20px; border: 1px solid var(--border); padding: 8px 16px;
-        height: 38px; font-size: 11px; font-weight: 800; background: rgba(255,255,255,0.6);
-        color: var(--text-main); outline: none; cursor: pointer;
-      }
-      body.dark-mode .deck-dock input, body.dark-mode .deck-dock select { background: rgba(0,0,0,0.4); }
-      .deck-dock input:focus, .deck-dock select:focus {
-        border-color: var(--color-insight); box-shadow: 0 0 0 3px rgba(168,85,247,0.15); background: var(--card-bg);
-      }
-      .deck-dock-divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
-      .btn-deck-close {
-        border-radius: 20px; height: 38px; padding: 0 16px; font-size: 11px; font-weight: 900; text-transform: uppercase;
-        background: rgba(239,68,68,0.1); color: var(--color-critical); border: 1px solid rgba(239,68,68,0.3);
-        cursor: pointer; transition: all 0.2s;
-      }
-      .btn-deck-close:hover { background: var(--color-critical); color: white; transform: scale(0.96); }
-
-      /* 🗂️ PRESENTATION LAYOUT */
-      .deck-layout { display: flex; flex-grow: 1; overflow: hidden; }
-
-      /* 📑 HEADLESS MAC DOCK SIDEBAR */
-      .deck-sidebar {
-        width: min(45vw, 700px); background: transparent; border-right: none;
-        display: grid; grid-template-columns: 1fr 1fr; align-content: flex-start; overflow-y: auto; overflow-x: hidden;
-        padding: 40px 20px; gap: 16px; flex-shrink: 0; scroll-behavior: smooth; position: relative;
-      }
-      .deck-sidebar::-webkit-scrollbar { display: none; }
-      .deck-sidebar::after {
-        content: ''; position: fixed; top: 0; bottom: 0; left: min(45vw, 700px); width: 1px;
-        background: linear-gradient(to bottom, transparent, var(--border), transparent); opacity: 0.4;
-      }
-      .deck-thumb {
-        width: 100%; background: var(--card-bg); border: 1px solid var(--border);
-        border-radius: 12px; padding: 14px; cursor: pointer; position: relative;
-        display: flex; flex-direction: column; gap: 6px;
-        opacity: 0.72; transition: all 0.25s ease, opacity 0.25s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        transform: translateY(0);
-        transform-origin: center;
-        height: fit-content;
-      }
-      .deck-thumb:hover { opacity: 0.8; transform: translateY(-2px); }
-      .deck-thumb.active {
-        transform: translateY(-2px); opacity: 1; z-index: 10; border-color: var(--color-insight);
-        box-shadow: 0 0 0 2px rgba(168,85,247,0.2), 0 20px 40px rgba(15,23,42,0.15);
-      }
-      .thumb-fdh { font-size: 14px; font-weight: 900; color: var(--text-main); }
-      .thumb-ven { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-      .thumb-mini-bar { height: 6px; background: var(--bg); border-radius: 3px; border: 1px solid var(--border); overflow: visible; position: relative; margin-top: auto; }
-      .thumb-mini-bead { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid; background: var(--card-bg); pointer-events: none; }
-      .thumb-vel-grid { display: flex; flex-direction: column; gap: 2px; margin-top: 5px; }
-      .thumb-vel-row { display: flex; align-items: center; gap: 3px; }
-      .thumb-vel-label { font-size: 6px; font-weight: 900; color: var(--text-muted); width: 12px; flex-shrink: 0; text-transform: uppercase; }
-      .thumb-vel-track { flex: 1; height: 3px; background: var(--bg); border-radius: 2px; overflow: hidden; }
-      .thumb-vel-fill { height: 100%; border-radius: 2px; }
-      .thumb-vel-pct { font-size: 6px; font-weight: 900; width: 18px; text-align: right; flex-shrink: 0; }
-
-      /* 🎭 MAIN STAGE */
+      /* Native deck stage presentation styles */
       .deck-stage { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 60px 40px 10px; position: relative; }
       .deck-center-column { width: 100%; max-width: 1500px; display: flex; flex-direction: column; gap: 40px; position: relative; }
 
@@ -3478,204 +3431,332 @@
       .deck-arrow.next { right: -80px; }
     </style>
 
-    <div id="pm-deck-overlay">
-      <div class="deck-dock">
-        <input type="text" id="deck-search" placeholder="Search deck..." autocomplete="off" oninput="applyDeckFilters()">
-        <select id="deck-filter-vendor" onchange="applyDeckFilters()"><option value="ALL">All Vendors</option></select>
-        <select id="deck-filter-city" onchange="applyDeckFilters()"><option value="ALL">All Cities</option></select>
-        <select id="deck-filter-ofs" onchange="applyDeckFilters()"><option value="ALL">All OFS Dates</option></select>
-        <div class="deck-dock-divider"></div>
-        <button class="btn-deck-close" onclick="toggleDeckMode()">✕ Close Deck</button>
-      </div>
-
-      <div class="deck-layout">
-        <div class="deck-sidebar" id="deck-sidebar-content"></div>
-
-        <div class="deck-stage">
-          <div class="deck-center-column">
-            <div style="position:relative; width:100%; display:flex; align-items:center; justify-content:center;">
-              <button class="deck-arrow prev" id="deck-arrow-prev" onclick="navDeck(-1)">&#8249;</button>
-              <div class="deck-card">
-                <div id="deck-card-content" style="display:flex; flex-direction:column; height:100%;"></div>
-              </div>
-              <button class="deck-arrow next" id="deck-arrow-next" onclick="navDeck(1)">&#8250;</button>
-            </div>
-            <div class="deck-notes-area" id="deck-notes-content"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script>
       let deckIndex = 0;
-      let deckSource = [];
+      let isDeckMode = false;
       let pmSessionMemory = {};
+      let deckPrevPivot = 'velocity';
 
-      function populateDeckDropdowns() {
-        if (!allActionItems) return;
-        const pop = (id, vals) => {
-          let el = getEl(id); if (!el) return;
-          let curr = el.value;
-          el.innerHTML = `<option value="ALL">${el.options[0].text}</option>`;
-          vals.sort().forEach(v => { let opt = document.createElement('option'); opt.value = v; opt.text = v; el.appendChild(opt); });
-          el.value = curr;
-        };
-        pop('deck-filter-vendor', [...new Set(allActionItems.map(i => i.vendor).filter(Boolean))]);
-        pop('deck-filter-city', [...new Set(allActionItems.map(i => i.city).filter(Boolean))]);
-        let ofsMonths = allActionItems.map(i => {
-          if (!i.ofsDate || i.ofsDate === '-' || i.ofsDate === 'Unknown') return null;
-          try { let d = new Date(i.ofsDate); return !isNaN(d) ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : null; } catch(e) { return null; }
-        }).filter(Boolean);
-        pop('deck-filter-ofs', [...new Set(ofsMonths)]);
+      function getDeckItems() {
+        return filteredItems || [];
+      }
+
+      function ensureDeckIndex() {
+        const items = getDeckItems();
+        if (items.length === 0) {
+          deckIndex = 0;
+          return null;
+        }
+        if (deckIndex < 0) deckIndex = 0;
+        if (deckIndex >= items.length) deckIndex = items.length - 1;
+        return items[deckIndex];
+      }
+
+      function syncDeckFab() {
+        const btn = getEl('btn-pm-deck');
+        if (!btn) return;
+        btn.innerHTML = isDeckMode ? '✕' : '🎴';
+        btn.dataset.tooltip = isDeckMode ? 'Close Deck' : 'PM Deck';
+        btn.style.background = isDeckMode ? 'rgba(168,85,247,0.16)' : '';
+        btn.style.borderColor = isDeckMode ? 'rgba(168,85,247,0.45)' : '';
+      }
+
+      function syncDeckFilterTools() {
+        const tools = document.querySelector('.filter-tools');
+        const gridBtn = getEl('btn-grid-toggle');
+        const pivot = getEl('grid-pivot-select');
+        if (gridBtn) gridBtn.style.display = isDeckMode ? 'none' : 'inline-flex';
+        if (pivot) pivot.style.display = isDeckMode ? 'none' : (isGridMode ? 'inline-block' : 'none');
+        if (!tools) return;
+
+        let closeBtn = getEl('btn-close-deck-mode');
+        if (isDeckMode) {
+          if (!closeBtn) {
+            closeBtn = document.createElement('button');
+            closeBtn.id = 'btn-close-deck-mode';
+            closeBtn.className = 'btn';
+            closeBtn.textContent = '✕ Close Deck';
+            closeBtn.style.fontSize = '10px';
+            closeBtn.style.fontWeight = '900';
+            closeBtn.style.background = 'rgba(239,68,68,0.1)';
+            closeBtn.style.color = 'var(--color-critical)';
+            closeBtn.style.borderColor = 'rgba(239,68,68,0.25)';
+            closeBtn.onclick = toggleDeckMode;
+            tools.appendChild(closeBtn);
+          }
+        } else if (closeBtn) {
+          closeBtn.remove();
+        }
+      }
+
+      function updateDeckStageSelection() {
+        const items = getDeckItems();
+        const active = items[deckIndex];
+        document.querySelectorAll('#grid-content .grid-card').forEach(card => card.classList.remove('is-selected'));
+        if (!active) return;
+        const card = getEl(`grid-card-${active.fdh}`);
+        if (card) {
+          card.classList.add('is-selected');
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
 
       function toggleDeckMode() {
-        const overlay = getEl('pm-deck-overlay');
-        if (!overlay) return;
-        const isActive = overlay.classList.toggle('active');
-        if (isActive) {
-          populateDeckDropdowns();
-          if (getEl('filter-vendor')) getEl('deck-filter-vendor').value = getEl('filter-vendor').value;
-          if (getEl('filter-city'))   getEl('deck-filter-city').value   = getEl('filter-city').value;
-          if (getEl('filter-ofs'))    getEl('deck-filter-ofs').value    = getEl('filter-ofs').value;
-          if (getEl('search-input'))  getEl('deck-search').value        = getEl('search-input').value;
-          applyDeckFilters(true);
-        } else {
-          saveCurrentCardState();
-        }
-      }
+        if (isDeckMode) saveCurrentCardState();
+        isDeckMode = !isDeckMode;
+        document.body.classList.toggle('deck-mode-active', isDeckMode);
+        syncDeckFab();
+        syncDeckFilterTools();
 
-      function applyDeckFilters(preserveSelection = false) {
-        saveCurrentCardState();
-        const vVen    = getEl('deck-filter-vendor')?.value || 'ALL';
-        const vCit    = getEl('deck-filter-city')?.value   || 'ALL';
-        const vOfs    = getEl('deck-filter-ofs')?.value    || 'ALL';
-        const search  = (getEl('deck-search')?.value || '').toLowerCase();
-
-        deckSource = (allActionItems || []).filter(i => {
-          let matchOfs = true;
-          if (vOfs !== 'ALL') {
-            try {
-              let d = new Date(i.ofsDate);
-              let mStr = !isNaN(d) ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : '';
-              matchOfs = (mStr === vOfs);
-            } catch(e) { matchOfs = false; }
+        if (isDeckMode) {
+          if (isGridMode) {
+            isGridMode = false;
+            document.body.classList.remove('grid-mode-active');
+            const gridBtn = getEl('btn-grid-toggle');
+            const pivot = getEl('grid-pivot-select');
+            if (gridBtn) {
+              gridBtn.style.background = 'var(--card-bg)';
+              gridBtn.style.color = 'var(--text-main)';
+              gridBtn.style.borderColor = 'var(--border)';
+              gridBtn.innerHTML = '⊞ Grid View';
+            }
+            if (pivot) pivot.style.display = 'none';
           }
-          let matchSearch = (search === '') || i.fdh.toLowerCase().includes(search);
-          return (vVen === 'ALL' || i.vendor === vVen) && (vCit === 'ALL' || i.city === vCit) && matchOfs && matchSearch;
-        });
-
-        if (deckSource.length === 0) {
-          if (getEl('deck-sidebar-content')) getEl('deck-sidebar-content').innerHTML = '';
-          if (getEl('deck-card-content'))   getEl('deck-card-content').innerHTML   = '<div style="margin:auto; font-size:24px;">No projects match filters.</div>';
-          if (getEl('deck-notes-content'))  getEl('deck-notes-content').innerHTML  = '';
-          if (getEl('deck-arrow-prev'))     getEl('deck-arrow-prev').style.display = 'none';
-          if (getEl('deck-arrow-next'))     getEl('deck-arrow-next').style.display = 'none';
-          return;
+          deckPrevPivot = currentGridPivot;
+          currentGridPivot = 'schedule';
+          if (getEl('grid-pivot-select')) getEl('grid-pivot-select').value = 'schedule';
+          setAdminPanelOpen(false);
+          renderGrid();
+          const items = getDeckItems();
+          if (currentActiveItem) {
+            const idx = items.findIndex(i => i.fdh === currentActiveItem.fdh);
+            if (idx > -1) deckIndex = idx;
+          }
+          const activeItem = ensureDeckIndex();
+          if (activeItem) openPane(activeItem, getEl(`card-${activeItem.fdh}`));
+          renderDeckStage();
+        } else {
+          currentGridPivot = deckPrevPivot || 'velocity';
+          if (getEl('grid-pivot-select')) getEl('grid-pivot-select').value = currentGridPivot;
+          exitTheaterMode();
+          if (isGridMode) renderGrid();
+          else {
+            let grid = getEl('grid-content');
+            if (grid) grid.style.display = 'none';
+          }
         }
-
-        let targetFdh = preserveSelection && typeof currentActiveItem !== 'undefined' && currentActiveItem ? currentActiveItem.fdh : null;
-        deckIndex = 0;
-        if (targetFdh) {
-          let idx = deckSource.findIndex(i => i.fdh === targetFdh);
-          if (idx > -1) deckIndex = idx;
-        }
-        renderDeckThumbnails();
-        renderDeckCard();
-      }
-
-      function selectDeckThumb(idx) {
-        if (idx === deckIndex) return;
-        saveCurrentCardState();
-        deckIndex = idx;
-        renderDeckCard();
-        updateThumbState();
       }
 
       function navDeck(dir) {
-        if (deckSource.length === 0) return;
+        const items = getDeckItems();
+        if (items.length === 0) return;
         saveCurrentCardState();
-        const n = deckSource.length;
-        deckIndex = ((deckIndex + dir) % n + n) % n;
-        renderDeckCard();
-        updateThumbState();
+        deckIndex = (deckIndex + dir + items.length) % items.length;
+        const item = items[deckIndex];
+        openPane(item, getEl(`card-${item.fdh}`));
+        renderDeckStage();
       }
 
-      function updateThumbState() {
-        let activeEl = null;
-        document.querySelectorAll('.deck-thumb').forEach(el => {
-          const realIdx = parseInt(el.dataset.realIdx || el.dataset.idx || '-1');
-          if (realIdx === deckIndex) {
-            el.classList.add('active');
-            if (!activeEl) activeEl = el;
-          } else {
-            el.classList.remove('active');
-          }
-        });
-        if (activeEl) {
-          activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      function renderDeckStage() {
+        const stageCard = getEl('deck-stage-card');
+        const stageNotes = getEl('deck-stage-notes');
+        if (!stageCard || !stageNotes) return;
+
+        const item = ensureDeckIndex();
+        if (!item) {
+          stageCard.innerHTML = '<div style="margin:auto; font-size:24px;">No projects match current filters.</div>';
+          stageNotes.innerHTML = '';
+          return;
         }
-      }
+        currentActiveItem = item;
 
-      function renderDeckThumbnails() {
-        const sidebar = getEl('deck-sidebar-content');
-        if (!sidebar) return;
-        if (deckSource.length === 0) { sidebar.innerHTML = ''; return; }
+        let pStart = safeDate(item.cxStart);
+        let pEnd = safeDate(item.cxEnd);
+        let today = new Date(); today.setHours(0,0,0,0);
+        let daysLeft = 0, pct = 0;
+        if (pEnd) {
+          daysLeft = Math.ceil((pEnd - today) / 86400000);
+          if (pStart && pEnd - pStart > 0) pct = Math.max(0, Math.min(100, ((today - pStart) / (pEnd - pStart)) * 100));
+        }
 
-        function buildThumb(item, idx) {
-          const safeD2 = (v) => { try { let d = safeDate ? safeDate(v) : new Date(v); return d && !isNaN(d) ? d : null; } catch(e) { return null; } };
-          let tStart = safeD2(item.cxStart), tEnd = safeD2(item.cxEnd);
-          let tToday = new Date(); tToday.setHours(0,0,0,0);
-          let tPct = 0;
-          if (tStart && tEnd && tEnd - tStart > 0)
-            tPct = Math.max(0, Math.min(100, ((tToday - tStart) / (tEnd - tStart)) * 100));
-          let isComp = (item.stage||'').toLowerCase().includes('ofs') || (item.status||'').toLowerCase().includes('complete');
-          let isPerm = (item.stage||'').toLowerCase().includes('permit');
-          let isHold = (item.status||'').toLowerCase().includes('hold');
-          let isOver = tEnd && tToday > tEnd && !isComp && !isHold && !isPerm;
-          let tColor = '#facc15';
-          if (isComp) tColor='#22c55e'; else if (isPerm) tColor='#a855f7'; else if (isHold) tColor='#94a3b8'; else if (isOver) tColor='#ef4444';
-          let miniBeadHtml = '';
-          if (tStart && tEnd && (tEnd - tStart > 0)) {
-            const addMb = (dateStr, color) => {
-              let d = safeD2(dateStr); if (!d) return;
-              let p = ((d - tStart) / (tEnd - tStart)) * 100;
-              if (p >= 0 && p <= 100)
-                miniBeadHtml += `<div class="thumb-mini-bead" style="left:${p}%; border-color:${color};"></div>`;
-            };
-            let b = item.bench || '';
-            let lm = b.match(/Loc:\s*([\d/]+)/); if (lm) addMb(lm[1], '#3b82f6');
-            let cm = b.match(/Cab:\s*([\d/]+)/); if (cm) addMb(cm[1], '#a855f7');
-            let ltm = b.match(/Lit:\s*([\d/]+)/); if (ltm) addMb(ltm[1], '#eab308');
+        let isComplete = (item.stage||'').toLowerCase().includes('ofs') || (item.status||'').toLowerCase().includes('complete');
+        let isPermit = (item.stage||'').toLowerCase().includes('permit');
+        let isOnHold = (item.status||'').toLowerCase().includes('hold');
+        let isOverdue = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
+
+        let sColor = '#facc15';
+        if (isComplete) sColor = '#22c55e';
+        else if (isPermit) sColor = '#a855f7';
+        else if (isOnHold) sColor = '#94a3b8';
+        else if (isOverdue) sColor = '#ef4444';
+
+        let ofsMonthStr = 'TBD', isOFSMonth = false;
+        if (item.ofsDate && item.ofsDate !== '-' && item.ofsDate !== 'Unknown') {
+          let d = safeDate(item.ofsDate);
+          if (d) {
+            ofsMonthStr = d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase();
+            if (d.getUTCMonth() === today.getMonth() && d.getUTCFullYear() === today.getFullYear()) isOFSMonth = true;
           }
-          let activeCls = idx === deckIndex ? 'active' : '';
-          return `<div class="deck-thumb ${activeCls} grid-card" id="thumb-${idx}" data-idx="${idx}" onclick="selectDeckThumb(${idx})" style="padding: 12px; gap: 8px; margin: 0; box-shadow: ${idx === deckIndex ? '0 0 0 3px rgba(168, 85, 247, 0.8), 0 8px 20px rgba(168, 85, 247, 0.25)' : '0 4px 6px -1px rgba(0,0,0,0.05)'}; border-color: ${idx === deckIndex ? 'var(--color-insight)' : 'var(--border)'};">
-            <div class="grid-card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 6px;">
-              <div>
-                <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
-                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item.vendor || 'Unknown'}</div>
+        }
+        let ofsPillStyle = isOFSMonth
+          ? 'color:#2563eb; background:rgba(239,246,255,0.7); border-color:#2563eb;'
+          : 'color:var(--text-main); background:var(--card-bg); border-color:var(--border);';
+        let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
+
+        const makeDeckBead = (dateStr, icon, title, bgColor, borderColor) => {
+          let d = safeDate(dateStr); if (!d) return '';
+          let p = ((d - pStart) / (pEnd - pStart)) * 100;
+          if (p >= 0 && p <= 100) return `<div class="proj-bead has-tooltip" data-tooltip="${title}" style="left:${p}%; background:${bgColor}; border-color:${borderColor}; color:${borderColor};">${icon}</div>`;
+          return '';
+        };
+        let projBeadHtml = '';
+        if (pStart && pEnd && (pEnd - pStart > 0)) {
+          let b = item.bench || '';
+          let locM = b.match(/Loc:\s*([\d/]+)/); if (locM) projBeadHtml += makeDeckBead(locM[1], 'L', `Locates Called (${locM[1]})`, 'var(--card-bg)', '#3b82f6');
+          let cabM = b.match(/Cab:\s*([\d/]+)/); if (cabM) projBeadHtml += makeDeckBead(cabM[1], 'C', `Cabinets Set (${cabM[1]})`, 'var(--card-bg)', '#a855f7');
+          let litM = b.match(/Lit:\s*([\d/]+)/); if (litM) projBeadHtml += makeDeckBead(litM[1], '⚡', `Light Present (${litM[1]})`, 'var(--card-bg)', '#eab308');
+          let starMs = b.match(/(UG|AE|FIB|NAP):\s*[\d/]+\s*->\s*([\d/]+)\s*\(100%\)/g);
+          if (starMs) starMs.forEach(m => {
+            let phase = m.split(':')[0];
+            let dExt = m.match(/->\s*([\d/]+)\s*\(/);
+            if (dExt) {
+              let sd = safeDate(dExt[1]); if (!sd) return;
+              let sp = ((sd - pStart) / (pEnd - pStart)) * 100;
+              if (sp >= 0 && sp <= 100) {
+                let sCol = (typeof QB_STYLES !== 'undefined' && QB_STYLES[phase]) ? QB_STYLES[phase].border : '#94a3b8';
+                projBeadHtml += `<div class="proj-bead has-tooltip" data-tooltip="${phase} 100% (${dExt[1]})" style="left:${sp}%; background:rgba(255,255,255,0.85); border-color:${sCol}; color:${sCol}; font-size:9px;">★</div>`;
+              }
+            }
+          });
+        }
+
+        let deckReportDate = item.reportDate || item.date || 'TBD';
+        let deckLastCheck = item.lastChecked || 'NEVER';
+        let deckRefData = (typeof globalRefDataDate !== 'undefined' && globalRefDataDate) ? globalRefDataDate : '—';
+        let deckViewRecord = item.rid ? `<a href="https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=${item.rid}" target="_blank" class="btn" style="padding:5px 12px; font-size:9px; color:var(--text-main); background:var(--bg); border-color:var(--border); text-decoration:none;">VIEW RECORD</a>` : '';
+
+        const mem = pmSessionMemory[item.fdh] || {};
+        const yesNo = (bool, trueText='YES', falseText='NO') => {
+          if (bool === true) return `<span class="slide-sys-val yes">${trueText}</span>`;
+          if (bool === false) return `<span class="slide-sys-val no">${falseText}</span>`;
+          return `<span class="slide-sys-val">UNKNOWN</span>`;
+        };
+        const mi = (id, ph) => `<input type="text" class="slide-input" id="${id}" placeholder="${ph}" autocomplete="off" value="${mem[id] || ''}" oninput="persistDeckInput(this)">`;
+
+        let barsHtml = '';
+        let v = item.vel;
+        if (v) {
+          barsHtml += buildVelocityBar('Underground', v.ug?.daily, v.ug?.tot, v.ug?.bom, 'UG', daysLeft);
+          barsHtml += buildVelocityBar('Aerial', v.ae?.daily, v.ae?.tot, v.ae?.bom, 'AE', daysLeft);
+          barsHtml += buildVelocityBar('Fiber', v.fib?.daily, v.fib?.tot, v.fib?.bom, 'FIB', daysLeft);
+          barsHtml += buildVelocityBar('Splicing', v.nap?.daily, v.nap?.tot, v.nap?.bom, 'NAP', daysLeft);
+        }
+        let effectiveLight = item.isLight || isComplete;
+        let lightHtml = effectiveLight
+          ? `<span style="height:6px; width:6px; background:#22c55e; border-radius:50%; display:inline-block;"></span> <span style="color:#22c55e;">LIGHT PRESENT</span>`
+          : `<span style="height:6px; width:6px; background:#94a3b8; border-radius:50%; display:inline-block;"></span> <span style="color:#94a3b8;">PENDING LIGHT</span>`;
+
+        stageCard.innerHTML = `
+          <div style="position:relative; display:flex; flex-direction:column; height:100%;">
+            <button class="deck-arrow prev" style="left:16px;" onclick="navDeck(-1)">&#8249;</button>
+            <button class="deck-arrow next" style="right:16px;" onclick="navDeck(1)">&#8250;</button>
+            <div class="slide-header" style="display:grid; grid-template-columns:4fr 6fr; gap:24px; padding:16px 30px; background:var(--bg); border-bottom:1px solid var(--border);">
+              <div style="display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <div>
+                    <div style="font-size:24px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px; line-height:1;">${item.fdh}</div>
+                    <div style="font-size:10px; font-weight:700; color:var(--text-muted); margin-top:4px;">${item.city} &bull; ${item.vendor}</div>
+                  </div>
+                  <div style="font-size:10px; font-weight:900; background:var(--card-bg); border:1px solid var(--border); padding:4px 10px; border-radius:12px; text-transform:uppercase;">${item.stage} | ${item.status}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <div class="slide-time-labels">
+                    <span>CX START: <span style="color:var(--text-main);">${item.cxStart || 'TBD'}</span></span>
+                    <span>CX COMPLETE: <span style="color:var(--text-main);">${item.cxEnd || 'TBD'}</span></span>
+                  </div>
+                  <div class="${item.isXing ? 'qb-target-wrap xing' : ''}" style="margin:0;">
+                    <div class="slide-time-bar" style="margin-bottom:${item.isXing ? '8px' : '0'};">
+                      <div class="slide-time-fill" style="width:${pct}%; background:${sColor};"></div>
+                      ${pct > 0 && pct < 100 ? `<div class="slide-time-bead" style="left:${pct}%; border-color:${sColor};"></div>` : ''}
+                      ${projBeadHtml}
+                    </div>
+                    ${item.isXing ? `<div class="qb-target-inner" style="padding-top:4px; border-top:none;"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:${sColor}; font-size:14px;">${item.targetDate || 'TBD'}</div><div style="background:#171717; color:#facc15; padding:1px 6px; border-radius:4px; font-size:8px; font-weight:900;">X-ING</div></div>` : ''}
+                  </div>
+                </div>
               </div>
-              <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                <span class="glass-pill" style="font-size:8px; background:${tColor}22; color:${tColor}; border-color:${tColor}66;">${item.status || item.stage || '—'}</span>
-                <div style="font-size:12px; font-weight:900; color:${tColor}; margin-top:4px;">${item.targetDate || 'TBD'}</div>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:4px;">
+                  <span style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Field Velocity & Production</span>
+                  <div style="display:flex; align-items:center; gap:4px; font-size:9px; font-weight:800;">${lightHtml}</div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 20px;">
+                  ${barsHtml || '<div style="font-size:10px; color:var(--text-muted); font-style:italic; grid-column:span 2;">No active production tracking.</div>'}
+                </div>
               </div>
             </div>
-            <div class="qb-time-bar" style="height:6px; margin:4px 0 0 0;">
-              <div class="qb-time-fill" style="width:${tPct}%; background:${tColor}; border-radius:3px;"></div>
-              ${miniBeadHtml}
+            <div class="slide-body">
+              <div class="slide-col">
+                <div class="slide-q-row"><div class="slide-q-label">What is the FDH Number?</div><span class="slide-sys-val" style="color:var(--text-main); border-color:var(--text-main); font-size:12px;">${item.fdh}</span></div>
+                <div class="slide-q-row"><div class="slide-q-label">Was it sent for permitting?</div>${mi('q_permit_sent', 'Enter date/status...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Has it been permit approved?</div>${mi('q_permit_appr', 'Enter date/status...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Has the CD been distributed?</div>${yesNo(item.hasCDDist)}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Have splice docs been distributed?</div>${yesNo(item.hasSpliceDist)}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Have strand maps been distributed?</div>${yesNo(item.hasStrandDist)}</div>
+                <div class="slide-q-row" style="margin-top:10px; border-bottom:none;"><div class="slide-q-label">Are there any special crossings?</div>${item.isXing ? yesNo(true, 'YES (ACTION REQ)') : yesNo(false, '', 'NONE DETECTED')}</div>
+                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">DOT paperwork ready &amp; submitted?</div>${mi('q_cross_sub', 'Enter status...')}</div>
+                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Has the special crossing been approved?</div>${mi('q_cross_appr', 'Enter status...')}</div>
+                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Approval distributed to vendor?</div>${mi('q_cross_dist', 'Enter status...')}</div>
+              </div>
+              <div class="slide-col">
+                <div class="slide-q-row"><div class="slide-q-label">Was the BOM / PO sent?</div>${yesNo(item.hasBOMPo)}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Has the SOW been signed?</div>${yesNo(item.hasSOW)}</div>
+                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Has the active been set?</div>${mi('q_active_set', 'Enter status...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Does the active have power?</div>${mi('q_active_pwr', 'Enter status...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">What leg is this FDH on?</div>${mi('q_leg', 'Enter leg ID...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Is transport readily available?</div>${mi('q_transport', 'Enter status...')}</div>
+                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">How is this FDH being fed?</div>${mi('q_how_fed', 'Enter source...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">What does this FDH feed?</div>${mi('q_what_feeds', 'Enter downstream...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">If FDH is an island, what is missing?</div>${mi('q_island', 'N/A or list...')}</div>
+                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Did the OFS date change? (Why?)</div>${mi('q_ofs_change', 'Yes/No + Reason...')}</div>
+              </div>
+            </div>
+            <div class="slide-footer" style="padding:10px 30px; display:flex; flex-direction:row; justify-content:space-between; align-items:center; flex-wrap:nowrap; gap:16px;">
+              <div style="font-size:12px; font-weight:900; color:${sColor}; white-space:nowrap; flex-shrink:0;">${daysLeftTxt}</div>
+              <div class="slide-fine-print" style="margin:0; display:flex; gap:12px; align-items:center; white-space:nowrap; flex-grow:1; justify-content:center; overflow:hidden;">
+                <span>Report Date <b>${deckReportDate}</b></span><span>|</span>
+                <span>Last Checked <b>${deckLastCheck}</b></span><span>|</span>
+                <span>Ref Data <b>${deckRefData}</b></span>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; white-space:nowrap; flex-shrink:0;">
+                <div style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:6px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">BSLS: ${item.bsls || 'N/A'}</div>
+                <div style="font-size:10px; font-weight:800; padding:3px 8px; border-radius:6px; border:1px solid; ${ofsPillStyle}">OFS: ${ofsMonthStr}</div>
+                ${deckViewRecord}
+              </div>
             </div>
           </div>`;
-        }
 
-        let html = '';
-        deckSource.forEach((item, idx) => html += buildThumb(item, idx));
-        sidebar.innerHTML = html;
-        updateThumbState();
+        stageNotes.innerHTML = `
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="section-label" style="color:var(--color-insight); margin:0;">PM NOTE</div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                ${item.geminiDate ? `<span style="font-size:9px; font-style:italic; color:#a855f7;">Drafted: ${item.geminiDate}</span>` : ''}
+                <button class="btn-ai" onclick="askGeminiForDraftDeck(this)" style="padding:6px 14px; font-size:10px; background:linear-gradient(90deg,#4285F4,#8E24AA,#D81B60,#F4B400,#4285F4); background-size:200% 200%; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:900;">DRAFT W/GEMINI</button>
+              </div>
+            </div>
+            <textarea id="deck-note" class="chat-bubble" placeholder="Enter formal decision notes for this project..." oninput="syncDeckNote()" style="width:100%; min-height:72px; padding:14px; border-radius:14px 14px 2px 14px; border:1px solid #d8b4fe; font-family:monospace; font-size:13px; line-height:1.5; resize:none; background:#faf5ff; color:#4c1d95; outline:none; box-shadow:3px 3px 0 rgba(0,0,0,0.05); box-sizing:border-box;">${item.comment || item.draft || ''}</textarea>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+              <button class="btn btn-skip" onclick="navDeck(1)" style="padding:6px 18px; font-size:11px; font-weight:900; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text-main); cursor:pointer;">SKIP (NEXT)</button>
+              <button class="btn btn-primary" onclick="exportDeckReport()" id="btn-export-deck" style="padding:6px 18px; font-size:11px; font-weight:900; background:#16a34a; border:1px solid #15803d; border-radius:8px; color:white; cursor:pointer;">COPY REPORT</button>
+            </div>
+          </div>`;
+
+        updateDeckStageSelection();
       }
 
 
       function saveCurrentCardState() {
-        const item = deckSource[deckIndex];
+        const item = ensureDeckIndex();
         if (!item) return;
         if (!pmSessionMemory[item.fdh]) pmSessionMemory[item.fdh] = {};
         document.querySelectorAll('.slide-input').forEach(inp => {
@@ -3685,14 +3766,14 @@
       }
 
       function persistDeckInput(inputEl) {
-        const item = deckSource[deckIndex];
+        const item = ensureDeckIndex();
         if (!item || !inputEl) return;
         if (!pmSessionMemory[item.fdh]) pmSessionMemory[item.fdh] = {};
         pmSessionMemory[item.fdh][inputEl.id] = inputEl.value;
       }
 
       function syncDeckNote() {
-        const item = deckSource[deckIndex];
+        const item = ensureDeckIndex();
         const noteEl = getEl('deck-note');
         if (!item || !noteEl) return;
         item.comment = noteEl.value;
@@ -3704,7 +3785,7 @@
       }
 
       function askGeminiForDraftDeck(btn) {
-        const item = deckSource[deckIndex];
+        const item = ensureDeckIndex();
         if (!item) return;
         let origText = btn.innerHTML;
         btn.innerHTML = 'DRAFTING...';
@@ -3734,198 +3815,9 @@
           .generateAndSaveFDHNarrative(payload);
       }
 
-      function renderDeckCard() {
-        const item = deckSource[deckIndex];
-        if (!item) return;
-
-        if (getEl('deck-arrow-prev')) getEl('deck-arrow-prev').style.display = deckIndex === 0 ? 'none' : 'flex';
-        if (getEl('deck-arrow-next')) getEl('deck-arrow-next').style.display = deckIndex === deckSource.length - 1 ? 'none' : 'flex';
-
-        // Schedule header math
-        const safeD = (v) => { try { let d = safeDate ? safeDate(v) : new Date(v); return d && !isNaN(d) ? d : null; } catch(e) { return null; } };
-        let pStart = safeD(item.cxStart);
-        let pEnd   = safeD(item.cxEnd);
-        let today  = new Date(); today.setHours(0,0,0,0);
-        let daysLeft = 0, pct = 0;
-        if (pEnd) {
-          daysLeft = Math.ceil((pEnd - today) / 86400000);
-          if (pStart && pEnd - pStart > 0)
-            pct = Math.max(0, Math.min(100, ((today - pStart) / (pEnd - pStart)) * 100));
-        }
-
-        let isComplete = (item.stage||'').toLowerCase().includes('ofs') || (item.status||'').toLowerCase().includes('complete');
-        let isPermit   = (item.stage||'').toLowerCase().includes('permit');
-        let isOnHold   = (item.status||'').toLowerCase().includes('hold');
-        let isOverdue  = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
-
-        let sColor = '#facc15';
-        if (isComplete)    sColor = '#22c55e';
-        else if (isPermit) sColor = '#a855f7';
-        else if (isOnHold) sColor = '#94a3b8';
-        else if (isOverdue) sColor = '#ef4444';
-
-        let ofsMonthStr = 'TBD', isOFSMonth = false;
-        if (item.ofsDate && item.ofsDate !== '-' && item.ofsDate !== 'Unknown') {
-          let d = safeD(item.ofsDate);
-          if (d) {
-            ofsMonthStr = d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase();
-            if (d.getUTCMonth() === today.getMonth() && d.getUTCFullYear() === today.getFullYear()) isOFSMonth = true;
-          }
-        }
-        let ofsPillStyle = isOFSMonth
-          ? 'color:#2563eb; background:rgba(239,246,255,0.7); border-color:#2563eb;'
-          : 'color:var(--text-main); background:var(--card-bg); border-color:var(--border);';
-        let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
-
-        // Milestone beads from bench string
-        const makeDeckBead = (dateStr, icon, title, bgColor, borderColor) => {
-          let d = safeD(dateStr); if (!d) return '';
-          let p = ((d - pStart) / (pEnd - pStart)) * 100;
-          if (p >= 0 && p <= 100) return `<div class="proj-bead has-tooltip" data-tooltip="${title}" style="left:${p}%; background:${bgColor}; border-color:${borderColor}; color:${borderColor};">${icon}</div>`;
-          return '';
-        };
-        let projBeadHtml = '';
-        if (pStart && pEnd && (pEnd - pStart > 0)) {
-          let b = item.bench || '';
-          let locM = b.match(/Loc:\s*([\d/]+)/);  if (locM) projBeadHtml += makeDeckBead(locM[1], 'L', `Locates Called (${locM[1]})`, 'var(--card-bg)', '#3b82f6');
-          let cabM = b.match(/Cab:\s*([\d/]+)/);  if (cabM) projBeadHtml += makeDeckBead(cabM[1], 'C', `Cabinets Set (${cabM[1]})`, 'var(--card-bg)', '#a855f7');
-          let litM = b.match(/Lit:\s*([\d/]+)/);  if (litM) projBeadHtml += makeDeckBead(litM[1], '⚡', `Light Present (${litM[1]})`, 'var(--card-bg)', '#eab308');
-          let starMs = b.match(/(UG|AE|FIB|NAP):\s*[\d/]+\s*->\s*([\d/]+)\s*\(100%\)/g);
-          if (starMs) starMs.forEach(m => {
-            let phase = m.split(':')[0];
-            let dExt = m.match(/->\s*([\d/]+)\s*\(/);
-            if (dExt) {
-              let sd = safeD(dExt[1]); if (!sd) return;
-              let sp = ((sd - pStart) / (pEnd - pStart)) * 100;
-              if (sp >= 0 && sp <= 100) {
-                let sCol = (typeof QB_STYLES !== 'undefined' && QB_STYLES[phase]) ? QB_STYLES[phase].border : '#94a3b8';
-                projBeadHtml += `<div class="proj-bead has-tooltip" data-tooltip="${phase} 100% (${dExt[1]})" style="left:${sp}%; background:rgba(255,255,255,0.85); border-color:${sCol}; color:${sCol}; font-size:9px;">★</div>`;
-              }
-            }
-          });
-        }
-
-        // Footer metadata
-        let deckReportDate = item.reportDate || item.date || 'TBD';
-        let deckLastCheck  = item.lastChecked || 'NEVER';
-        let deckRefData    = (typeof globalRefDataDate !== 'undefined' && globalRefDataDate) ? globalRefDataDate : '—';
-        let deckViewRecord = item.rid ? `<a href="https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=${item.rid}" target="_blank" class="btn" style="padding:5px 12px; font-size:9px; color:var(--text-main); background:var(--bg); border-color:var(--border); text-decoration:none;">VIEW RECORD</a>` : '';
-
-        const mem = pmSessionMemory[item.fdh] || {};
-        const yesNo = (bool, trueText='YES', falseText='NO') => {
-          if (bool === true)  return `<span class="slide-sys-val yes">${trueText}</span>`;
-          if (bool === false) return `<span class="slide-sys-val no">${falseText}</span>`;
-          return `<span class="slide-sys-val">UNKNOWN</span>`;
-        };
-        const mi = (id, ph) => `<input type="text" class="slide-input" id="${id}" placeholder="${ph}" autocomplete="off" value="${mem[id] || ''}" oninput="persistDeckInput(this)">`;
-
-        let barsHtml = '';
-        let v = item.vel;
-        if (v) {
-          barsHtml += buildVelocityBar('UG', v.ug?.daily, v.ug?.tot, v.ug?.bom, 'UG', daysLeft);
-          barsHtml += buildVelocityBar('AE', v.ae?.daily, v.ae?.tot, v.ae?.bom, 'AE', daysLeft);
-          barsHtml += buildVelocityBar('FIB', v.fib?.daily, v.fib?.tot, v.fib?.bom, 'FIB', daysLeft);
-          barsHtml += buildVelocityBar('NAP', v.nap?.daily, v.nap?.tot, v.nap?.bom, 'NAP', daysLeft);
-        }
-        let gClass = getGanttClass(item.stage, item.status, isOverdue);
-        let microGanttHtml = `
-<div style="position:relative; height: 34px; background: repeating-linear-gradient(to right, transparent, transparent 10%, var(--border) 10%, var(--border) 10.5%); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-top: 12px;">
-    <div style="position:absolute; left: 50%; top:0; bottom:0; width:2px; background:rgba(239,68,68,0.8); z-index:1;"></div>
-    <div class="gantt-bar-fill ${gClass}" style="left: 10%; width: ${Math.max(10, pct * 0.8)}%; top: 8px; position:absolute; z-index:2; opacity:1; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-        <span class="gantt-bar-text">${item.fdh} • ${item.stage} | ${item.status}</span>
-    </div>
-    <div style="position:absolute; left: 10%; width: ${Math.max(10, pct * 0.8)}%; top:0; height:100%; z-index:3;">${projBeadHtml}</div>
-</div>`;
-
-        const slideHtml = `
-          <div class="slide-header" style="padding: 20px 30px; background: var(--bg); border-bottom: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <div style="font-size:28px; font-weight:900; color:var(--text-main); letter-spacing:-1px; line-height:1;">${item.fdh}</div>
-                <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-top:4px;">${item.city} &bull; ${item.vendor}</div>
-              </div>
-              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                <div style="font-size:10px; font-weight:900; background:var(--card-bg); border:1px solid var(--border); padding:4px 10px; border-radius:12px; text-transform:uppercase;">${item.stage} | ${item.status}</div>
-                <div style="font-size:12px; font-weight:900; color:${sColor};">TARGET: ${item.targetDate || 'TBD'}</div>
-              </div>
-            </div>
-            ${microGanttHtml}
-          </div>
-
-          <div class="slide-body">
-            <div class="slide-col">
-              <div class="slide-q-row"><div class="slide-q-label">What is the FDH Number?</div><span class="slide-sys-val" style="color:var(--text-main); border-color:var(--text-main); font-size:12px;">${item.fdh}</span></div>
-              <div class="slide-q-row"><div class="slide-q-label">Was it sent for permitting?</div>${mi('q_permit_sent', 'Enter date/status...')}</div>
-              <div class="slide-q-row"><div class="slide-q-label">Has it been permit approved?</div>${mi('q_permit_appr', 'Enter date/status...')}</div>
-              <div class="slide-q-row"><div class="slide-q-label">Has the CD been distributed?</div>${yesNo(item.hasCDDist)}</div>
-              <div class="slide-q-row"><div class="slide-q-label">Have splice docs been distributed?</div>${yesNo(item.hasSpliceDist)}</div>
-              <div class="slide-q-row"><div class="slide-q-label">Have strand maps been distributed?</div>${yesNo(item.hasStrandDist)}</div>
-              <div class="slide-q-row" style="margin-top:10px; border-bottom:none;"><div class="slide-q-label">Are there any special crossings?</div>${item.isXing ? yesNo(true, 'YES (ACTION REQ)') : yesNo(false, '', 'NONE DETECTED')}</div>
-              <div class="slide-q-nested slide-q-row"><div class="slide-q-label">DOT paperwork ready &amp; submitted?</div>${mi('q_cross_sub', 'Enter status...')}</div>
-              <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Has the special crossing been approved?</div>${mi('q_cross_appr', 'Enter status...')}</div>
-              <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Approval distributed to vendor?</div>${mi('q_cross_dist', 'Enter status...')}</div>
-            </div>
-            <div class="slide-col">
-              <div class="slide-q-row"><div class="slide-q-label">Was the BOM / PO sent?</div>${yesNo(item.hasBOMPo)}</div>
-              <div class="slide-q-row"><div class="slide-q-label">Has the SOW been signed?</div>${yesNo(item.hasSOW)}</div>
-              <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Has the active been set?</div>${mi('q_active_set', 'Enter status...')}</div>
-              <div class="slide-q-row"><div class="slide-q-label">Does the active have power?</div>${mi('q_active_pwr', 'Enter status...')}</div>
-              <div class="slide-q-row"><div class="slide-q-label">What leg is this FDH on?</div>${mi('q_leg', 'Enter leg ID...')}</div>
-              <div class="slide-q-row"><div class="slide-q-label">Is transport readily available?</div>${mi('q_transport', 'Enter status...')}</div>
-              <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">How is this FDH being fed?</div>${mi('q_how_fed', 'Enter source...')}</div>
-              <div class="slide-q-row"><div class="slide-q-label">What does this FDH feed?</div>${mi('q_what_feeds', 'Enter downstream...')}</div>
-              <div class="slide-q-row"><div class="slide-q-label">If FDH is an island, what is missing?</div>${mi('q_island', 'N/A or list...')}</div>
-              <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Did the OFS date change? (Why?)</div>${mi('q_ofs_change', 'Yes/No + Reason...')}</div>
-            </div>
-          </div>
-
-          <div class="slide-footer" style="padding: 16px 30px; background: var(--bg); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Field Velocity & Production</span>
-              <div style="font-size:12px; font-weight:900; color:${sColor};">${daysLeftTxt}</div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-              ${barsHtml || '<div style="font-size:10px; color:var(--text-muted); font-style:italic; grid-column: span 4;">No active production tracking.</div>'}
-            </div>
-
-            <div class="slide-fine-print" style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border); padding-top:8px;">
-               <div>
-                 <span>Report Date <b>${deckReportDate}</b></span> <span style="margin:0 8px;">|</span>
-                 <span>Last Checked <b>${deckLastCheck}</b></span> <span style="margin:0 8px;">|</span>
-                 <span>Ref Data <b>${deckRefData}</b></span>
-               </div>
-               <div style="display:flex; gap:8px;">
-                  <div style="font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">BSLS: ${item.bsls || 'N/A'}</div>
-                  ${deckViewRecord}
-               </div>
-            </div>
-          </div>`;
-
-        if (getEl('deck-card-content')) getEl('deck-card-content').innerHTML = slideHtml;
-
-        const notesHtml = `
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div class="section-label" style="color:var(--color-insight); margin:0;">PM NOTE</div>
-              <div style="display:flex; align-items:center; gap:12px;">
-                ${item.geminiDate ? `<span style="font-size:9px; font-style:italic; color:#a855f7;">Drafted: ${item.geminiDate}</span>` : ''}
-                <button class="btn-ai" onclick="askGeminiForDraftDeck(this)" style="padding:6px 14px; font-size:10px; background:linear-gradient(90deg,#4285F4,#8E24AA,#D81B60,#F4B400,#4285F4); background-size:200% 200%; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:900;">DRAFT W/GEMINI</button>
-              </div>
-            </div>
-            <textarea id="deck-note" class="chat-bubble" placeholder="Enter formal decision notes for this project..." oninput="syncDeckNote()" style="width:100%; min-height:72px; padding:14px; border-radius:14px 14px 2px 14px; border:1px solid #d8b4fe; font-family:monospace; font-size:13px; line-height:1.5; resize:none; background:#faf5ff; color:#4c1d95; outline:none; box-shadow:3px 3px 0 rgba(0,0,0,0.05); box-sizing:border-box;">${item.comment || item.draft || ''}</textarea>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-              <button class="btn btn-skip" onclick="navDeck(1)" style="padding:6px 18px; font-size:11px; font-weight:900; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text-main); cursor:pointer;">SKIP (NEXT)</button>
-              <button class="btn btn-primary" onclick="exportDeckReport()" id="btn-export-deck" style="padding:6px 18px; font-size:11px; font-weight:900; background:#16a34a; border:1px solid #15803d; border-radius:8px; color:white; cursor:pointer;">COPY REPORT</button>
-            </div>
-          </div>`;
-
-        if (getEl('deck-notes-content')) getEl('deck-notes-content').innerHTML = notesHtml;
-      }
-
       function exportDeckReport() {
         saveCurrentCardState();
-        const item = deckSource[deckIndex];
+        const item = ensureDeckIndex();
         if (!item) return;
         const mem = pmSessionMemory[item.fdh] || {};
         const text = `
