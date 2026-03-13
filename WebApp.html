@@ -364,46 +364,24 @@
       .filter-strip.hidden { display: flex !important; }
       body.grid-mode-active .inbox-sidebar { display: none !important; }
       body.grid-mode-active .pane-content { max-width: none !important; padding: 20px 30px !important; }
-      body.deck-mode-active .inbox-sidebar { display: none !important; }
       body.deck-mode-active #welcome-screen,
       body.deck-mode-active #pane-content { display: none !important; }
-      body.deck-mode-active #deck-stage { display: flex !important; }
-      body.deck-mode-active #grid-content {
-          display: flex !important;
-          flex-direction: column !important;
-          width: 380px !important;
-          min-width: 380px !important;
-          max-width: 380px !important;
-          border-right: none !important;
-          padding: 20px 16px 20px 24px !important;
-          gap: 16px !important;
-          background: transparent !important;
-          overflow-y: auto;
-          overflow-x: visible !important;
-          box-sizing: border-box;
-      }
-      body.deck-mode-active .grid-card {
-          margin: 0 !important;
-          width: 100% !important;
-          box-sizing: border-box !important;
-      }
       body.deck-mode-active #deck-stage {
           display: flex !important;
           flex: 1;
+          flex-direction: column;
+          align-items: center;
+          padding: 40px;
+          overflow-y: auto;
+          box-sizing: border-box;
           min-width: 0 !important;
-          min-height: 0 !important;
       }
-      body.deck-mode-active .detail-main {
-          flex: 1;
-          flex-direction: row !important;
-          gap: 0;
-          min-width: 0 !important;
-          min-height: 0 !important;
+      body.deck-mode-active .inbox-sidebar {
+          display: flex !important;
       }
-      body.deck-mode-active #outbox-pane,
-      body.deck-mode-active .admin-dock,
-      body.deck-mode-active .outbox-overlay {
-          display: none !important;
+      body.deck-mode-active .inbox-list {
+          padding: 14px;
+          gap: 12px;
       }
       body.grid-mode-active .outbox-pane {
           position: absolute !important;
@@ -933,6 +911,10 @@
           </div>
           <div style="display:flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:0;">
               <button class="btn-icon has-tooltip" id="view-toggle-btn" data-tooltip="Switch to List" onclick="cycleViewMode()" style="font-size:15px;">☰</button>
+              <select id="sidebar-pivot-select" onchange="applyFilters()" style="display:none; font-size:11px; padding:6px 8px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text-main); font-weight:bold; outline:none; cursor:pointer; width:auto; height:32px; margin-right:6px;">
+                 <option value="schedule">Project Schedule</option>
+                 <option value="velocity">Field Velocity</option>
+              </select>
               <select id="sort-queue" onchange="applyFilters()" style="font-size:11px; padding:6px 8px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text-main); font-weight:bold; outline:none; cursor:pointer; width:auto; height:32px;">
                  <option value="default">Default</option>
                  <option value="admin">Admin Check</option>
@@ -2512,39 +2494,114 @@
       function renderList(items) {
         let list = getEl('inbox-list'); if(!list) return; setTxt('inbox-count', items.length); list.innerHTML = '';
 
-        items.forEach((item) => {
-            let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== ""); let highestSev = "info", tagsHtml = '';
-            
-            rawFlags.slice(0, 3).forEach(f => {
-                let cleanText = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
-                if (f.includes("ADMIN: CHECK CROSSINGS") || f.includes("ADMIN: REFRESH REF DATA")) { highestSev = f.includes("REFRESH") ? "warn" : "crit"; tagsHtml += `<span class="tag tag-admin">${cleanText}</span>`; }
-                else if (f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS")) { highestSev = "crit"; tagsHtml += `<span class="tag tag-red">${cleanText}</span>`; }
-                else if (f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { highestSev = "crit"; tagsHtml += `<span class="tag tag-red">${cleanText}</span>`; }
-                else if (f.includes("⚠️") || f.includes("🖍️") || f.includes("🚧")) { if(highestSev!=="crit") highestSev="warn"; tagsHtml += `<span class="tag tag-yellow">${cleanText}</span>`; }
-                else if (f.includes("🪄") || f.includes("🟣")) tagsHtml += `<span class="tag tag-purple">${cleanText}</span>`;
-                else tagsHtml += `<span class="tag tag-muted">${cleanText}</span>`;
-            });
-            if(rawFlags.length > 3) tagsHtml += `<span class="tag tag-muted">+${rawFlags.length-3}</span>`;
+        if (!isDeckMode) {
+          items.forEach((item) => {
+              let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== ""); let highestSev = "info", tagsHtml = '';
 
-            let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
-            let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
-            if(item.flags.includes("MISSING QB STATUS") && !item.flags.includes("NOT IN QB REFERENCE")) combinedPill = "MISSING QB STATUS";
-            
-            let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+              rawFlags.slice(0, 3).forEach(f => {
+                  let cleanText = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
+                  if (f.includes("ADMIN: CHECK CROSSINGS") || f.includes("ADMIN: REFRESH REF DATA")) { highestSev = f.includes("REFRESH") ? "warn" : "crit"; tagsHtml += `<span class="tag tag-admin">${cleanText}</span>`; }
+                  else if (f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS")) { highestSev = "crit"; tagsHtml += `<span class="tag tag-red">${cleanText}</span>`; }
+                  else if (f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { highestSev = "crit"; tagsHtml += `<span class="tag tag-red">${cleanText}</span>`; }
+                  else if (f.includes("⚠️") || f.includes("🖍️") || f.includes("🚧")) { if(highestSev!=="crit") highestSev="warn"; tagsHtml += `<span class="tag tag-yellow">${cleanText}</span>`; }
+                  else if (f.includes("🪄") || f.includes("🟣")) tagsHtml += `<span class="tag tag-purple">${cleanText}</span>`;
+                  else tagsHtml += `<span class="tag tag-muted">${cleanText}</span>`;
+              });
+              if(rawFlags.length > 3) tagsHtml += `<span class="tag tag-muted">+${rawFlags.length-3}</span>`;
 
-            let card = document.createElement('div'); card.className = `email-card ${highestSev}`; card.id = `card-${item.fdh}`;
-            
-            card.onclick = () => { openPane(item, card); };
-            
-            card.innerHTML = `
-               <div class="em-header">
-                  <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
-                      <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div><div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
+              let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
+              let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
+              if(item.flags.includes("MISSING QB STATUS") && !item.flags.includes("NOT IN QB REFERENCE")) combinedPill = "MISSING QB STATUS";
+
+              let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+
+              let card = document.createElement('div'); card.className = `email-card ${highestSev}`; card.id = `card-${item.fdh}`;
+
+              card.onclick = () => { openPane(item, card); };
+
+              card.innerHTML = `
+                 <div class="em-header">
+                    <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
+                        <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div><div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
+                    </div>
+                    <span class="glass-pill ${pillCls}" style="flex-shrink: 0; margin-left: 8px;">${combinedPill}</span>
+                 </div><div class="em-tags">${tagsHtml}</div>`;
+              list.appendChild(card);
+          });
+        } else {
+          // DECK MODE: render as Grid Cards
+          let pivot = getEl('sidebar-pivot-select')?.value || 'schedule';
+          let today = new Date(); today.setHours(0,0,0,0);
+
+          items.forEach((item, idx) => {
+              let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
+              let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
+              let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+
+              let pEnd = safeDate(item.cxEnd);
+              let daysLeft = pEnd ? Math.ceil((pEnd - new Date()) / 86400000) : 0;
+              let isComplete = (item.stage || "").toLowerCase().includes('ofs') || (item.status || "").toLowerCase().includes('complete');
+              let isPermit = (item.stage || "").toLowerCase().includes('permit');
+              let isOnHold = (item.status || "").toLowerCase().includes('hold');
+              let isOverdue = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
+
+              let bodyHtml = '';
+              if (pivot === 'schedule') {
+                  let sColor = "#facc15";
+                  if (isComplete) sColor = "#22c55e"; else if (isPermit) sColor = "#a855f7"; else if (isOnHold) sColor = "#94a3b8"; else if (isOverdue) sColor = "#ef4444";
+                  let pStart = safeDate(item.cxStart);
+                  let pct = 0;
+                  if (pStart && pEnd && pEnd - pStart > 0) { pct = Math.max(0, Math.min(100, ((new Date() - pStart) / (pEnd - pStart)) * 100)); }
+                  let xingBadge = item.isXing ? `<div style="position:absolute; bottom:4px; right:4px; background:#171717; color:#facc15; padding:1px 6px; border-radius:4px; font-size:8px; font-weight:900; border:1px solid #facc15;">X-ING</div>` : '';
+                  bodyHtml = `
+                      <div class="qb-time-labels" style="margin-top:0; margin-bottom:4px;">
+                          <span>START: <span style="color:var(--text-main);">${item.cxStart ? formatDate(item.cxStart) : 'TBD'}</span></span>
+                          <span>END: <span style="color:var(--text-main);">${item.cxEnd ? formatDate(item.cxEnd) : 'TBD'}</span></span>
+                      </div>
+                      <div class="qb-time-bar" style="margin-bottom:12px;">
+                          <div class="qb-time-fill" style="width:${pct}%; background:${sColor};"></div>
+                      </div>
+                      <div class="qb-target-wrap ${item.isXing ? 'xing' : ''}" style="margin-top:auto;">
+                          <div class="qb-target-inner" style="border-radius:${item.isXing ? '9px 9px 0 0' : '12px 12px 0 0'}; padding:8px 6px; position:relative;">
+                              <div class="qb-target-label" style="font-size:9px;">Target Date</div>
+                              <div class="qb-target-date" style="color:${sColor}; font-size:14px;">${item.targetDate ? formatDate(item.targetDate) : 'TBD'}</div>
+                              ${xingBadge}
+                          </div>
+                      </div>`;
+              } else if (pivot === 'velocity') {
+                  let v = item.vel;
+                  if (v) {
+                      bodyHtml = `
+                          <div class="velocity-grid" style="gap:6px; margin-bottom:8px;">
+                              ${buildVelocityBar('UG', v.ug.daily, v.ug.tot, v.ug.bom, 'UG', daysLeft)}
+                              ${buildVelocityBar('Fiber', v.fib.daily, v.fib.tot, v.fib.bom, 'FIB', daysLeft)}
+                          </div>
+                          <div class="qb-vel-footer" style="padding-top:6px;">
+                              <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeft < 0 ? `OVERDUE: ${Math.abs(daysLeft)}d` : `DAYS LEFT: ${daysLeft}`}</div>
+                              <div class="vel-footer-pill" style="font-size:8px;">BSLS: ${item.bsls}</div>
+                          </div>`;
+                  } else {
+                      bodyHtml = `<div style="font-style:italic; color:var(--text-muted); font-size:10px;">No velocity data</div>`;
+                  }
+              }
+
+              let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'is-selected' : '';
+              let card = document.createElement('div');
+              card.className = `grid-card ${isSelected}`;
+              card.id = `card-${item.fdh}`;
+              card.onclick = () => { deckIndex = idx; openPane(item, card); renderDeckStage(); };
+              card.innerHTML = `
+                  <div class="grid-card-header" style="padding-bottom:6px;">
+                      <div>
+                          <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
+                          <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item.vendor}</div>
+                      </div>
+                      <span class="glass-pill ${pillCls}" style="font-size:8px; padding:2px 6px;">${combinedPill}</span>
                   </div>
-                  <span class="glass-pill ${pillCls}" style="flex-shrink: 0; margin-left: 8px;">${combinedPill}</span>
-               </div><div class="em-tags">${tagsHtml}</div>`;
-            list.appendChild(card);
-        });
+                  <div class="grid-card-body" style="gap:4px;">${bodyHtml}</div>`;
+              list.appendChild(card);
+          });
+        }
 
         if(items.length > 0 && !currentActiveItem) openPane(items[0], getEl(`card-${items[0].fdh}`));
       }
@@ -3484,6 +3541,10 @@
         const paneContent = getEl('pane-content');
         if (pivot) pivot.style.display = isGridMode ? 'inline-block' : 'none';
         if (grid) grid.classList.toggle('active', isGridMode);
+        const sidebarPivot = getEl('sidebar-pivot-select');
+        if (sidebarPivot) sidebarPivot.style.display = isDeckMode ? 'inline-block' : 'none';
+        const sortQueue = getEl('sort-queue');
+        if (sortQueue) sortQueue.style.display = isDeckMode ? 'none' : '';
 
         if (prevMode === 'deck' && mode !== 'deck') {
           currentGridPivot = deckPrevPivot || currentGridPivot;
@@ -3500,6 +3561,7 @@
           }
           if (grid) grid.style.display = 'none';
           if (window.innerWidth > 768) syncAdminPanelForViewport();
+          applyFilters(); // re-renders sidebar as email cards
           return;
         }
 
@@ -3512,10 +3574,8 @@
           return;
         }
 
-        deckPrevPivot = prevMode === 'deck' ? deckPrevPivot : currentGridPivot;
-        currentGridPivot = 'schedule';
-        if (pivot) pivot.value = 'schedule';
-        renderGrid();
+        if (grid) grid.style.display = 'none';
+        applyFilters(); // renders sidebar as grid cards via renderList()
 
         if (currentActiveItem) {
           deckIndex = Math.max(0, filteredItems.findIndex(i => i.fdh === currentActiveItem.fdh));
