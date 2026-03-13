@@ -367,20 +367,26 @@
       body.deck-mode-active .inbox-sidebar { display: none !important; }
       body.deck-mode-active #welcome-screen,
       body.deck-mode-active #pane-content { display: none !important; }
-      body.deck-mode-active #deck-stage { display: flex !important; }
       body.deck-mode-active #grid-content {
           display: flex !important;
           flex-direction: column !important;
-          width: 340px !important;
-          min-width: 340px !important;
-          max-width: 340px !important;
-          border-right: 1px solid var(--border);
-          padding: 20px 14px !important;
-          gap: 12px !important;
-          background: var(--bg);
+          width: 380px !important;
+          min-width: 380px !important;
+          max-width: 380px !important;
+          border-right: none !important;
+          padding: 20px 16px 20px 24px !important;
+          gap: 16px !important;
+          background: transparent !important;
           overflow-y: auto;
+          overflow-x: visible !important;
+          box-sizing: border-box;
       }
-      body.deck-mode-active #deck-stage,
+      body.deck-mode-active #deck-stage {
+          display: flex !important;
+          flex: 1;
+          min-width: 0 !important;
+          min-height: 0 !important;
+      }
       body.deck-mode-active .detail-main {
           flex: 1;
           min-width: 0 !important;
@@ -389,6 +395,7 @@
       body.deck-mode-active .grid-card {
           margin: 0 !important;
           width: 100% !important;
+          box-sizing: border-box !important;
       }
       body.grid-mode-active .outbox-pane {
           position: absolute !important;
@@ -881,7 +888,7 @@
           bottom: 30px !important;
           z-index: 10005 !important;
       }
-      body.gantt-fullscreen #workspace-view-switch,
+      body.gantt-fullscreen #workspace-view-select,
       body.gantt-fullscreen #grid-pivot-select {
           display: none !important;
       }
@@ -962,11 +969,11 @@
             <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
             <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
             <div class="filter-tools">
-                <div id="workspace-view-switch" style="display:flex; border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background:var(--card-bg);">
-                    <button class="btn" id="btn-view-detail" onclick="switchWorkspaceView('detail')" style="border:none; border-radius:0; box-shadow:none; padding:0 12px; height:34px; background:rgba(59,130,246,0.15); color:#1d4ed8; font-weight:900;">📄 Detail</button>
-                    <button class="btn" id="btn-view-grid" onclick="switchWorkspaceView('grid')" style="border:none; border-left:1px solid var(--border); border-radius:0; box-shadow:none; padding:0 12px; height:34px; color:var(--text-main);">⊞ Grid</button>
-                    <button class="btn" id="btn-view-deck" onclick="switchWorkspaceView('deck')" style="border:none; border-left:1px solid var(--border); border-radius:0; box-shadow:none; padding:0 12px; height:34px; color:var(--text-main);">🎴 Deck</button>
-                </div>
+                <select id="workspace-view-select" class="btn hover-trigger" onchange="switchWorkspaceView(this.value)" style="font-size:10px; border-color:var(--border); background:var(--card-bg); color:var(--text-main); font-weight:900; padding:0 24px 0 12px; height:34px; border-radius:14px; outline:none; cursor:pointer; appearance:auto;">
+                    <option value="detail">📄 Detail View</option>
+                    <option value="grid">⊞ Grid View</option>
+                    <option value="deck">🎴 Deck Mode</option>
+                </select>
                 <select id="grid-pivot-select" onchange="updateGridPivot()" style="display:none; font-size:10px;">
                    <option value="velocity">Field Velocity</option>
                    <option value="schedule">Project Schedule</option>
@@ -1089,11 +1096,12 @@
                        <div id="p-cd-intel-text" class="cd-intel-text"></div>
                    </div>
                </div>
-               <div id="deck-stage" style="display:none; flex:1; flex-direction:column; padding:80px 40px 20px; overflow-y:auto; align-items:center;">
-                   <div id="deck-stage-card" style="width:100%; max-width:1200px; aspect-ratio:16/9; max-height:65vh; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden; z-index:5;"></div>
-                   <div id="deck-stage-notes" style="width:60%; margin-top:40px; padding:10px 18px; border:1px solid var(--border); border-radius:16px; background:var(--card-bg); display:flex; flex-direction:column; gap:10px; box-shadow:0 10px 30px rgba(15,23,42,0.05);"></div>
-               </div>
                  </div>
+              </div>
+
+              <div id="deck-stage" style="display:none; flex:1; flex-direction:column; padding:40px 40px 20px; overflow-y:auto; align-items:center; box-sizing:border-box;">
+                  <div id="deck-stage-card" style="width:100%; max-width:1200px; aspect-ratio:16/9; max-height:65vh; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden; z-index:5;"></div>
+                  <div id="deck-stage-notes" style="width:60%; margin-top:20px; padding:10px 18px; border:1px solid var(--border); border-radius:16px; background:var(--card-bg); display:flex; flex-direction:column; gap:10px; box-shadow:0 10px 30px rgba(15,23,42,0.05);"></div>
               </div>
             </div>
 
@@ -3441,24 +3449,26 @@
         if (isGridMode) document.body.classList.add('grid-mode-active');
         if (isDeckMode) document.body.classList.add('deck-mode-active');
 
-        ['detail', 'grid', 'deck'].forEach(v => {
-          const btn = getEl(`btn-view-${v}`);
-          if (!btn) return;
-          if (v === mode) {
-            btn.style.background = 'rgba(59,130,246,0.15)';
-            btn.style.color = '#1d4ed8';
-            btn.style.fontWeight = '900';
-          } else {
-            btn.style.background = 'transparent';
-            btn.style.color = 'var(--text-main)';
-            btn.style.fontWeight = '700';
-          }
-        });
-
+        const viewSelect = getEl('workspace-view-select');
         const pivot = getEl('grid-pivot-select');
         const grid = getEl('grid-content');
         const welcome = getEl('welcome-screen');
         const paneContent = getEl('pane-content');
+        const deckStage = getEl('deck-stage');
+
+        if (viewSelect) {
+          viewSelect.value = mode;
+          if (mode !== 'detail') {
+            viewSelect.style.background = 'rgba(59,130,246,0.15)';
+            viewSelect.style.color = '#1d4ed8';
+            viewSelect.style.borderColor = '#3b82f6';
+          } else {
+            viewSelect.style.background = 'var(--card-bg)';
+            viewSelect.style.color = 'var(--text-main)';
+            viewSelect.style.borderColor = 'var(--border)';
+          }
+        }
+
         if (pivot) pivot.style.display = isGridMode ? 'inline-block' : 'none';
         if (grid) grid.classList.toggle('active', isGridMode);
 
@@ -3476,7 +3486,9 @@
             if (paneContent) paneContent.style.display = 'none';
           }
           if (grid) grid.style.display = 'none';
+          if (deckStage) deckStage.style.display = 'none';
           if (window.innerWidth > 768) syncAdminPanelForViewport();
+          setTimeout(applySmartGanttDocking, 50);
           return;
         }
 
@@ -3485,13 +3497,18 @@
         if (paneContent) paneContent.style.display = 'none';
 
         if (mode === 'grid') {
+          if (grid) grid.style.display = 'grid';
+          if (deckStage) deckStage.style.display = 'none';
           renderGrid();
+          setTimeout(applySmartGanttDocking, 50);
           return;
         }
 
         deckPrevPivot = prevMode === 'deck' ? deckPrevPivot : currentGridPivot;
         currentGridPivot = 'schedule';
         if (pivot) pivot.value = 'schedule';
+        if (grid) grid.style.display = 'flex';
+        if (deckStage) deckStage.style.display = 'flex';
         renderGrid();
 
         if (currentActiveItem) {
@@ -3500,6 +3517,7 @@
         const activeItem = ensureDeckIndex();
         if (activeItem) openPane(activeItem, getEl(`card-${activeItem.fdh}`));
         renderDeckStage();
+        setTimeout(applySmartGanttDocking, 50);
       }
 
       function navDeck(dir) {
