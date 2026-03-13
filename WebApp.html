@@ -395,8 +395,15 @@
       }
       body.deck-mode-active .detail-main {
           flex: 1;
+          flex-direction: row !important;
+          gap: 0;
           min-width: 0 !important;
           min-height: 0 !important;
+      }
+      body.deck-mode-active #outbox-pane,
+      body.deck-mode-active .admin-dock,
+      body.deck-mode-active .outbox-overlay {
+          display: none !important;
       }
       body.grid-mode-active .outbox-pane {
           position: absolute !important;
@@ -3631,8 +3638,8 @@
           <div style="position:relative; display:flex; flex-direction:column; height:100%;">
             <button class="deck-arrow prev" style="left:16px;" onclick="navDeck(-1)">&#8249;</button>
             <button class="deck-arrow next" style="right:16px;" onclick="navDeck(1)">&#8250;</button>
-            <div class="slide-header" style="display:grid; grid-template-columns:4fr 6fr; gap:24px; padding:16px 30px; background:var(--bg); border-bottom:1px solid var(--border);">
-              <div style="display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+            <div class="slide-header" style="display:grid; grid-template-columns:4fr 6fr; gap:30px; padding:16px 30px; background:var(--bg); border-bottom:1px solid var(--border); align-items:stretch;">
+              <div style="display:flex; flex-direction:column; justify-content:space-between; gap:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                   <div>
                     <div style="font-size:24px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px; line-height:1;">${item.fdh}</div>
@@ -3640,18 +3647,18 @@
                   </div>
                   <div style="font-size:10px; font-weight:900; background:var(--card-bg); border:1px solid var(--border); padding:4px 10px; border-radius:12px; text-transform:uppercase;">${item.stage} | ${item.status}</div>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                  <div class="slide-time-labels">
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div class="slide-time-labels" style="margin:0; display:flex; justify-content:space-between; font-size:10px; font-weight:800; color:var(--text-muted);">
                     <span>CX START: <span style="color:var(--text-main);">${item.cxStart || 'TBD'}</span></span>
                     <span>CX COMPLETE: <span style="color:var(--text-main);">${item.cxEnd || 'TBD'}</span></span>
                   </div>
                   <div class="${item.isXing ? 'qb-target-wrap xing' : ''}" style="margin:0;">
-                    <div class="slide-time-bar" style="margin-bottom:${item.isXing ? '8px' : '0'};">
-                      <div class="slide-time-fill" style="width:${pct}%; background:${sColor};"></div>
-                      ${pct > 0 && pct < 100 ? `<div class="slide-time-bead" style="left:${pct}%; border-color:${sColor};"></div>` : ''}
+                    <div class="slide-time-bar" style="position:relative; height:14px; background:var(--card-bg); border-radius:7px; border:1px solid var(--border); margin-bottom:${item.isXing ? '0' : '4px'};">
+                      <div class="slide-time-fill" style="height:100%; border-radius:7px; width:${pct}%; background:${sColor};"></div>
+                      ${pct > 0 && pct < 100 ? `<div class="slide-time-bead" style="position:absolute; top:50%; transform:translate(-50%,-50%); width:16px; height:16px; border-radius:50%; border:3px solid ${sColor}; background:#fff; left:${pct}%;"></div>` : ''}
                       ${projBeadHtml}
                     </div>
-                    ${item.isXing ? `<div class="qb-target-inner" style="padding-top:4px; border-top:none;"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:${sColor}; font-size:14px;">${item.targetDate || 'TBD'}</div><div style="background:#171717; color:#facc15; padding:1px 6px; border-radius:4px; font-size:8px; font-weight:900;">X-ING</div></div>` : ''}
+                    ${item.isXing ? `<div class="qb-target-inner" style="padding:6px 4px 4px; border-top:none; display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); border-radius:0 0 9px 9px;"><div class="qb-target-label" style="font-size:8px;">TARGET DATE</div><div class="qb-target-date" style="color:${sColor}; font-size:12px; font-weight:900;">${item.targetDate || 'TBD'}</div><div style="background:#171717; color:#facc15; padding:2px 6px; border-radius:4px; font-size:8px; font-weight:900;">X-ING</div></div>` : ''}
                   </div>
                 </div>
               </div>
