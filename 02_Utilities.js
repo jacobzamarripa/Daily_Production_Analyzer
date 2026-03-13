@@ -319,6 +319,18 @@ function saveDeckAnswers(payload) {
   return now;
 }
 
+// 🧠 DECK BACKEND: Batch Save to Sheet & Email Export
+function processBatchDeckExport(payloads, targetEmail, emailBody) {
+  if (!payloads || payloads.length === 0) throw new Error("No items to process.");
+  payloads.forEach(payload => saveDeckAnswers(payload));
+  MailApp.sendEmail({
+    to: targetEmail,
+    subject: `📊 Daily PM Deck Report (${payloads.length} Projects)`,
+    body: emailBody
+  });
+  return payloads.length;
+}
+
 // 🧠 UPDATED FORMATTING FUNCTION TO HANDLE NEW XING SHEET AND CD INTELLIGENCE WRAPPING
 function applyFormatting(targetSheet = null) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

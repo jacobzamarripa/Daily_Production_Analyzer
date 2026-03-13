@@ -1460,6 +1460,7 @@
                 <div class="dock-divider"></div>
                 <button class="btn hover-trigger" onclick="navDeck(1)" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Skip (Next)</button>
                 <button class="btn collapsed hover-trigger" id="dock-btn-save" onclick="saveDeckToSheet(this)" style="background:#3b82f6; color:#fff; border-color:#2563eb;">Save to Sheet</button>
+                <button class="btn hover-trigger" id="dock-btn-stage" onclick="toggleStageCurrentDeckItem()" style="background:#a855f7; color:#fff; border-color:#9333ea;">Stage Project</button>
                 <button class="btn hover-trigger" onclick="exportDeckReport()" id="btn-export-deck" style="background:#16a34a; color:#fff; border-color:#15803d;">Copy Report</button>
             </div>
 
@@ -4557,7 +4558,104 @@
       let deckIndex = 0;
       let isDeckMode = false;
       let pmSessionMemory = {};
+      let stagedDeckItems = [];
       let deckPrevPivot = 'velocity';
+
+      function clearStagedDeckItems() {
+          stagedDeckItems = [];
+          syncDockStagingButton();
+          renderDeckStage();
+      }
+
+      function toggleStageCurrentDeckItem() {
+          saveCurrentCardState();
+          const item = ensureDeckIndex();
+          if (!item) return;
+          const idx = stagedDeckItems.indexOf(item.fdh);
+          if (idx > -1) {
+              stagedDeckItems.splice(idx, 1);
+              showDockSuccess('Removed from Batch');
+          } else {
+              stagedDeckItems.push(item.fdh);
+              showDockSuccess('Staged for Batch');
+          }
+          syncDockStagingButton();
+          renderDeckStage();
+      }
+
+      function syncDockStagingButton() {
+          const item = ensureDeckIndex();
+          const btn = getEl('dock-btn-stage');
+          if (!btn || !item) return;
+          if (stagedDeckItems.includes(item.fdh)) {
+              btn.innerHTML = 'Unstage';
+              btn.style.background = 'var(--card-bg)';
+              btn.style.color = '#a855f7';
+              btn.style.borderColor = '#d8b4fe';
+          } else {
+              btn.innerHTML = 'Stage Project';
+              btn.style.background = '#a855f7';
+              btn.style.color = '#fff';
+              btn.style.borderColor = '#9333ea';
+          }
+      }
+
+      function promptBatchDeckExport() {
+          if (stagedDeckItems.length === 0) return alert('No items staged.');
+          const email = prompt(`📧 Email Batch Report (${stagedDeckItems.length} project${stagedDeckItems.length !== 1 ? 's' : ''})\n\nThis will also permanently SAVE these items to the 8-Deck_Answers sheet.\n\nEnter destination email:`, '');
+          if (!email || !email.trim()) return;
+
+          showDockLoading(`Exporting ${stagedDeckItems.length} projects...`);
+
+          const now = new Date();
+          const dateStr = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+          let payloads = [];
+          let combinedText = `DAILY PM BATCH REPORT\nGenerated: ${dateStr}\n\n`;
+
+          stagedDeckItems.forEach(fdh => {
+              const item = (allActionItems || []).find(i => i.fdh === fdh);
+              if (!item) return;
+              const mem = pmSessionMemory[fdh] || {};
+              payloads.push({ fdh: item.fdh, vendor: item.vendor, targetDate: item.targetDate || item.cxEnd || 'TBD', note: item.comment || '', answers: mem });
+
+              const ofsStr = item.ofsDate && item.ofsDate !== '-' ? item.ofsDate : 'TBD';
+              combinedText += `==================================================\n`;
+              combinedText += `PROJECT: ${item.fdh} (${item.vendor || 'Unknown'} - ${item.city || 'Unknown'})\n`;
+              combinedText += `Target OFS: ${ofsStr} | Stage: ${item.stage} | Status: ${item.status}\n\n`;
+              combinedText += `[DELIVERABLES]\n`;
+              combinedText += `- CD Distributed: ${item.hasCDDist ? 'YES' : 'NO'}\n`;
+              combinedText += `- Splice Docs Dist: ${item.hasSpliceDist ? 'YES' : 'NO'}\n`;
+              combinedText += `- Strand Maps Dist: ${item.hasStrandDist ? 'YES' : 'NO'}\n`;
+              combinedText += `- BOM & PO Sent: ${item.hasBOMPo ? 'YES' : 'NO'}\n`;
+              combinedText += `- SOW Signed: ${item.hasSOW ? 'YES' : 'NO'}\n\n`;
+              combinedText += `[FIELD / PERMITTING QA]\n`;
+              combinedText += `- Sent for permitting: ${mem['q_permit_sent'] || '\u2014'}\n`;
+              combinedText += `- Permit approved: ${mem['q_permit_appr'] || '\u2014'}\n`;
+              combinedText += `- Special Crossings: ${item.isXing ? 'YES' : 'NONE'}\n`;
+              if (item.isXing) {
+                  combinedText += `  * DOT paperwork submitted: ${mem['q_cross_sub'] || '\u2014'}\n`;
+                  combinedText += `  * Crossing approved: ${mem['q_cross_appr'] || '\u2014'}\n`;
+                  combinedText += `  * Approval distributed: ${mem['q_cross_dist'] || '\u2014'}\n`;
+              }
+              combinedText += `- Active set: ${mem['q_active_set'] || '\u2014'}\n`;
+              combinedText += `- Active has power: ${mem['q_active_pwr'] || '\u2014'}\n`;
+              combinedText += `- Transport available: ${mem['q_transport'] || '\u2014'}\n\n`;
+              combinedText += `[MANAGER NOTE]\n${item.comment || item.draft || 'No note provided.'}\n\n`;
+          });
+
+          google.script.run
+              .withSuccessHandler(count => {
+                  showDockSuccess(`Emailed & Saved ${count} projects!`);
+                  stagedDeckItems = [];
+                  syncDockStagingButton();
+                  renderDeckStage();
+              })
+              .withFailureHandler(err => {
+                  showDockError('Export Failed');
+                  alert('Export Error: ' + (err.message || err));
+              })
+              .processBatchDeckExport(payloads, email.trim(), combinedText);
+      }
 
       function getDeckItems() {
         return filteredItems || [];
@@ -4812,7 +4910,13 @@
             else tagsHtml += `<span class="tag tag-muted" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
           });
 
-          actionPanel.innerHTML = `
+          syncDockStagingButton();
+          let stagingBannerHtml = '';
+          if (stagedDeckItems.length > 0) {
+              stagingBannerHtml = `<div style="background:rgba(168,85,247,0.1); border:1px solid #c084fc; border-radius:12px; padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 12px rgba(168,85,247,0.05);"><div><div style="font-size:9px; font-weight:900; color:#7e22ce; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">Staged for Export</div><div style="font-size:16px; font-weight:900; color:#6b21a8; line-height:1;">${stagedDeckItems.length} Project${stagedDeckItems.length !== 1 ? 's' : ''}</div></div><div style="display:flex; gap:8px;"><button class="btn hover-trigger" style="background:#a855f7; color:white; border:none; padding:6px 12px; font-size:10px; box-shadow:0 2px 4px rgba(168,85,247,0.2);" onclick="promptBatchDeckExport()">Email &amp; Save</button><button class="btn hover-trigger" style="background:transparent; color:#7e22ce; border:1px solid #c084fc; padding:6px 10px; font-size:10px;" onclick="clearStagedDeckItems()">Clear</button></div></div>`;
+          }
+
+          actionPanel.innerHTML = `${stagingBannerHtml}
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:4px;">
               <div style="font-size:12px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Manager Review</div>
               <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel">✕</button>
