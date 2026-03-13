@@ -369,9 +369,11 @@
       body.deck-mode-active #deck-stage {
           display: flex !important;
           flex: 1;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
-          padding: 40px;
+          justify-content: center;
+          gap: 24px;
+          padding: 20px 0;
           overflow-y: auto;
           box-sizing: border-box;
           min-width: 0 !important;
@@ -383,10 +385,33 @@
           padding: 14px;
           gap: 12px;
       }
-      body.deck-mode-active #outbox-pane,
       body.deck-mode-active .admin-dock,
       body.deck-mode-active .outbox-overlay {
           display: none !important;
+      }
+      body.deck-mode-active #outbox-pane {
+          display: flex !important;
+          position: relative !important;
+          transform: none !important;
+          opacity: 1 !important;
+          width: 380px !important;
+          min-width: 380px !important;
+          max-width: 380px !important;
+          border-radius: 0 !important;
+          border-top: none !important;
+          border-bottom: none !important;
+          border-right: none !important;
+          box-shadow: -4px 0 15px rgba(0,0,0,0.03) !important;
+          pointer-events: auto !important;
+          z-index: 10;
+      }
+      body.deck-mode-active .panel-tab-bar,
+      body.deck-mode-active #ob-panel-admin,
+      body.deck-mode-active #ob-panel-reviewed {
+          display: none !important;
+      }
+      body.deck-mode-active #deck-action-panel {
+          display: flex !important;
       }
       body.deck-mode-active .detail-main {
           flex-direction: row !important;
@@ -1082,7 +1107,7 @@
                  </div>
               </div>
             <div id="deck-stage" style="display:none; flex:1; flex-direction:column; padding:40px 40px 20px; overflow-y:auto; align-items:center; box-sizing:border-box;">
-                <div id="deck-stage-card" style="width:100%; max-width:1100px; aspect-ratio:16/9; height:auto; flex-shrink:0; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden; z-index:5;"></div>
+                <div id="deck-stage-card" style="width:100%; max-width:1000px; aspect-ratio:16/9; height:auto; flex-shrink:0; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden;"></div>
                 <div id="deck-stage-notes" style="width:60%; margin-top:20px; padding:10px 18px; border:1px solid var(--border); border-radius:16px; background:var(--card-bg); display:flex; flex-direction:column; gap:10px; box-shadow:0 10px 30px rgba(15,23,42,0.05);"></div>
             </div>
             </div>
@@ -1098,6 +1123,8 @@
                     </button>
                     <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel">✕</button>
                   </div>
+
+                   <div id="deck-action-panel" style="display:none; flex-direction:column; flex-grow:1; overflow-y:auto; padding:20px; gap:16px;"></div>
 
                    <div id="ob-panel-admin" style="display:flex; flex-grow:1; flex-direction:column; overflow:hidden;">
                       <div class="admin-strip" style="flex-shrink:0;">
@@ -1347,9 +1374,9 @@
           let cardsH = 0;
 
           if (typeof isDeckMode !== 'undefined' && isDeckMode) {
-              let notes = document.getElementById('deck-stage-notes');
-              if (notes) {
-                  cardsH = notes.offsetTop + notes.offsetHeight + 40;
+              let stageCard = document.getElementById('deck-stage-card');
+              if (stageCard) {
+                  cardsH = stageCard.offsetTop + stageCard.offsetHeight;
               }
           } else {
               let pane = document.getElementById('pane-content');
@@ -3483,14 +3510,11 @@
       .deck-arrow {
         width: 60px; height: 60px; border-radius: 30px; border: 1px solid var(--border); background: var(--card-bg);
         font-size: 30px; color: var(--text-muted); cursor: pointer; transition: all 0.2s;
-        display: flex; align-items: center; justify-content: center;
-        position: absolute; top: 50%; transform: translateY(-50%); z-index: 10;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         box-shadow: 0 10px 30px rgba(15,23,42,0.08);
       }
-      .deck-arrow:hover { background: var(--text-main); color: var(--bg); transform: translateY(-50%) scale(1.1); box-shadow: 0 20px 40px rgba(15,23,42,0.15); }
-      .deck-arrow:active { transform: translateY(-50%) scale(0.95); }
-      .deck-arrow.prev { left: -80px; }
-      .deck-arrow.next { right: -80px; }
+      .deck-arrow:hover { background: var(--text-main); color: var(--bg); box-shadow: 0 20px 40px rgba(15,23,42,0.15); }
+      .deck-arrow:active { transform: scale(0.95); }
     </style>
 
     <script>
@@ -3517,9 +3541,9 @@
       function updateDeckStageSelection() {
         const items = getDeckItems();
         const active = items[deckIndex];
-        document.querySelectorAll('#grid-content .grid-card').forEach(card => card.classList.remove('is-selected'));
+        document.querySelectorAll('.inbox-list .grid-card').forEach(card => card.classList.remove('is-selected'));
         if (!active) return;
-        const card = getEl(`grid-card-${active.fdh}`);
+        const card = getEl(`card-${active.fdh}`);
         if (card) {
           card.classList.add('is-selected');
           card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -3614,13 +3638,28 @@
 
       function renderDeckStage() {
         const stageCard = getEl('deck-stage-card');
-        const stageNotes = getEl('deck-stage-notes');
-        if (!stageCard || !stageNotes) return;
+        if (!stageCard) return;
+
+        // Add arrows to #deck-stage as siblings (only once)
+        const stageWrap = getEl('deck-stage');
+        if (stageWrap && !stageWrap.querySelector('.deck-arrow')) {
+          const prevBtn = document.createElement('button');
+          prevBtn.className = 'deck-arrow prev';
+          prevBtn.innerHTML = '&#8249;';
+          prevBtn.onclick = () => navDeck(-1);
+          const nextBtn = document.createElement('button');
+          nextBtn.className = 'deck-arrow next';
+          nextBtn.innerHTML = '&#8250;';
+          nextBtn.onclick = () => navDeck(1);
+          stageWrap.insertBefore(prevBtn, stageCard);
+          stageWrap.appendChild(nextBtn);
+        }
 
         const item = ensureDeckIndex();
         if (!item) {
           stageCard.innerHTML = '<div style="margin:auto; font-size:24px;">No projects match current filters.</div>';
-          stageNotes.innerHTML = '';
+          const ap = getEl('deck-action-panel');
+          if (ap) ap.innerHTML = '';
           return;
         }
         currentActiveItem = item;
@@ -3670,9 +3709,6 @@
         const mi = (id, ph) => `<input type="text" class="slide-input" id="${id}" placeholder="${ph}" autocomplete="off" value="${mem[id] || ''}" oninput="persistDeckInput(this)">`;
 
         stageCard.innerHTML = `
-          <div style="position:relative; display:flex; flex-direction:column; height:100%;">
-            <button class="deck-arrow prev" style="left:16px;" onclick="navDeck(-1)">&#8249;</button>
-            <button class="deck-arrow next" style="right:16px;" onclick="navDeck(1)">&#8250;</button>
             <div class="slide-header" style="display:flex; justify-content:space-between; align-items:center; padding:20px 30px; background:var(--bg); border-bottom:1px solid var(--border);">
               <div style="display:flex; flex-direction:column; gap:8px;">
                 <div style="display:flex; align-items:center; gap:12px;">
@@ -3725,23 +3761,57 @@
                 ${deckViewRecord}
               </div>
             </div>
-          </div>`;
+        `;
 
-        stageNotes.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div class="section-label" style="color:var(--color-insight); margin:0;">PM NOTE</div>
-              <div style="display:flex; align-items:center; gap:12px;">
-                ${item.geminiDate ? `<span style="font-size:9px; font-style:italic; color:#a855f7;">Drafted: ${item.geminiDate}</span>` : ''}
-                <button class="btn-ai" onclick="askGeminiForDraftDeck(this)" style="padding:6px 14px; font-size:10px; background:linear-gradient(90deg,#4285F4,#8E24AA,#D81B60,#F4B400,#4285F4); background-size:200% 200%; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:900;">DRAFT W/GEMINI</button>
+        // Right pane: diagnostics + PM note + action buttons
+        const actionPanel = getEl('deck-action-panel');
+        if (actionPanel) {
+          let diagClass = 'action-box';
+          const sev = getSeverity(item.flags);
+          if (sev === 'crit') diagClass += ' crit'; else if (sev === 'warn') diagClass += ' warn';
+
+          const rawFlags = (item.flags || '').split('\n').map(f => f.trim()).filter(f => f !== '');
+          let tagsHtml = '';
+          rawFlags.forEach(f => {
+            const cleanText = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
+            if (f.includes('ADMIN')) tagsHtml += `<span class="tag tag-admin" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
+            else if (f.includes('🚨') || f.includes('🛑') || f.includes('🚩') || f.includes('STATUS') || f.includes('MISSING')) tagsHtml += `<span class="tag tag-red" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
+            else if (f.includes('⚠️') || f.includes('🖍️') || f.includes('🚧')) tagsHtml += `<span class="tag tag-yellow" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
+            else tagsHtml += `<span class="tag tag-muted" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
+          });
+
+          actionPanel.innerHTML = `
+            <div style="font-size:12px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border); padding-bottom:8px;">Diagnostic &amp; Manager Review</div>
+
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="section-label" style="margin:0 !important;">Vendor Update</div>
+              <div class="vendor-bubble" style="font-size:12px; padding:12px !important;">"${item.vendorComment || 'No update provided.'}"</div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div class="section-label" style="margin:0 !important;">System Diagnostics</div>
+              <div class="${diagClass}" style="padding:12px !important;">
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">${tagsHtml || '<span style="color:var(--text-muted); font-size:11px;">No anomalies detected.</span>'}</div>
               </div>
             </div>
-            <textarea id="deck-note" class="chat-bubble" placeholder="Enter formal decision notes for this project..." oninput="syncDeckNote()" style="width:100%; min-height:72px; padding:14px; border-radius:14px 14px 2px 14px; border:1px solid #d8b4fe; font-family:monospace; font-size:13px; line-height:1.5; resize:none; background:#faf5ff; color:#4c1d95; outline:none; box-shadow:3px 3px 0 rgba(0,0,0,0.05); box-sizing:border-box;">${item.comment || item.draft || ''}</textarea>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-              <button class="btn btn-skip" onclick="navDeck(1)" style="padding:6px 18px; font-size:11px; font-weight:900; background:transparent; border:1px solid var(--border); border-radius:8px; color:var(--text-main); cursor:pointer;">SKIP (NEXT)</button>
-              <button class="btn btn-primary" onclick="exportDeckReport()" id="btn-export-deck" style="padding:6px 18px; font-size:11px; font-weight:900; background:#16a34a; border:1px solid #15803d; border-radius:8px; color:white; cursor:pointer;">COPY REPORT</button>
+
+            <div style="display:flex; flex-direction:column; gap:8px; flex-grow:1; margin-top:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="section-label" style="color:var(--color-insight); margin:0 !important;">PM NOTE</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  ${item.geminiDate ? `<span style="font-size:9px; font-style:italic; color:#a855f7;">Drafted: ${item.geminiDate}</span>` : ''}
+                  <button class="btn-ai" onclick="askGeminiForDraftDeck(this)" style="padding:4px 10px; font-size:9px; box-shadow:none;">DRAFT W/GEMINI</button>
+                </div>
+              </div>
+              <textarea id="deck-note" class="chat-bubble" placeholder="Enter decision..." oninput="syncDeckNote()" style="flex-grow:1; min-height:120px; font-size:13px; line-height:1.5;">${item.comment || item.draft || ''}</textarea>
             </div>
-          </div>`;
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:auto; padding-top:16px; border-top:1px solid var(--border);">
+              <button class="btn btn-skip" onclick="navDeck(1)" style="padding:8px 16px; font-size:11px;">SKIP (NEXT)</button>
+              <button class="btn btn-primary" onclick="exportDeckReport()" id="btn-export-deck" style="padding:8px 16px; font-size:11px;">COPY REPORT</button>
+            </div>
+          `;
+        }
 
         updateDeckStageSelection();
       }
