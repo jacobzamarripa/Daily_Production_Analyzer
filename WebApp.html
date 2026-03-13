@@ -1088,7 +1088,7 @@
               </div>
             <div id="deck-stage" style="display:none; flex:1; flex-direction:column; padding:40px 40px 20px; overflow-y:auto; align-items:center; box-sizing:border-box;">
                 <div id="deck-stage-card" style="width:100%; max-width:1000px; aspect-ratio:16/9; height:auto; flex-shrink:0; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden;"></div>
-                <div id="deck-stage-notes" style="width:60%; margin-top:20px; padding:10px 18px; border:1px solid var(--border); border-radius:16px; background:var(--card-bg); display:flex; flex-direction:column; gap:10px; box-shadow:0 10px 30px rgba(15,23,42,0.05);"></div>
+
             </div>
             </div>
 
@@ -1356,7 +1356,7 @@
           if (typeof isDeckMode !== 'undefined' && isDeckMode) {
               let stageCard = document.getElementById('deck-stage-card');
               if (stageCard) {
-                  cardsH = stageCard.offsetTop + stageCard.offsetHeight;
+                  cardsH = stageCard.offsetTop + stageCard.offsetHeight + 40;
               }
           } else {
               let pane = document.getElementById('pane-content');
@@ -3620,6 +3620,9 @@
       function renderDeckStage() {
         const stageCard = getEl('deck-stage-card');
         if (!stageCard) return;
+
+        // Scale slide by height to maximize vertical space
+        stageCard.style.cssText = "height:65vh; max-height:800px; width:auto; max-width:100%; aspect-ratio:16/9; flex-shrink:0; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden;";
 
         // Add arrows to #deck-stage as siblings (only once)
         const stageWrap = getEl('deck-stage');
