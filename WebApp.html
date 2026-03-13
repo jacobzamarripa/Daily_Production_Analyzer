@@ -1459,9 +1459,9 @@
             <div class="dock-zone collapsed" id="dock-deck-actions-zone">
                 <div class="dock-divider"></div>
                 <button class="btn hover-trigger" onclick="navDeck(1)" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Skip (Next)</button>
-                <button class="btn collapsed hover-trigger" id="dock-btn-save" onclick="saveDeckToSheet(this)" style="background:#3b82f6; color:#fff; border-color:#2563eb;">Save to Sheet</button>
                 <button class="btn hover-trigger" id="dock-btn-stage" onclick="toggleStageCurrentDeckItem()" style="background:#a855f7; color:#fff; border-color:#9333ea;">Stage Project</button>
                 <button class="btn hover-trigger" onclick="exportDeckReport()" id="btn-export-deck" style="background:#16a34a; color:#fff; border-color:#15803d;">Copy Report</button>
+                <button class="btn collapsed hover-trigger" id="dock-btn-save" onclick="saveDeckToSheet(this)" style="background:#3b82f6; color:#fff; border-color:#2563eb;">Save to Sheet</button>
             </div>
 
             <div class="dock-zone collapsed" id="dock-gantt-actions-zone">
@@ -4571,16 +4571,22 @@
           saveCurrentCardState();
           const item = ensureDeckIndex();
           if (!item) return;
-          const idx = stagedDeckItems.indexOf(item.fdh);
+          let idx = stagedDeckItems.indexOf(item.fdh);
           if (idx > -1) {
               stagedDeckItems.splice(idx, 1);
               showDockSuccess('Removed from Batch');
+              syncDockStagingButton();
+              renderDeckStage();
           } else {
               stagedDeckItems.push(item.fdh);
               showDockSuccess('Staged for Batch');
+              syncDockStagingButton();
+              renderDeckStage();
+
+              setTimeout(() => {
+                  navDeck(1);
+              }, 600);
           }
-          syncDockStagingButton();
-          renderDeckStage();
       }
 
       function syncDockStagingButton() {
@@ -4913,7 +4919,25 @@
           syncDockStagingButton();
           let stagingBannerHtml = '';
           if (stagedDeckItems.length > 0) {
-              stagingBannerHtml = `<div style="background:rgba(168,85,247,0.1); border:1px solid #c084fc; border-radius:12px; padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 12px rgba(168,85,247,0.05);"><div><div style="font-size:9px; font-weight:900; color:#7e22ce; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">Staged for Export</div><div style="font-size:16px; font-weight:900; color:#6b21a8; line-height:1;">${stagedDeckItems.length} Project${stagedDeckItems.length !== 1 ? 's' : ''}</div></div><div style="display:flex; gap:8px;"><button class="btn hover-trigger" style="background:#a855f7; color:white; border:none; padding:6px 12px; font-size:10px; box-shadow:0 2px 4px rgba(168,85,247,0.2);" onclick="promptBatchDeckExport()">Email &amp; Save</button><button class="btn hover-trigger" style="background:transparent; color:#7e22ce; border:1px solid #c084fc; padding:6px 10px; font-size:10px;" onclick="clearStagedDeckItems()">Clear</button></div></div>`;
+              let stagedTags = stagedDeckItems.map(f => `<span style="display:inline-flex; align-items:center; padding:3px 8px; border-radius:6px; background:rgba(168,85,247,0.15); color:#7e22ce; font-size:10px; font-weight:800; border:1px solid #d8b4fe;">${f}</span>`).join('');
+
+              stagingBannerHtml = `
+              <div style="background: rgba(168, 85, 247, 0.06); border: 1px solid #c084fc; border-radius: 12px; padding: 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.05);">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                      <div>
+                          <div style="font-size: 9px; font-weight: 900; color: #7e22ce; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Staged for Export</div>
+                          <div style="font-size: 16px; font-weight: 900; color: #6b21a8; line-height: 1;">${stagedDeckItems.length} Project${stagedDeckItems.length !== 1 ? 's' : ''}</div>
+                      </div>
+                      <div style="display: flex; gap: 8px;">
+                          <button class="btn hover-trigger" style="background: #a855f7; color: white; border: none; padding: 6px 12px; font-size: 10px; box-shadow: 0 2px 4px rgba(168, 85, 247, 0.2);" onclick="promptBatchDeckExport()">Email &amp; Save</button>
+                          <button class="btn hover-trigger" style="background: transparent; color: #7e22ce; border: 1px solid #c084fc; padding: 6px 10px; font-size: 10px;" onclick="clearStagedDeckItems()">Clear</button>
+                      </div>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px; padding-top: 10px; border-top: 1px solid rgba(192, 132, 252, 0.3); max-height: 80px; overflow-y: auto;">
+                      ${stagedTags}
+                  </div>
+              </div>
+              `;
           }
 
           actionPanel.innerHTML = `${stagingBannerHtml}
