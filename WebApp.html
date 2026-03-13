@@ -86,6 +86,47 @@
           transform: translateX(-50%) translateY(-2px) !important;
           box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18) !important;
       }
+      /* Polymorphic Dock Physics */
+      .smart-dock {
+          transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+          transform-origin: top center;
+      }
+      .dock-zone {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          opacity: 1;
+          max-width: 800px;
+          overflow: hidden;
+          transition: max-width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      opacity 0.3s ease,
+                      margin 0.4s ease,
+                      padding 0.4s ease;
+      }
+      .dock-divider {
+          width: 1px;
+          height: 20px;
+          background: var(--border);
+          margin: 0 4px;
+          transition: opacity 0.3s ease;
+      }
+      .dock-zone.collapsed,
+      .btn.collapsed {
+          max-width: 0 !important;
+          opacity: 0 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          gap: 0 !important;
+          pointer-events: none;
+          border: none !important;
+      }
+      .dock-zone.collapsed > * {
+          margin: 0 !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          border-width: 0 !important;
+          opacity: 0 !important;
+      }
       .filter-strip input[type="text"],
       .filter-strip select {
           border-radius: 20px !important;
@@ -948,30 +989,41 @@
         <div class="upper-workspace">
           <div class="detail-layout" id="detail-layout" style="display:flex;">
             <div class="detail-main">
-                 <div class="filter-strip" id="filter-strip">
-            <input type="text" id="search-input" placeholder="Search projects..." autocomplete="off">
-            <select id="filter-severity" onchange="applyFilters()">
-               <option value="ALL">All Health</option>
-               <option value="crit">Critical</option>
-               <option value="warn">Warnings</option>
-               <option value="info">Clear</option>
-            </select>
-            <select id="filter-vendor" onchange="applyFilters()"><option value="ALL">All Vendors</option></select>
-            <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
-            <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
-            <div class="filter-tools">
-                <select id="workspace-view-select" class="btn hover-trigger" onchange="switchWorkspaceView(this.value)" style="font-size:10px; border-color:var(--border); background:rgba(59,130,246,0.15); color:#1d4ed8; font-weight:900; padding:0 24px 0 12px; height:34px; border-radius:14px; outline:none; cursor:pointer; appearance:auto;">
+                 <div class="filter-strip smart-dock" id="filter-strip">
+            <div class="dock-zone">
+                <input type="text" id="search-input" placeholder="Search projects..." autocomplete="off">
+            </div>
+
+            <div class="dock-zone dock-filters" id="dock-filters-zone">
+                <select id="filter-severity" onchange="applyFilters()">
+                    <option value="ALL">All Health</option>
+                    <option value="crit">Critical</option>
+                    <option value="warn">Warnings</option>
+                    <option value="info">Clear</option>
+                </select>
+                <select id="filter-vendor" onchange="applyFilters()"><option value="ALL">All Vendors</option></select>
+                <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
+                <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
+            </div>
+
+            <div class="dock-zone collapsed" id="dock-pivot-zone">
+                <div class="dock-divider"></div>
+                <select id="grid-pivot-select" onchange="updateGridPivot()">
+                    <option value="velocity">Field Velocity</option>
+                    <option value="schedule">Project Schedule</option>
+                    <option value="notes">Manager Notes</option>
+                    <option value="deliverables">Deliverables</option>
+                </select>
+            </div>
+
+            <div class="dock-zone">
+                <div class="dock-divider"></div>
+                <button class="btn collapsed hover-trigger" id="btn-clear-filters" onclick="clearAllFilters()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">✕ Clear</button>
+                <select id="workspace-view-select" class="btn hover-trigger" onchange="switchWorkspaceView(this.value)" style="font-size:10px; border-color:#3b82f6; background:rgba(59,130,246,0.15); color:#1d4ed8; font-weight:900; padding:0 24px 0 12px; height:34px; border-radius:14px; outline:none; cursor:pointer; appearance:auto;">
                     <option value="detail">📄 Detail View</option>
                     <option value="grid">⊞ Grid View</option>
                     <option value="deck">🎴 Deck Mode</option>
                 </select>
-                <select id="grid-pivot-select" onchange="updateGridPivot()" style="display:none; font-size:10px;">
-                   <option value="velocity">Field Velocity</option>
-                   <option value="schedule">Project Schedule</option>
-                   <option value="notes">Manager Notes</option>
-                   <option value="deliverables">Deliverables</option>
-                </select>
-                <button class="btn" id="btn-clear-filters" onclick="clearAllFilters()" style="display:none; font-size:10px; border-color:var(--border); background:var(--card-bg); color:var(--text-main);">Clear</button>
             </div>
         </div>
                  <div id="welcome-screen" class="empty-msg"><div style="font-size:32px; margin-bottom:12px;">Select a Project</div></div>
@@ -2333,7 +2385,7 @@
             
             let anyActive = vVen !== 'ALL' || vCit !== 'ALL' || vOfs !== 'ALL' || vSev !== 'ALL' || searchTerm !== '' || activeAdminFilter !== null;
             let clearBtn = getEl('btn-clear-filters');
-            if (clearBtn) clearBtn.style.display = anyActive ? 'inline-flex' : 'none';
+            if (clearBtn) clearBtn.classList.toggle('collapsed', !anyActive);
             let filtersBtn = getEl('btn-filters');
             if (filtersBtn) filtersBtn.classList.toggle('btn-filters-active', anyActive || !(getEl('filter-strip')?.classList.contains('hidden')));
             filteredItems = filtered;
@@ -2352,6 +2404,8 @@
           ['filter-severity','filter-vendor','filter-city','filter-ofs'].forEach(id => { let el = getEl(id); if (el) el.value = 'ALL'; });
           activeAdminFilter = null;
           applyFilters();
+          let clearBtn = getEl('btn-clear-filters');
+          if (clearBtn) clearBtn.classList.add('collapsed');
           let strip = getEl('filter-strip');
           let btn = getEl('btn-filters');
           if (strip && !strip.classList.contains('hidden')) {
@@ -3563,7 +3617,10 @@
         const grid = getEl('grid-content');
         const welcome = getEl('welcome-screen');
         const paneContent = getEl('pane-content');
-        if (pivot) pivot.style.display = isGridMode ? 'inline-block' : 'none';
+        const pivotZone = getEl('dock-pivot-zone');
+        if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridMode);
+        const filtersZone = getEl('dock-filters-zone');
+        if (filtersZone) filtersZone.classList.toggle('collapsed', isDeckMode);
         if (grid) grid.classList.toggle('active', isGridMode);
         const sidebarPivot = getEl('sidebar-pivot-select');
         if (sidebarPivot) sidebarPivot.style.display = isDeckMode ? 'inline-block' : 'none';
