@@ -224,49 +224,100 @@ function getDashboardData() {
 }
 
 function promptLoadSpecificDateToQB() { 
-  const ui = SpreadsheetApp.getUi(); 
-  const response = ui.prompt(
-    'Load QuickBase Tab', 
-    'Enter the date to load (YYYY-MM-DD or M/D/YYYY)\n\nLeave this box completely BLANK to automatically run yesterday.', 
-    ui.ButtonSet.OK_CANCEL
-  ); 
-  
-  if (response.getSelectedButton() === ui.Button.OK) {
-    let dateStr = response.getResponseText().trim();
-    // If blank, default to yesterday
-    if (dateStr === "") {
-      let d = new Date();
-      d.setDate(d.getDate() - 1);
-      dateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd");
-    }
-    populateQuickBaseTabCore(dateStr); 
-  }
+  showDatePickerDialog("LoadQB", "Load QuickBase Tab");
 }
 function promptExportQuickBaseCSV() { exportQuickBaseCSVCore(false); }
 function promptGenerateDailyReview() { 
-  const ui = SpreadsheetApp.getUi(); 
-  const response = ui.prompt(
-    'Generate Daily Review', 
-    'Enter the date to review (YYYY-MM-DD or M/D/YYYY)\n\nLeave this box completely BLANK to automatically run yesterday.', 
-    ui.ButtonSet.OK_CANCEL
-  ); 
-  
-  if (response.getSelectedButton() === ui.Button.OK) {
-    let dateStr = response.getResponseText().trim();
-    // If blank, default to yesterday
-    if (dateStr === "") {
-      let d = new Date();
-      d.setDate(d.getDate() - 1);
-      dateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd");
-    }
-    generateDailyReviewCore(dateStr, null, false); 
+  showDatePickerDialog("RunReview", "Generate Daily Review");
+}
+function showDatePickerDialog(actionName, title) {
+  let tmpl = HtmlService.createTemplateFromFile("DatePicker");
+  tmpl.action = actionName;
+
+  let html = tmpl.evaluate()
+    .setWidth(300)
+    .setHeight(220);
+
+  SpreadsheetApp.getUi().showModalDialog(html, "📅 " + title);
+}
+function processDateSelection(dateStr, actionName) {
+  if (!dateStr) return;
+
+  if (actionName === "LoadQB") {
+    populateQuickBaseTabCore(dateStr);
+  } else if (actionName === "RunReview") {
+    generateDailyReviewCore(dateStr, null, false);
   }
 }
 function importArchiveFolder() { const keys = getExistingKeys(); const refDict = getReferenceDictionary(); processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null); SpreadsheetApp.getUi().alert("✅ Master Archive Updated."); }
 function setupDailyTrigger() { const triggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < triggers.length; i++) ScriptApp.deleteTrigger(triggers[i]); ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(12).everyDays(1).create(); ScriptApp.newTrigger('moveIncomingFoldersToArchive').timeBased().atHour(0).everyDays(1).create(); SpreadsheetApp.getUi().alert("✅ Daily Automations Enabled."); }
-function runMiddayAutomation() { logMsg("🤖 STARTING MIDDAY AUTOMATION..."); setupSheets(); const keys = getExistingKeys(); const refDict = getReferenceDictionary(); let rowCollector = []; processFolderRecursive(DriveApp.getFolderById(INCOMING_FOLDER_ID), keys, refDict, "", false, rowCollector); let targetDateStr = Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd"); if (rowCollector.length > 0) { let maxTime = 0; rowCollector.forEach(row => { let d = new Date(row[0]); if (d.getTime() > maxTime) { maxTime = d.getTime(); targetDateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd"); } }); } populateQuickBaseTabCore(targetDateStr); generateDailyReviewCore(targetDateStr, refDict, true); exportDirectorReviewXLSX(true); exportVendorCorrectionsXLSX(true); logMsg(`✅ MIDDAY AUTOMATION COMPLETE for Date: ${targetDateStr}`); }
+function runMiddayAutomation() { logMsg("🤖 STARTING MIDDAY AUTOMATION..."); setupSheets(); const keys = getExistingKeys(); const refDict = getReferenceDictionary(); let newRowsAppended = []; let allProcessedDates = []; let rowCollector = []; processFolderRecursive(DriveApp.getFolderById(INCOMING_FOLDER_ID), keys, refDict, "", false, newRowsAppended, allProcessedDates, false, rowCollector); let targetDateStr = Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd"); if (rowCollector.length > 0) { let maxTime = 0; rowCollector.forEach(row => { let d = new Date(row[0]); if (d.getTime() > maxTime) { maxTime = d.getTime(); targetDateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd"); } }); } populateQuickBaseTabDirectly(rowCollector); generateDailyReviewCore(targetDateStr, refDict, true); exportDirectorReviewXLSX(true); exportVendorCorrectionsXLSX(true); logMsg(`✅ MIDDAY AUTOMATION COMPLETE for Date: ${targetDateStr}`); }
 function moveIncomingFoldersToArchive() { logMsg("🧹 STARTING MIDNIGHT SWEEP..."); let inc = DriveApp.getFolderById(INCOMING_FOLDER_ID), arch = DriveApp.getFolderById(ARCHIVE_FOLDER_ID); let folders = inc.getFolders(); let count = 0; while (folders.hasNext()) { folders.next().moveTo(arch); count++; } logMsg(`✅ MIDNIGHT SWEEP COMPLETE: Moved ${count} folders.`); }
 function setupSheets() { const ss = SpreadsheetApp.getActiveSpreadsheet(); const sheets = [{n: QB_UPLOAD_SHEET, h: QB_HEADERS}, {n: HISTORY_SHEET, h: HISTORY_HEADERS}, {n: MIRROR_SHEET, h: HISTORY_HEADERS}]; sheets.forEach(s => { let sh = ss.getSheetByName(s.n) || ss.insertSheet(s.n); if (sh.getLastRow() === 0) sh.appendRow(s.h); }); }
+
+// 🧠 DECK BACKEND: Upserts answers into 8-Deck_Answers
+function saveDeckAnswers(payload) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(DECK_SHEET);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(DECK_SHEET);
+    sheet.appendRow(DECK_HEADERS);
+    sheet.getRange("1:1").setBackground("#0f172a").setFontColor("white").setFontWeight("bold");
+    sheet.setFrozenRows(1);
+  }
+
+  const safePayload = payload || {};
+  const safeAnswers = safePayload.answers || {};
+  const data = sheet.getDataRange().getValues();
+  const fdhIdx = DECK_HEADERS.indexOf("FDH Engineering ID");
+  let targetRow = -1;
+  let targetFdh = safePayload.fdh ? safePayload.fdh.toString().trim().toUpperCase() : "";
+
+  if (fdhIdx > -1 && data.length > 1 && targetFdh) {
+    for (let i = 1; i < data.length; i++) {
+      let rowFdh = data[i][fdhIdx] ? data[i][fdhIdx].toString().trim().toUpperCase() : "";
+      if (rowFdh === targetFdh) {
+        targetRow = i + 1;
+        break;
+      }
+    }
+  }
+
+  const now = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy HH:mm");
+  let rowData = DECK_HEADERS.map(header => {
+    switch (header) {
+      case "Timestamp": return now;
+      case "FDH Engineering ID": return safePayload.fdh || "";
+      case "Vendor": return safePayload.vendor || "";
+      case "Target Date": return safePayload.targetDate || "";
+      case "Sent for Permitting": return safeAnswers.q_permit_sent || "";
+      case "Permit Approved": return safeAnswers.q_permit_appr || "";
+      case "DOT Paperwork Submitted": return safeAnswers.q_cross_sub || "";
+      case "Special Crossing Approved": return safeAnswers.q_cross_appr || "";
+      case "Approval Dist to Vendor": return safeAnswers.q_cross_dist || "";
+      case "Active Set": return safeAnswers.q_active_set || "";
+      case "Active Has Power": return safeAnswers.q_active_pwr || "";
+      case "Leg ID": return safeAnswers.q_leg || "";
+      case "Transport Available": return safeAnswers.q_transport || "";
+      case "How is it Fed": return safeAnswers.q_how_fed || "";
+      case "What Does it Feed": return safeAnswers.q_what_feeds || "";
+      case "Island Missing Components": return safeAnswers.q_island || "";
+      case "OFS Changed Reason": return safeAnswers.q_ofs_change || "";
+      case "Manager Note": return safePayload.note || "";
+      case "QB Sync Status": return "Pending";
+      default: return "";
+    }
+  });
+
+  if (targetRow > -1) {
+    sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+  } else {
+    sheet.appendRow(rowData);
+  }
+
+  return now;
+}
 
 // 🧠 UPDATED FORMATTING FUNCTION TO HANDLE NEW XING SHEET AND CD INTELLIGENCE WRAPPING
 function applyFormatting(targetSheet = null) {

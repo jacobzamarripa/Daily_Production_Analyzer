@@ -17,9 +17,18 @@ const REF_SHEET          = "5-Reference_Data";
 const STYLE_MASTER       = "Style_Master";
 const REVIEW_LOG_SHEET   = "6-Committed_Reviews";
 const XING_SHEET         = "7-CD_Special_Xings"; 
+const DECK_SHEET         = "8-Deck_Answers";
 
 const HISTORY_HEADERS = ["Date", "Contractor", "FDH Engineering ID", "Locates Called In", "Cabinets Set", "Light to Cabinets", "Target Completion Date", "Daily UG Footage", "Total UG Footage Completed", "UG BOM Quantity", "UG Complete?", "Daily Strand Footage", "Total Strand Footage Complete?", "Strand BOM Quantity", "Strand Complete?", "Daily Fiber Footage", "Total Fiber Footage Complete", "Fiber BOM Quantity", "Fiber Complete?", "Daily NAPs/Encl. Completed", "Total NAPs Completed", "NAP/Encl. BOM Qty.", "NAPs/Encl. Complete?", "Drills", "Missles", "AE Crews", "Fiber Pulling Crews", "Splicing Crews", "Vendor Comment"];
 const QB_HEADERS = ["Date", "Contractor", "FDH Engineering ID", "Locates Called In", "Cabinets Set", "Light to Cabinets", "Target Completion Date", "Daily UG Footage", "Daily Strand Footage", "Daily Fiber Footage", "Daily NAPs/Encl. Completed", "Drills", "Missles", "AE Crews", "Fiber Pulling Crews", "Splicing Crews", "Construction Comments"];
+const DECK_HEADERS = [
+  "Timestamp", "FDH Engineering ID", "Vendor", "Target Date",
+  "Sent for Permitting", "Permit Approved", "DOT Paperwork Submitted",
+  "Special Crossing Approved", "Approval Dist to Vendor", "Active Set",
+  "Active Has Power", "Leg ID", "Transport Available", "How is it Fed",
+  "What Does it Feed", "Island Missing Components", "OFS Changed Reason",
+  "Manager Note", "QB Sync Status"
+];
 
 // 🧠 ADDED: CX Start and CX Complete
 const REVIEW_EXTRA_HEADERS = ["City", "Stage", "Status", "BSLs", "Budget OFS", "CX Start", "CX Complete", "CD Intelligence", "Gemini Insight", "Gemini Insight Date"];

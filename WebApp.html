@@ -3945,6 +3945,7 @@
 
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:auto; padding-top:16px; border-top:1px solid var(--border);">
               <button class="btn btn-skip" onclick="navDeck(1)" style="padding:8px 16px; font-size:11px;">SKIP (NEXT)</button>
+              <button class="btn btn-primary" onclick="saveDeckToSheet(this)" style="padding:8px 16px; font-size:11px; background:#3b82f6; border-color:#2563eb;">SAVE TO SHEET</button>
               <button class="btn btn-primary" onclick="exportDeckReport()" id="btn-export-deck" style="padding:8px 16px; font-size:11px;">COPY REPORT</button>
             </div>
           `;
@@ -4066,6 +4067,47 @@ ${item.comment || 'No notes provided.'}
           btn.style.background = '#15803d';
           setTimeout(() => { btn.innerHTML = origHtml; btn.style.background = '#16a34a'; }, 2000);
         }).catch(err => alert('Failed to copy to clipboard. ' + err));
+      }
+
+      function saveDeckToSheet(btn) {
+        saveCurrentCardState();
+        const item = ensureDeckIndex();
+        if (!item || !btn) return;
+
+        let origText = btn.innerHTML;
+        btn.innerHTML = 'SAVING...';
+        btn.style.opacity = '0.7';
+        btn.disabled = true;
+
+        const mem = pmSessionMemory[item.fdh] || {};
+        let payload = {
+          fdh: item.fdh,
+          vendor: item.vendor,
+          targetDate: item.targetDate || item.cxEnd || 'TBD',
+          note: item.comment || "",
+          answers: mem
+        };
+
+        google.script.run
+          .withSuccessHandler(timestamp => {
+            btn.innerHTML = '&#10003; SAVED';
+            btn.style.background = '#16a34a';
+            btn.style.borderColor = '#15803d';
+            btn.style.opacity = '1';
+            setTimeout(() => {
+              btn.innerHTML = origText;
+              btn.style.background = '#3b82f6';
+              btn.style.borderColor = '#2563eb';
+              btn.disabled = false;
+            }, 2000);
+          })
+          .withFailureHandler(err => {
+            alert('Save failed: ' + err.message);
+            btn.innerHTML = origText;
+            btn.style.opacity = '1';
+            btn.disabled = false;
+          })
+          .saveDeckAnswers(payload);
       }
     </script>
   </body>

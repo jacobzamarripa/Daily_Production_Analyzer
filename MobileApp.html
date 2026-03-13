@@ -745,12 +745,25 @@
       cursor: default;
     }
     .hub-section-title {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 900;
-      letter-spacing: 1.4px;
       text-transform: uppercase;
+      letter-spacing: 0.1em;
       color: var(--text-muted);
-      margin: 18px 0 10px;
+      padding: 16px 4px 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .swipe-item.is-staged {
+      border: 1px dashed #facc15 !important;
+      background: rgba(255, 251, 235, 0.6) !important;
+    }
+    .reviewed-card {
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
     }
 
     #outbox-pane {
@@ -1183,7 +1196,8 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 10px;
-      z-index: 10000;
+      z-index: 10000 !important;
+      pointer-events: auto;
     }
     .dock-btn {
       position: relative;
@@ -1209,7 +1223,10 @@
       align-items: center;
       justify-content: center;
       gap: 2px;
-      min-width: 132px;
+      min-width: 110px;
+      max-width: 160px;
+      flex: 1 1 auto;
+      order: 1;
       padding: 8px 18px;
       background: rgba(255,255,255,0.88);
       border: var(--hairline);
@@ -1217,7 +1234,7 @@
       color: var(--text-main);
       font-family: inherit;
       cursor: pointer;
-      transition: transform 0.25s var(--spring), background 0.3s, border-color 0.3s;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     #dock-primary-pill.bump { transform: scale(1.12); }
     #dock-primary-pill.commit-mode { background: #22c55e; border-color: #16a34a; }
@@ -1266,6 +1283,7 @@
       display: flex;
       flex-basis: 74px;
       flex-shrink: 0;
+      align-items: center;
     }
     .dock-side.left { justify-content: flex-start; }
     .dock-side.right { justify-content: flex-end; }
@@ -1277,6 +1295,7 @@
       padding: 0;
       border: none;
       margin-right: 0;
+      margin-left: 0;
       background: rgba(255,255,255,0.9);
       border-radius: 50%;
       color: var(--text-main);
@@ -1284,17 +1303,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      order: 2;
       transition:
-        width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        width 0.4s var(--spring),
         opacity 0.3s ease,
-        margin-right 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        margin-left 0.4s ease,
         transform 0.12s ease;
       flex-shrink: 0;
     }
     .dock-back-btn.show {
       width: 44px;
       opacity: 1;
-      margin-right: 14px;
+      margin-left: 12px;
       border: 1px solid var(--border);
     }
     .dock-back-btn:active {
@@ -1312,15 +1332,24 @@
       top: 0; bottom: 0;
       display: flex;
       align-items: center;
-      color: white;
       font-weight: 900;
-      font-size: 13px;
-      padding: 0 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      padding: 0 20px;
+      color: white;
+      transition: opacity 0.2s ease;
       z-index: 1;
     }
-    .swipe-action-left  { left: 0; width: 50%; justify-content: flex-start; background: #22c55e; }
-    .swipe-action-right { right: 0; width: 50%; justify-content: flex-end; background: #ef4444; }
-    .swipe-action-uncommit { right: 0; width: 100%; justify-content: flex-end; background: #f59e0b; }
+    .swipe-action-left  { left: 0; width: 50%; justify-content: flex-start; }
+    .swipe-action-right { right: 0; width: 50%; justify-content: flex-end; }
+    .swipe-action-uncommit { right: 0; width: 100%; justify-content: flex-end; }
+    .swipe-action-xing      { background: #facc15 !important; color: #422006 !important; }
+    .swipe-action-status    { background: #ef4444 !important; color: #ffffff !important; }
+    .swipe-action-bom       { background: #22c55e !important; color: #ffffff !important; }
+    .swipe-action-commit    { background: #22c55e !important; color: #ffffff !important; }
+    .swipe-action-uncommit  { background: #f97316 !important; color: #ffffff !important; }
+    .swipe-action-undo      { background: #64748b !important; color: #ffffff !important; }
     .swipe-item {
       position: relative;
       z-index: 2;
@@ -1688,16 +1717,20 @@
     /* ─── SEARCH OVERLAY ────────────────────────────────────────────── */
     #search-overlay {
       position: fixed;
-      inset: 0;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
       background: var(--surface-overlay);
       backdrop-filter: blur(24px) saturate(160%);
       -webkit-backdrop-filter: blur(24px) saturate(160%);
-      z-index: 600;
+      z-index: 5000;
       display: flex;
       flex-direction: column;
-      padding: calc(var(--safe-top) + 14px) 16px 16px;
-      transform: translateY(-100%);
-      transition: transform 0.35s var(--ease-out-expo);
+      justify-content: flex-start;
+      padding: 16px 16px calc(var(--safe-bottom) + 100px);
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     #search-overlay.open { transform: translateY(0); }
 
@@ -1705,14 +1738,14 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-top: 12px;
       flex-shrink: 0;
     }
     .search-filters {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      margin-bottom: 16px;
+      margin-top: 12px;
       flex-shrink: 0;
     }
     .search-filter {
@@ -1734,8 +1767,9 @@
       font-size: 11px;
       font-weight: 700;
       color: var(--text-muted);
-      margin-bottom: 10px;
+      margin-top: 14px;
       padding: 0 4px;
+      flex-shrink: 0;
     }
     #search-input {
       flex: 1;
@@ -1769,7 +1803,8 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
-      padding-bottom: calc(var(--safe-bottom) + 100px);
+      min-height: 0;
+      padding: calc(var(--safe-top) + 14px) 0 12px;
     }
     .search-result-item {
       background: var(--card-bg);
@@ -1888,10 +1923,8 @@
 
     <!-- 5. SEARCH OVERLAY -->
     <div id="search-overlay">
-      <div class="search-row">
-        <input id="search-input" type="search" placeholder="FDH, city, vendor…" autocomplete="off" spellcheck="false">
-        <button class="search-cancel-btn" onclick="closeSearch()">Cancel</button>
-      </div>
+      <div id="search-results"></div>
+      <div id="search-results-meta" class="search-results-meta">All projects</div>
       <div class="search-filters">
         <select id="filter-severity" class="search-filter">
           <option value="ALL">All Severity</option>
@@ -1909,14 +1942,21 @@
           <option value="ALL">All OFS Months</option>
         </select>
       </div>
-      <div id="search-results-meta" class="search-results-meta">All projects</div>
-      <div id="search-results"></div>
+      <div class="search-row">
+        <input id="search-input" type="search" placeholder="FDH, city, vendor…" autocomplete="off" spellcheck="false">
+        <button class="search-cancel-btn" onclick="closeSearch()">Cancel</button>
+      </div>
     </div>
 
     <!-- 6. COMMAND CENTER DOCK -->
     <div id="dock">
       <div class="dock-side left">
-        <button class="dock-action-btn" id="dock-secondary-btn" onclick="handleSecondaryAction()">Search</button>
+        <button class="dock-btn" id="dock-home-btn" onclick="toggleAdminSheet()" aria-label="Menu">
+          <svg id="dock-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>
+          </svg>
+          <div class="nav-hub-badge" id="nav-hub-badge" style="display:none;">0</div>
+        </button>
       </div>
       <div class="dock-center-group">
         <button class="dock-back-btn" id="dock-back-btn" onclick="showHubHome()">
@@ -1930,12 +1970,7 @@
         </button>
       </div>
       <div class="dock-side right">
-        <button class="dock-btn" id="dock-home-btn" onclick="toggleAdminSheet()" aria-label="Menu">
-          <svg id="dock-home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>
-          </svg>
-          <div class="nav-hub-badge" id="nav-hub-badge" style="display:none;">0</div>
-        </button>
+        <button class="dock-action-btn" id="dock-secondary-btn" onclick="handleSecondaryAction()">Search</button>
       </div>
       <div id="dock-session-count" style="display:none;">0</div>
     </div>
@@ -1952,13 +1987,13 @@
       <div class="review-hub-header">
         <div class="review-hub-meta">
           <div class="hub-title">Review Hub</div>
-          <div class="review-hub-sub">Admin and session-reviewed items</div>
+          <div class="review-hub-sub">Admin tasks and session activity</div>
         </div>
         <button class="search-cancel-btn" onclick="closeAdminSheet()">Close</button>
       </div>
       <div class="review-hub-tabs">
         <button class="panel-tab active" id="tab-admin" onclick="switchMobileTab('admin')">Admin <span class="ob-tab-badge" id="badge-admin">0</span></button>
-        <button class="panel-tab" id="tab-reviewed" onclick="switchMobileTab('reviewed')">Reviewed <span class="ob-tab-badge" id="badge-reviewed">0</span></button>
+        <button class="panel-tab" id="tab-reviewed" onclick="switchMobileTab('reviewed')">Activity <span class="ob-tab-badge" id="badge-reviewed">0</span></button>
       </div>
       <div id="ob-panel-admin" class="review-hub-panel active">
         <div class="admin-strip" id="admin-strip"></div>
@@ -1967,7 +2002,7 @@
       <div id="ob-panel-reviewed" class="review-hub-panel">
         <div class="ob-header" style="flex-shrink:0; padding-bottom:8px;">
            <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
-              Session Reviewed Projects
+              Session Activity
               <span id="ob-tab-count" style="display:none;"></span>
            </div>
         </div>
@@ -2649,6 +2684,7 @@ function advanceCarousel(direction) {
   state.dragging = false;
   state.drag = null;
   renderDeck();
+  bumpPill();
 }
 
 function snapBackCarousel() {
@@ -2759,6 +2795,7 @@ function showReviewQueue(startFdh) {
   if (scene) scene.classList.add('active');
   if (hub) hub.classList.add('review-hidden');
   setDockMode();
+  bumpPill();
   haptic('light');
 }
 
@@ -2770,64 +2807,80 @@ function setDockMode() {
   var backBtn = document.getElementById('dock-back-btn');
   var hubBadge = document.getElementById('nav-hub-badge');
 
-  if (!primaryMain || !primarySub || !secondary) return;
+  if (!primaryPill || !primaryMain || !primarySub || !secondary || !backBtn) return;
 
   var adminTotal = getAdminItems().length + getCrossingItems().length + getBomItems().length;
+  var reviewItem = state.deck[state.idx] || null;
+  var reviewActionable = !!(reviewItem && !reviewItem._committed && !reviewItem._skipped);
+  var stagedCount = (state.stagedCrossings ? state.stagedCrossings.length : 0) + (state.stagedStatus ? state.stagedStatus.length : 0);
+  var reviewedCount = state.committed ? state.committed.length : 0;
   if (hubBadge) {
     hubBadge.textContent = adminTotal;
     hubBadge.style.display = adminTotal ? 'flex' : 'none';
   }
 
-  if (state.reviewOpen) {
-    // ── DETAIL VIEW ──
-    if (backBtn) backBtn.classList.add('show');
-    if (primaryPill) primaryPill.className = 'commit-mode';
-    primaryMain.textContent = 'Commit';
-    primarySub.textContent = (state.deck[state.idx] && state.deck[state.idx].fdh) ? state.deck[state.idx].fdh : 'Review';
-    secondary.innerHTML = 'Skip';
+  if (state.adminSheetOpen && state.activeTab === 'admin') {
+    backBtn.classList.remove('show');
+    secondary.textContent = 'Search';
     secondary.style.color = 'var(--text-main)';
+    secondary.onclick = openSearch;
 
-  } else if (state.adminSheetOpen) {
-    // ── ADMIN HUB OPEN ──
-    if (backBtn) backBtn.classList.remove('show');
-    secondary.innerHTML = 'Search';
-    secondary.style.color = 'var(--text-main)';
-
-    if (state.activeTab === 'admin') {
-      var stagedCount = (state.stagedCrossings ? state.stagedCrossings.length : 0) + (state.stagedStatus ? state.stagedStatus.length : 0);
-      if (stagedCount > 0) {
-        if (primaryPill) primaryPill.className = 'commit-mode';
-        primaryMain.textContent = 'Commit Staged';
-        primarySub.textContent = stagedCount + ' item' + (stagedCount > 1 ? 's' : '');
-      } else {
-        if (primaryPill) primaryPill.className = '';
-        primaryMain.textContent = 'No Staged Items';
-        primarySub.textContent = 'Swipe to verify';
-      }
-    } else if (state.activeTab === 'reviewed') {
-      if (state.committed && state.committed.length > 0) {
-        if (primaryPill) primaryPill.className = 'commit-mode';
-        primaryMain.textContent = 'Export All';
-        primarySub.textContent = state.committed.length + ' item' + (state.committed.length > 1 ? 's' : '');
-      } else {
-        if (primaryPill) primaryPill.className = '';
-        primaryMain.textContent = 'No Reviews';
-        primarySub.textContent = 'Nothing to export';
-      }
+    if (stagedCount > 0) {
+      primaryPill.className = 'commit-mode';
+      primaryMain.textContent = 'Commit Staged';
+      primarySub.textContent = stagedCount + ' item' + (stagedCount !== 1 ? 's' : '');
+      primaryPill.onclick = commitStagedMobile;
+    } else {
+      primaryPill.className = '';
+      primaryMain.textContent = 'Admin Hub';
+      primarySub.textContent = 'Select task';
+      primaryPill.onclick = null;
     }
+  } else if (state.adminSheetOpen && state.activeTab === 'reviewed') {
+    backBtn.classList.remove('show');
+    secondary.textContent = 'Search';
+    secondary.style.color = 'var(--text-main)';
+    secondary.onclick = openSearch;
 
+    if (stagedCount > 0) {
+      primaryPill.className = 'commit-mode';
+      primaryMain.textContent = 'Commit Staged';
+      primarySub.textContent = stagedCount + ' Admin Task' + (stagedCount > 1 ? 's' : '');
+      primaryPill.onclick = commitStagedMobile;
+    } else if (reviewedCount > 0) {
+      primaryPill.className = 'commit-mode';
+      primaryMain.textContent = 'Export All';
+      primarySub.textContent = reviewedCount + ' Project Note' + (reviewedCount > 1 ? 's' : '');
+      primaryPill.onclick = promptEmailExport;
+    } else {
+      primaryPill.className = '';
+      primaryMain.textContent = 'Session Activity';
+      primarySub.textContent = 'No work logged';
+      primaryPill.onclick = null;
+    }
+  } else if (state.reviewOpen) {
+    backBtn.classList.add('show');
+    primaryPill.className = reviewActionable ? 'commit-mode' : '';
+    primaryMain.textContent = 'Commit';
+    primarySub.textContent = reviewItem && reviewItem.fdh ? reviewItem.fdh : 'Review';
+    primaryPill.onclick = commitCurrentCard;
+    secondary.textContent = 'Skip';
+    secondary.style.color = 'var(--text-main)';
+    secondary.onclick = skipCurrentCard;
   } else {
-    // ── MAIN QUEUE VIEW ──
-    if (backBtn) backBtn.classList.remove('show');
-    if (primaryPill) primaryPill.className = '';
+    backBtn.classList.remove('show');
+    primaryPill.className = '';
     primaryMain.textContent = 'Review Queue';
     primarySub.textContent = state.deck.length + ' project' + (state.deck.length !== 1 ? 's' : '');
+    primaryPill.onclick = handlePrimaryAction;
     if (state.searchOpen) {
-      secondary.innerHTML = '✕ Close';
+      secondary.textContent = 'Close';
       secondary.style.color = '#ef4444';
+      secondary.onclick = closeSearch;
     } else {
-      secondary.innerHTML = 'Search';
+      secondary.textContent = 'Search';
       secondary.style.color = 'var(--text-main)';
+      secondary.onclick = openSearch;
     }
   }
 }
@@ -2863,7 +2916,6 @@ function commitCurrentCard() {
   if (!item._committed) {
     logCommit(item);
     item._committed = true;
-    bumpPill();
     haptic('medium');
     toast('Committed · ' + item.fdh);
   } else {
@@ -2896,7 +2948,7 @@ function openSearch() {
   document.getElementById('search-overlay').classList.add('open');
   applyFilters();
   setDockMode();
-  setTimeout(function(){ var i=document.getElementById('search-input'); if(i) i.focus(); },360);
+  setTimeout(function(){ var i=document.getElementById('search-input'); if(i) i.focus(); },400);
 }
 
 function closeSearch() {
@@ -2921,8 +2973,8 @@ function renderAdminSheetList(containerId, items, emptyText) {
     wrapper.dataset.fdh = item.fdh;
     wrapper.dataset.listType = 'queue';
     wrapper.innerHTML =
-      '<div class="swipe-actions swipe-action-left">✔ Commit</div>' +
-      '<div class="swipe-actions swipe-action-right">✕ Skip</div>' +
+      '<div class="swipe-actions swipe-action-left swipe-action-commit">✔ Commit</div>' +
+      '<div class="swipe-actions swipe-action-right swipe-action-undo">✕ Skip</div>' +
       '<div class="swipe-item email-card ' + getSeverity(item.flags) + '">' +
         '<div class="em-header">' +
           '<div class="em-fdh">' + esc(item.fdh || '—') + '</div>' +
@@ -2944,40 +2996,68 @@ function renderAdminSheetList(containerId, items, emptyText) {
   });
 }
 
-function renderReviewedSheet() {
-  var box = document.getElementById('reviewed-sheet-list');
-  var badge = document.getElementById('badge-reviewed');
-  if (badge) badge.textContent = state.committed.length;
-  if (!box) return;
-  if (!state.committed.length) {
-    box.innerHTML = '<div class="hub-empty">No items reviewed in this session.</div>';
-    return;
-  }
-  box.innerHTML = '';
-  state.committed.slice().reverse().forEach(function(item) {
-    var wrapper = document.createElement('div');
-    wrapper.className = 'swipe-wrapper';
-    wrapper.style.borderRadius = '18px';
-    wrapper.style.marginBottom = '10px';
-    wrapper.dataset.fdh = item.fdh;
-    wrapper.dataset.listType = 'reviewed';
-    wrapper.innerHTML =
-      '<div class="swipe-actions swipe-action-uncommit">⟲ Uncommit</div>' +
-      '<div class="swipe-item reviewed-card" style="border-radius:18px; margin-bottom:0;">' +
+function makeActivityCard(item, type, extraClass, undoLabel, undoClass) {
+  if (!item) return '';
+  return '' +
+    '<div class="swipe-wrapper" data-fdh="' + esc(item.fdh || '') + '" data-list-type="' + esc(type || '') + '" style="margin-bottom:10px; border-radius:18px;">' +
+      '<div class="swipe-actions swipe-action-right ' + esc(undoClass || '') + '">' + esc(undoLabel || '') + '</div>' +
+      '<div class="swipe-item reviewed-card ' + esc(extraClass || '') + '" style="border-radius:18px;">' +
         '<div class="reviewed-card-top">' +
           '<div class="reviewed-card-fdh">' + esc(item.fdh || '—') + '</div>' +
           '<span class="glass-pill ' + pillClass(item.status, item.stage) + '">' + esc(pillLabel(item.status, item.stage)) + '</span>' +
         '</div>' +
-        '<div class="reviewed-card-comment">' + esc(item.comment || 'No comment logged.') + '</div>' +
-      '</div>';
-    (function(i) {
-      wrapper.querySelector('.swipe-item').onclick = function() {
-        if (window._preventSwipeClick) return;
-        jumpTo(i.fdh); closeReviewHub();
-      };
-    })(item);
-    box.appendChild(wrapper);
+        '<div class="reviewed-card-comment">' + esc(item.comment || item.draft || 'Hygiene Check Only') + '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function renderReviewedSheet() {
+  var box = document.getElementById('reviewed-sheet-list');
+  var badge = document.getElementById('badge-reviewed');
+  if (!box) return;
+
+  var stagedCount = (state.stagedCrossings ? state.stagedCrossings.length : 0) + (state.stagedStatus ? state.stagedStatus.length : 0);
+  var reviewedCount = state.committed ? state.committed.length : 0;
+
+  if (badge) badge.textContent = stagedCount + reviewedCount;
+
+  if (stagedCount === 0 && reviewedCount === 0) {
+    box.innerHTML = '<div class="hub-empty">No activity in this session.</div>';
+    setDockMode();
+    return;
+  }
+
+  var html = '';
+
+  if (stagedCount > 0) {
+    html += '<div class="hub-section-title">Staged Admin Tasks <span>' + stagedCount + '</span></div>';
+    (state.stagedCrossings || []).forEach(function(fdh) {
+      var item = state.all.find(function(i) { return i.fdh === fdh; });
+      html += makeActivityCard(item, 'admin-xing', 'is-staged', 'Unstage', 'swipe-action-undo');
+    });
+    (state.stagedStatus || []).forEach(function(fdh) {
+      var item = state.all.find(function(i) { return i.fdh === fdh; });
+      html += makeActivityCard(item, 'admin-status', 'is-staged', 'Unstage', 'swipe-action-undo');
+    });
+  }
+
+  if (reviewedCount > 0) {
+    html += '<div class="hub-section-title" style="margin-top:20px;">Completed Reviews <span>' + reviewedCount + '</span></div>';
+    state.committed.slice().reverse().forEach(function(item) {
+      html += makeActivityCard(item, 'reviewed', '', 'Uncommit', 'swipe-action-uncommit');
+    });
+  }
+
+  box.innerHTML = html;
+  box.querySelectorAll('.swipe-item').forEach(function(el) {
+    var fdh = el.parentElement.dataset.fdh;
+    el.onclick = function() {
+      if (window._preventSwipeClick) return;
+      jumpTo(fdh);
+      closeReviewHub();
+    };
   });
+  setDockMode();
 }
 
 function switchMobileTab(tab) {
@@ -3698,8 +3778,8 @@ function renderAdminPaneContent() {
       var xVal = item.rawSpecialX || (item.isXing ? 'YES' : '—');
       var detailsHtml = `<div style="font-size:10px; color:var(--text-muted);">QB Crossings: <span style="font-weight:900; color:var(--text-main); font-size:11px;">${esc(String(xVal))}</span></div>`;
       return makeSwipeCard(item, detailsHtml, 'admin-xing',
-        '<div class="swipe-actions swipe-action-left" style="background:#16a34a;">✓ Verify</div>',
-        '<div class="swipe-actions swipe-action-uncommit" style="background:#f59e0b;">⟲ Unverify</div>');
+        '<div class="swipe-actions swipe-action-left swipe-action-xing">✓ Verify</div>',
+        '<div class="swipe-actions swipe-action-right swipe-action-undo">⟲ Unstage</div>');
     }).join('');
   }
 
@@ -3710,8 +3790,8 @@ function renderAdminPaneContent() {
     html += status.map(function(item) {
       var detailsHtml = `<div style="font-size:10px; color:var(--text-muted);">QB Status: <span style="font-weight:900; color:var(--text-main); font-size:11px;">${esc(item.status||'—')}</span></div>`;
       return makeSwipeCard(item, detailsHtml, 'admin-status',
-        '<div class="swipe-actions swipe-action-left" style="background:#2563eb;">🛠 Updated</div>',
-        '<div class="swipe-actions swipe-action-uncommit" style="background:#f59e0b;">⟲ Unmark</div>');
+        '<div class="swipe-actions swipe-action-left swipe-action-status">🛠 Update</div>',
+        '<div class="swipe-actions swipe-action-right swipe-action-undo">⟲ Unstage</div>');
     }).join('');
   }
 
@@ -4085,60 +4165,65 @@ document.addEventListener('touchend', function(e) {
   if (!listSwipeState.active || !listSwipeState.el) return;
   listSwipeState.active = false;
 
-  if (listSwipeState.isHoriz) {
-    var el = listSwipeState.el;
-    var wrapper = el.parentElement;
-    var dx = listSwipeState.dx;
-    var fdh = wrapper.dataset.fdh;
-    var listType = wrapper.dataset.listType;
-    var threshold = 70;
+  if (!listSwipeState.isHoriz) return;
 
-    el.style.transition = 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  var el = listSwipeState.el;
+  var wrapper = el.parentElement;
+  var dx = listSwipeState.dx;
+  var fdh = wrapper.dataset.fdh;
+  var listType = wrapper.dataset.listType;
+  var threshold = 70;
 
-    if (Math.abs(dx) > 10) {
-      window._preventSwipeClick = true;
-      setTimeout(function() { window._preventSwipeClick = false; }, 300);
-    }
+  el.style.transition = 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
-    if (listType === 'queue') {
-      if (dx > threshold) {
-        el.style.transform = 'translateX(100%)';
-        setTimeout(function() { commitFromList(fdh); }, 250);
-      } else if (dx < -threshold) {
-        el.style.transform = 'translateX(-100%)';
-        setTimeout(function() { skipFromList(fdh); }, 250);
-      } else {
-        el.style.transform = 'translateX(0)';
-      }
-    } else if (listType === 'reviewed') {
-      if (dx < -threshold) {
-        el.style.transform = 'translateX(-100%)';
-        setTimeout(function() { uncommitFromList(fdh); }, 250);
-      } else {
-        el.style.transform = 'translateX(0)';
-      }
-    } else if (listType === 'admin-xing') {
-      if (dx > threshold) {
-        el.style.transform = 'translateX(100%)';
-        setTimeout(function() { stageXingLocal(fdh); }, 250);
-      } else if (dx < -threshold) {
-        el.style.transform = 'translateX(-100%)';
-        setTimeout(function() { unstageXingLocal(fdh); }, 250);
-      } else {
-        el.style.transform = 'translateX(0)';
-      }
-    } else if (listType === 'admin-status') {
-      if (dx > threshold) {
-        el.style.transform = 'translateX(100%)';
-        setTimeout(function() { stageStatusLocal(fdh); }, 250);
-      } else if (dx < -threshold) {
-        el.style.transform = 'translateX(-100%)';
-        setTimeout(function() { unstageStatusLocal(fdh); }, 250);
-      } else {
-        el.style.transform = 'translateX(0)';
-      }
-    }
+  if (Math.abs(dx) > 10) {
+    window._preventSwipeClick = true;
+    setTimeout(function() { window._preventSwipeClick = false; }, 300);
   }
+
+  if (listType === 'queue') {
+    if (dx > threshold) {
+      el.style.transform = 'translateX(100%)';
+      setTimeout(function() { commitFromList(fdh); }, 250);
+    } else if (dx < -threshold) {
+      el.style.transform = 'translateX(-100%)';
+      setTimeout(function() { skipFromList(fdh); }, 250);
+    } else {
+      el.style.transform = 'translateX(0)';
+    }
+    return;
+  }
+
+  if (listType === 'reviewed') {
+    if (dx < -threshold) {
+      el.style.transform = 'translateX(-100%)';
+      setTimeout(function() { uncommitFromList(fdh); }, 250);
+    } else {
+      el.style.transform = 'translateX(0)';
+    }
+    return;
+  }
+
+  if (listType === 'admin-xing' || listType === 'admin-status') {
+    if (dx > threshold) {
+      el.style.transform = 'translateX(100%)';
+      setTimeout(function() {
+        if (listType === 'admin-xing') stageXingLocal(fdh);
+        else stageStatusLocal(fdh);
+      }, 250);
+    } else if (dx < -threshold) {
+      el.style.transform = 'translateX(-100%)';
+      setTimeout(function() {
+        if (listType === 'admin-xing') unstageXingLocal(fdh);
+        else unstageStatusLocal(fdh);
+      }, 250);
+    } else {
+      el.style.transform = 'translateX(0)';
+    }
+    return;
+  }
+
+  el.style.transform = 'translateX(0)';
 }, {passive: true});
 
 // ─── ADMIN SWIPE & BATCH COMMIT LOGIC ───────────────────────────────────────
@@ -4149,28 +4234,30 @@ function stageXingLocal(fdh) {
   }
   haptic('medium');
   renderAdminPaneContent();
+  toast('Staged Crossing · ' + fdh);
 }
 
 function unstageXingLocal(fdh) {
-  var idx = state.stagedCrossings.indexOf(fdh);
-  if (idx > -1) {
-    state.stagedCrossings.splice(idx, 1);
-  }
+  state.stagedCrossings = (state.stagedCrossings || []).filter(function(item) { return item !== fdh; });
   haptic('light');
   renderAdminPaneContent();
+  toast('Unstaged Crossing · ' + fdh);
+  setDockMode();
 }
 
 function stageStatusLocal(fdh) {
   if (state.stagedStatus.indexOf(fdh) === -1) state.stagedStatus.push(fdh);
   haptic('medium');
   renderAdminPaneContent();
+  toast('Staged Status · ' + fdh);
 }
 
 function unstageStatusLocal(fdh) {
-  var idx = state.stagedStatus.indexOf(fdh);
-  if (idx > -1) state.stagedStatus.splice(idx, 1);
+  state.stagedStatus = (state.stagedStatus || []).filter(function(item) { return item !== fdh; });
   haptic('light');
   renderAdminPaneContent();
+  toast('Unstaged Status · ' + fdh);
+  setDockMode();
 }
 
 function markQbUpdatedMobile(fdh) {
