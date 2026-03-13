@@ -1876,12 +1876,12 @@
               return;
           }
           // Fullscreen mode: open Quick Peek panel
-          const item = (typeof filteredData !== 'undefined' ? filteredData : allData || []).find(i => i.fdh === fdh);
+          const item = allActionItems.find(i => i.fdh === fdh);
           if (!item) return;
 
           // Highlight active row
           document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
-          const row = document.querySelector(`.gantt-row[data-fdh="${fdh}"]`);
+          const row = document.querySelector(`#gantt-row-${fdh}`);
           if (row) row.classList.add('is-active');
 
           const ganttArea = getEl('gantt-area-main');
@@ -1968,7 +1968,7 @@
       function syncQuickPeekNote() {
           const ta = getEl('qp-note-textarea');
           if (!ta) return;
-          const item = (typeof filteredData !== 'undefined' ? filteredData : allData || []).find(i => i.fdh === (currentActiveItem && currentActiveItem.fdh));
+          const item = allActionItems.find(i => i.fdh === (currentActiveItem && currentActiveItem.fdh));
           if (item) item.comment = ta.value;
           if (typeof currentActiveItem !== 'undefined' && currentActiveItem) currentActiveItem.comment = ta.value;
       }
