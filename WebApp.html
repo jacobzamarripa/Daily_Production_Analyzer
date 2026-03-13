@@ -66,11 +66,11 @@
           z-index: 500 !important;
           padding: 8px 12px !important;
           border-radius: 34px !important;
-          background: color-mix(in srgb, var(--card-bg) 75%, transparent) !important;
-          backdrop-filter: blur(24px) saturate(180%) !important;
-          -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-          border: 1px solid var(--border) !important;
-          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12) !important;
+          background: rgba(255, 255, 255, 0.45) !important;
+          backdrop-filter: blur(30px) saturate(200%) !important;
+          -webkit-backdrop-filter: blur(30px) saturate(200%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.8) !important;
+          box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1), inset 0 1px 1px rgba(255,255,255,1) !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
@@ -81,10 +81,15 @@
           scrollbar-width: none;
           transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease !important;
       }
+      body.dark-mode .filter-strip {
+          background: rgba(24, 24, 27, 0.55) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255,255,255,0.05) !important;
+      }
       .filter-strip::-webkit-scrollbar { display: none; }
       .filter-strip:hover {
-          transform: translateX(-50%) translateY(-2px) !important;
-          box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18) !important;
+          transform: translateX(-50%) !important;
+          box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18), inset 0 1px 1px rgba(255,255,255,1) !important;
       }
       /* Polymorphic Dock Physics */
       .smart-dock {
@@ -180,17 +185,29 @@
       }
       .filter-strip input[type="text"]:hover,
       .filter-strip select:hover {
-          transform: translateY(-1px);
-          background: var(--card-bg) !important;
-          box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important;
+          transform: translateY(0) !important;
+          background: rgba(255, 255, 255, 0.9) !important;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.06) !important;
           border-color: var(--text-muted) !important;
       }
       .filter-strip input[type="text"]:focus,
       .filter-strip select:focus {
-          transform: translateY(-2px);
+          transform: translateY(0) !important;
           border-color: #3b82f6 !important;
           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
           background: var(--card-bg) !important;
+      }
+      .filter-strip select.is-active,
+      .filter-strip input[type="text"].is-active {
+          background: rgba(59, 130, 246, 0.12) !important;
+          border-color: #3b82f6 !important;
+          color: #1d4ed8 !important;
+          box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.2) !important;
+      }
+      body.dark-mode .filter-strip select.is-active,
+      body.dark-mode .filter-strip input[type="text"].is-active {
+          color: #93c5fd !important;
+          background: rgba(59, 130, 246, 0.2) !important;
       }
       .filter-strip .filter-tools {
           display: inline-flex;
@@ -1034,7 +1051,7 @@
                     <option value="warn">Warnings</option>
                     <option value="info">Clear</option>
                 </select>
-                <select id="filter-vendor" onchange="applyFilters()"><option value="ALL">All Vendors</option></select>
+                <select id="filter-vendor" onchange="updateCityDropdown(); applyFilters()"><option value="ALL">All Vendors</option></select>
                 <select id="filter-city" onchange="applyFilters()"><option value="ALL">All Cities</option></select>
                 <select id="filter-ofs" onchange="applyFilters()"><option value="ALL">All OFS Dates</option></select>
             </div>
@@ -2295,6 +2312,21 @@
           })();
       };
 
+      function updateCityDropdown() {
+          let vVen = getEl('filter-vendor').value;
+          let validCities = vVen === 'ALL'
+              ? [...new Set(allActionItems.map(i => i.city).filter(Boolean))]
+              : [...new Set(allActionItems.filter(i => i.vendor === vVen).map(i => i.city).filter(Boolean))];
+          let cityDropdown = getEl('filter-city');
+          if (!cityDropdown) return;
+          let currentCity = cityDropdown.value;
+          cityDropdown.innerHTML = '<option value="ALL">All Cities</option>';
+          validCities.sort().forEach(c => {
+              let opt = document.createElement('option'); opt.value = c; opt.text = c; cityDropdown.appendChild(opt);
+          });
+          cityDropdown.value = validCities.includes(currentCity) ? currentCity : 'ALL';
+      }
+
       function initDashboard(data) {
         safeExecute('initDashboard', () => {
             if (!data || !data.actionItems || data.actionItems.length === 0) {
@@ -2314,9 +2346,15 @@
             populateDropdown('filter-vendor', [...new Set(allActionItems.map(i => i.vendor).filter(Boolean))]); populateDropdown('filter-city', [...new Set(allActionItems.map(i => i.city).filter(Boolean))]);
             let ofsMonths = allActionItems.map(i => {
                 if(!i.ofsDate || i.ofsDate === "-" || i.ofsDate === "Unknown") return null;
-                try { let d = new Date(i.ofsDate); return !isNaN(d) ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : null; } catch(e) { return null; }
+                try { let d = safeDate(i.ofsDate); return d ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : null; } catch(e) { return null; }
             }).filter(Boolean);
-            populateDropdown('filter-ofs', [...new Set(ofsMonths)]);
+            let ofsDropdown = getEl('filter-ofs');
+            if (ofsDropdown) {
+                ofsDropdown.innerHTML = '<option value="ALL">All OFS Dates</option><option value="60_DAYS">&lt; 60 Days</option><option value="90_DAYS">&lt; 90 Days</option>';
+                [...new Set(ofsMonths)].sort().forEach(m => {
+                    let opt = document.createElement('option'); opt.value = m; opt.text = m; ofsDropdown.appendChild(opt);
+                });
+            }
             applyFilters();
             initTabletLayout();
         });
@@ -2372,14 +2410,33 @@
 
       function applyFilters() {
         safeExecute('applyFilters', () => {
-            const vVen = getEl('filter-vendor')?.value || 'ALL'; const vCit = getEl('filter-city')?.value || 'ALL'; const vOfs = getEl('filter-ofs')?.value || 'ALL'; const vSev = getEl('filter-severity')?.value || 'ALL'; 
+            const vVen = getEl('filter-vendor')?.value || 'ALL'; const vCit = getEl('filter-city')?.value || 'ALL'; const vOfs = getEl('filter-ofs')?.value || 'ALL'; const vSev = getEl('filter-severity')?.value || 'ALL';
             const sortVal = getEl('sort-queue')?.value || 'default'; const searchTerm = (getEl('search-input')?.value || '').toLowerCase();
+
+            ['filter-severity','filter-vendor','filter-city','filter-ofs'].forEach(id => {
+                let el = getEl(id); if (el) el.classList.toggle('is-active', el.value !== 'ALL');
+            });
+            let searchEl = getEl('search-input');
+            if (searchEl) searchEl.classList.toggle('is-active', searchEl.value.trim() !== '');
+
+            let today = new Date(); today.setHours(0,0,0,0);
 
             // Base filter: vendor/city/OFS/severity/search — NO admin filter
             // Used for badge counts so Crossings & QB Status always show correct totals
             let baseFiltered = allActionItems.filter(i => {
                 let matchOfs = true;
-                if(vOfs !== 'ALL') { try { let d = new Date(i.ofsDate); let mStr = !isNaN(d) ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : ""; matchOfs = (mStr === vOfs); } catch(e) { matchOfs = false; } }
+                if (vOfs !== 'ALL') {
+                    if (vOfs === '60_DAYS' || vOfs === '90_DAYS') {
+                        let daysLimit = vOfs === '60_DAYS' ? 60 : 90;
+                        let target = safeDate(i.ofsDate);
+                        if (target && !isNaN(target.getTime())) {
+                            let diffDays = (target - today) / 86400000;
+                            matchOfs = diffDays >= 0 && diffDays <= daysLimit;
+                        } else { matchOfs = false; }
+                    } else {
+                        try { let d = safeDate(i.ofsDate); let mStr = d ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : ""; matchOfs = (mStr === vOfs); } catch(e) { matchOfs = false; }
+                    }
+                }
                 let matchSearch = true; if (searchTerm !== '') matchSearch = i.fdh.toLowerCase().includes(searchTerm);
                 let matchSev = true; if (vSev !== 'ALL') matchSev = (getSeverity(i.flags) === vSev);
                 return (vVen==='ALL' || i.vendor===vVen) && (vCit==='ALL' || i.city===vCit) && matchOfs && matchSearch && matchSev;
@@ -2394,7 +2451,7 @@
                 return true;
             });
 
-            let activeProjCount = 0; let activeBslsCount = 0; let activeCritCount = 0; let today = new Date(); today.setHours(0,0,0,0);
+            let activeProjCount = 0; let activeBslsCount = 0; let activeCritCount = 0;
             filtered.forEach(item => {
                 let start = safeDate(item.cxStart) || safeDate(item.reportDate) || new Date(today);
                 let end = safeDate(item.cxEnd) || safeDate(item.targetDate) || new Date(start.getTime() + 86400000*30);
