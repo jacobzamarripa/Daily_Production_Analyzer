@@ -52,20 +52,26 @@ const QB_WRITE_MAPPING = {
 
 // --- DECK REFERENCE QUERY CONFIG ---
 // fdhFid = FID of the "FDH Engineering ID" field in that secondary table.
-// VERIFY via 9-QB_Fields tab after running discoverAllQBFields().
+// Verified: PM table (bvieaendx) uses FID 645 for Engineering ID.
 const QB_DECK_QUERY_CONFIG = {
   "bvieaendx": { // Project Management (Write-Permitted)
-    fdhFid: 6,   // ← VERIFY: FDH Engineering ID FID in PM table via 9-QB_Fields
-    fids: [6, 612, 653, 622, 623, 624, 192, 193, 613, 617, 619]
+    fdhFid: 645,
+    fields: {
+      q_permit_sent: 612, q_permit_appr: 653, q_cross_sub: 622,
+      q_cross_appr:  623, q_cross_dist:  624, q_active_set: 192,
+      q_active_pwr:  193, q_leg:         274, q_transport:  613,
+      q_how_fed:     614, q_what_feeds:  615, q_island:     617,
+      q_ofs_change:  619
+    }
   }
   // bts3c49gt (Permits) and bts8av3cw (Cabinets) — add FID configs after field discovery
 };
 
 // Column names appended to 5-Reference_Data for Deck gap indicators
 const QB_DECK_COLUMNS = [
-  "QB_Permit_Sent", "QB_Permit_Appr", "QB_DOT_Sub", "QB_Xing_Appr", "QB_Appr_Dist",
-  "QB_Active_Set", "QB_Active_Pwr", "QB_Transport",
-  "QB_What_Feeds", "QB_Island"
+  "QB_Permit_Sent", "QB_Permit_Appr", "QB_Cross_Sub", "QB_Cross_Appr", "QB_Cross_Dist",
+  "QB_Active_Set",  "QB_Active_Pwr",  "QB_Leg",       "QB_Transport",
+  "QB_How_Fed",     "QB_What_Feeds",  "QB_Island",    "QB_Ofs_Change"
 ];
 
 
@@ -208,9 +214,25 @@ function syncFromQBWebApp() {
       });
 
       for (var tableId in QB_DECK_QUERY_CONFIG) {
-        var cfg       = QB_DECK_QUERY_CONFIG[tableId];
-        var records   = _fetchTableAllFids(token, tableId, cfg.fids);
-        var fdhFidStr = String(cfg.fdhFid);
+        var cfg        = QB_DECK_QUERY_CONFIG[tableId];
+        var fetchFids  = [cfg.fdhFid].concat(Object.values(cfg.fields));
+        var records    = _fetchTableAllFids(token, tableId, fetchFids);
+        var fdhFidStr  = String(cfg.fdhFid);
+
+        // Build colName → FID string map from the named fields config
+        var colKeyToCol = {
+          q_permit_sent: "QB_Permit_Sent", q_permit_appr: "QB_Permit_Appr",
+          q_cross_sub:   "QB_Cross_Sub",   q_cross_appr:  "QB_Cross_Appr",
+          q_cross_dist:  "QB_Cross_Dist",  q_active_set:  "QB_Active_Set",
+          q_active_pwr:  "QB_Active_Pwr",  q_leg:         "QB_Leg",
+          q_transport:   "QB_Transport",   q_how_fed:     "QB_How_Fed",
+          q_what_feeds:  "QB_What_Feeds",  q_island:      "QB_Island",
+          q_ofs_change:  "QB_Ofs_Change"
+        };
+        var colMap = {};
+        Object.keys(cfg.fields).forEach(function(key) {
+          if (colKeyToCol[key]) colMap[colKeyToCol[key]] = String(cfg.fields[key]);
+        });
 
         records.forEach(function(rec) {
           var fdhCell = rec[fdhFidStr];
@@ -219,19 +241,6 @@ function syncFromQBWebApp() {
           var fdhKey = fdhVal.toString().trim().toUpperCase();
           var rowNum = fdhRowMap[fdhKey];
           if (!rowNum) return;
-
-          var colMap = {
-            "QB_Permit_Sent": String(cfg.fids[1]),
-            "QB_Permit_Appr": String(cfg.fids[2]),
-            "QB_DOT_Sub":     String(cfg.fids[3]),
-            "QB_Xing_Appr":   String(cfg.fids[4]),
-            "QB_Appr_Dist":   String(cfg.fids[5]),
-            "QB_Active_Set":  String(cfg.fids[6]),
-            "QB_Active_Pwr":  String(cfg.fids[7]),
-            "QB_Transport":   String(cfg.fids[8]),
-            "QB_What_Feeds":  String(cfg.fids[9]),
-            "QB_Island":      String(cfg.fids[10])
-          };
 
           QB_DECK_COLUMNS.forEach(function(col) {
             var fid = colMap[col];

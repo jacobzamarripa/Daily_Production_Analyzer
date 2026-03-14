@@ -160,14 +160,17 @@ function getReferenceDictionary() {
     // Deck reference values from QB multi-table join (populated by syncFromQBWebApp enrichment)
     let qbPermitSentIdx = getIdx("QB_Permit_Sent");
     let qbPermitApprIdx = getIdx("QB_Permit_Appr");
-    let qbDotSubIdx     = getIdx("QB_DOT_Sub");
-    let qbXingApprIdx   = getIdx("QB_Xing_Appr");
-    let qbApprDistIdx   = getIdx("QB_Appr_Dist");
+    let qbCrossSubIdx   = getIdx("QB_Cross_Sub");
+    let qbCrossApprIdx  = getIdx("QB_Cross_Appr");
+    let qbCrossDistIdx  = getIdx("QB_Cross_Dist");
     let qbActiveSetIdx  = getIdx("QB_Active_Set");
     let qbActivePwrIdx  = getIdx("QB_Active_Pwr");
+    let qbLegIdx        = getIdx("QB_Leg");
     let qbTransportIdx  = getIdx("QB_Transport");
+    let qbHowFedIdx     = getIdx("QB_How_Fed");
     let qbWhatFeedsIdx  = getIdx("QB_What_Feeds");
     let qbIslandIdx     = getIdx("QB_Island");
+    let qbOfsChangeIdx  = getIdx("QB_Ofs_Change");
 
     const isChecked = (val) => val != null && ["true", "1", "yes", "checked"].includes(String(val).toLowerCase().trim());
     const safeDate = (val) => {
@@ -217,14 +220,17 @@ function getReferenceDictionary() {
            qbRef: {
              permitSent: qbPermitSentIdx > -1 ? String(r[qbPermitSentIdx] || "") : "",
              permitAppr: qbPermitApprIdx > -1 ? String(r[qbPermitApprIdx] || "") : "",
-             dotSub:     qbDotSubIdx     > -1 ? String(r[qbDotSubIdx]     || "") : "",
-             xingAppr:   qbXingApprIdx   > -1 ? String(r[qbXingApprIdx]   || "") : "",
-             apprDist:   qbApprDistIdx   > -1 ? String(r[qbApprDistIdx]   || "") : "",
+             crossSub:   qbCrossSubIdx   > -1 ? String(r[qbCrossSubIdx]   || "") : "",
+             crossAppr:  qbCrossApprIdx  > -1 ? String(r[qbCrossApprIdx]  || "") : "",
+             crossDist:  qbCrossDistIdx  > -1 ? String(r[qbCrossDistIdx]  || "") : "",
              activeSet:  qbActiveSetIdx  > -1 ? String(r[qbActiveSetIdx]  || "") : "",
              activePwr:  qbActivePwrIdx  > -1 ? String(r[qbActivePwrIdx]  || "") : "",
+             leg:        qbLegIdx        > -1 ? String(r[qbLegIdx]        || "") : "",
              transport:  qbTransportIdx  > -1 ? String(r[qbTransportIdx]  || "") : "",
+             howFed:     qbHowFedIdx     > -1 ? String(r[qbHowFedIdx]     || "") : "",
              whatFeeds:  qbWhatFeedsIdx  > -1 ? String(r[qbWhatFeedsIdx]  || "") : "",
-             island:     qbIslandIdx     > -1 ? String(r[qbIslandIdx]     || "") : ""
+             island:     qbIslandIdx     > -1 ? String(r[qbIslandIdx]     || "") : "",
+             ofsChange:  qbOfsChangeIdx  > -1 ? String(r[qbOfsChangeIdx]  || "") : ""
            }
          };
       });
