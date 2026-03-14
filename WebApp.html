@@ -4824,8 +4824,11 @@
       .module-header.ph-permitting { color: #a855f7; }
       .section-question-grid {
         display: grid;
-        gap: 16px 40px;
-        grid-template-columns: 1fr;
+        gap: 6px 32px;
+        grid-template-columns: repeat(2, 1fr);
+      }
+      @media (max-width: 900px) {
+        .section-question-grid { grid-template-columns: 1fr !important; }
       }
       .deck-module .slide-q-row {
         display: flex;
@@ -4833,25 +4836,31 @@
         align-items: center;
         gap: 12px;
         padding: 4px 0;
-        min-height: 40px;
-        border-bottom: none;
+        min-height: 32px;
+        border-bottom: 1px dashed rgba(0,0,0,0.03);
+        white-space: nowrap;
+        overflow: hidden;
       }
       .deck-module .slide-q-nested { margin-left: 14px; }
       .deck-module .slide-q-nested .slide-q-label { font-size: 12px; }
       .slide-q-label {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
         color: var(--text-main);
         line-height: 1.3;
         flex: 1;
         min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 8px;
       }
       .slide-input-wrap {
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        gap: 8px;
-        width: 180px;
+        gap: 6px;
+        min-width: 155px;
         flex-shrink: 0;
       }
       .slide-q-action {
@@ -4862,7 +4871,8 @@
       }
 
       .slide-input {
-        width: 150px !important; max-width: 150px !important; padding: 6px 10px; font-size: 11px; font-family: inherit; font-weight: 700;
+        width: 120px !important; max-width: 120px !important; height: 26px !important; padding: 2px 6px !important;
+        font-size: 10px; font-family: inherit; font-weight: 700;
         border: 1px solid var(--border); background: rgba(248,250,252,0.5);
         color: var(--color-insight); text-align: right; outline: none; border-radius: 8px;
         box-sizing: border-box;
@@ -4870,11 +4880,12 @@
       body.dark-mode .slide-input { background: rgba(15,23,42,0.5); }
       .slide-input:focus { border-color: var(--color-insight); background: var(--bg); }
       .deck-module input[type="checkbox"].slide-input {
-        width: 20px; min-width: 20px; max-width: 20px; height: 20px; padding: 0;
+        width: 18px !important; min-width: 18px; max-width: 18px !important; height: 18px !important; padding: 0;
         border: none; background: transparent;
       }
       .deck-module textarea.slide-input {
-        width: 100% !important; max-width: 100% !important; min-height: 50px; max-height: 72px; line-height: 1.35; text-align: left;
+        width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 44px; max-height: 72px;
+        line-height: 1.35; text-align: left; white-space: normal;
       }
       .deck-module select.slide-input {
         text-align: left; padding-right: 28px;
@@ -4915,22 +4926,14 @@
 
       @media screen and (max-width: 992px) {
         .deck-module-grid { padding: 12px 16px !important; }
-        .deck-module .slide-q-row { gap: 10px !important; }
-        .slide-input-wrap { width: 180px !important; }
+        .deck-module .slide-q-row { gap: 8px !important; }
       }
       @media screen and (max-width: 600px) {
         .deck-module-grid { padding: 12px 14px !important; }
-        .deck-module .slide-q-row { flex-direction: column !important; align-items: stretch !important; }
-        .slide-q-label { width: 100%; }
-        .slide-input-wrap { width: 100% !important; }
-        .slide-q-action { min-width: unset !important; max-width: unset !important; width: 100% !important; }
-        .slide-input { width: 100% !important; max-width: 100% !important; }
-      }
-      @media (min-width: 1000px) {
-        .section-question-grid { grid-template-columns: repeat(2, 1fr); }
-      }
-      @media (min-width: 1450px) {
-        .section-question-grid { grid-template-columns: repeat(3, 1fr); }
+        .deck-module .slide-q-row { flex-direction: column !important; align-items: stretch !important; white-space: normal !important; }
+        .slide-q-label { width: 100%; white-space: normal !important; }
+        .slide-input-wrap { min-width: unset !important; width: 100% !important; }
+        .slide-input { width: 100% !important; max-width: 100% !important; height: auto !important; }
       }
 
     </style>
@@ -5276,8 +5279,9 @@
               <div class="deck-module module-permitting">
                 <div class="module-header ph-permitting">Compliance</div>
                 <div class="section-question-grid">
-                  ${row('Date sent for permitting', md('q_permit_sent', item.qbRef && item.qbRef.permitSent, 'PERMITTING'))}
-                  ${row('Permit approval date', md('q_permit_appr', item.qbRef && item.qbRef.permitAppr, 'PERMITTING'))}
+                  ${row('What is the FDH Number?', actionWrap(`<span class="slide-q-action"><input type="text" class="slide-input" value="${item.fdh}" disabled style="border-color:#a855f7; background:var(--card-bg); color:var(--text-muted); cursor:not-allowed; opacity:0.7; text-align:center;"></span>`))}
+                  ${row('Was it sent for permitting?', md('q_permit_sent', item.qbRef && item.qbRef.permitSent, 'PERMITTING'))}
+                  ${row('Has it been permit approved?', md('q_permit_appr', item.qbRef && item.qbRef.permitAppr, 'PERMITTING'))}
                 </div>
               </div>
               <div class="deck-module">
@@ -5291,16 +5295,17 @@
               <div class="deck-module">
                 <div class="module-header">Special Crossings</div>
                 <div class="section-question-grid">
-                  ${row('Are there special crossings?', actionWrap(`<span class="slide-q-action"><select class="slide-input" id="q_is_xing" onchange="persistDeckInput(this); toggleXingRows(this.value === 'true')" style="border-color:var(--border); background:var(--card-bg); color:var(--text-main); cursor:pointer;"><option value="true" ${isXingActive ? 'selected' : ''}>YES (Action Required)</option><option value="false" ${!isXingActive ? 'selected' : ''}>NO / None Detected</option></select></span>`))}
-                  ${row('DOT paperwork submitted', md('q_cross_sub', item.qbRef && item.qbRef.crossSub, 'PERMITTING'), 'slide-q-nested xing-nested-row')}
-                  ${row('Special crossing approved', md('q_cross_appr', item.qbRef && item.qbRef.crossAppr, 'PERMITTING'), 'slide-q-nested xing-nested-row')}
-                  ${row('Approval dist to vendor', md('q_cross_dist', item.qbRef && item.qbRef.crossDist, 'PERMITTING'), 'slide-q-nested xing-nested-row')}
+                  ${row('Are there any special crossings?', actionWrap(`<span class="slide-q-action"><select class="slide-input" id="q_is_xing" onchange="persistDeckInput(this); toggleXingRows(this.value === 'true')" style="border-color:var(--border); background:var(--card-bg); color:var(--text-main); cursor:pointer;"><option value="true" ${isXingActive ? 'selected' : ''}>YES (Action Required)</option><option value="false" ${!isXingActive ? 'selected' : ''}>NO / None Detected</option></select></span>`))}
+                  ${row('Has the special crossing been submitted?', md('q_cross_sub', item.qbRef && item.qbRef.crossSub), 'slide-q-nested xing-nested-row')}
+                  ${row('Has the special crossing been approved?', md('q_cross_appr', item.qbRef && item.qbRef.crossAppr), 'slide-q-nested xing-nested-row')}
+                  ${row('Has approval been distributed?', md('q_cross_dist', item.qbRef && item.qbRef.crossDist), 'slide-q-nested xing-nested-row')}
                 </div>
               </div>
               <div class="deck-module">
                 <div class="module-header">Readiness &amp; Architecture</div>
                 <div class="section-question-grid">
-                  ${row('BOM &amp; PO sent?', mc('q_bom_po', item.qbRef && item.qbRef.bomPo))}
+                  ${row('Was the BOM sent?', mc('q_bom_po', item.qbRef && item.qbRef.bomPo))}
+                  ${row('Was the PO number sent?', mc('q_po', item.qbRef && item.qbRef.bomPo))}
                   ${row('Has the SOW been signed?', mc('q_sow_sign', item.qbRef && item.qbRef.sowSign))}
                   ${row('Has the active been set?', mc('q_active_set', item.qbRef && item.qbRef.activeSet))}
                   ${row('Does the active have power?', mc('q_active_pwr', item.qbRef && item.qbRef.activePwr))}
