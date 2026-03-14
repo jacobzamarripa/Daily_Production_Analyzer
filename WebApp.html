@@ -1976,6 +1976,17 @@
     </div>
 
     <script>
+      // ── GLOBAL STATE VARIABLES (CRITICAL SCOPE) ──
+      let isGridMode = false;
+      let currentGridPivot = 'velocity';
+      let currentWorkspaceView = 'detail';
+      let deckIndex = 0;
+      let isDeckMode = false;
+      let isDeckEditing = false;
+      let pmSessionMemory = {};
+      let stagedDeckItems = [];
+      let deckPrevPivot = 'velocity';
+
       const setHtml = (id, val) => { let el = document.getElementById(id); if(el) el.innerHTML = val; };
       const setTxt = (id, val) => { let el = document.getElementById(id); if(el) el.innerText = val; };
       const setStyle = (id, prop, val) => { let el = document.getElementById(id); if(el) el.style[prop] = val; };
@@ -4373,16 +4384,6 @@
               .generateAndSaveFDHNarrative(payload);
       }
 
-      let isGridMode = false;
-      let currentGridPivot = 'velocity';
-      let currentWorkspaceView = 'detail';
-      let deckIndex = 0;
-      let isDeckMode = false;
-      let isDeckEditing = false;
-      let pmSessionMemory = {};
-      let stagedDeckItems = [];
-      let deckPrevPivot = 'velocity';
-
       function updateGridPivot() {
           const pivot = getEl('grid-pivot-select');
           if (!pivot) return;
@@ -4846,7 +4847,7 @@
       @media (max-width: 900px) { .grid-density-date, .grid-density-check { grid-template-columns: 1fr !important; } }
 
       /* DUAL MODE TOGGLE */
-      .deck-display-mode { display: flex; flex-direction: column; padding: 30px 50px; height: 100%; box-sizing: border-box; }
+      .deck-display-mode { display: flex; flex-direction: column; padding: 24px 32px; height: 100%; box-sizing: border-box; }
       .deck-edit-mode { display: none; flex-direction: column; }
       body.deck-is-editing .deck-display-mode { display: none; }
       body.deck-is-editing .deck-edit-mode { display: flex; }
@@ -4859,7 +4860,7 @@
       body.deck-is-editing .btn-mode-toggle { background: #3b82f6; color: #fff; border-color: #2563eb; }
 
       /* DISPLAY MODE (POWERPOINT LOOK) */
-      .slide-ppt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px 40px; align-items: start; }
+      .slide-ppt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px 60px; align-items: start; }
       .slide-ppt-quadrant { display: flex; flex-direction: column; gap: 8px; }
       .slide-ppt-quad-header { font-size: 10px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); padding-bottom: 4px; margin-bottom: 4px; }
       .slide-ppt-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 6px; border-bottom: 1px solid rgba(0,0,0,0.04); }
@@ -5261,7 +5262,7 @@
         const stageCard = getEl('deck-stage-card');
         if (!stageCard) return;
 
-        stageCard.style.cssText = "width:100%; max-width:1200px; height:auto; aspect-ratio:16/9; min-height:600px; flex-shrink:0; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden;";
+        stageCard.style.cssText = "width:100%; max-width:1200px; height:auto; aspect-ratio:16/9; min-height:600px; flex-shrink:0; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden; margin: 0 auto;";
 
         const item = ensureDeckIndex();
         if (!item) {
@@ -5352,11 +5353,11 @@
           return row(label, actionWrap(`<span class="slide-q-action">${stagedIcon(mismatch)}${gapDot(gap && !mismatch)}<input type="text" class="slide-input" id="${id}" value="${mem[id] !== undefined ? mem[id] : (refVal || '')}" placeholder="${refVal || 'Missing'}" oninput="persistDeckInput(this)" style="border-color:${borderColor}; background:var(--card-bg); color:var(--text-main);"></span>`));
         };
 
-        const mdl = (id, label, refVal, listId='fdh-list') => {
+        const mdl = (id, label, refVal) => {
           let mismatch = isMismatch(mem[id], refVal, 'text');
           let gap = !mem[id] && (!refVal || refVal === '' || refVal === '-');
           let borderColor = mismatch ? '#f59e0b' : (gap ? '#ef4444' : 'var(--border)');
-          return row(label, actionWrap(`<span class="slide-q-action">${stagedIcon(mismatch)}${gapDot(gap && !mismatch)}<input type="text" list="${listId}" class="slide-input" id="${id}" value="${mem[id] !== undefined ? mem[id] : (refVal || '')}" placeholder="${refVal || 'Missing'}" oninput="persistDeckInput(this)" style="border-color:${borderColor}; background:var(--card-bg); color:var(--text-main);"></span>`));
+          return row(label, actionWrap(`<span class="slide-q-action">${stagedIcon(mismatch)}${gapDot(gap && !mismatch)}<input type="text" list="smart-fdh-list" class="slide-input" id="${id}" value="${mem[id] !== undefined ? mem[id] : (refVal || '')}" placeholder="${refVal || 'Missing'}" oninput="persistDeckInput(this)" style="border-color:${borderColor}; background:var(--card-bg); color:var(--text-main);"></span>`));
         };
 
         const md = (id, label, refVal, locked=false) => {
@@ -5620,12 +5621,6 @@
         pmSessionMemory[item.fdh][inputEl.id] = inputEl.type === 'checkbox' ? inputEl.checked : inputEl.value;
         const saveBtn = getEl('dock-btn-save');
         if (saveBtn) saveBtn.classList.remove('collapsed');
-      }
-
-      function toggleXingRows(show) {
-        document.querySelectorAll('.xing-nested-row').forEach(function(el) {
-          el.style.display = show ? '' : 'none';
-        });
       }
 
       function syncDeckNote() {
