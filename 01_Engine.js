@@ -176,6 +176,9 @@ function getReferenceDictionary() {
     let qbStrandDistIdx = getIdx("QB_Strand_Dist");
     let qbBomPoIdx      = getIdx("QB_BOM_PO");
     let qbSowSignIdx    = getIdx("QB_SOW_Sign");
+    let vendorIdx = getIdx("CX Vendor");
+    if (vendorIdx === -1) vendorIdx = getIdx("Contractor");
+    if (vendorIdx === -1) vendorIdx = getIdx("Vendor");
 
     const isChecked = (val) => val != null && ["true", "1", "yes", "checked"].includes(String(val).toLowerCase().trim());
     const safeDate = (val) => {
@@ -241,7 +244,8 @@ function getReferenceDictionary() {
              strandDist: qbStrandDistIdx > -1 ? String(r[qbStrandDistIdx] || "") : "",
              bomPo:      qbBomPoIdx      > -1 ? String(r[qbBomPoIdx]      || "") : "",
              sowSign:    qbSowSignIdx    > -1 ? String(r[qbSowSignIdx]     || "") : ""
-           }
+           },
+           vendor: vendorIdx > -1 ? String(r[vendorIdx] || "").trim() : ""
          };
       });
     }
@@ -989,8 +993,9 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     finalMirrorHeaders = [...currentMirrorHeaders, ...missingHeaders]; 
   }
   
-  let reviewData = [], highlightsData = []; 
-  
+  let reviewData = [], highlightsData = [];
+  let submittedFdhs = new Set();
+
   histData.forEach((row, idx) => {
     if (idx === 0) return; 
     
@@ -1012,6 +1017,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     
     if (rowDateStr === targetDateStr || altDateStr === targetDateStr) {
       let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")].toString().toUpperCase().trim();
+      submittedFdhs.add(fdhId);
       let diag = runBennyDiagnostics(row, refDict, vendorDict); 
       
       if (diag.flags.includes("POSSIBLE REROUTE (NAP)")) {
@@ -1137,6 +1143,48 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       reviewData.push(mappedRow);
       highlightsData.push({ rowState: diag.rowState, adaePaletteIdx: diag.adaePaletteIdx, colors: diag.colors, summary: diag.summary, gaps: adminGapsStr, flags: diag.flags, flagColors: diag.flagColors, cleanComment: diag.cleanComment, draft: diag.draft, benchmark: benchmarkDict[fdhId] || ""}); 
     }
+  });
+
+  // GHOST ROW INJECTION — Active projects with no submission today
+  const GHOST_ACTIVE_STAGES = ["FIELD CX", "PERMITTING", "CONSTRUCTION", "ACTIVE"];
+  Object.keys(refDict).forEach(ghostFdhId => {
+    if (submittedFdhs.has(ghostFdhId)) return;
+    const ref = refDict[ghostFdhId];
+    if (!ref.vendor) return;
+    const stageUp = (ref.stage || "").toUpperCase();
+    const statUp  = (ref.status || "").toUpperCase();
+    if (statUp.includes("COMPLETE") || statUp.includes("ON HOLD")) return;
+    if (!GHOST_ACTIVE_STAGES.some(s => stageUp.includes(s))) return;
+
+    let ghostRowObj = {};
+    finalMirrorHeaders.forEach(h => { ghostRowObj[h] = ""; });
+    ghostRowObj["FDH Engineering ID"] = ghostFdhId;
+    ghostRowObj["City"]               = ref.city || "-";
+    ghostRowObj["Stage"]              = ref.stage || "-";
+    ghostRowObj["Status"]             = ref.status || "-";
+    ghostRowObj["BSLs"]               = ref.bsls || "-";
+    ghostRowObj["Budget OFS"]         = ref.forecastedOFS || "-";
+    ghostRowObj["Contractor"]         = ref.vendor;
+    ghostRowObj["Health Flags"]       = "MISSING DAILY REPORT";
+    ghostRowObj["Action Required"]    = `Vendor (${ref.vendor}) did not submit a daily report.`;
+    ghostRowObj["Field Production"]   = "No daily report submitted today.";
+    ghostRowObj["Vendor Comment"]     = "Missing daily report.";
+    ghostRowObj["Historical Milestones"] = benchmarkDict[ghostFdhId] || "No history logged.";
+    ghostRowObj["Archive_Row"]        = "";
+
+    reviewData.push(finalMirrorHeaders.map(h => ghostRowObj[h] !== undefined ? ghostRowObj[h] : ""));
+    highlightsData.push({
+      rowState:       "ACTIVE",
+      adaePaletteIdx: "GHOST",
+      colors:         { warn: [], mismatch: [], ug: [], ae: [], fib: [], nap: [] },
+      summary:        "No daily report submitted today.",
+      gaps:           "",
+      flags:          "MISSING DAILY REPORT",
+      flagColors:     [TEXT_COLORS.GHOST],
+      cleanComment:   "Missing daily report.",
+      draft:          `Vendor (${ref.vendor}) did not submit a daily report.`,
+      benchmark:      benchmarkDict[ghostFdhId] || ""
+    });
   });
 
   if (mirrorSheet.getLastRow() > 1) mirrorSheet.getRange(2,1,mirrorSheet.getLastRow()-1, mirrorSheet.getMaxColumns()).clearContent().clearDataValidations().setBackground(null).setFontColor(null).setFontWeight(null).setFontStyle("normal");

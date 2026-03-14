@@ -988,6 +988,11 @@
       .action-box { background: var(--bg); border: 1px solid var(--border); border-left-width: 4px; border-left-style: solid; border-left-color: var(--text-muted); border-radius: 12px !important; padding: 10px 14px !important; font-size: 12px; line-height: 1.5; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; margin:0 !important; transition: transform 0.2s; width: 100% !important; align-self: start; box-sizing: border-box !important;}
       .action-box.warn { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
       .action-box.crit { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+      .email-card.ghost { border-left-color: #94a3b8; opacity: 0.85; }
+      .grid-card.ghost  { border-color: #e2e8f0; opacity: 0.85; box-shadow: none; }
+      .action-box.ghost { border-left-color: #94a3b8; background: rgba(148,163,184,0.05); }
+      .tag-ghost        { background: rgba(241,245,249,0.8); color: #64748b; border-color: #cbd5e1; }
+      .dark-mode .tag-ghost { background: rgba(148,163,184,0.15); color: #cbd5e1; border-color: #94a3b8; }
 
       /* 📐 CD Intelligence card — blue default, hazard stripe only when X-ING present */
       .cd-intel-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; overflow: hidden; display: flex; flex-direction: row; }
@@ -2280,9 +2285,10 @@
       function getSeverity(flagsStr) {
           let rawFlags = (flagsStr || "").split('\n').map(f => f.trim()).filter(f => f !== ""); let highestSev = "info";
           rawFlags.forEach(f => {
-              if (f.includes("ADMIN: CHECK CROSSINGS") || f.includes("ADMIN: REFRESH REF DATA") || f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS") || f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { highestSev = "crit"; } 
+              if (f.includes("ADMIN: CHECK CROSSINGS") || f.includes("ADMIN: REFRESH REF DATA") || f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS") || f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { highestSev = "crit"; }
               else if (f.includes("⚠️") || f.includes("🖍️") || f.includes("🚧")) { if(highestSev !== "crit") highestSev = "warn"; }
           });
+          if (highestSev === "info" && rawFlags.some(f => f === "MISSING DAILY REPORT")) highestSev = "ghost";
           return highestSev;
       }
       
@@ -3655,6 +3661,7 @@
                   else if (f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { highestSev = "crit"; tagsHtml += `<span class="tag tag-red">${cleanText}</span>`; }
                   else if (f.includes("⚠️") || f.includes("🖍️") || f.includes("🚧")) { if(highestSev!=="crit") highestSev="warn"; tagsHtml += `<span class="tag tag-yellow">${cleanText}</span>`; }
                   else if (f.includes("🪄") || f.includes("🟣")) tagsHtml += `<span class="tag tag-purple">${cleanText}</span>`;
+                  else if (f === "MISSING DAILY REPORT") { if(highestSev !== "crit" && highestSev !== "warn") highestSev = "ghost"; tagsHtml += `<span class="tag tag-ghost">${cleanText}</span>`; }
                   else tagsHtml += `<span class="tag tag-muted">${cleanText}</span>`;
               });
               if(rawFlags.length > 3) tagsHtml += `<span class="tag tag-muted">+${rawFlags.length-3}</span>`;
@@ -4031,6 +4038,7 @@
                   else if (f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { isCritical = true; tagsHtml += `<span class="tag tag-red" style="border-color:#fca5a5;">${cleanText}</span>`; }
                   else if (f.includes("⚠️") || f.includes("🖍️") || f.includes("🚧")) { isWarn = true; tagsHtml += `<span class="tag tag-yellow" style="border-color:#fde047;">${cleanText}</span>`; }
                   else if (f.includes("🪄") || f.includes("🟣")) { tagsHtml += `<span class="tag tag-purple">${cleanText}</span>`; }
+                  else if (f === "MISSING DAILY REPORT") { tagsHtml += `<span class="tag tag-ghost">${cleanText}</span>`; }
                   else { tagsHtml += `<span class="tag tag-muted">${cleanText}</span>`; }
               });
               
@@ -4099,7 +4107,7 @@
               let actionBox = getEl('p-action');
               if (actionBox) {
                   actionBox.className = 'action-box hover-trigger';
-                  if (isCritical) actionBox.classList.add('crit'); else if (isWarn) actionBox.classList.add('warn');
+                  if (isCritical) actionBox.classList.add('crit'); else if (isWarn) actionBox.classList.add('warn'); else if (item.flags === "MISSING DAILY REPORT") actionBox.classList.add('ghost');
 
                   let draftMain = mainDraft ? `<div style="font-weight:normal; color:var(--text-main); line-height:1.4;">${mainDraft.replace(/\n/g, '<br>')}</div>` : "<div style='font-style:italic; font-weight:normal; color:var(--text-muted);'>No specific action flagged.</div>";
                   let xingCardHtml = "";
