@@ -5175,22 +5175,12 @@
             <div style="flex-grow:1; overflow-y:auto; overflow-x:hidden;" id="deck-scroll-body">
                 <div class="deck-display-mode">
                     <div class="slide-ppt-grid">
-                        <div style="display:flex; flex-direction:column; gap:20px;">
+                        <div style="display:flex; flex-direction:column; gap:32px;">
                             <div class="slide-ppt-quadrant">
                                 <div class="slide-ppt-quad-header">Compliance</div>
                                 ${pptRow('Was it sent for permitting?', getVal('q_permit_sent', item.qbRef?.permitSent, 'date'))}
                                 ${pptRow('Has it been permit approved? If so, date approved?', getVal('q_permit_appr', item.qbRef?.permitAppr, 'date'))}
                             </div>
-                            <div class="slide-ppt-quadrant">
-                                <div class="slide-ppt-quad-header">Special Crossings</div>
-                                ${pptRow('Are there any special crossings?', getVal('q_is_xing', isXingActive, 'bool'))}
-                                ${pptRow('Confirm with engineers that proper paperwork is ready for DOT crossings', '', !isXingActive, true)}
-                                ${pptRow('Has the special crossing been submitted?', getVal('q_cross_sub', item.qbRef?.crossSub, 'date'), !isXingActive, true, 'xing-nested-row')}
-                                ${pptRow('Has the special crossing been approved?', getVal('q_cross_appr', item.qbRef?.crossAppr, 'date'), !isXingActive, true, 'xing-nested-row')}
-                                ${pptRow('Has the special crossing approval been distributed?', getVal('q_cross_dist', item.qbRef?.crossDist, 'date'), !isXingActive, true, 'xing-nested-row')}
-                            </div>
-                        </div>
-                        <div style="display:flex; flex-direction:column; gap:20px;">
                             <div class="slide-ppt-quadrant">
                                 <div class="slide-ppt-quad-header">Distribution</div>
                                 ${pptRow('Has the CD been distributed?', getVal('q_cd_dist', item.qbRef?.cdDist, 'bool'))}
@@ -5200,6 +5190,16 @@
                                 ${pptRow('Was the PO number sent?', getVal('q_po_sent', null, 'bool'))}
                                 ${pptRow('Has the SOW been signed?', getVal('q_sow_sign', item.qbRef?.sowSign, 'bool'))}
                             </div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:32px;">
+                            <div class="slide-ppt-quadrant">
+                                <div class="slide-ppt-quad-header">Special Crossings</div>
+                                ${pptRow('Are there any special crossings?', getVal('q_is_xing', isXingActive, 'bool'))}
+                                ${pptRow('Confirm with engineers that proper paperwork is ready for DOT crossings', '', !isXingActive, true)}
+                                ${pptRow('Has the special crossing been submitted?', getVal('q_cross_sub', item.qbRef?.crossSub, 'date'), !isXingActive, true, 'xing-nested-row')}
+                                ${pptRow('Has the special crossing been approved?', getVal('q_cross_appr', item.qbRef?.crossAppr, 'date'), !isXingActive, true, 'xing-nested-row')}
+                                ${pptRow('Has the special crossing approval been distributed?', getVal('q_cross_dist', item.qbRef?.crossDist, 'date'), !isXingActive, true, 'xing-nested-row')}
+                            </div>
                             <div class="slide-ppt-quadrant">
                                 <div class="slide-ppt-quad-header">Readiness &amp; Architecture</div>
                                 ${pptRow('Has the active been set?', getVal('q_active_set', item.qbRef?.activeSet, 'bool'))}
@@ -5208,7 +5208,7 @@
                                 ${pptRow('What leg is this FDH on?', getVal('q_leg', item.qbRef?.leg, 'text'))}
                                 ${pptRow('How is this FDH being fed?', getVal('q_how_fed', item.qbRef?.howFed, 'text'))}
                                 ${pptRow('What does this FDH feed?', getVal('q_what_feeds', item.qbRef?.whatFeeds, 'text'))}
-                                ${pptRow('If the FDH is an island, what is all missing?', getVal('q_island', item.qbRef?.island, 'text'))}
+                                ${pptRow('If the FDH is an island, what is missing?', getVal('q_island', item.qbRef?.island, 'text'))}
                                 ${pptRow('Did the OFS date change?', getVal('q_ofs_change', isOfsChangeActive, 'bool'))}
                                 ${pptRow('If so, why?', getVal('q_ofs_reason', item.qbRef?.ofsReason, 'text'), !isOfsChangeActive, true, 'ofs-reason-row')}
                             </div>
@@ -5585,19 +5585,34 @@ ${item.comment || 'No notes provided.'}
       /* DUAL MODE TOGGLE */
       .deck-display-mode { display: flex; flex-direction: column; padding: 24px 32px; height: 100%; box-sizing: border-box; }
       .deck-edit-mode { display: none; flex-direction: column; }
-      /* ── THEATER (PRESENTATION) MODE ── */
+      /* ── CINEMA PRESENTATION & ZOOM ── */
+      #deck-stage-card {
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 0.5s ease,
+                    max-width 0.5s ease;
+        transform-origin: center center;
+        will-change: transform, box-shadow;
+      }
       body.deck-presentation-active #deck-stage {
-        position: fixed; inset: 0; z-index: 99998; background: rgba(0,0,0,0.94);
-        backdrop-filter: blur(25px); padding: 4vh 4vw !important; display: flex !important;
-        justify-content: center; align-items: flex-start;
+        position: fixed; inset: 0; z-index: 99998;
+        background: rgba(9, 9, 11, 0.96) !important;
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        display: flex !important; justify-content: center; align-items: center;
+      }
+      body.deck-presentation-active #deck-stage-card {
+        transform: scale(1.08);
+        max-width: 94vw !important;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+        border: 1px solid rgba(255,255,255,0.1);
       }
       body.deck-presentation-active .filter-strip {
-        position: fixed !important; bottom: 30px !important; top: auto !important;
-        left: 50% !important; transform: translateX(-50%) !important; z-index: 100000 !important;
-        background: rgba(255,255,255,0.95) !important; border: 1px solid #fff !important;
+        position: fixed !important; bottom: 40px !important; z-index: 100000 !important;
+        background: rgba(255,255,255,0.95) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important;
       }
       body.deck-presentation-active .top-nav,
-      body.deck-presentation-active .inbox-sidebar { display: none !important; }
+      body.deck-presentation-active .inbox-sidebar,
+      body.deck-presentation-active .outbox-pane { display: none !important; }
 
       body.deck-is-editing .deck-display-mode { display: none; }
       body.deck-is-editing .deck-edit-mode { display: flex; }
