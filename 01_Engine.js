@@ -174,8 +174,9 @@ function getReferenceDictionary() {
     let qbCdDistIdx     = getIdx("QB_CD_Dist");
     let qbSpliceDistIdx = getIdx("QB_Splice_Dist");
     let qbStrandDistIdx = getIdx("QB_Strand_Dist");
-    let qbBomPoIdx      = getIdx("QB_BOM_PO");
+    let qbBomSentIdx    = getIdx("QB_BOM_Sent");
     let qbSowSignIdx    = getIdx("QB_SOW_Sign");
+    let qbOfsReasonIdx  = getIdx("QB_Ofs_Reason");
     let vendorIdx = getIdx("CX Vendor");
     if (vendorIdx === -1) vendorIdx = getIdx("Contractor");
     if (vendorIdx === -1) vendorIdx = getIdx("Vendor");
@@ -239,10 +240,12 @@ function getReferenceDictionary() {
              whatFeeds:  qbWhatFeedsIdx  > -1 ? String(r[qbWhatFeedsIdx]  || "") : "",
              island:     qbIslandIdx     > -1 ? String(r[qbIslandIdx]     || "") : "",
              ofsChange:  qbOfsChangeIdx  > -1 ? String(r[qbOfsChangeIdx]  || "") : "",
+             ofsReason:  qbOfsReasonIdx  > -1 ? String(r[qbOfsReasonIdx]  || "") : "",
              cdDist:     qbCdDistIdx     > -1 ? String(r[qbCdDistIdx]     || "") : "",
              spliceDist: qbSpliceDistIdx > -1 ? String(r[qbSpliceDistIdx] || "") : "",
              strandDist: qbStrandDistIdx > -1 ? String(r[qbStrandDistIdx] || "") : "",
-             bomPo:      qbBomPoIdx      > -1 ? String(r[qbBomPoIdx]      || "") : "",
+             bomSent:    qbBomSentIdx    > -1 ? String(r[qbBomSentIdx]    || "") : "",
+             poSent:     bomPoIdx        > -1 ? String(r[bomPoIdx]        || "") : "",
              sowSign:    qbSowSignIdx    > -1 ? String(r[qbSowSignIdx]     || "") : ""
            },
            vendor: vendorIdx > -1 ? String(r[vendorIdx] || "").trim() : ""

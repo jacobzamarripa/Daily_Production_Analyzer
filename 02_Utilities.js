@@ -266,6 +266,14 @@ function saveDeckAnswers(payload) {
     sheet.appendRow(DECK_HEADERS);
     sheet.getRange("1:1").setBackground("#0f172a").setFontColor("white").setFontWeight("bold");
     sheet.setFrozenRows(1);
+  } else {
+    ensureCapacity(sheet, Math.max(sheet.getMaxRows(), 1), DECK_HEADERS.length);
+    const currentHeaders = sheet.getRange(1, 1, 1, DECK_HEADERS.length).getValues()[0].map(String);
+    if (currentHeaders.join("||") !== DECK_HEADERS.join("||")) {
+      sheet.getRange(1, 1, 1, DECK_HEADERS.length).setValues([DECK_HEADERS]);
+      sheet.getRange("1:1").setBackground("#0f172a").setFontColor("white").setFontWeight("bold");
+      sheet.setFrozenRows(1);
+    }
   }
 
   const safePayload = payload || {};
@@ -301,16 +309,18 @@ function saveDeckAnswers(payload) {
       case "CD Distributed":   return toBool(safeAnswers.q_cd_dist);
       case "Splice Docs Dist":  return toBool(safeAnswers.q_splice_dist);
       case "Strand Maps Dist":  return toBool(safeAnswers.q_strand_dist);
-      case "BOM PO Sent":       return toBool(safeAnswers.q_bom_po);
+      case "BOM Sent":          return toBool(safeAnswers.q_bom_sent);
+      case "PO Number Sent":    return toBool(safeAnswers.q_po_sent);
       case "SOW Signed":        return toBool(safeAnswers.q_sow_sign);
       case "Active Set": return toBool(safeAnswers.q_active_set);
       case "Active Has Power": return toBool(safeAnswers.q_active_pwr);
       case "Leg ID": return safeAnswers.q_leg || "";
       case "Transport Available": return toBool(safeAnswers.q_transport);
-      case "How is it Fed": return toBool(safeAnswers.q_how_fed);
+      case "How is it Fed": return safeAnswers.q_how_fed || "";
       case "What Does it Feed": return safeAnswers.q_what_feeds || "";
       case "Island Missing Components": return safeAnswers.q_island || "";
-      case "OFS Changed Reason": return safeAnswers.q_ofs_change || "";
+      case "OFS Changed Check": return toBool(safeAnswers.q_ofs_change);
+      case "OFS Changed Reason": return safeAnswers.q_ofs_reason || "";
       case "Is Xing Override":  return safeAnswers.q_is_xing !== undefined ? toBool(safeAnswers.q_is_xing) : "";
       case "Manager Note": return safePayload.note || "";
       case "QB Sync Status": return "Pending";

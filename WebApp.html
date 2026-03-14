@@ -4822,46 +4822,20 @@
         border-bottom: 1px solid var(--border);
       }
       .module-header.ph-permitting { color: #a855f7; }
-      .section-question-grid {
-        display: grid;
-        gap: 6px 32px;
-        grid-template-columns: repeat(2, 1fr);
-      }
-      @media (max-width: 900px) {
-        .section-question-grid { grid-template-columns: 1fr !important; }
-      }
+      .grid-density-date { display: grid; grid-template-columns: repeat(2, 1fr) !important; gap: 8px 32px; margin-bottom: 20px; }
+      .grid-density-check { display: grid; grid-template-columns: repeat(3, 1fr) !important; gap: 8px 24px; margin-bottom: 20px; }
+      @media (max-width: 1200px) { .grid-density-check { grid-template-columns: repeat(2, 1fr) !important; } }
+      @media (max-width: 900px) { .grid-density-date, .grid-density-check { grid-template-columns: 1fr !important; } }
       .deck-module .slide-q-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 4px 0;
-        min-height: 32px;
-        border-bottom: 1px dashed rgba(0,0,0,0.03);
-        white-space: nowrap;
-        overflow: hidden;
+        display: flex; justify-content: space-between; align-items: center; white-space: nowrap; min-height: 32px;
+        gap: 12px; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.03); overflow: hidden;
       }
-      .deck-module .slide-q-nested { margin-left: 14px; }
-      .deck-module .slide-q-nested .slide-q-label { font-size: 12px; }
       .slide-q-label {
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--text-main);
-        line-height: 1.3;
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        padding-right: 8px;
+        font-size: 11px; font-weight: 600; color: var(--text-main); line-height: 1.3; flex: 1; min-width: 0;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px;
       }
       .slide-input-wrap {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 6px;
-        min-width: 155px;
-        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 155px; flex-shrink: 0;
       }
       .slide-q-action {
         display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px;
@@ -4870,19 +4844,10 @@
         min-width: 40px; max-width: 60px;
       }
 
-      .slide-input {
-        width: 120px !important; max-width: 120px !important; height: 26px !important; padding: 2px 6px !important;
-        font-size: 10px; font-family: inherit; font-weight: 700;
-        border: 1px solid var(--border); background: rgba(248,250,252,0.5);
-        color: var(--color-insight); text-align: right; outline: none; border-radius: 8px;
-        box-sizing: border-box;
-      }
+      .slide-input { width: 120px !important; height: 26px !important; font-size: 10px; max-width: 120px !important; padding: 2px 6px !important; font-family: inherit; font-weight: 700; border: 1px solid var(--border); background: rgba(248,250,252,0.5); color: var(--color-insight); text-align: right; outline: none; border-radius: 8px; box-sizing: border-box; }
       body.dark-mode .slide-input { background: rgba(15,23,42,0.5); }
       .slide-input:focus { border-color: var(--color-insight); background: var(--bg); }
-      .deck-module input[type="checkbox"].slide-input {
-        width: 18px !important; min-width: 18px; max-width: 18px !important; height: 18px !important; padding: 0;
-        border: none; background: transparent;
-      }
+      input[type="checkbox"].slide-input { width: 18px !important; height: 18px !important; min-width: 18px; max-width: 18px !important; padding: 0; border: none; background: transparent; }
       .deck-module textarea.slide-input {
         width: 100% !important; max-width: 100% !important; height: auto !important; min-height: 44px; max-height: 72px;
         line-height: 1.35; text-align: left; white-space: normal;
@@ -4890,11 +4855,10 @@
       .deck-module select.slide-input {
         text-align: left; padding-right: 28px;
       }
-      .wide-cell { grid-column: 1 / -1; align-items: flex-start !important; }
-      .wide-cell .slide-input-wrap {
-        width: min(100%, 520px);
-        flex: 1;
-      }
+      .stacked-text-group { display:flex; flex-direction:column; gap:8px; }
+      .stacked-text-group .slide-q-row { align-items: flex-start; }
+      .stacked-text-group .slide-input-wrap { width: min(100%, 520px); flex: 1; align-items: flex-start; }
+      .stacked-text-group .slide-q-action { width: 100%; justify-content: flex-end; align-items: flex-start; }
       .slide-section-divider { border: none; border-top: 1px dashed var(--border); margin: 8px 0; opacity: 0.5; }
       .slide-inline-vendor { font-size: 10px; font-style: italic; line-height: 1.4; color: var(--text-main); padding: 6px 10px; border: 1.5px solid #fde047; border-radius: 8px 8px 8px 2px; background: rgba(255,251,235,0.7); }
       body.dark-mode .slide-inline-vendor { background: rgba(66,32,6,0.3); border-color: #713f12; }
@@ -4999,6 +4963,7 @@
 
           const now = new Date();
           const dateStr = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+          const boolLabel = (val, fallback='—') => (val === true || val === 'true') ? 'YES' : (val === false || val === 'false') ? 'NO' : fallback;
           let payloads = [];
           let combinedText = `DAILY PM BATCH REPORT\nGenerated: ${dateStr}\n\n`;
 
@@ -5006,6 +4971,7 @@
               const item = (allActionItems || []).find(i => i.fdh === fdh);
               if (!item) return;
               const mem = pmSessionMemory[fdh] || {};
+              const isXingSelected = mem['q_is_xing'] !== undefined ? (mem['q_is_xing'] === true || mem['q_is_xing'] === 'true') : item.isXing;
               payloads.push({ fdh: item.fdh, vendor: item.vendor, targetDate: item.targetDate || item.cxEnd || 'TBD', note: item.comment || '', answers: mem });
 
               const ofsStr = item.ofsDate && item.ofsDate !== '-' ? item.ofsDate : 'TBD';
@@ -5016,20 +4982,23 @@
               combinedText += `- CD Distributed: ${item.hasCDDist ? 'YES' : 'NO'}\n`;
               combinedText += `- Splice Docs Dist: ${item.hasSpliceDist ? 'YES' : 'NO'}\n`;
               combinedText += `- Strand Maps Dist: ${item.hasStrandDist ? 'YES' : 'NO'}\n`;
-              combinedText += `- BOM & PO Sent: ${item.hasBOMPo ? 'YES' : 'NO'}\n`;
-              combinedText += `- SOW Signed: ${item.hasSOW ? 'YES' : 'NO'}\n\n`;
+              combinedText += `- BOM Sent: ${boolLabel(mem['q_bom_sent'])}\n`;
+              combinedText += `- PO Number Sent: ${boolLabel(mem['q_po_sent'])}\n`;
+              combinedText += `- SOW Signed: ${boolLabel(mem['q_sow_sign'])}\n\n`;
               combinedText += `[FIELD / PERMITTING QA]\n`;
               combinedText += `- Sent for permitting: ${mem['q_permit_sent'] || '\u2014'}\n`;
               combinedText += `- Permit approved: ${mem['q_permit_appr'] || '\u2014'}\n`;
-              combinedText += `- Special Crossings: ${item.isXing ? 'YES' : 'NONE'}\n`;
-              if (item.isXing) {
+              combinedText += `- Special Crossings: ${isXingSelected ? 'YES' : 'NONE'}\n`;
+              if (isXingSelected) {
                   combinedText += `  * DOT paperwork submitted: ${mem['q_cross_sub'] || '\u2014'}\n`;
                   combinedText += `  * Crossing approved: ${mem['q_cross_appr'] || '\u2014'}\n`;
                   combinedText += `  * Approval distributed: ${mem['q_cross_dist'] || '\u2014'}\n`;
               }
-              combinedText += `- Active set: ${mem['q_active_set'] || '\u2014'}\n`;
-              combinedText += `- Active has power: ${mem['q_active_pwr'] || '\u2014'}\n`;
-              combinedText += `- Transport available: ${mem['q_transport'] || '\u2014'}\n\n`;
+              combinedText += `- Active set: ${boolLabel(mem['q_active_set'])}\n`;
+              combinedText += `- Active has power: ${boolLabel(mem['q_active_pwr'])}\n`;
+              combinedText += `- Transport available: ${boolLabel(mem['q_transport'])}\n`;
+              combinedText += `- OFS date changed: ${boolLabel(mem['q_ofs_change'])}\n`;
+              combinedText += `- OFS change reason: ${mem['q_ofs_reason'] || '\u2014'}\n\n`;
               combinedText += `[MANAGER NOTE]\n${item.comment || item.draft || 'No note provided.'}\n\n`;
           });
 
@@ -5221,40 +5190,35 @@
         let deckViewRecord = item.rid ? `<a href="https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=${item.rid}" target="_blank" class="btn" style="padding:5px 12px; font-size:9px; color:var(--text-main); background:var(--bg); border-color:var(--border); text-decoration:none;">VIEW RECORD</a>` : '';
 
         const mem = pmSessionMemory[item.fdh] || {};
-        const yesNo = (bool, trueText='YES', falseText='NO') => {
-          if (bool === true) return `<span class="slide-sys-val yes">${trueText}</span>`;
-          if (bool === false) return `<span class="slide-sys-val no">${falseText}</span>`;
-          return `<span class="slide-sys-val">UNKNOWN</span>`;
-        };
         const actionWrap = (content, extraClass='') => `<span class="slide-input-wrap${extraClass ? ` ${extraClass}` : ''}">${content}</span>`;
-        const mi  = (id, ph, refVal) => {
-          const v = mem[id] || '';
-          const gap = !v && (!refVal || refVal === '' || refVal === '-');
-          return actionWrap(`<span class="slide-q-action">${gapDot(gap)}<input type="text" class="slide-input" id="${id}" placeholder="${gap ? 'QB: No data yet' : ph}" autocomplete="off" value="${v}" oninput="persistDeckInput(this)" style="border-color:${gap ? '#ef4444' : 'var(--border)'}; background:var(--card-bg); color:var(--text-main);"></span>`);
-        };
         const gapDot = (show, color='#ef4444') => show ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${color};margin-right:5px;flex-shrink:0;vertical-align:middle;"></span>` : '';
         const deptBadge = (show, dept) => show ? `<span style="display:inline-block;font-size:9px;font-weight:800;color:#a855f7;background:rgba(168,85,247,0.15);padding:1px 6px;border-radius:4px;margin-left:5px;white-space:nowrap;letter-spacing:0.3px;vertical-align:middle;">WAITING ON ${dept}</span>` : '';
-        const md  = (id, refVal, dept='') => {
+        const row = (label, control, classes='') => `<div class="slide-q-row${classes ? ` ${classes}` : ''}"><span class="slide-q-label">${label}</span>${control}</div>`;
+        const mi  = (id, label, refVal) => {
           const v = mem[id] || '';
           const gap = !v && (!refVal || refVal === '' || refVal === '-');
-          const locked = dept !== '';
+          return row(label, actionWrap(`<span class="slide-q-action">${gapDot(gap)}<input type="text" class="slide-input" id="${id}" placeholder="${gap ? 'QB: No data yet' : label}" autocomplete="off" value="${v}" oninput="persistDeckInput(this)" style="border-color:${gap ? '#ef4444' : 'var(--border)'}; background:var(--card-bg); color:var(--text-main);"></span>`));
+        };
+        const md  = (id, label, refVal, locked=false, dept='') => {
+          const v = mem[id] || '';
+          const gap = !v && (!refVal || refVal === '' || refVal === '-');
           const dotColor = locked ? '#a855f7' : '#ef4444';
           const borderColor = gap ? dotColor : 'var(--border)';
-          return actionWrap(`<span class="slide-q-action">${gapDot(gap, dotColor)}<input type="date" class="slide-input" id="${id}" value="${v}" ${locked ? 'disabled' : 'onchange="persistDeckInput(this)"'} style="border-color:${borderColor}; background:var(--card-bg); color:${locked ? 'var(--text-muted)' : 'var(--text-main)'}; cursor:${locked ? 'not-allowed' : 'pointer'}; opacity:${locked ? '0.7' : '1'};">${deptBadge(gap && locked, dept)}</span>`);
+          return row(label, actionWrap(`<span class="slide-q-action">${gapDot(gap, dotColor)}<input type="date" class="slide-input" id="${id}" value="${v}" ${locked ? 'disabled' : 'onchange="persistDeckInput(this)"'} style="border-color:${borderColor}; background:var(--card-bg); color:${locked ? 'var(--text-muted)' : 'var(--text-main)'}; cursor:${locked ? 'not-allowed' : 'pointer'}; opacity:${locked ? '0.7' : '1'};">${deptBadge(gap && locked, dept)}</span>`));
         };
-        const mc  = (id, refVal) => {
+        const mc  = (id, label, refVal) => {
           const memVal = mem[id];
           const refChecked = refVal === true || String(refVal).toLowerCase() === 'true';
           const checked = memVal !== undefined ? (memVal === true || memVal === 'true') : refChecked;
           const gap = memVal === undefined && (refVal === undefined || refVal === '' || refVal === null);
-          return actionWrap(`<span class="slide-q-action checkbox-action">${gapDot(gap)}<input type="checkbox" class="slide-input" id="${id}" ${checked ? 'checked' : ''} onchange="persistDeckInput(this)" style="cursor:pointer; accent-color:var(--accent, #6366f1);"></span>`);
+          return row(label, actionWrap(`<span class="slide-q-action checkbox-action">${gapDot(gap)}<input type="checkbox" class="slide-input" id="${id}" ${checked ? 'checked' : ''} onchange="persistDeckInput(this)" style="cursor:pointer; accent-color:var(--accent, #6366f1);"></span>`));
         };
-        const mta = (id, ph, refVal) => {
+        const mta = (id, label, refVal) => {
           const v = mem[id] || '';
           const gap = !v && (!refVal || refVal === '' || refVal === '-');
-          return actionWrap(`<span class="slide-q-action" style="align-items:flex-start;">${gapDot(gap)}<textarea class="slide-input" id="${id}" placeholder="${gap ? 'QB: No data yet' : ph}" oninput="persistDeckInput(this)" style="resize:vertical; border-color:${gap ? '#ef4444' : 'var(--border)'}; background:var(--card-bg); color:var(--text-main);">${v}</textarea></span>`);
+          return row(label, actionWrap(`<span class="slide-q-action" style="align-items:flex-start;">${gapDot(gap)}<textarea class="slide-input" id="${id}" placeholder="${gap ? 'QB: No data yet' : label}" oninput="persistDeckInput(this)" style="resize:vertical; border-color:${gap ? '#ef4444' : 'var(--border)'}; background:var(--card-bg); color:var(--text-main);">${v}</textarea></span>`));
         };
-        const row = (label, control, classes='') => `<div class="slide-q-row${classes ? ` ${classes}` : ''}"><span class="slide-q-label">${label}</span>${control}</div>`;
+        const ms = (id, label, selected) => row(label, actionWrap(`<span class="slide-q-action"><select class="slide-input" id="${id}" onchange="persistDeckInput(this); toggleXingRows(this.value === 'true')" style="border-color:var(--border); background:var(--card-bg); color:var(--text-main); cursor:pointer;"><option value="true" ${selected ? 'selected' : ''}>YES (Action Required)</option><option value="false" ${!selected ? 'selected' : ''}>NO / None Detected</option></select></span>`));
 
         const storedIsXing = mem['q_is_xing'];
         const isXingActive = storedIsXing !== undefined
@@ -5267,7 +5231,7 @@
                 <div style="display:flex; align-items:center; gap:12px;">
                   <div style="font-size:28px; font-weight:900; color:var(--text-main); letter-spacing:-1px; line-height:1;">${item.fdh}</div>
                   <div style="font-size:10px; font-weight:900; background:var(--card-bg); border:1px solid var(--border); padding:4px 10px; border-radius:12px; text-transform:uppercase; color:var(--text-main);">${item.stage} | ${item.status}</div>
-                  ${item.isXing ? `<div style="background:#171717; color:#facc15; padding:4px 10px; border-radius:12px; font-size:10px; font-weight:900; border:1px solid #facc15; box-shadow:0 2px 4px rgba(0,0,0,0.1);">X-ING</div>` : ''}
+                  ${isXingActive ? `<div style="background:#171717; color:#facc15; padding:4px 10px; border-radius:12px; font-size:10px; font-weight:900; border:1px solid #facc15; box-shadow:0 2px 4px rgba(0,0,0,0.1);">X-ING</div>` : ''}
                 </div>
                 <div style="font-size:12px; font-weight:700; color:var(--text-muted);">${item.city} &bull; ${item.vendor}</div>
               </div>
@@ -5276,45 +5240,54 @@
               </div>
             </div>
             <div class="deck-module-grid">
-              <div class="deck-module module-permitting">
-                <div class="module-header ph-permitting">Compliance</div>
-                <div class="section-question-grid">
-                  ${row('What is the FDH Number?', actionWrap(`<span class="slide-q-action"><input type="text" class="slide-input" value="${item.fdh}" disabled style="border-color:#a855f7; background:var(--card-bg); color:var(--text-muted); cursor:not-allowed; opacity:0.7; text-align:center;"></span>`))}
-                  ${row('Was it sent for permitting?', md('q_permit_sent', item.qbRef && item.qbRef.permitSent, 'PERMITTING'))}
-                  ${row('Has it been permit approved?', md('q_permit_appr', item.qbRef && item.qbRef.permitAppr, 'PERMITTING'))}
+              <div class="deck-module">
+                <div class="module-header ph-permitting">COMPLIANCE</div>
+                <div class="grid-density-date">
+                  ${md('q_permit_sent', 'Was it sent for permitting?', item.qbRef && item.qbRef.permitSent, true, 'PERMITTING')}
+                  ${md('q_permit_appr', 'Has it been permit approved? Yes or No. If so, date approved?', item.qbRef && item.qbRef.permitAppr, true, 'PERMITTING')}
                 </div>
               </div>
               <div class="deck-module">
-                <div class="module-header">Distribution</div>
-                <div class="section-question-grid">
-                  ${row('Has the CD been distributed?', mc('q_cd_dist', item.qbRef && item.qbRef.cdDist))}
-                  ${row('Have splice docs been distributed?', mc('q_splice_dist', item.qbRef && item.qbRef.spliceDist))}
-                  ${row('Have strand maps been distributed?', mc('q_strand_dist', item.qbRef && item.qbRef.strandDist))}
+                <div class="module-header">DISTRIBUTION</div>
+                <div class="grid-density-check">
+                  ${mc('q_cd_dist', 'Has the CD been distributed?', item.qbRef && item.qbRef.cdDist)}
+                  ${mc('q_splice_dist', 'Have splice docs been distributed?', item.qbRef && item.qbRef.spliceDist)}
+                  ${mc('q_strand_dist', 'Have strand maps been distributed?', item.qbRef && item.qbRef.strandDist)}
                 </div>
               </div>
               <div class="deck-module">
-                <div class="module-header">Special Crossings</div>
-                <div class="section-question-grid">
-                  ${row('Are there any special crossings?', actionWrap(`<span class="slide-q-action"><select class="slide-input" id="q_is_xing" onchange="persistDeckInput(this); toggleXingRows(this.value === 'true')" style="border-color:var(--border); background:var(--card-bg); color:var(--text-main); cursor:pointer;"><option value="true" ${isXingActive ? 'selected' : ''}>YES (Action Required)</option><option value="false" ${!isXingActive ? 'selected' : ''}>NO / None Detected</option></select></span>`))}
-                  ${row('Has the special crossing been submitted?', md('q_cross_sub', item.qbRef && item.qbRef.crossSub), 'slide-q-nested xing-nested-row')}
-                  ${row('Has the special crossing been approved?', md('q_cross_appr', item.qbRef && item.qbRef.crossAppr), 'slide-q-nested xing-nested-row')}
-                  ${row('Has approval been distributed?', md('q_cross_dist', item.qbRef && item.qbRef.crossDist), 'slide-q-nested xing-nested-row')}
+                <div class="module-header">SPECIAL CROSSINGS</div>
+                <div class="grid-density-date">
+                  ${ms('q_is_xing', 'Are there any special crossings?', isXingActive)}
+                  <div style="grid-column: 1 / -1; font-size: 10px; font-style: italic; color: var(--text-muted); margin-top: -10px; margin-bottom: 4px; padding-left: 14px;">
+                      ◦ Confirm with engineers that proper paperwork is ready for DOT crossings
+                  </div>
+                  <div class="xing-nested-row">${md('q_cross_sub', 'Has the special crossing been submitted?', item.qbRef && item.qbRef.crossSub)}</div>
+                  <div class="xing-nested-row">${md('q_cross_appr', 'Has the special crossing been approved?', item.qbRef && item.qbRef.crossAppr)}</div>
+                  <div class="xing-nested-row">${md('q_cross_dist', 'Has the special crossing approval been distributed?', item.qbRef && item.qbRef.crossDist)}</div>
                 </div>
               </div>
               <div class="deck-module">
-                <div class="module-header">Readiness &amp; Architecture</div>
-                <div class="section-question-grid">
-                  ${row('Was the BOM sent?', mc('q_bom_po', item.qbRef && item.qbRef.bomPo))}
-                  ${row('Was the PO number sent?', mc('q_po', item.qbRef && item.qbRef.bomPo))}
-                  ${row('Has the SOW been signed?', mc('q_sow_sign', item.qbRef && item.qbRef.sowSign))}
-                  ${row('Has the active been set?', mc('q_active_set', item.qbRef && item.qbRef.activeSet))}
-                  ${row('Does the active have power?', mc('q_active_pwr', item.qbRef && item.qbRef.activePwr))}
-                  ${row('What leg is this FDH on?', mi('q_leg', 'Enter leg ID...', item.qbRef && item.qbRef.leg))}
-                  ${row('Is transport readily available?', mc('q_transport', item.qbRef && item.qbRef.transport))}
-                  ${row('How is this FDH being fed?', mc('q_how_fed', item.qbRef && item.qbRef.howFed))}
-                  ${row('What does this FDH feed?', mta('q_what_feeds', 'Enter downstream...', item.qbRef && item.qbRef.whatFeeds), 'wide-cell')}
-                  ${row('If FDH is an island, what is missing?', mta('q_island', 'N/A or list...', item.qbRef && item.qbRef.island), 'wide-cell')}
-                  ${row('Did the OFS date change?', mta('q_ofs_change', 'Yes/No + Reason...', item.qbRef && item.qbRef.ofsChange), 'wide-cell')}
+                <div class="module-header">READINESS &amp; ARCHITECTURE</div>
+                <div class="grid-density-check">
+                  ${mc('q_bom_sent', 'Was the BOM sent?', item.qbRef && item.qbRef.bomSent)}
+                  ${mc('q_po_sent', 'Was the PO number sent?', item.qbRef && item.qbRef.poSent)}
+                  ${mc('q_sow_sign', 'Has the SOW been signed?', item.qbRef && item.qbRef.sowSign)}
+                  ${mc('q_active_set', 'Has the active been set?', item.qbRef && item.qbRef.activeSet)}
+                  ${mc('q_active_pwr', 'Does the active have power?', item.qbRef && item.qbRef.activePwr)}
+                  ${mc('q_transport', 'Is transport readily available for this active?', item.qbRef && item.qbRef.transport)}
+                  ${mc('q_ofs_change', 'Did the OFS date change?', item.qbRef && item.qbRef.ofsChange)}
+                </div>
+
+                <div class="grid-density-date">
+                  ${mi('q_leg', 'What leg is this FDH on?', item.qbRef && item.qbRef.leg)}
+                  ${mi('q_how_fed', 'How is this FDH being fed?', item.qbRef && item.qbRef.howFed)}
+                </div>
+
+                <div class="stacked-text-group">
+                  ${mta('q_what_feeds', 'What does this FDH feed?', item.qbRef && item.qbRef.whatFeeds)}
+                  ${mta('q_island', 'If the FDH is an island, what is all missing?', item.qbRef && item.qbRef.island)}
+                  ${mta('q_ofs_reason', '◦ If so, why?', item.qbRef && item.qbRef.ofsReason)}
                 </div>
               </div>
             </div>
@@ -5332,6 +5305,7 @@
               </div>
             </div>
         `;
+        toggleXingRows(isXingActive);
 
         // Right pane: diagnostics + PM note + action buttons
         const actionPanel = getEl('deck-action-panel');
@@ -5485,6 +5459,8 @@
         const item = ensureDeckIndex();
         if (!item) return;
         const mem = pmSessionMemory[item.fdh] || {};
+        const boolLabel = (val, fallback='Unknown') => (val === true || val === 'true') ? 'YES' : (val === false || val === 'false') ? 'NO' : fallback;
+        const isXingSelected = mem['q_is_xing'] !== undefined ? (mem['q_is_xing'] === true || mem['q_is_xing'] === 'true') : item.isXing;
         const text = `
 # PROJECT PM REPORT: ${item.fdh}
 
@@ -5497,11 +5473,12 @@ General Info:
 * CD Distributed: ${item.hasCDDist ? 'YES' : 'NO'}
 * Splice Docs Distributed: ${item.hasSpliceDist ? 'YES' : 'NO'}
 * Strand Maps Distributed: ${item.hasStrandDist ? 'YES' : 'NO'}
-* BOM & PO Sent: ${item.hasBOMPo ? 'YES' : 'NO'}
-* SOW Signed: ${item.hasSOW ? 'YES' : 'NO'}
+* BOM Sent: ${boolLabel(mem['q_bom_sent'])}
+* PO Number Sent: ${boolLabel(mem['q_po_sent'])}
+* SOW Signed: ${boolLabel(mem['q_sow_sign'])}
 
 2. Permitting & Crossings:
-* Special Crossings Detected: ${item.isXing ? 'YES' : 'NONE'}
+* Special Crossings Detected: ${isXingSelected ? 'YES' : 'NONE'}
 * Crossing Details: ${item.specXDetails || 'N/A'}
 * Sent for permitting?: ${mem['q_permit_sent'] || 'Unknown'}
 * Permit Approved (Date)?: ${mem['q_permit_appr'] || 'Unknown'}
@@ -5510,16 +5487,17 @@ General Info:
 * Special Crossing Approval Distributed?: ${mem['q_cross_dist'] || 'Unknown'}
 
 3. Network & Actives:
-* Active Set?: ${mem['q_active_set'] || 'Unknown'}
-* Active Has Power?: ${mem['q_active_pwr'] || 'Unknown'}
-* Transport Available?: ${mem['q_transport'] || 'Unknown'}
+* Active Set?: ${boolLabel(mem['q_active_set'])}
+* Active Has Power?: ${boolLabel(mem['q_active_pwr'])}
+* Transport Available?: ${boolLabel(mem['q_transport'])}
 * Leg ID: ${mem['q_leg'] || 'Unknown'}
 
 4. Architecture:
 * How is it fed?: ${mem['q_how_fed'] || 'Unknown'}
 * What does it feed?: ${mem['q_what_feeds'] || 'Unknown'}
 * Island Missing Components: ${mem['q_island'] || 'N/A'}
-* OFS Changed / Reason: ${mem['q_ofs_change'] || 'N/A'}
+* OFS Changed?: ${boolLabel(mem['q_ofs_change'])}
+* OFS Change Reason: ${mem['q_ofs_reason'] || 'N/A'}
 
 Manager Note / Decision:
 ${item.comment || 'No notes provided.'}

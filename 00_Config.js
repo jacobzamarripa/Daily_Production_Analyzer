@@ -27,10 +27,10 @@ const DECK_HEADERS = [
   "Sent for Permitting", "Permit Approved", "DOT Paperwork Submitted",
   "Special Crossing Approved", "Approval Dist to Vendor",
   "CD Distributed", "Splice Docs Dist", "Strand Maps Dist",
-  "BOM PO Sent", "SOW Signed",
+  "BOM Sent", "PO Number Sent", "SOW Signed",
   "Active Set", "Active Has Power", "Leg ID", "Transport Available",
   "How is it Fed", "What Does it Feed", "Island Missing Components",
-  "OFS Changed Reason", "Is Xing Override",
+  "OFS Changed Check", "OFS Changed Reason", "Is Xing Override",
   "Manager Note", "QB Sync Status"
 ];
 
