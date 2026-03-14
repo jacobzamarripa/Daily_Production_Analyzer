@@ -3246,6 +3246,15 @@
         safeExecute('initDashboard', () => {
             let ls = getEl('loading-screen');
             if (ls) ls.classList.add('hidden');
+            if (data && data.allFdhIds) {
+                let datalist = document.getElementById('fdh-list');
+                if (!datalist) {
+                    datalist = document.createElement('datalist');
+                    datalist.id = 'fdh-list';
+                    document.body.appendChild(datalist);
+                }
+                datalist.innerHTML = data.allFdhIds.sort().map(id => `<option value="${id}">`).join('');
+            }
             if (!data || !data.actionItems || data.actionItems.length === 0) {
                 setHtml('gantt-container', `<div class="empty-msg">All Clear ✓</div>`);
                 setHtml('inbox-list', `<div class="empty-msg">All Clear ✓</div>`);
@@ -4842,16 +4851,16 @@
       body.deck-is-editing .btn-mode-toggle { background: #3b82f6; color: #fff; border-color: #2563eb; }
 
       /* DISPLAY MODE (POWERPOINT LOOK) */
-      .slide-ppt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 40px; align-items: start; }
+      .slide-ppt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 60px; align-items: start; }
       .slide-ppt-row { 
         display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; 
-        padding-bottom: 6px; border-bottom: 1px solid rgba(0,0,0,0.04);
+        padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 8px;
       }
-      .slide-ppt-q { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-main); line-height: 1.4; }
+      .slide-ppt-q { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-main); line-height: 1.5; }
       .slide-ppt-q::before { content: "•"; margin-right: 8px; font-weight: 900; color: var(--text-muted); }
-      .slide-ppt-ans { font-size: 13px; font-weight: 900; color: #3b82f6; text-align: right; max-width: 160px; line-height: 1.4; }
-      .slide-ppt-ans.gap { color: #ef4444; font-style: italic; }
-      .slide-ppt-sub { margin-left: 20px; font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+      .slide-ppt-ans { font-size: 13px; font-weight: 900; color: #3b82f6; text-align: right; flex-shrink: 0; white-space: nowrap; }
+      .slide-ppt-ans.gap { color: #ef4444; font-style: italic; font-weight: 700; }
+      .slide-ppt-sub { margin-left: 20px; font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 4px; }
       .slide-ppt-sub::before { content: "◦"; margin-right: 8px; }
 
       /* AIR GAP / STAGED INDICATORS */
@@ -5306,6 +5315,13 @@
           return row(label, actionWrap(`<span class="slide-q-action">${stagedIcon(mismatch)}${gapDot(gap && !mismatch)}<input type="text" class="slide-input" id="${id}" value="${mem[id] !== undefined ? mem[id] : (refVal || '')}" placeholder="${refVal || 'Missing'}" oninput="persistDeckInput(this); renderDeckStage();" style="border-color:${borderColor}; background:var(--card-bg); color:var(--text-main);"></span>`));
         };
 
+        const mdl = (id, label, refVal) => {
+          let mismatch = isMismatch(mem[id], refVal, 'text');
+          let gap = !mem[id] && (!refVal || refVal === '' || refVal === '-');
+          let borderColor = mismatch ? '#f59e0b' : (gap ? '#ef4444' : 'var(--border)');
+          return row(label, actionWrap(`<span class="slide-q-action">${stagedIcon(mismatch)}${gapDot(gap && !mismatch)}<input type="text" list="fdh-list" class="slide-input" id="${id}" value="${mem[id] !== undefined ? mem[id] : (refVal || '')}" placeholder="${refVal || 'Missing'}" oninput="persistDeckInput(this); renderDeckStage();" style="border-color:${borderColor}; background:var(--card-bg); color:var(--text-main);"></span>`));
+        };
+
         const md = (id, label, refVal, locked=false) => {
           let mismatch = isMismatch(mem[id], refVal, 'date');
           let gap = !mem[id] && (!refVal || refVal === '' || refVal === '-');
@@ -5351,10 +5367,11 @@
               </div>
             </div>
 
-            <div style="flex-grow:1; overflow-y:auto;">
+            <div style="flex-grow:1; overflow-y:auto; overflow-x:hidden;">
               <div class="deck-display-mode">
+                <h2 style="color:#6b21a8; font-size:18px; margin-top:0; margin-bottom:8px;">Questions Project Managers Must Know Answers to:</h2>
                 <div class="slide-ppt-grid">
-                  <div style="display:flex; flex-direction:column; gap:10px;">
+                  <div style="display:flex; flex-direction:column;">
                     ${pptRow('Was it sent for permitting?', getVal('q_permit_sent', item.qbRef?.permitSent, 'date'))}
                     ${pptRow('Has it been permit approved? Yes or No. If so, date approved?', getVal('q_permit_appr', item.qbRef?.permitAppr, 'date'))}
                     ${pptRow('Has the CD been distributed?', getVal('q_cd_dist', item.qbRef?.cdDist, 'bool'))}
@@ -5368,7 +5385,7 @@
                       <div class="slide-ppt-sub" style="display:flex; justify-content:space-between;">Has the special crossing approval been distributed? ${getVal('q_cross_dist', item.qbRef?.crossDist, 'date')}</div>
                     ` : ''}
                   </div>
-                  <div style="display:flex; flex-direction:column; gap:10px;">
+                  <div style="display:flex; flex-direction:column;">
                     ${pptRow('Was the BOM sent?', getVal('q_bom_sent', item.qbRef?.bomSent, 'bool'))}
                     ${pptRow('Was the PO number sent?', getVal('q_po_sent', null, 'bool'))}
                     ${pptRow('Has the SOW been signed?', getVal('q_sow_sign', item.qbRef?.sowSign, 'bool'))}
@@ -5425,10 +5442,10 @@
                   </div>
                   <div class="grid-density-date">
                     ${mi('q_leg', 'FDH Leg ID?', item.qbRef?.leg)}
-                    ${mi('q_how_fed', 'How is it fed?', item.qbRef?.howFed)}
+                    ${mdl('q_how_fed', 'How is it fed? (Search)', item.qbRef?.howFed)}
                   </div>
                   <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${mta('q_what_feeds', 'What does it feed?', item.qbRef?.whatFeeds)}
+                    ${mdl('q_what_feeds', 'What does it feed? (Search)', item.qbRef?.whatFeeds)}
                     ${mta('q_island', 'Island missing components?', item.qbRef?.island)}
                     ${mta('q_ofs_reason', 'OFS Change Reason?', item.qbRef?.ofsReason)}
                   </div>

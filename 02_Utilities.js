@@ -219,7 +219,13 @@ function getDashboardData() {
   }
 
   let refDataDate = String(PropertiesService.getScriptProperties().getProperty('refDataImportDate') || "");
-  let payload = { actionItems: actionItems, totalRows: data.length - 1, headers: headers, refDataDate: refDataDate };
+  let payload = {
+    actionItems: actionItems,
+    totalRows: data.length - 1,
+    headers: headers,
+    refDataDate: refDataDate,
+    allFdhIds: Object.keys(refDict)
+  };
   try { cache.put(CACHE_KEY, JSON.stringify(payload), 1800); } catch(e) {}
   return payload;
 }
