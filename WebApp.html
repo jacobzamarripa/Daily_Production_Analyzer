@@ -89,7 +89,7 @@
       }
       .gantt-hud ::-webkit-scrollbar { width: 6px; } .gantt-hud ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 6px; }
 
-      .top-nav { background: transparent; height: auto; box-sizing: border-box; padding: 10px 18px 6px; display: flex; align-items: center; z-index: 10000; position: relative; flex-shrink: 0; transition: background 0.3s, border-color 0.3s; gap: 12px; border-bottom: none; }
+      .top-nav { background: transparent; height: auto; box-sizing: border-box; padding: 10px 18px 6px; display: flex; align-items: center; z-index: 10000; position: relative; flex-shrink: 0; transition: background 0.3s, border-color 0.3s; gap: 12px; border-bottom: none; flex-wrap: wrap; }
       .nav-brand { font-size: 16px; font-weight: 900; letter-spacing: -0.5px; display: flex; align-items: center; flex-shrink: 0; padding: 10px 14px; border-radius: 18px; background: color-mix(in srgb, var(--card-bg) 88%, transparent); border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08); }
       .nav-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
       .btn-icon { background: color-mix(in srgb, var(--card-bg) 84%, transparent); border: 1px solid var(--border); border-radius: 14px; padding: 5px 11px; cursor: pointer; color: var(--text-main); font-size: 15px; line-height: 1; display: flex; align-items: center; transition: all 0.2s; height: 34px; box-sizing: border-box; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06); }
@@ -379,7 +379,8 @@
       }
 
       /* 🧠 UNIFIED METRICS HUD */
-      .kpi-nav-container { display: flex; align-items: center; gap: 12px; flex-shrink: 1; margin-left: 12px; overflow: visible; flex-wrap: wrap; }
+      .kpi-nav-container { display: flex; align-items: center; gap: 12px; flex-shrink: 1; margin-left: 12px; overflow: visible; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .kpi-nav-container::-webkit-scrollbar { display: none; }
       
       .kpi-hud-group {
           display: flex;
@@ -1163,6 +1164,59 @@
       .mob-sheet-header { padding: 10px 16px 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
       .mob-sheet-list { overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
       .mob-sheet-footer { padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); flex-shrink: 0; }
+
+      /* 💻 LAPTOP & SMALL DESKTOP OPTIMIZATION (Screens under 1600px wide) */
+      @media screen and (max-width: 1600px) {
+          .inbox-sidebar {
+              width: 310px !important;
+              min-width: 310px !important;
+              max-width: 310px !important;
+          }
+          .outbox-pane {
+              width: 320px !important;
+              min-width: 300px !important;
+          }
+
+          body.deck-mode-active #deck-stage {
+              padding: 20px 24px !important;
+              gap: 20px !important;
+          }
+          #deck-stage-card {
+              border-radius: 16px !important;
+          }
+          .slide-header {
+              padding: 12px 20px !important;
+          }
+          .slide-body {
+              padding: 16px 20px !important;
+              gap: 24px !important;
+          }
+          .slide-footer {
+              padding: 12px 20px !important;
+          }
+
+          .slide-hdr-id { font-size: 24px !important; }
+          .deck-stage .slide-q-label { font-size: 10px !important; }
+          .deck-stage .slide-input { width: 120px !important; }
+
+          .pane-content {
+              padding: 60px 16px 16px !important;
+          }
+          #grid-content {
+              grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+              gap: 12px !important;
+              padding: 60px 16px 16px !important;
+          }
+
+          .top-nav {
+              padding: 8px 12px 6px !important;
+              gap: 8px !important;
+          }
+          .nav-brand {
+              font-size: 14px !important;
+              padding: 8px 12px !important;
+          }
+      }
 
       /* 📱 TABLET (touch devices: iPad portrait + landscape; min-height excludes iPhones in landscape ~390px) */
       @media screen and (pointer: coarse) and (min-width: 769px) and (min-height: 600px) {
