@@ -4826,16 +4826,19 @@
       .grid-density-check { display: grid; grid-template-columns: repeat(3, 1fr) !important; gap: 8px 24px; margin-bottom: 20px; }
       @media (max-width: 1200px) { .grid-density-check { grid-template-columns: repeat(2, 1fr) !important; } }
       @media (max-width: 900px) { .grid-density-date, .grid-density-check { grid-template-columns: 1fr !important; } }
-      .deck-module .slide-q-row {
-        display: flex; justify-content: space-between; align-items: center; white-space: nowrap; min-height: 32px;
+      .slide-q-row {
+        display: flex; justify-content: space-between; align-items: flex-start; min-height: 32px;
         gap: 12px; padding: 4px 0; border-bottom: 1px dashed rgba(0,0,0,0.03); overflow: hidden;
       }
       .slide-q-label {
         font-size: 11px; font-weight: 600; color: var(--text-main); line-height: 1.3; flex: 1; min-width: 0;
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px;
+        padding-right: 8px;
       }
       .slide-input-wrap {
         display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 155px; flex-shrink: 0;
+      }
+      .slide-input-wrap.check-wrap {
+        min-width: 50px;
       }
       .slide-q-action {
         display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px;
@@ -5211,7 +5214,7 @@
           const refChecked = refVal === true || String(refVal).toLowerCase() === 'true';
           const checked = memVal !== undefined ? (memVal === true || memVal === 'true') : refChecked;
           const gap = memVal === undefined && (refVal === undefined || refVal === '' || refVal === null);
-          return row(label, actionWrap(`<span class="slide-q-action checkbox-action">${gapDot(gap)}<input type="checkbox" class="slide-input" id="${id}" ${checked ? 'checked' : ''} onchange="persistDeckInput(this)" style="cursor:pointer; accent-color:var(--accent, #6366f1);"></span>`));
+          return row(label, actionWrap(`<span class="slide-q-action checkbox-action">${gapDot(gap)}<input type="checkbox" class="slide-input" id="${id}" ${checked ? 'checked' : ''} onchange="persistDeckInput(this)" style="cursor:pointer; accent-color:var(--accent, #6366f1);"></span>`, 'check-wrap'));
         };
         const mta = (id, label, refVal) => {
           const v = mem[id] || '';
@@ -5248,14 +5251,6 @@
                 </div>
               </div>
               <div class="deck-module">
-                <div class="module-header">DISTRIBUTION</div>
-                <div class="grid-density-check">
-                  ${mc('q_cd_dist', 'Has the CD been distributed?', item.qbRef && item.qbRef.cdDist)}
-                  ${mc('q_splice_dist', 'Have splice docs been distributed?', item.qbRef && item.qbRef.spliceDist)}
-                  ${mc('q_strand_dist', 'Have strand maps been distributed?', item.qbRef && item.qbRef.strandDist)}
-                </div>
-              </div>
-              <div class="deck-module">
                 <div class="module-header">SPECIAL CROSSINGS</div>
                 <div class="grid-density-date">
                   ${ms('q_is_xing', 'Are there any special crossings?', isXingActive)}
@@ -5268,11 +5263,19 @@
                 </div>
               </div>
               <div class="deck-module">
-                <div class="module-header">READINESS &amp; ARCHITECTURE</div>
+                <div class="module-header">DISTRIBUTION</div>
                 <div class="grid-density-check">
+                  ${mc('q_cd_dist', 'Has the CD been distributed?', item.qbRef && item.qbRef.cdDist)}
+                  ${mc('q_splice_dist', 'Have splice docs been distributed?', item.qbRef && item.qbRef.spliceDist)}
+                  ${mc('q_strand_dist', 'Have strand maps been distributed?', item.qbRef && item.qbRef.strandDist)}
                   ${mc('q_bom_sent', 'Was the BOM sent?', item.qbRef && item.qbRef.bomSent)}
                   ${mc('q_po_sent', 'Was the PO number sent?', item.qbRef && item.qbRef.poSent)}
                   ${mc('q_sow_sign', 'Has the SOW been signed?', item.qbRef && item.qbRef.sowSign)}
+                </div>
+              </div>
+              <div class="deck-module">
+                <div class="module-header">READINESS &amp; ARCHITECTURE</div>
+                <div class="grid-density-check">
                   ${mc('q_active_set', 'Has the active been set?', item.qbRef && item.qbRef.activeSet)}
                   ${mc('q_active_pwr', 'Does the active have power?', item.qbRef && item.qbRef.activePwr)}
                   ${mc('q_transport', 'Is transport readily available for this active?', item.qbRef && item.qbRef.transport)}
