@@ -4929,9 +4929,22 @@
           return `<span class="slide-sys-val">UNKNOWN</span>`;
         };
         const mi  = (id, ph) => `<input type="text" class="slide-input" id="${id}" placeholder="${ph}" autocomplete="off" value="${mem[id] || ''}" oninput="persistDeckInput(this)">`;
-        const md  = (id) => `<input type="date" class="slide-input" id="${id}" value="${mem[id] || ''}" onchange="persistDeckInput(this)" style="padding:6px 10px; font-size:12px; border:1px solid var(--border); border-radius:6px; background:var(--card-bg); color:var(--text-main); cursor:pointer; width:100%;">`;
-        const mc  = (id) => `<input type="checkbox" class="slide-input" id="${id}" ${(mem[id] === true || mem[id] === 'true') ? 'checked' : ''} onchange="persistDeckInput(this)" style="width:20px; height:20px; cursor:pointer; accent-color:var(--accent, #6366f1);">`;
-        const mta = (id, ph) => `<textarea class="slide-input" id="${id}" placeholder="${ph}" oninput="persistDeckInput(this)" style="resize:vertical; min-height:60px; width:100%; padding:6px 10px; font-size:12px; border:1px solid var(--border); border-radius:6px; background:var(--card-bg); color:var(--text-main);">${mem[id] || ''}</textarea>`;
+        const gapDot = (show) => show ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;margin-right:5px;flex-shrink:0;vertical-align:middle;"></span>` : '';
+        const md  = (id, refVal) => {
+          const v = mem[id] || '';
+          const gap = !v && (!refVal || refVal === '' || refVal === '-');
+          return `${gapDot(gap)}<input type="date" class="slide-input" id="${id}" value="${v}" onchange="persistDeckInput(this)" style="padding:6px 10px; font-size:12px; border:1px solid ${gap ? '#ef4444' : 'var(--border)'}; border-radius:6px; background:var(--card-bg); color:var(--text-main); cursor:pointer; width:100%;">`;
+        };
+        const mc  = (id, refVal) => {
+          const checked = mem[id] === true || mem[id] === 'true';
+          const gap = mem[id] === undefined && (refVal === undefined || refVal === '');
+          return `${gapDot(gap)}<input type="checkbox" class="slide-input" id="${id}" ${checked ? 'checked' : ''} onchange="persistDeckInput(this)" style="width:20px; height:20px; cursor:pointer; accent-color:var(--accent, #6366f1);">`;
+        };
+        const mta = (id, ph, refVal) => {
+          const v = mem[id] || '';
+          const gap = !v && (!refVal || refVal === '' || refVal === '-');
+          return `${gapDot(gap)}<textarea class="slide-input" id="${id}" placeholder="${gap ? 'QB: No data yet' : ph}" oninput="persistDeckInput(this)" style="resize:vertical; min-height:60px; width:100%; padding:6px 10px; font-size:12px; border:1px solid ${gap ? '#ef4444' : 'var(--border)'}; border-radius:6px; background:var(--card-bg); color:var(--text-main);">${v}</textarea>`;
+        };
 
         stageCard.innerHTML = `
             <div class="slide-header" style="display:flex; justify-content:space-between; align-items:center; padding:20px 30px; background:var(--bg); border-bottom:1px solid var(--border);">
@@ -4950,27 +4963,27 @@
             <div class="slide-body">
               <div class="slide-col">
                 <div class="slide-q-row"><div class="slide-q-label">What is the FDH Number?</div><span class="slide-sys-val" style="color:var(--text-main); border-color:var(--text-main); font-size:12px;">${item.fdh}</span></div>
-                <div class="slide-q-row"><div class="slide-q-label">Date sent for permitting:</div>${md('q_permit_sent')}</div>
-                <div class="slide-q-row"><div class="slide-q-label">Permit approval date:</div>${md('q_permit_appr')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Date sent for permitting:</div>${md('q_permit_sent', item.qbRef && item.qbRef.permitSent)}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Permit approval date:</div>${md('q_permit_appr', item.qbRef && item.qbRef.permitAppr)}</div>
                 <div class="slide-q-row"><div class="slide-q-label">Has the CD been distributed?</div>${yesNo(item.hasCDDist)}</div>
                 <div class="slide-q-row"><div class="slide-q-label">Have splice docs been distributed?</div>${yesNo(item.hasSpliceDist)}</div>
                 <div class="slide-q-row"><div class="slide-q-label">Have strand maps been distributed?</div>${yesNo(item.hasStrandDist)}</div>
                 <div class="slide-q-row" style="margin-top:10px; border-bottom:none;"><div class="slide-q-label">Are there any special crossings?</div>${item.isXing ? yesNo(true, 'YES (ACTION REQ)') : yesNo(false, '', 'NONE DETECTED')}</div>
-                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">DOT paperwork submitted date:</div>${md('q_cross_sub')}</div>
-                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Special crossing approval date:</div>${md('q_cross_appr')}</div>
-                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Approval distributed to vendor date:</div>${md('q_cross_dist')}</div>
+                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">DOT paperwork submitted date:</div>${md('q_cross_sub', item.qbRef && item.qbRef.dotSub)}</div>
+                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Special crossing approval date:</div>${md('q_cross_appr', item.qbRef && item.qbRef.xingAppr)}</div>
+                <div class="slide-q-nested slide-q-row"><div class="slide-q-label">Approval distributed to vendor date:</div>${md('q_cross_dist', item.qbRef && item.qbRef.apprDist)}</div>
               </div>
               <div class="slide-col">
                 <div class="slide-q-row"><div class="slide-q-label">Was the BOM / PO sent?</div>${yesNo(item.hasBOMPo)}</div>
                 <div class="slide-q-row"><div class="slide-q-label">Has the SOW been signed?</div>${yesNo(item.hasSOW)}</div>
-                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Has the active been set?</div>${mc('q_active_set')}</div>
-                <div class="slide-q-row"><div class="slide-q-label">Does the active have power?</div>${mc('q_active_pwr')}</div>
+                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Has the active been set?</div>${mc('q_active_set', item.qbRef && item.qbRef.activeSet)}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Does the active have power?</div>${mc('q_active_pwr', item.qbRef && item.qbRef.activePwr)}</div>
                 <div class="slide-q-row"><div class="slide-q-label">What leg is this FDH on?</div>${mi('q_leg', 'Enter leg ID...')}</div>
-                <div class="slide-q-row"><div class="slide-q-label">Is transport readily available?</div>${mc('q_transport')}</div>
-                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">How is this FDH being fed?</div>${mc('q_how_fed')}</div>
-                <div class="slide-q-row"><div class="slide-q-label">What does this FDH feed?</div>${mta('q_what_feeds', 'Enter downstream...')}</div>
-                <div class="slide-q-row"><div class="slide-q-label">If FDH is an island, what is missing?</div>${mta('q_island', 'N/A or list...')}</div>
-                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Did the OFS date change? (Why?)</div>${mta('q_ofs_change', 'Yes/No + Reason...')}</div>
+                <div class="slide-q-row"><div class="slide-q-label">Is transport readily available?</div>${mc('q_transport', item.qbRef && item.qbRef.transport)}</div>
+                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">How is this FDH being fed?</div>${mc('q_how_fed', item.qbRef && item.qbRef.howFed)}</div>
+                <div class="slide-q-row"><div class="slide-q-label">What does this FDH feed?</div>${mta('q_what_feeds', 'Enter downstream...', item.qbRef && item.qbRef.whatFeeds)}</div>
+                <div class="slide-q-row"><div class="slide-q-label">If FDH is an island, what is missing?</div>${mta('q_island', 'N/A or list...', item.qbRef && item.qbRef.island)}</div>
+                <div class="slide-q-row" style="margin-top:10px;"><div class="slide-q-label">Did the OFS date change? (Why?)</div>${mta('q_ofs_change', 'Yes/No + Reason...', undefined)}</div>
               </div>
             </div>
             <div class="slide-footer" style="padding:10px 30px; display:flex; flex-direction:row; justify-content:space-between; align-items:center; flex-wrap:nowrap; gap:16px;">

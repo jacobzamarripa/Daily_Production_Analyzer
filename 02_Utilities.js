@@ -205,6 +205,7 @@ function getDashboardData() {
              hasCDDist: refData ? refData.hasCDDist : false,
              hasBOMPo: refData ? refData.hasBOMPo : false,
              hasSOW: refData ? refData.hasSOW : false,
+             qbRef: refData ? (refData.qbRef || {}) : {},
              vel: {
                  ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },
                  ae: { tot: parseNum(data[i][aeTotIdx]), bom: parseNum(data[i][aeBomIdx]), daily: parseNum(data[i][aeDailyIdx]) },

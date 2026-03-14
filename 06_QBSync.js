@@ -50,6 +50,24 @@ const QB_WRITE_MAPPING = {
   // are READ-ONLY — intentionally excluded from this map.
 };
 
+// --- DECK REFERENCE QUERY CONFIG ---
+// fdhFid = FID of the "FDH Engineering ID" field in that secondary table.
+// VERIFY via 9-QB_Fields tab after running discoverAllQBFields().
+const QB_DECK_QUERY_CONFIG = {
+  "bvieaendx": { // Project Management (Write-Permitted)
+    fdhFid: 6,   // ← VERIFY: FDH Engineering ID FID in PM table via 9-QB_Fields
+    fids: [6, 612, 653, 622, 623, 624, 192, 193, 613, 617, 619]
+  }
+  // bts3c49gt (Permits) and bts8av3cw (Cabinets) — add FID configs after field discovery
+};
+
+// Column names appended to 5-Reference_Data for Deck gap indicators
+const QB_DECK_COLUMNS = [
+  "QB_Permit_Sent", "QB_Permit_Appr", "QB_DOT_Sub", "QB_Xing_Appr", "QB_Appr_Dist",
+  "QB_Active_Set", "QB_Active_Pwr", "QB_Transport",
+  "QB_What_Feeds", "QB_Island"
+];
+
 
 // --- 2. FIELD DISCOVERY (run once to build the Data Dictionary) ---
 
@@ -166,6 +184,69 @@ function syncFromQBWebApp() {
     }
 
     logMsg("QB WebApp Sync: " + allRows.length + " records written to " + REF_SHEET);
+
+    // --- Enrich 5-Reference_Data with multi-table Deck reference values ---
+    try {
+      var refSheet2   = ss.getSheetByName(REF_SHEET);
+      var refHeaders2 = refSheet2.getRange(1, 1, 1, refSheet2.getLastColumn()).getValues()[0].map(String);
+      var fdhRefIdx   = refHeaders2.findIndex(function(h) { return h.toUpperCase().includes("FDH"); });
+      if (fdhRefIdx === -1) throw new Error("FDH column not found in " + REF_SHEET);
+
+      var refData2 = refSheet2.getRange(2, 1, refSheet2.getLastRow() - 1, refSheet2.getLastColumn()).getValues();
+      var fdhRowMap = {};
+      refData2.forEach(function(row, i) {
+        var key = row[fdhRefIdx] ? row[fdhRefIdx].toString().trim().toUpperCase() : "";
+        if (key) fdhRowMap[key] = i + 2;
+      });
+
+      QB_DECK_COLUMNS.forEach(function(col) {
+        if (refHeaders2.indexOf(col) === -1) {
+          var newColIdx = refSheet2.getLastColumn() + 1;
+          refSheet2.getRange(1, newColIdx).setValue(col).setBackground("#003366").setFontColor("#ffffff").setFontWeight("bold");
+          refHeaders2.push(col);
+        }
+      });
+
+      for (var tableId in QB_DECK_QUERY_CONFIG) {
+        var cfg       = QB_DECK_QUERY_CONFIG[tableId];
+        var records   = _fetchTableAllFids(token, tableId, cfg.fids);
+        var fdhFidStr = String(cfg.fdhFid);
+
+        records.forEach(function(rec) {
+          var fdhCell = rec[fdhFidStr];
+          var fdhVal  = fdhCell ? _extractValue(fdhCell.value) : "";
+          if (!fdhVal) return;
+          var fdhKey = fdhVal.toString().trim().toUpperCase();
+          var rowNum = fdhRowMap[fdhKey];
+          if (!rowNum) return;
+
+          var colMap = {
+            "QB_Permit_Sent": String(cfg.fids[1]),
+            "QB_Permit_Appr": String(cfg.fids[2]),
+            "QB_DOT_Sub":     String(cfg.fids[3]),
+            "QB_Xing_Appr":   String(cfg.fids[4]),
+            "QB_Appr_Dist":   String(cfg.fids[5]),
+            "QB_Active_Set":  String(cfg.fids[6]),
+            "QB_Active_Pwr":  String(cfg.fids[7]),
+            "QB_Transport":   String(cfg.fids[8]),
+            "QB_What_Feeds":  String(cfg.fids[9]),
+            "QB_Island":      String(cfg.fids[10])
+          };
+
+          QB_DECK_COLUMNS.forEach(function(col) {
+            var fid = colMap[col];
+            if (!fid || !rec[fid]) return;
+            var val    = _extractValue(rec[fid].value);
+            var colIdx = refHeaders2.indexOf(col) + 1;
+            if (colIdx > 0 && val !== "") refSheet2.getRange(rowNum, colIdx).setValue(val);
+          });
+        });
+      }
+      logMsg("QB Deck Enrichment: " + Object.keys(fdhRowMap).length + " rows scanned across " + Object.keys(QB_DECK_QUERY_CONFIG).length + " tables.");
+    } catch (deckErr) {
+      Logger.log("Deck enrichment WARN: " + deckErr.message);
+    }
+
     return { success: true, count: allRows.length, timestamp: timestamp };
 
   } catch (e) {
@@ -563,6 +644,46 @@ function _normalizeVendor(name) {
   if (!name) return "";
   var key = name.toString().toLowerCase().trim();
   return VENDOR_ALIASES[key] || name.toString().trim();
+}
+
+/**
+ * Queries a QB table for specific FIDs using the /records/query endpoint.
+ * Returns an array of raw record objects keyed by FID string.
+ */
+function _fetchTableAllFids(token, tableId, fids) {
+  var url        = QB_API_BASE + "/records/query";
+  var allRecords = [];
+  var skip       = 0;
+  var total      = Infinity;
+
+  while (skip < total && skip < QB_MAX_PAGES * QB_PAGE_SIZE) {
+    var opts = _qbHeaders(token);
+    opts.method      = "post";
+    opts.contentType = "application/json";
+    opts.payload     = JSON.stringify({
+      from:    tableId,
+      select:  fids,
+      where:   "{3.GT.0}",
+      options: { skip: skip, top: QB_PAGE_SIZE }
+    });
+
+    var resp = UrlFetchApp.fetch(url, opts);
+    if (resp.getResponseCode() !== 200) {
+      Logger.log("WARN: QB query HTTP " + resp.getResponseCode() + " for table " + tableId);
+      break;
+    }
+
+    var parsed = JSON.parse(resp.getContentText());
+    (parsed.data || []).forEach(function(r) { allRecords.push(r); });
+
+    var meta = parsed.metadata || {};
+    total = (meta.totalRecords != null) ? meta.totalRecords : 0;
+    skip += (meta.numRecords  != null) ? meta.numRecords  : 0;
+    if (!meta.numRecords || meta.numRecords === 0) break;
+  }
+
+  Logger.log("_fetchTableAllFids: " + tableId + " → " + allRecords.length + " records");
+  return allRecords;
 }
 
 function _extractValue(val) {

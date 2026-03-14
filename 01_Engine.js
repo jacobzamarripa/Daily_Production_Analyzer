@@ -157,6 +157,18 @@ function getReferenceDictionary() {
     let strandDistIdx = getIdx("Strand Maps"), cdDistIdx = getIdx("CD Distributed"), bomPoIdx = getIdx("BOM & PO sent"), sowIdx = getIdx("SOW sent");
     let cdIdx = cdDistIdx, specXIdx = getIdx("Special Crossings?"), specXDetailsIdx = getIdx("Special Crossing Details");
 
+    // Deck reference values from QB multi-table join (populated by syncFromQBWebApp enrichment)
+    let qbPermitSentIdx = getIdx("QB_Permit_Sent");
+    let qbPermitApprIdx = getIdx("QB_Permit_Appr");
+    let qbDotSubIdx     = getIdx("QB_DOT_Sub");
+    let qbXingApprIdx   = getIdx("QB_Xing_Appr");
+    let qbApprDistIdx   = getIdx("QB_Appr_Dist");
+    let qbActiveSetIdx  = getIdx("QB_Active_Set");
+    let qbActivePwrIdx  = getIdx("QB_Active_Pwr");
+    let qbTransportIdx  = getIdx("QB_Transport");
+    let qbWhatFeedsIdx  = getIdx("QB_What_Feeds");
+    let qbIslandIdx     = getIdx("QB_Island");
+
     const isChecked = (val) => val != null && ["true", "1", "yes", "checked"].includes(String(val).toLowerCase().trim());
     const safeDate = (val) => {
         if (!val) return "";
@@ -201,7 +213,19 @@ function getReferenceDictionary() {
            adminDate: adminDict[f] ? safeDate(adminDict[f].xingDate) : "",
            statusSyncDate: adminDict[f] && adminDict[f].statusDate ? safeDate(adminDict[f].statusDate) : "",
            geminiInsight: adminDict[f] ? String(adminDict[f].geminiInsight || "") : "",
-           geminiDate: adminDict[f] ? String(adminDict[f].geminiDate || "") : ""
+           geminiDate: adminDict[f] ? String(adminDict[f].geminiDate || "") : "",
+           qbRef: {
+             permitSent: qbPermitSentIdx > -1 ? String(r[qbPermitSentIdx] || "") : "",
+             permitAppr: qbPermitApprIdx > -1 ? String(r[qbPermitApprIdx] || "") : "",
+             dotSub:     qbDotSubIdx     > -1 ? String(r[qbDotSubIdx]     || "") : "",
+             xingAppr:   qbXingApprIdx   > -1 ? String(r[qbXingApprIdx]   || "") : "",
+             apprDist:   qbApprDistIdx   > -1 ? String(r[qbApprDistIdx]   || "") : "",
+             activeSet:  qbActiveSetIdx  > -1 ? String(r[qbActiveSetIdx]  || "") : "",
+             activePwr:  qbActivePwrIdx  > -1 ? String(r[qbActivePwrIdx]  || "") : "",
+             transport:  qbTransportIdx  > -1 ? String(r[qbTransportIdx]  || "") : "",
+             whatFeeds:  qbWhatFeedsIdx  > -1 ? String(r[qbWhatFeedsIdx]  || "") : "",
+             island:     qbIslandIdx     > -1 ? String(r[qbIslandIdx]     || "") : ""
+           }
          };
       });
     }
