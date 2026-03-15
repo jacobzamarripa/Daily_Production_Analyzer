@@ -2176,6 +2176,17 @@
           applyFilters();
       }
 
+      function getProjectsPieSliceLabel(item) {
+          let stageName = item.stage || "Unknown";
+          let statusName = item.status || "Unknown";
+          let sLower = stageName.toLowerCase();
+
+          if (sLower.includes('field cx')) return `${stageName} | ${statusName}`;
+          if (sLower.includes('ofs')) return 'OFS';
+          if (sLower.includes('permit')) return 'Permitting';
+          return stageName;
+      }
+
       const setHtml = (id, val) => { let el = document.getElementById(id); if(el) el.innerHTML = val; };
       const setTxt = (id, val) => { let el = document.getElementById(id); if(el) el.innerText = val; };
       const setStyle = (id, prop, val) => { let el = document.getElementById(id); if(el) el.style[prop] = val; };
@@ -3087,7 +3098,11 @@
               : miniSldNodeHtml(upstreamFdh || 'Upstream Unknown', upstreamNode, upstreamFdh, false);
           let currentNode = miniSldNodeHtml(item && item.fdh, item, '', true);
           let rightNode = miniSldNodeHtml(downstreamFdh || 'Downstream Unknown', downstreamNode, downstreamFdh, false);
+          let labelNode = `<div style="display:flex; align-items:center; padding-right:12px; margin-right:4px; border-right:1px solid var(--border); flex-shrink:0;">
+              <span style="font-size:9px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Network Path</span>
+          </div>`;
           return `<div style="display:flex; align-items:center; gap:8px; width:100%;">
+              ${labelNode}
               ${leftNode}
               <div style="font-size:14px; color:var(--text-muted); flex:0 0 auto;">→</div>
               ${currentNode}
@@ -3352,7 +3367,7 @@
       function moveSpikeHUD(e) { moveHUD(e); } function hideSpikeHUD() { hideHUD(); }
 
       let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
-      let currentFilterStats = { bslByVendor: {}, bslByMonth: {}, bslMatrix: {}, lifecycle: { active: 0, pending: 0, overdue: 0 }, stageCounts: {} };
+      let currentFilterStats = { bslByVendor: {}, bslByMonth: {}, bslMatrix: {}, lifecycle: { active: 0, pending: 0, overdue: 0 }, stageCounts: {}, pieCounts: {} };
       let filteredItems = []; let currentQueueIndex = -1; let ganttManualHeight = null;
       let globalRefDataDate = "";
       let globalAllFdhIds = [];
@@ -3754,6 +3769,7 @@
             currentFilterStats.bslMatrix = {};
             currentFilterStats.lifecycle = { active: 0, pending: 0, overdue: 0 };
             currentFilterStats.stageCounts = {};
+            currentFilterStats.pieCounts = {};
             
             filtered.forEach(item => {
                 let start = safeDate(item.cxStart) || safeDate(item.reportDate) || new Date(today);
@@ -3763,10 +3779,11 @@
                 let isComplete = (item.stage || "").toLowerCase().includes('ofs') || (item.status || "").toLowerCase().includes('complete');
                 let isOnHold = (item.status || "").toLowerCase().includes('hold');
 
-                // Aggregate by stage, pulling "Complete" statuses into their own bucket
                 let stageName = item.stage || 'Unknown';
-                if ((item.status || '').toLowerCase().includes('complete')) stageName = 'Complete';
                 currentFilterStats.stageCounts[stageName] = (currentFilterStats.stageCounts[stageName] || 0) + 1;
+
+                let pieSliceName = getProjectsPieSliceLabel(item);
+                currentFilterStats.pieCounts[pieSliceName] = (currentFilterStats.pieCounts[pieSliceName] || 0) + 1;
 
                 let bslStr = String(item.bsls).replace(/,/g, '');
                 let bslNum = parseInt(bslStr, 10) || 0;
@@ -3798,11 +3815,9 @@
                 }
             });
 
-            let displayFiltered = activePieStageFilter ? filtered.filter(i => {
-                let sName = i.stage || 'Unknown';
-                if ((i.status || '').toLowerCase().includes('complete')) sName = 'Complete';
-                return sName === activePieStageFilter;
-            }) : filtered;
+            let displayFiltered = activePieStageFilter
+                ? filtered.filter(i => getProjectsPieSliceLabel(i) === activePieStageFilter)
+                : filtered.slice();
 
             setTxt('kpi-total-proj', displayFiltered.length);
             setTxt('kpi-active-bsls', activeBslsCount.toLocaleString());
@@ -3837,7 +3852,7 @@
             }
 
             if (sortVal !== 'default') {
-                filtered.sort((a, b) => {
+                displayFiltered.sort((a, b) => {
                     if (sortVal === 'admin') {
                         let aAdmin = (a.flags.includes("ADMIN: CHECK CROSSINGS") || a.flags.includes("STATUS MISMATCH") || a.flags.includes("ADMIN: REFRESH REF DATA") || a.flags.includes("MISSING QB STATUS")) ? 0 : 1;
                         let bAdmin = (b.flags.includes("ADMIN: CHECK CROSSINGS") || b.flags.includes("STATUS MISMATCH") || b.flags.includes("ADMIN: REFRESH REF DATA") || b.flags.includes("MISSING QB STATUS")) ? 0 : 1;
@@ -3849,7 +3864,7 @@
                     if (isInvA && isInvB) return a.rowNum - b.rowNum; if (isInvA) return 1; if (isInvB) return -1;
                     return valA - valB;
                 });
-            } else { filtered.sort((a, b) => a.rowNum - b.rowNum); }
+            } else { displayFiltered.sort((a, b) => a.rowNum - b.rowNum); }
             
             let anyActive = vVen !== 'ALL' || vCit !== 'ALL' || vOfs !== 'ALL' || vSev !== 'ALL' || searchTerm !== '' || activeAdminFilter !== null;
             let clearBtn = getEl('btn-clear-filters');
@@ -5036,8 +5051,8 @@
       }
 
       function renderProjectsHUD() {
-          let stageCounts = currentFilterStats.stageCounts || {};
-          let total = Object.values(stageCounts).reduce((a, b) => a + b, 0);
+          let pieCounts = currentFilterStats.pieCounts || {};
+          let total = Object.values(pieCounts).reduce((a, b) => a + b, 0);
           let hud = getEl('projects-pie-hud');
           let pill = getEl('nav-projects-pill');
           if (!hud || !pill) return false;
@@ -5048,10 +5063,24 @@
           }
 
           let defaultColors = ['#94a3b8', '#cbd5e1', '#f1f5f9'];
-          let sortedStages = Object.keys(stageCounts).sort((a, b) => stageCounts[b] - stageCounts[a]);
+          let sortedStages = Object.keys(pieCounts).sort((a, b) => pieCounts[b] - pieCounts[a]);
 
           let slices = sortedStages.map((stage, idx) => {
-              return { label: stage, count: stageCounts[stage], color: getStageColor(stage) };
+              let color = defaultColors[idx % defaultColors.length];
+              let sLower = stage.toLowerCase();
+
+              if (sLower.includes('permit')) color = '#a855f7';
+              else if (sLower.includes('field cx')) {
+                  if (sLower.includes('complete')) color = '#22c55e';
+                  else if (sLower.includes('pending') || sLower.includes('assignment')) color = '#f97316';
+                  else if (sLower.includes('hold')) color = '#64748b';
+                  else color = '#facc15';
+              }
+              else if (sLower.includes('ofs')) color = '#3b82f6';
+              else if (sLower.includes('hold')) color = '#64748b';
+              else if (sLower.includes('pending') || sLower.includes('assignment')) color = '#f97316';
+
+              return { label: stage, count: pieCounts[stage], color: color };
           });
 
           let conicStr = [];
@@ -5063,8 +5092,9 @@
               conicStr.push(`${s.color} ${currentPct}% ${currentPct + pct}%`);
               currentPct += pct;
               let isActive = activePieStageFilter === s.label;
+              let escapedLabel = s.label.replace(/'/g, "\\'");
               legendHtml += `
-              <div onclick="togglePieStageFilter('${s.label.replace(/'/g, "\\'")}')" style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:8px; cursor:pointer; padding:4px 6px; border-radius:8px; border: 1.5px solid ${isActive ? s.color : 'transparent'}; background:${isActive ? s.color + '22' : 'transparent'}; transition: border 0.15s, background 0.15s;">
+              <div onclick="togglePieStageFilter('${escapedLabel}')" class="hover-trigger" style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:4px; cursor:pointer; padding:4px 8px; border-radius:8px; border: 1px solid ${isActive ? s.color : 'transparent'}; background:${isActive ? 'rgba(255,255,255,0.1)' : 'transparent'}; transition: all 0.2s;">
                   <div style="display:flex; align-items:center; gap:8px;">
                       <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${s.color};"></span>
                       <span style="color:#fafafa; font-weight:800;">${s.label}</span>
@@ -5074,7 +5104,7 @@
           });
 
           let pieStyle = `background: conic-gradient(${conicStr.join(', ')}); border-radius: 50%; width: 130px; height: 130px; box-shadow: 0 8px 16px rgba(0,0,0,0.5);`;
-          let clearFilterBtn = activePieStageFilter ? `<button onclick="togglePieStageFilter('${activePieStageFilter.replace(/'/g, "\\'")}')" style="background:#3f3f46; border:none; color:#fafafa; font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; cursor:pointer;">✕ ${activePieStageFilter}</button>` : '';
+          let clearFilterBtn = activePieStageFilter ? `<button onclick="togglePieStageFilter(null)" style="background:transparent; border:none; color:#ef4444; font-size:9px; font-weight:900; cursor:pointer; text-transform:uppercase;">Clear Filter</button>` : '';
 
           hud.innerHTML = `
               <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:#fde68a; letter-spacing:0.5px; border-bottom:1px solid #333338; padding-bottom:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">

@@ -1154,7 +1154,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           
           let stageStr = (refData.stage || "").toUpperCase().trim();
           let statusStr = (refData.status || "").toUpperCase().trim();
-          let isFieldCx = stageStr.includes("FIELD CX") || stageStr.includes("OFS") || statusStr.includes("COMPLETE");
+          let isFieldCx = stageStr.includes("FIELD CX");
 
           if (stageStr === "" || stageStr === "-" || statusStr === "" || statusStr === "-") {
               if (diag.flags !== "✅ No Anomalies" && diag.flags !== "") diag.flags += "\n🚩 MISSING QB STATUS";
@@ -1202,6 +1202,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     if (!ref.vendor) return;
     const stageUp = (ref.stage || "").toUpperCase();
     const statUp  = (ref.status || "").toUpperCase();
+    if (stageUp.includes("PERMITTING") && !statUp.includes("APPROVED")) return;
     if (statUp.includes("COMPLETE") || statUp.includes("ON HOLD")) return;
     if (!GHOST_ACTIVE_STAGES.some(s => stageUp.includes(s))) return;
 

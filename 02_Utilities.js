@@ -163,6 +163,9 @@ function getDashboardData() {
      let fdhKey = fdhIdx > -1 ? String(data[i][fdhIdx] || "").trim().toUpperCase() : "";
      let refData = refDict[fdhKey] || null;
 
+     // Ignore all permitting projects unless they are Approved.
+     if (stageStr.includes("PERMITTING") && !statStr.includes("APPROVED")) continue;
+
      if (flags !== "" && !flags.includes("✅ No Anomalies") && !flags.includes("COMPLETE") && !stageStr.includes("OFS") && !statStr.includes("OPEN FOR SALE")) {
          const parseDate = (val) => val ? ((val instanceof Date) ? Utilities.formatDate(val, "GMT-5", "MM-dd-yyyy") : String(val).split('T')[0]) : "";
          
