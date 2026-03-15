@@ -1024,6 +1024,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   const histSheet = ss.getSheetByName(HISTORY_SHEET);
   const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
   const styleSheet = ss.getSheetByName(STYLE_MASTER);
+  let targetDates = Array.isArray(targetDateStr) ? targetDateStr : [targetDateStr];
   
   let refDict = optionalRefDict || getReferenceDictionary();
   let vendorDict = getVendorLiveDictionary(refDict); 
@@ -1063,7 +1064,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
         if (parts.length === 3) altDateStr = `${parseInt(parts[1])}/${parseInt(parts[2])}/${parts[0]}`;
     }
     
-    if (rowDateStr === targetDateStr || altDateStr === targetDateStr) {
+    if (targetDates.includes(rowDateStr) || targetDates.includes(altDateStr)) {
       let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")].toString().toUpperCase().trim();
       submittedFdhs.add(fdhId);
       let diag = runBennyDiagnostics(row, refDict, vendorDict); 
@@ -1473,7 +1474,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     if (startGroupCol > 0 && endGroupCol >= startGroupCol) { try { mirrorSheet.getRange(1, startGroupCol, 1, endGroupCol - startGroupCol + 1).shiftColumnGroupDepth(1); mirrorSheet.collapseAllColumnGroups(); } catch(e) {} }
     
   } else if (!isSilent) {
-    SpreadsheetApp.getUi().alert(`No data found in Master Archive for Date: ${targetDateStr}`);
+    SpreadsheetApp.getUi().alert(`No data found in Master Archive for Date(s): ${targetDates.join(", ")}`);
   }
 }
 

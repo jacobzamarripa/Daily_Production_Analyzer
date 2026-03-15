@@ -248,7 +248,7 @@ function showDatePickerDialog(actionName, title) {
   SpreadsheetApp.getUi().showModalDialog(html, "📅 " + title);
 }
 function processDateSelection(dateStr, actionName) {
-  if (!dateStr) return;
+  if (!dateStr || (Array.isArray(dateStr) && dateStr.length === 0)) return;
 
   if (actionName === "LoadQB") {
     populateQuickBaseTabCore(dateStr);
@@ -493,7 +493,8 @@ function exportVendorCorrectionsXLSX(isSilent = false) { logMsg("⚡ STARTING: V
 // This allows the Web App to directly run Function 3a and return fresh data!
 function webAppTrigger3a(targetDateStr) {
   try {
-    logMsg("🌐 WebApp triggered Engine (Fn 3a) for Date: " + targetDateStr);
+    let targetDates = Array.isArray(targetDateStr) ? targetDateStr : [targetDateStr];
+    logMsg("🌐 WebApp triggered Engine (Fn 3a) for Date(s): " + targetDates.join(", "));
     generateDailyReviewCore(targetDateStr, null, false);
     return getDashboardData();
   } catch (e) {

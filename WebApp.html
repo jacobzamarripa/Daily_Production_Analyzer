@@ -1489,6 +1489,21 @@
       </div>
     </div>
 
+    <div id="run-review-modal" class="startup-overlay">
+      <div class="startup-modal" style="text-align:left; width:320px;">
+         <h2 style="margin-top:0; font-size:18px; font-weight:900; color:var(--text-main);">Run System Diagnostics</h2>
+         <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Select the date of the daily reports you want to review.</p>
+         <input type="date" id="run-review-date" onchange="checkWeekendHint()" style="width:100%; margin-bottom:12px; padding:10px; border-radius:8px; border:1px solid var(--border); font-family:monospace; font-size:14px; color:var(--text-main); background:var(--card-bg);">
+         <div id="weekend-hint" style="display:none; font-size:10px; color:#1d4ed8; background:rgba(59, 130, 246, 0.1); border:1px solid #bfdbfe; padding:8px 12px; border-radius:8px; margin-bottom:16px; font-weight:700;">
+            ✨ Friday selected. Saturday &amp; Sunday reports will be automatically bundled into this review.
+         </div>
+         <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn btn-skip" onclick="document.getElementById('run-review-modal').classList.remove('visible')">Cancel</button>
+            <button class="btn btn-primary" id="btn-confirm-run" onclick="executeRunReview()">▶ Run Engine</button>
+         </div>
+      </div>
+    </div>
+
     <div id="gantt-hud" class="gantt-hud"></div>
     
     <div class="top-nav">
@@ -2695,9 +2710,53 @@
 
       // ── ▶ Run Review — re-runs the diagnostic engine for a given date ────
       function triggerRunReview() {
-          let d = new Date(); d.setDate(d.getDate() - 1); let localDateStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
-          let dateInput = prompt("Run System Diagnostics (Fn 3a)\n\nEnter the date to review (YYYY-MM-DD):", localDateStr); if (!dateInput) return;
+          let d = new Date();
+          let tzOffset = d.getTimezoneOffset() * 60000;
+          let localToday = new Date(d.getTime() - tzOffset);
+          let maxDateStr = localToday.toISOString().split('T')[0];
+          let dateInput = getEl('run-review-date');
+
+          if (dateInput) {
+              dateInput.max = maxDateStr;
+
+              let defaultDate = new Date(localToday);
+              if (defaultDate.getUTCDay() === 1) {
+                  defaultDate.setUTCDate(defaultDate.getUTCDate() - 3);
+              } else {
+                  defaultDate.setUTCDate(defaultDate.getUTCDate() - 1);
+              }
+
+              dateInput.value = defaultDate.toISOString().split('T')[0];
+              checkWeekendHint();
+          }
+
+          getEl('run-review-modal')?.classList.add('visible');
+      }
+
+      function checkWeekendHint() {
+          let dateInput = getEl('run-review-date');
+          let hint = getEl('weekend-hint');
+          if (dateInput && hint) {
+              let d = new Date(dateInput.value + 'T12:00:00');
+              hint.style.display = (d.getDay() === 5) ? 'block' : 'none';
+          }
+      }
+
+      function executeRunReview() {
+          let dateVal = getEl('run-review-date')?.value;
+          if (!dateVal) return;
+
+          getEl('run-review-modal')?.classList.remove('visible');
           let btn = getEl('btn-run-review'); if(btn) { btn.innerText = "Running..."; btn.disabled = true; }
+          let targetDates = [dateVal];
+          let d = new Date(dateVal + 'T12:00:00');
+          if (d.getDay() === 5) {
+              let sat = new Date(d); sat.setDate(sat.getDate() + 1);
+              let sun = new Date(d); sun.setDate(sun.getDate() + 2);
+              targetDates.push(sat.toISOString().split('T')[0]);
+              targetDates.push(sun.toISOString().split('T')[0]);
+          }
+
           setHtml('gantt-container', `<div class="empty-msg">Running Engine...</div>`); setHtml('inbox-list', `<div class="empty-msg">Fetching new data...</div>`);
           setStyle('pane-content', 'display', 'none'); setStyle('detail-layout', 'display', 'none'); setStyle('welcome-screen', 'display', 'flex'); setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px; font-weight:900; letter-spacing:-1px; color:var(--text-muted);">Running Engine Diagnostics...</div>`);
           google.script.run.withSuccessHandler((data) => {
@@ -2705,7 +2764,7 @@
               setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">Select a Project</div>`); initDashboard(data);
           }).withFailureHandler((err) => {
               if(btn) { btn.innerText = "▶ Run Review"; btn.disabled = false; } alert("Engine Error: " + err.message);
-          }).webAppTrigger3a(dateInput.trim());
+          }).webAppTrigger3a(targetDates);
       }
 
       // ── ↻ Refresh — fast re-read of mirror sheet, no engine re-run ────────
@@ -5782,7 +5841,7 @@ ${item.comment || 'No notes provided.'}
         margin: 0 !important; border-radius: 24px !important;
         cursor: default;
         transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
-        box-shadow: 0 80px 160px rgba(0,0,0,0.6);
+        box-shadow: 0 80px 160px rgba(0,0,0,0.5);
       }
       /* Deck slide: rigid 16:9 */
       #deck-stage-card {
