@@ -595,9 +595,20 @@
           max-width: 220px !important;
       }
       #grid-pivot-select {
-          width: 155px !important;
-          min-width: 155px !important;
+          width: 190px !important;
+          min-width: 190px !important;
           padding-right: 30px !important;
+          font-size: 10px !important;
+      }
+      #filter-log-user {
+          width: 120px !important;
+          height: 32px !important;
+          font-size: 9px !important;
+          background: #0f172a !important;
+          color: #fff !important;
+          border: none !important;
+          padding: 0 10px !important;
+          border-radius: 16px !important;
       }
       body.dark-mode .filter-strip input[type="text"],
       body.dark-mode .filter-strip select {
@@ -688,23 +699,23 @@
       /* ── 🧠 DYNAMIC ANCHORED FILTER TAGS ── */
       #active-filter-pills {
           position: fixed !important;
-          top: 56px;
+          top: 54px;
           bottom: auto;
           left: 50%;
           transform: translateX(-50%);
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
-          gap: 6px;
+          gap: 4px;
           width: auto;
-          max-width: 85vw;
+          max-width: 80vw;
           z-index: 3000 !important;
           pointer-events: none;
-          transition: all 0.4s var(--ease-out-expo, cubic-bezier(0.19,1,0.22,1));
+          transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
       }
       body.deck-mode-active #active-filter-pills {
           top: auto;
-          bottom: 74px;
+          bottom: 78px;
       }
       .filter-pill {
           pointer-events: auto;
@@ -4066,51 +4077,45 @@
       let globalAllFdhIds = [];
       // View mode is managed by currentViewMode + applyViewMode()
 
-      // Mobile-safe date parser. new Date("MM-dd-yyyy") is Invalid on mobile browsers.
+      // UTC-locked date parser — prevents browser local-time shifting across timezones.
       function safeDate(str) {
           if (!str || str === '' || str === '-' || str === 'Unknown') return null;
           let m;
           // MM-dd-yyyy or M-d-yyyy (backend Utilities.formatDate output)
           m = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-          if (m) return new Date(+m[3], +m[1]-1, +m[2]);
+          if (m) return new Date(Date.UTC(+m[3], +m[1]-1, +m[2]));
           // MM/dd/yyyy or M/d/yyyy
           m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-          if (m) return new Date(+m[3], +m[1]-1, +m[2]);
-          // yyyy-MM-dd (ISO 8601 — safe everywhere)
+          if (m) return new Date(Date.UTC(+m[3], +m[1]-1, +m[2]));
+          // yyyy-MM-dd (ISO 8601)
           m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-          if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-          // Last resort (unreliable on mobile)
+          if (m) return new Date(Date.UTC(+m[1], +m[2]-1, +m[3]));
+          // Last resort
           let d = new Date(str);
           return isNaN(d.getTime()) ? null : d;
       }
+      // UTC-locked date formatter — everyone on the team sees the same Business Day date.
       function formatDate(val, includeTime = false) {
-          if (!val || val === '-' || val === 'Unknown') return 'TBD';
+          if (!val || val === '-' || val === 'Unknown' || val === '') return 'TBD';
 
           let d;
-          let useUtcForDateOnly = false;
           if (val instanceof Date) {
               d = val;
           } else {
-              let rawVal = String(val);
-              useUtcForDateOnly = !includeTime && /T/.test(rawVal) && /(Z|[+\-]\d{2}:\d{2})$/.test(rawVal);
-              d = new Date(val);
+              // Strip trailing GMT/timezone metadata from raw JS Date strings
+              let raw = String(val).split('GMT')[0].trim();
+              d = new Date(raw);
               if (isNaN(d.getTime())) {
-                  let parts = rawVal.match(/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{2,4})/);
-                  if (parts) {
-                      let yr = parts[3].length === 2 ? `20${parts[3]}` : parts[3];
-                      d = new Date(Number(yr), Number(parts[1]) - 1, Number(parts[2]));
-                  }
+                  d = safeDate(val);
               }
           }
 
           if (!d || isNaN(d.getTime())) return String(val);
 
-          const options = { month: '2-digit', day: '2-digit', year: '2-digit' };
+          const options = { month: '2-digit', day: '2-digit', year: '2-digit', timeZone: 'UTC' };
           if (includeTime) {
               options.hour = '2-digit';
               options.minute = '2-digit';
-          } else if (useUtcForDateOnly) {
-              options.timeZone = 'UTC';
           }
 
           return new Intl.DateTimeFormat('en-US', options).format(d);
@@ -6503,9 +6508,10 @@
         let ofsPillStyle = isOFSMonth ? 'color:#2563eb; background:rgba(239,246,255,0.7); border-color:#2563eb;' : 'color:var(--text-main); background:var(--card-bg); border-color:var(--border);';
         let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
 
-        let deckReportDate = item.reportDate || item.date || 'TBD';
-        let deckLastCheck = item.lastChecked || 'NEVER';
-        let deckRefData = (typeof globalRefDataDate !== 'undefined' && globalRefDataDate) ? globalRefDataDate : '—';
+        let deckReportDate = formatDate(item.reportDate || item.date);
+        let deckLastCheck = formatDate(item.lastChecked);
+        let rawRef = (typeof globalRefDataDate !== 'undefined' && globalRefDataDate) ? globalRefDataDate : '';
+        let deckRefData = rawRef ? formatDate(rawRef.split(' ')[0]) : '—';
 
         const mem = pmSessionMemory[item.fdh] || {};
         const isXingActive = mem['q_is_xing'] !== undefined ? (mem['q_is_xing'] === 'true' || mem['q_is_xing'] === true) : item.isXing;
