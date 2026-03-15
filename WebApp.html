@@ -349,7 +349,7 @@
           width: max-content !important;
           max-width: 95% !important;
           margin: 0 !important;
-          z-index: 500 !important;
+          z-index: 10005 !important;
           padding: 8px 12px !important;
           border-radius: 34px !important;
           background: rgba(255, 255, 255, 0.65) !important;
@@ -363,7 +363,7 @@
           flex-wrap: nowrap !important;
           gap: 8px !important;
           flex-shrink: 0 !important;
-          overflow-x: auto !important;
+          overflow: visible !important;
           scrollbar-width: none;
           transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease !important;
       }
@@ -455,7 +455,7 @@
           gap: 8px;
           opacity: 1;
           max-width: 800px;
-          overflow: hidden;
+          overflow: visible;
           white-space: nowrap;
           will-change: max-width, opacity, margin, padding;
           transition: max-width 0.4s cubic-bezier(0.25, 1, 0.5, 1),
@@ -1333,9 +1333,9 @@
       .ob-tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; border-radius: 10px; background: #ef4444; color: #fff; font-size: 11px; font-weight: 700; padding: 0 6px; line-height: 1; }
       .ob-tab-badge-crit { background: var(--color-critical); color: #fff; }
       /* Panel tab bar */
-      .panel-tab-bar { display: flex; align-items: center; padding: 0 16px; background: color-mix(in srgb, var(--card-bg) 94%, transparent); border-bottom: 1px solid var(--border); gap: 6px; height: 54px; flex-shrink: 0; }
-      .panel-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-right: 8px; flex-shrink: 0; }
-      .panel-tab { flex: 1; height: 32px; border-radius: 6px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border: none; background: transparent; color: var(--text-muted); transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+      .panel-tab-bar { display: flex; align-items: center; padding: 8px 12px; background: color-mix(in srgb, var(--card-bg) 94%, transparent); border-bottom: 1px solid var(--border); gap: 6px; height: auto; min-height: 54px; flex-shrink: 0; flex-wrap: wrap; }
+      .panel-title { display: none; }
+      .panel-tab { flex: 1; min-width: 60px; height: 32px; border-radius: 6px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border: none; background: transparent; color: var(--text-muted); transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
       .panel-tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
       @keyframes pulse-dot {
         0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
@@ -2121,7 +2121,7 @@
                         Reviewed <span id="ob-count">0</span>
                     </button>
                     <button class="panel-tab" id="panel-tab-changelog" onclick="switchPanelTab('changelog')">
-                        Activity Log <span id="changelog-pulse" class="tab-pulse" style="display:none;"></span>
+                        Activity <span id="changelog-pulse" class="tab-pulse" style="display:none;"></span>
                     </button>
                     <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel">✕</button>
                   </div>
@@ -2971,7 +2971,7 @@
       function _syncDrawerTop() { /* no-op */ }
 
       let currentPanelTab = 'admin';
-      let globalRecentChanges = [];
+      let allGlobalLogs = [];
       function toggleAdminPanel() {
           let pane = getEl('outbox-pane');
           let isOpen = pane && pane.classList.contains('open');
@@ -3006,7 +3006,7 @@
           let search = (getEl('changelog-search')?.value || '').toLowerCase();
           if (!list) return;
 
-          let allLogs = (globalRecentChanges || []).slice().sort((a, b) => (b.timestampObj || 0) - (a.timestampObj || 0));
+          let allLogs = (allGlobalLogs || []).slice().sort((a, b) => (b.timestampObj || 0) - (a.timestampObj || 0));
           if (search) {
               allLogs = allLogs.filter(log =>
                   String(log.fdh || '').toLowerCase().includes(search) ||
@@ -4012,7 +4012,7 @@
                 }
                 datalist.innerHTML = data.allFdhIds.sort().map(id => `<option value="${id}">`).join('');
             }
-            globalRecentChanges = (data && data.recentChanges) ? data.recentChanges : [];
+            allGlobalLogs = (data && data.globalLogs) ? data.globalLogs : [];
             renderChangeLog();
             if (data && data.hasRecentChanges) {
                 let pulseSeen = false;

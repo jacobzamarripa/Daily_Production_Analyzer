@@ -155,8 +155,7 @@ function getDashboardData() {
   };
 
   const logSheet = ss.getSheetByName(CHANGE_LOG_SHEET);
-  let changeLogDict = {};
-  let allRecentChanges = [];
+  let globalLogs = [];
   let hasRecentGlobalChange = false;
   let yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -164,26 +163,19 @@ function getDashboardData() {
   if (logSheet && logSheet.getLastRow() > 1) {
     const logData = logSheet.getDataRange().getValues();
     for (let j = 1; j < logData.length; j++) {
-      let fdhId = String(logData[j][0] || "").toUpperCase().trim();
-      if (!fdhId) continue;
-
       let timeVal = logData[j][4];
       let logTime = timeVal instanceof Date ? new Date(timeVal.getTime()) : new Date(timeVal);
       let timestampObj = isNaN(logTime.getTime()) ? 0 : logTime.getTime();
       if (timestampObj > yesterday.getTime()) hasRecentGlobalChange = true;
 
-      let logItem = {
-        fdh: fdhId,
+      globalLogs.push({
+        fdh: String(logData[j][0] || ""),
         type: String(logData[j][1] || ""),
         val: String(logData[j][2] || ""),
         user: String(logData[j][3] || "System"),
         time: String(logData[j][4] || ""),
         timestampObj: timestampObj
-      };
-
-      if (!changeLogDict[fdhId]) changeLogDict[fdhId] = [];
-      changeLogDict[fdhId].push(logItem);
-      allRecentChanges.push(logItem);
+      });
     }
   }
 
@@ -241,7 +233,6 @@ function getDashboardData() {
              hasCDDist: refData ? refData.hasCDDist : false,
              hasBOMPo: refData ? refData.hasBOMPo : false,
              hasSOW: refData ? refData.hasSOW : false,
-             recentChanges: changeLogDict[fdhKey] || [],
              qbRef: refData ? (refData.qbRef || {}) : {},
              vel: {
                  ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },
@@ -258,8 +249,8 @@ function getDashboardData() {
   let refDataDate = String(PropertiesService.getScriptProperties().getProperty('refDataImportDate') || "");
   let payload = {
     actionItems: actionItems,
-    recentChanges: allRecentChanges,
     hasRecentChanges: hasRecentGlobalChange,
+    globalLogs: globalLogs,
     totalRows: data.length - 1,
     headers: headers,
     refDataDate: refDataDate,
