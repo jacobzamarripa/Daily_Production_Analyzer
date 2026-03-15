@@ -300,6 +300,49 @@
       .startup-card h3 { margin: 0 0 4px 0; font-size: 14px; font-weight: 900; color: var(--text-main); }
       .startup-card p { margin: 0; font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
+      /* 🗞️ Daily Digest Modal */
+      .digest-overlay {
+          position: fixed; inset: 0; z-index: 999995;
+          background: rgba(15, 23, 42, 0.6);
+          backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s ease;
+      }
+      body.dark-mode .digest-overlay { background: rgba(0, 0, 0, 0.7); }
+      .digest-overlay.visible { opacity: 1; visibility: visible; }
+
+      .digest-modal {
+          background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px;
+          width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.2); transform: translateY(20px);
+          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          overflow: hidden;
+      }
+      .digest-overlay.visible .digest-modal { transform: translateY(0); }
+
+      .digest-header {
+          padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--bg);
+          display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+      }
+      .digest-body {
+          padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; flex-grow: 1;
+      }
+      .digest-section-title {
+          font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+      }
+      .digest-grid {
+          display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;
+      }
+      .digest-card {
+          background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+      }
+      .digest-stat-row {
+          display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed rgba(0,0,0,0.05); font-size: 12px; font-weight: 600;
+      }
+      .digest-stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+      body.dark-mode .digest-stat-row { border-bottom-color: rgba(255,255,255,0.05); }
+      .digest-num { font-family: monospace; font-size: 14px; font-weight: 900; color: var(--color-insight); }
+
       /* 🧠 Phase 4 Ambient Glow States */
       .glow-ofs      { box-shadow: 0 0 15px rgba(37, 99, 235, 0.25) !important; border-color: #bfdbfe !important; }
       .glow-complete { box-shadow: 0 0 15px rgba(34, 197, 94, 0.25) !important; border-color: #bbf7d0 !important; }
@@ -1887,6 +1930,20 @@
       </div>
     </div>
 
+    <div id="digest-overlay" class="digest-overlay" onclick="toggleDigest(false)">
+      <div class="digest-modal" onclick="event.stopPropagation()">
+        <div class="digest-header">
+          <div>
+            <h2 style="margin:0; font-size:20px; font-weight:900; letter-spacing:-0.5px; color:var(--text-main);">Morning Briefing</h2>
+            <p style="margin:2px 0 0 0; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;" id="digest-date-subtitle"></p>
+          </div>
+          <button class="btn hover-trigger" onclick="toggleDigest(false)" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Close</button>
+        </div>
+        <div class="digest-body" id="digest-body-content">
+           </div>
+      </div>
+    </div>
+
     <div id="gantt-hud" class="gantt-hud"></div>
     
     <div class="top-nav">
@@ -1954,6 +2011,7 @@
         <span class="gemini-badge ai-ok" id="gemini-badge" title="Gemini API calls used today" style="display:none"></span>
         <button class="btn-nav" onclick="triggerQBSync()"    id="btn-qb-sync">⟳ Sync QB</button>
         <button class="btn-nav" onclick="triggerRunReview()" id="btn-run-review">▶ Run Review</button>
+        <button class="btn-nav" onclick="toggleDigest(true)" id="btn-digest">🗞️ Daily Digest</button>
         <button class="btn-nav" onclick="triggerUIRefresh()" id="btn-refresh">↻ Refresh</button>
         <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme" title="Toggle dark mode"></button>
         <button class="btn-nav" onclick="toggleHelpPanel()" id="btn-help">?</button>
@@ -2430,6 +2488,7 @@
       let activeFilters = { sev: [], vendor: [], city: [], ofs: [] };
       let openDropdownId = null;
       const CHANGELOG_PULSE_SESSION_KEY = 'changelogPulseSeen';
+      const DAILY_DIGEST_STORAGE_KEY = 'lastDigestView';
 
       function getStageColor(stage) {
           let sLower = (stage || "").toLowerCase();
@@ -3001,6 +3060,18 @@
           }, 1000);
       }
 
+      function triggerDailyDigestAutoOpen() {
+          let todayStr = new Date().toDateString();
+          let lastDigestView = null;
+          try { lastDigestView = localStorage.getItem(DAILY_DIGEST_STORAGE_KEY); } catch(e) {}
+          if (lastDigestView === todayStr) return;
+
+          setTimeout(() => {
+              toggleDigest(true);
+              try { localStorage.setItem(DAILY_DIGEST_STORAGE_KEY, todayStr); } catch(e) {}
+          }, 500);
+      }
+
       function completeStartup(mode) {
           clearInterval(startupTimer);
           startupTimer = null;
@@ -3008,6 +3079,7 @@
           if (overlay) overlay.classList.remove('visible');
 
           switchWorkspaceView(mode);
+          triggerDailyDigestAutoOpen();
 
           setTimeout(() => {
               let panel = getEl('gantt-panel');
@@ -3106,6 +3178,106 @@
 
       let currentPanelTab = 'admin';
       let allGlobalLogs = [];
+      function toggleDigest(show) {
+          const overlay = getEl('digest-overlay');
+          if (!overlay) return;
+          if (show) {
+              generateMorningDigest();
+              overlay.classList.add('visible');
+          } else {
+              overlay.classList.remove('visible');
+          }
+      }
+      function generateMorningDigest() {
+          const body = getEl('digest-body-content');
+          const subtitle = getEl('digest-date-subtitle');
+          if (!body || !subtitle) return;
+
+          let d = new Date();
+          subtitle.innerText = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+
+          let yesterdayTime = Date.now() - (24 * 60 * 60 * 1000);
+          let recentLogs = allGlobalLogs.filter(l => Number(l.timestampObj || 0) >= yesterdayTime);
+
+          let shifts = { ofs: 0, cx: 0, permit: 0, totalChanges: recentLogs.length };
+
+          recentLogs.forEach(l => {
+              let type = String(l.type || '').toUpperCase();
+              let val = String(l.val || '').toUpperCase();
+              if (type.includes("STATUS") || type.includes("STAGE")) {
+                  if (val.includes("OPEN FOR SALE") || val.includes("OFS")) shifts.ofs++;
+                  if (val.includes("FIELD CX") || val.includes("CONSTRUCTION")) shifts.cx++;
+                  if (val.includes("PERMIT") && val.includes("APPROV")) shifts.permit++;
+              }
+          });
+
+          let prodByVendor = {};
+          let totalCrit = 0;
+          let totalMissing = 0;
+
+          (allActionItems || []).forEach(item => {
+              let flags = String(item.flags || '');
+              if (flags.includes("🚨") || flags.includes("🛑") || flags.includes("STATUS MISMATCH")) totalCrit++;
+              if (flags.includes("MISSING DAILY REPORT")) totalMissing++;
+
+              let v = item.vendor || "Unknown";
+              if (v === "-" || v === "") return;
+
+              if (!prodByVendor[v]) prodByVendor[v] = { ug: 0, ae: 0, fib: 0, nap: 0 };
+              if (item.vel) {
+                  prodByVendor[v].ug += Number((item.vel.ug && item.vel.ug.daily) || 0);
+                  prodByVendor[v].ae += Number((item.vel.ae && item.vel.ae.daily) || 0);
+                  prodByVendor[v].fib += Number((item.vel.fib && item.vel.fib.daily) || 0);
+                  prodByVendor[v].nap += Number((item.vel.nap && item.vel.nap.daily) || 0);
+              }
+          });
+
+          let prodHtml = Object.keys(prodByVendor).sort().map(v => {
+              let data = prodByVendor[v];
+              if (data.ug === 0 && data.ae === 0 && data.fib === 0 && data.nap === 0) return '';
+
+              let stats = [];
+              if (data.ug > 0) stats.push(`<span style="color:#f97316;">+${data.ug.toLocaleString()}ft UG</span>`);
+              if (data.ae > 0) stats.push(`<span style="color:#64748b;">+${data.ae.toLocaleString()}ft Strand</span>`);
+              if (data.fib > 0) stats.push(`<span style="color:#ef4444;">+${data.fib.toLocaleString()}ft Fiber</span>`);
+              if (data.nap > 0) stats.push(`<span style="color:#6366f1;">+${data.nap.toLocaleString()} NAPs</span>`);
+
+              return `
+        <div class="digest-card" style="margin-bottom:8px;">
+            <div style="font-size:12px; font-weight:900; color:var(--text-main); margin-bottom:6px;">${esc(v)}</div>
+            <div style="font-size:11px; font-weight:700; display:flex; flex-wrap:wrap; gap:10px;">
+                ${stats.join('<span style="color:var(--border);">|</span>')}
+            </div>
+        </div>`;
+          }).join('');
+
+          if (prodHtml === '') prodHtml = `<div class="empty-msg" style="min-height:40px; font-size:11px;">No production reported today.</div>`;
+
+          body.innerHTML = `
+        <div class="digest-grid">
+            <div>
+                <div class="digest-section-title">Pipeline Shifts (Last 24h)</div>
+                <div class="digest-card">
+                    <div class="digest-stat-row"><span>QuickBase Edits Logged</span><span class="digest-num">${shifts.totalChanges}</span></div>
+                    <div class="digest-stat-row"><span>Projects reaching OFS</span><span class="digest-num" style="color:#22c55e;">${shifts.ofs}</span></div>
+                    <div class="digest-stat-row"><span>Moved to Construction</span><span class="digest-num" style="color:#facc15;">${shifts.cx}</span></div>
+                    <div class="digest-stat-row"><span>Permits Approved</span><span class="digest-num" style="color:#a855f7;">${shifts.permit}</span></div>
+                </div>
+
+                <div class="digest-section-title" style="margin-top:24px;">Queue Risks</div>
+                <div class="digest-card">
+                    <div class="digest-stat-row"><span>Critical Flags Active</span><span class="digest-num" style="color:#ef4444;">${totalCrit}</span></div>
+                    <div class="digest-stat-row"><span>Missing Daily Reports</span><span class="digest-num" style="color:#94a3b8;">${totalMissing}</span></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="digest-section-title">Reported Production Today</div>
+                ${prodHtml}
+            </div>
+        </div>
+    `;
+      }
       function toggleAdminPanel() {
           let pane = getEl('outbox-pane');
           let isOpen = pane && pane.classList.contains('open');
@@ -4201,11 +4373,13 @@
                 }
             }
             if (!data || !data.actionItems || data.actionItems.length === 0) {
+                allActionItems = [];
                 setHtml('gantt-container', `<div class="empty-msg">All Clear ✓</div>`);
                 setHtml('inbox-list', `<div class="empty-msg">All Clear ✓</div>`);
                 setStyle('welcome-screen', 'display', 'flex');
                 setStyle('detail-layout', 'display', 'none');
                 setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px; font-weight:900; letter-spacing:-1px; color:var(--text-muted);">All Clear ✓</div>`);
+                showStartupSelector();
                 return;
             }
             allActionItems = data.actionItems; globalHeaders = data.headers;
