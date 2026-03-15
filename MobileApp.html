@@ -2557,7 +2557,6 @@ function cardHTML(item) {
           (pct > 0 && pct < 100 ? '<div class="qb-time-bead" style="left:'+pct+'%; border-color:'+sColor+';"></div>' : '') +
         '</div>'+
         '<div class="qb-target-wrap'+(item.isXing ? ' xing' : '')+'"><div class="qb-target-inner"><div class="qb-target-label">TARGET DATE</div><div class="qb-target-date" style="color:'+sColor+'">'+formatDate(item.targetDate || item.cxEnd)+'</div></div></div>'+
-        miniSldHtml +
       '</div>'+
       '<div class="qb-module" style="margin-bottom:16px;">'+
         '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">FIELD VELOCITY &amp; PRODUCTION</div>'+
@@ -2570,6 +2569,7 @@ function cardHTML(item) {
           '</div>'+
         '</div>'+
       '</div>'+
+      miniSldHtml +
       '<div class="qb-module" style="margin-bottom:16px;">'+
         '<div class="qb-module-header" style="background:transparent; border-bottom:1px solid var(--border); margin-bottom:12px; padding-bottom:6px;">DIAGNOSTIC &amp; MANAGER REVIEW</div>'+
         renderDeliverableGrid(item)+
@@ -2635,7 +2635,7 @@ function renderMiniSldMobile(item) {
     : miniSldNodeHtmlMobile(upstreamFdh || 'Upstream Unknown', upstreamNode, upstreamFdh, false);
   var currentNode = miniSldNodeHtmlMobile(item && item.fdh, item, '', true);
   var rightNode = miniSldNodeHtmlMobile(downstreamFdh || 'Downstream Unknown', downstreamNode, downstreamFdh, false);
-  return '<div style="display:flex; align-items:center; gap:8px; padding:10px 12px; margin-top:10px; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;">' +
+  return '<div style="display:flex; align-items:center; gap:8px; padding:10px 12px; margin:0 0 16px 0; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">' +
     leftNode +
     '<div style="font-size:12px; color:var(--text-muted); flex:0 0 auto;">→</div>' +
     currentNode +
