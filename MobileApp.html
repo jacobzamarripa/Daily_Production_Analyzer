@@ -1926,6 +1926,15 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+    .pulsing-mic {
+      animation: mic-pulse 1.5s infinite;
+      background: #dcfce7 !important;
+    }
+    @keyframes mic-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70%  { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
   </style>
 </head>
 <body id="app">
@@ -2706,6 +2715,9 @@ function cardHTML(item) {
         '<div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">'+
           '<div style="display:flex; align-items:center; gap:8px;">'+
             '<div class="section-label" style="color:var(--color-insight); margin:0;">PM NOTE</div>'+
+            '<button class="btn-ai" id="btn-dictate-'+item.fdh+'" onclick="startVoiceDictation(this)" style="background:var(--card-bg); color:#10b981; border:1px solid #10b981; animation:none; padding:6px 10px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;">'+
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>'+
+            '</button>'+
             '<button class="btn-ai" onclick="askGeminiForDraftMobile(this)">DRAFT W/GEMINI</button>'+
           '</div>'+
         '</div>'+
@@ -2828,6 +2840,11 @@ function bindCard(card) {
   var ta = card.querySelector('textarea');
   if (ta && item) {
     ta.addEventListener('input', function() { item.comment = ta.value; });
+    ta.addEventListener('focus', function() {
+      setTimeout(function() {
+        ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    });
   }
 }
 
@@ -3666,7 +3683,12 @@ function populateDetail(item) {
   var decisionH = '<div class="detail-section">' +
     '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">' +
       '<div class="detail-section-title" style="margin-bottom:0;">Decision: OMNI Manager Note</div>' +
-      '<button class="btn-ai" onclick="askGeminiForDraftMobile(this)">Draft w/ Gemini</button>' +
+      '<div style="display:flex; align-items:center; gap:8px;">' +
+        '<button class="btn-ai" id="btn-dictate-' + item.fdh + '" onclick="startVoiceDictation(this)" style="background:var(--card-bg); color:#10b981; border:1px solid #10b981; animation:none; padding:6px 10px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>' +
+        '</button>' +
+        '<button class="btn-ai" onclick="askGeminiForDraftMobile(this)">Draft w/ Gemini</button>' +
+      '</div>' +
     '</div>' +
     '<textarea id="p-comment" class="detail-textarea">' + esc(draftVal) + '</textarea>' +
     '</div>';
@@ -3739,6 +3761,71 @@ function commitFromDetail() {
   haptic('medium');
   toast('Committed · '+item.fdh);
   showReviewQueue(item.fdh);
+}
+
+function startVoiceDictation(btn) {
+    var item = state.deck[state.idx];
+    if (!item) return;
+
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Your browser does not support voice dictation. Use your keyboard mic instead.");
+        return;
+    }
+
+    var recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = function() {
+        haptic('light');
+        toast('Listening... Speak now.', 4000);
+        btn.classList.add('pulsing-mic');
+    };
+
+    recognition.onresult = function(event) {
+        btn.classList.remove('pulsing-mic');
+        var transcript = event.results[0][0].transcript;
+        toast('Processing voice note...', 3000);
+
+        var payload = {
+            fdh: item.fdh,
+            vendor: item.vendor,
+            status: (item.stage || '') + ' | ' + (item.status || ''),
+            targetDate: item.targetDate,
+            flags: item.flags,
+            vendorComment: item.vendorComment,
+            history: item.bench,
+            productionToday: item.summary
+        };
+
+        google.script.run
+            .withSuccessHandler(function(res) {
+                var ta = document.getElementById(commentFieldId(item));
+                if (ta) ta.value = res.text;
+                item.comment = res.text;
+                item.geminiInsight = res.text;
+                item.geminiDate = res.date;
+                haptic('medium');
+                toast('Voice note formatted!');
+            })
+            .withFailureHandler(function(err) {
+                alert("Dictation Error: " + err.message);
+            })
+            .processVoiceDictation(payload, transcript);
+    };
+
+    recognition.onerror = function(event) {
+        btn.classList.remove('pulsing-mic');
+        toast('Microphone error: ' + event.error);
+    };
+
+    recognition.onend = function() {
+        btn.classList.remove('pulsing-mic');
+    };
+
+    recognition.start();
 }
 
 function askGeminiForDraftMobile(btn) {
