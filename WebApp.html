@@ -3793,29 +3793,40 @@
                   else if (val.includes("FIELD CX") || val.includes("CONSTRUCTION")) movedToCx.push(l);
                   else if (val.includes("PERMIT") && val.includes("APPROV")) permitAppr.push(l);
                   else otherChanges.push(l);
+              } else {
+                  otherChanges.push(l);
               }
           });
 
-          const makeList = (items, emptyMsg) => {
-              if (items.length === 0) {
+          const makeList = (logs, emptyMsg) => {
+              if (logs.length === 0) {
                   return emptyMsg ? `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">${esc(emptyMsg)}</div>` : '';
               }
-              return items.map(i => {
-                  let fdh = String(i.fdh || '');
-                  let clickFdh = fdh.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                  let detailText = i.user || i.vendor || 'System';
-                  if (i.time) detailText += ' • ' + i.time.split(' ')[0];
-                  else if (i.stage || i.status) detailText += ' • ' + String((i.stage || '-') + ' | ' + (i.status || '-'));
+              return `<div style="display:flex; flex-direction:column; gap:12px; padding:12px; background:var(--bg);">` +
+              logs.map(log => {
+                  let item = allActionItems.find(i => i.fdh === log.fdh);
+                  let combinedPill = item ? `${item.stage || '-'} | ${item.status || '-'}` : '';
+                  let pillCls = item ? getQBStatusClass(item.stage, item.status, false) : 'pill-default';
+                  let dateStr = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
                   return `
-            <div class="digest-ws-item" onclick="switchWorkspaceView('detail'); selectItemForNav('${clickFdh}')">
-                <div>
-                    <div class="digest-ws-fdh">${esc(fdh)}</div>
-                    <div class="digest-ws-detail">${esc(detailText)}</div>
-                </div>
-                <div style="font-size:16px; color:var(--border);">›</div>
-            </div>
-        `;
-              }).join('');
+                  <div class="grid-card glow-active" style="margin:0; cursor:pointer;" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(log.fdh)}')">
+                      <div class="grid-card-header" style="padding-bottom:8px;">
+                          <div>
+                              <div style="font-size:14px; font-weight:900; color:var(--text-main);">${esc(log.fdh)}</div>
+                              <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item ? esc(item.vendor) : 'UNKNOWN VENDOR'}</div>
+                          </div>
+                          <span class="glass-pill ${pillCls}">${esc(combinedPill)}</span>
+                      </div>
+                      <div class="grid-card-body" style="justify-content:center; gap:0;">
+                          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                              <span style="font-weight:900; font-size:10px; color:var(--color-insight); text-transform:uppercase;">${esc(log.type)}</span>
+                              <span style="color:var(--text-muted); font-size:9px; font-weight:700;">${esc(dateStr)}</span>
+                          </div>
+                          <div style="color:var(--text-main); font-size:12px; font-weight:600; line-height:1.4; margin:6px 0;">&#8594; ${esc(log.val)}</div>
+                          <div style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">By: ${esc(log.user)}</div>
+                      </div>
+                  </div>`;
+              }).join('') + `</div>`;
           };
 
           ws.innerHTML = `
@@ -3823,19 +3834,19 @@
         <div class="digest-ws-grid">
             <div class="digest-ws-card">
                 <div class="digest-ws-card-hdr"><span>Reached OFS</span> <span style="color:#22c55e;">${movedToOfs.length}</span></div>
-                <div class="digest-ws-list">${makeList(movedToOfs, "No projects reached OFS today.")}</div>
+                <div class="digest-ws-list" style="padding:0;">${makeList(movedToOfs, "No projects reached OFS today.")}</div>
             </div>
             <div class="digest-ws-card">
                 <div class="digest-ws-card-hdr"><span>Moved to Construction</span> <span style="color:#facc15;">${movedToCx.length}</span></div>
-                <div class="digest-ws-list">${makeList(movedToCx, "No projects moved to construction.")}</div>
+                <div class="digest-ws-list" style="padding:0;">${makeList(movedToCx, "No projects moved to construction.")}</div>
             </div>
             <div class="digest-ws-card">
                 <div class="digest-ws-card-hdr"><span>Permits Approved</span> <span style="color:#a855f7;">${permitAppr.length}</span></div>
-                <div class="digest-ws-list">${makeList(permitAppr, "No permits approved today.")}</div>
+                <div class="digest-ws-list" style="padding:0;">${makeList(permitAppr, "No permits approved today.")}</div>
             </div>
             <div class="digest-ws-card">
                 <div class="digest-ws-card-hdr"><span>Other Status Shifts</span> <span style="color:#3b82f6;">${otherChanges.length}</span></div>
-                <div class="digest-ws-list">${makeList(otherChanges, "No other stage/status changes logged.")}</div>
+                <div class="digest-ws-list" style="padding:0;">${makeList(otherChanges, "No other stage/status changes logged.")}</div>
             </div>
         </div>
     `;
