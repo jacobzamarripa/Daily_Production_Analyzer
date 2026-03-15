@@ -116,44 +116,116 @@
       flex-direction: column;
     }
 
-    /* ─── LOADING SCREEN ────────────────────────────────────────────── */
-    #loading-screen {
+    /* ─── EXECUTIVE BOOT SEQUENCE ───────────────────────────────────── */
+    .obsidian-loader {
       position: fixed;
       inset: 0;
-      background: var(--bg);
+      background: #09090b;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
-      gap: 20px;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
+      z-index: 9999999;
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;
     }
-    #loading-screen.hidden {
+    .obsidian-loader.hidden {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
     }
-    .loading-logo {
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--text-secondary);
+    .loader-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 300px;
+      padding: 0 20px;
+      box-sizing: border-box;
     }
-    .loading-spinner {
-      width: 36px;
-      height: 36px;
-      border: 2.5px solid rgba(148, 163, 184, 0.22);
-      border-top-color: rgba(15, 23, 42, 0.4);
+    .data-core {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .core-ring {
+      position: absolute;
       border-radius: 50%;
-      animation: spin 0.75s linear infinite;
+      border: 2px solid transparent;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-sub {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      font-weight: 500;
+    .core-ring.outer {
+      width: 100%;
+      height: 100%;
+      border-top-color: #3b82f6;
+      border-bottom-color: #8b5cf6;
+      animation: spin-core 2s linear infinite;
+    }
+    .core-ring.middle {
+      width: 70%;
+      height: 70%;
+      border-left-color: #22c55e;
+      border-right-color: #10b981;
+      animation: spin-core-reverse 1.5s linear infinite;
+    }
+    .core-dot {
+      width: 10px;
+      height: 10px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 15px 4px rgba(59, 130, 246, 0.6);
+      animation: pulse-core 1s ease-in-out infinite alternate;
+    }
+    @keyframes spin-core { 100% { transform: rotate(360deg); } }
+    @keyframes spin-core-reverse { 100% { transform: rotate(-360deg); } }
+    @keyframes pulse-core {
+      0% { transform: scale(0.8); opacity: 0.8; }
+      100% { transform: scale(1.2); opacity: 1; }
+    }
+    .loader-brand {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      margin: 0 0 4px 0;
+      text-align: center;
+    }
+    .loader-version {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #64748b;
+      margin-bottom: 32px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .loader-progress-wrap {
+      width: 100%;
+      height: 4px;
+      background: #1e293b;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .loader-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6, #a855f7);
+      transition: width 0.1s linear;
+    }
+    .loader-terminal {
+      width: 100%;
+      font-family: monospace;
+      font-size: 10px;
+      color: #94a3b8;
+      text-align: left;
+      background: #0f172a;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      box-sizing: border-box;
     }
 
     /* ─── DECK SCENE ────────────────────────────────────────────────── */
@@ -1859,10 +1931,22 @@
 <body id="app">
 
   <!-- 1. LOADING SCREEN -->
-  <div id="loading-screen">
-    <div class="loading-logo">Production Hub</div>
-    <div class="loading-spinner"></div>
-    <div class="loading-sub">Loading projects…</div>
+  <div id="loading-screen" class="obsidian-loader">
+    <div class="loader-content">
+      <div class="data-core">
+        <div class="core-ring outer"></div>
+        <div class="core-ring middle"></div>
+        <div class="core-dot"></div>
+      </div>
+      <h1 class="loader-brand">Dailies Command Center</h1>
+      <div class="loader-version">v4.2.0 // BENNY ENGINE ACTIVE</div>
+      <div class="loader-progress-wrap">
+        <div class="loader-progress-bar" id="boot-progress"></div>
+      </div>
+      <div class="loader-terminal">
+        <span style="color:#10b981;">&gt;_</span> <span id="boot-text">Initializing mobile runtime...</span>
+      </div>
+    </div>
   </div>
 
   <div id="main-workspace">
@@ -2154,6 +2238,7 @@ var state = {
 var globalEndCounts = {};
 var globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
 var hudLocked = false;
+var bootInterval;
 
 /* ═══════════════════════════════════════════════════
    4. DATA LAYER
@@ -2186,9 +2271,50 @@ function onReady(items) {
   showHubHome();
 }
 
+function runBootSequence() {
+  var bootSteps = [
+    "Establishing secure mobile connection...",
+    "Syncing localized runtime environment...",
+    "Fetching Master Archive records...",
+    "Mapping fiber topology & light paths...",
+    "Running AI heuristic models...",
+    "Rendering Executive Dashboard..."
+  ];
+
+  var stepIdx = 0;
+  var progress = 0;
+  var textEl = document.getElementById('boot-text');
+  var barEl = document.getElementById('boot-progress');
+
+  if (!textEl || !barEl) return;
+  textEl.innerText = bootSteps[0];
+
+  clearInterval(bootInterval);
+  bootInterval = setInterval(function() {
+    progress += Math.random() * 15;
+    if (progress >= 100) {
+      progress = 99;
+    } else if (progress > (stepIdx + 1) * (100 / bootSteps.length) && stepIdx < bootSteps.length - 1) {
+      stepIdx++;
+      textEl.innerText = bootSteps[stepIdx];
+    }
+    barEl.style.width = progress + '%';
+  }, 150);
+}
+
+runBootSequence();
+
 function hideSplash() {
-  var el = document.getElementById('loading-screen');
-  if (el) el.classList.add('hidden');
+  clearInterval(bootInterval);
+  var barEl = document.getElementById('boot-progress');
+  var textEl = document.getElementById('boot-text');
+  if (barEl) barEl.style.width = '100%';
+  if (textEl) textEl.innerText = "Data loaded. Initializing UI...";
+
+  setTimeout(function() {
+    var el = document.getElementById('loading-screen');
+    if (el) el.classList.add('hidden');
+  }, 300);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2635,7 +2761,11 @@ function renderMiniSldMobile(item) {
     : miniSldNodeHtmlMobile(upstreamFdh || 'Upstream Unknown', upstreamNode, upstreamFdh, false);
   var currentNode = miniSldNodeHtmlMobile(item && item.fdh, item, '', true);
   var rightNode = miniSldNodeHtmlMobile(downstreamFdh || 'Downstream Unknown', downstreamNode, downstreamFdh, false);
+  var labelNode = '<div style="display:flex; align-items:center; padding-right:10px; margin-right:4px; border-right:1px solid var(--border); flex-shrink:0;">' +
+      '<span style="font-size:9px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Network Path</span>' +
+    '</div>';
   return '<div style="display:flex; align-items:center; gap:8px; padding:10px 12px; margin:0 0 16px 0; background:var(--bg); border:1px solid var(--border); border-radius:12px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none;">' +
+    labelNode +
     leftNode +
     '<div style="font-size:12px; color:var(--text-muted); flex:0 0 auto;">→</div>' +
     currentNode +
