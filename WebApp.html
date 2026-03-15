@@ -5046,20 +5046,13 @@
 
       // Global keyboard navigation
       document.addEventListener('keydown', function(e) {
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
         resetDeckIdleTimer();
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
 
-        const isDeck = currentWorkspaceView === 'deck';
-        const isDetail = currentWorkspaceView === 'detail';
-
-        if (isDeck || isDetail) {
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.code === 'Space') {
-            e.preventDefault(); navGlobal(1);
-          }
-          if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-            e.preventDefault(); navGlobal(-1);
-          }
-        }
+        if (e.key === 'ArrowRight' || e.code === 'Space') { e.preventDefault(); navGlobal(1, false); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); navGlobal(-1, false); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); navGlobal(1, true); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); navGlobal(-1, true); }
 
         if (e.key === 'Escape') {
           if (isDeckPresentationMode) toggleDeckPresentationMode();
@@ -5067,17 +5060,34 @@
         }
       });
 
-      function navGlobal(dir) {
-        if (currentWorkspaceView === 'deck') {
-          navDeck(dir);
+      function navGlobal(dir, isVertical) {
+        if (currentWorkspaceView === 'deck') { navDeck(dir); return; }
+        const items = filteredItems || [];
+        if (items.length === 0) return;
+        let idx = items.findIndex(i => i.fdh === currentActiveItem?.fdh);
+        if (idx === -1) idx = 0;
+
+        let nextIdx;
+        if (currentWorkspaceView === 'grid' && isVertical) {
+          const container = document.getElementById('grid-content');
+          const firstCard = container?.querySelector('.grid-card');
+          if (container && firstCard) {
+            const cols = Math.max(1, Math.floor(container.offsetWidth / (firstCard.offsetWidth + 16)));
+            const rows = Math.ceil(items.length / cols);
+            const curRow = Math.floor(idx / cols);
+            const curCol = idx % cols;
+            let nextRow = (curRow + dir + rows) % rows;
+            nextIdx = nextRow * cols + curCol;
+            if (nextIdx >= items.length) nextIdx = items.length - 1;
+          } else {
+            nextIdx = (idx + dir + items.length) % items.length;
+          }
         } else {
-          const items = filteredItems || [];
-          if (items.length === 0) return;
-          let idx = items.findIndex(i => i.fdh === currentActiveItem?.fdh);
-          if (idx === -1) idx = 0;
-          const nextIdx = (idx + dir + items.length) % items.length;
-          openPane(items[nextIdx], document.getElementById(`card-${items[nextIdx].fdh}`));
+          nextIdx = (idx + dir + items.length) % items.length;
         }
+
+        if (currentWorkspaceView === 'grid') openPaneFromGrid(items[nextIdx].fdh);
+        else openPane(items[nextIdx], document.getElementById(`card-${items[nextIdx].fdh}`));
       }
 
       function showCinemaTooltip() {
@@ -5661,15 +5671,16 @@ ${item.comment || 'No notes provided.'}
         backdrop-filter: blur(45px) saturate(180%);
         -webkit-backdrop-filter: blur(45px) saturate(180%);
         display: flex !important; justify-content: center; align-items: center;
+        padding: 0 !important; margin: 0 !important;
       }
       #deck-stage-card {
         transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, color 0.3s ease;
         transform-origin: center center;
         aspect-ratio: 16 / 9 !important;
-        width: 90%; max-width: 1150px; height: auto;
+        width: 90%; max-width: 1150px; height: auto; margin: 0 !important;
       }
       body.deck-presentation-active #deck-stage-card {
-        width: 95vw !important; max-height: 86vh !important;
+        width: 94vw !important; max-height: 85vh !important;
         transform: scale(1.02); box-shadow: 0 80px 160px rgba(0,0,0,1);
       }
       /* Dynamic Executive Typography Scaling */
@@ -5690,7 +5701,7 @@ ${item.comment || 'No notes provided.'}
       body.deck-presentation-active .dock-arrow,
       body.deck-presentation-active #dock-btn-skip { display: none !important; }
       /* Slide theme: hidden by default, shown only in Cinema */
-      #dock-btn-slide-theme { display: none !important; }
+      #dock-btn-slide-theme { display: none !important; width: 44px; height: 44px; padding: 0 !important; border-radius: 50%; font-size: 0 !important; align-items: center; justify-content: center; }
       body.deck-presentation-active #dock-btn-slide-theme { display: inline-flex !important; }
       body.deck-presentation-active .top-nav,
       body.deck-presentation-active .inbox-sidebar,
@@ -5706,11 +5717,11 @@ ${item.comment || 'No notes provided.'}
       /* ── RESPONSIVE EDIT MODE ── */
       .deck-edit-mode .slide-q-label { font-size: 11px; transition: font-size 0.2s; }
       .deck-edit-mode .slide-input { height: 26px; font-size: 11px; transition: all 0.2s; }
-      @media screen and (min-height: 850px) {
-        .deck-edit-mode .slide-q-label { font-size: 13.5px !important; }
-        .deck-edit-mode .module-header { font-size: 12px !important; margin-bottom: 20px !important; }
-        .deck-edit-mode .slide-input { height: 34px !important; font-size: 13.5px !important; border-radius: 10px !important; }
-        .deck-edit-mode .slide-q-row { padding: 10px 0 !important; min-height: 40px !important; }
+      @media screen and (min-height: 800px) {
+        .deck-edit-mode .slide-q-label { font-size: 13px !important; }
+        .deck-edit-mode .module-header { font-size: 12px !important; margin-bottom: 24px !important; }
+        .deck-edit-mode .slide-input { height: 32px !important; font-size: 13px !important; border-radius: 10px !important; }
+        .deck-edit-mode .slide-q-row { padding: 8px 0 !important; min-height: 38px !important; }
         .deck-edit-mode .deck-module { margin-bottom: 40px !important; }
       }
 
