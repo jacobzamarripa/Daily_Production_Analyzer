@@ -56,6 +56,58 @@
         font-weight: 600;
       }
 
+      /* ✨ FROSTED LOADER STYLES */
+      .frosted-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999999;
+        background: rgba(241, 245, 249, 0.4);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+      }
+      body.dark-mode .frosted-loader {
+        background: rgba(9, 9, 11, 0.6);
+      }
+      .frosted-loader.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+      .frosted-card {
+        background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 40px 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.15);
+        transform: scale(0.95) translateY(10px);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .frosted-loader.visible .frosted-card {
+        transform: scale(1) translateY(0);
+      }
+      .frosted-title {
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: var(--text-main);
+        text-transform: uppercase;
+        margin-top: 8px;
+      }
+      .frosted-sub {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+
       /* 🚀 Startup View Selector */
       .startup-overlay {
         position: fixed;
@@ -1459,6 +1511,14 @@
     </style>
   </head>
   <body>
+    <div id="frosted-loader" class="frosted-loader">
+      <div class="frosted-card">
+        <div class="loading-spinner"></div>
+        <div class="frosted-title" id="frosted-title">LOADING</div>
+        <div class="frosted-sub" id="frosted-sub">Please wait...</div>
+      </div>
+    </div>
+
     <div id="loading-screen">
       <div class="loading-logo">Dailies Command Center</div>
       <div class="loading-spinner"></div>
@@ -2676,6 +2736,22 @@
               _filterDebounce = setTimeout(applyFilters, 300);
           });
       }
+      // ✨ FROSTED LOADER CONTROLLERS
+      function showFrostedLoader(title, subtitle) {
+          let loader = getEl('frosted-loader');
+          if (!loader) return;
+          let titleEl = getEl('frosted-title');
+          let subEl = getEl('frosted-sub');
+          if (titleEl) titleEl.innerText = title;
+          if (subEl) subEl.innerText = subtitle;
+          loader.classList.add('visible');
+      }
+
+      function hideFrostedLoader() {
+          let loader = getEl('frosted-loader');
+          if (loader) loader.classList.remove('visible');
+      }
+
       // ── ⟳ Sync QB — pulls fresh reference data from QuickBase API ──────────
       function triggerQBSync() {
           const queueCount = document.querySelectorAll('#inbox-list .inbox-item').length;
@@ -2687,8 +2763,10 @@
           if (!confirm(msg)) return;
           const btn = getEl('btn-qb-sync');
           if (btn) { btn.innerText = '⟳ Syncing…'; btn.disabled = true; }
+          showFrostedLoader("SYNCING QUICKBASE", "Pulling latest live reference data...");
           google.script.run
               .withSuccessHandler(function(r) {
+                  hideFrostedLoader();
                   if (btn) { btn.innerText = '⟳ Sync QB'; btn.disabled = false; }
                   if (r.success) {
                       globalRefDataDate = r.timestamp;
@@ -2702,6 +2780,7 @@
                   } else { showToast('❌ ' + r.error, 'error'); }
               })
               .withFailureHandler(function(e) {
+                  hideFrostedLoader();
                   if (btn) { btn.innerText = '⟳ Sync QB'; btn.disabled = false; }
                   showToast('❌ Sync error: ' + e.message, 'error');
               })
@@ -2757,12 +2836,13 @@
               targetDates.push(sun.toISOString().split('T')[0]);
           }
 
-          setHtml('gantt-container', `<div class="empty-msg">Running Engine...</div>`); setHtml('inbox-list', `<div class="empty-msg">Fetching new data...</div>`);
-          setStyle('pane-content', 'display', 'none'); setStyle('detail-layout', 'display', 'none'); setStyle('welcome-screen', 'display', 'flex'); setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px; font-weight:900; letter-spacing:-1px; color:var(--text-muted);">Running Engine Diagnostics...</div>`);
+          showFrostedLoader("RUNNING ENGINE", "Processing diagnostic rules and logic...");
           google.script.run.withSuccessHandler((data) => {
+              hideFrostedLoader();
               if(btn) { btn.innerText = "▶ Run Review"; btn.disabled = false; }
-              setHtml('welcome-screen', `<div style="font-size:32px; margin-bottom:12px;">Select a Project</div>`); initDashboard(data);
+              initDashboard(data);
           }).withFailureHandler((err) => {
+              hideFrostedLoader();
               if(btn) { btn.innerText = "▶ Run Review"; btn.disabled = false; } alert("Engine Error: " + err.message);
           }).webAppTrigger3a(targetDates);
       }
@@ -2770,13 +2850,16 @@
       // ── ↻ Refresh — fast re-read of mirror sheet, no engine re-run ────────
       function triggerUIRefresh() {
           let btn = getEl('btn-refresh'); if(btn) { btn.innerText = "↻ Loading…"; btn.disabled = true; }
+          showFrostedLoader("REFRESHING DASHBOARD", "Fetching latest UI state...");
           google.script.run
               .withSuccessHandler((data) => {
+                  hideFrostedLoader();
                   if(btn) { btn.innerText = "↻ Refresh"; btn.disabled = false; }
                   initDashboard(data);
                   showToast('↻ Dashboard refreshed');
               })
               .withFailureHandler((err) => {
+                  hideFrostedLoader();
                   if(btn) { btn.innerText = "↻ Refresh"; btn.disabled = false; }
                   alert("Refresh Error: " + err.message);
               })
@@ -3128,7 +3211,7 @@
       function moveSpikeHUD(e) { moveHUD(e); } function hideSpikeHUD() { hideHUD(); }
 
       let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
-      let currentFilterStats = { bslByVendor: {}, bslByMonth: {}, bslMatrix: {}, lifecycle: { active: 0, pending: 0, overdue: 0 } };
+      let currentFilterStats = { bslByVendor: {}, bslByMonth: {}, bslMatrix: {}, lifecycle: { active: 0, pending: 0, overdue: 0 }, stageCounts: {} };
       let filteredItems = []; let currentQueueIndex = -1; let ganttManualHeight = null;
       let globalRefDataDate = "";
       let globalAllFdhIds = [];
@@ -3530,6 +3613,7 @@
             currentFilterStats.bslByMonth = {};
             currentFilterStats.bslMatrix = {};
             currentFilterStats.lifecycle = { active: 0, pending: 0, overdue: 0 };
+            currentFilterStats.stageCounts = {};
             
             filtered.forEach(item => {
                 let start = safeDate(item.cxStart) || safeDate(item.reportDate) || new Date(today);
@@ -3538,7 +3622,12 @@
                 
                 let isComplete = (item.stage || "").toLowerCase().includes('ofs') || (item.status || "").toLowerCase().includes('complete');
                 let isOnHold = (item.status || "").toLowerCase().includes('hold');
-                
+
+                // Aggregate by stage, pulling "Complete" statuses into their own bucket
+                let stageName = item.stage || 'Unknown';
+                if ((item.status || '').toLowerCase().includes('complete')) stageName = 'Complete';
+                currentFilterStats.stageCounts[stageName] = (currentFilterStats.stageCounts[stageName] || 0) + 1;
+
                 let bslStr = String(item.bsls).replace(/,/g, '');
                 let bslNum = parseInt(bslStr, 10) || 0;
                 activeBslsCount += bslNum;
@@ -4779,8 +4868,8 @@
       }
 
       function renderProjectsHUD() {
-          let lf = currentFilterStats.lifecycle || { active: 0, pending: 0, overdue: 0 };
-          let total = lf.active + lf.pending + lf.overdue;
+          let stageCounts = currentFilterStats.stageCounts || {};
+          let total = Object.values(stageCounts).reduce((a, b) => a + b, 0);
           let hud = getEl('projects-pie-hud');
           let pill = getEl('nav-projects-pill');
           if (!hud || !pill) return false;
@@ -4790,11 +4879,20 @@
               return false;
           }
 
-          let slices = [
-              { label: 'Active', count: lf.active, color: '#16a34a' },
-              { label: 'Pending', count: lf.pending, color: '#f59e0b' },
-              { label: 'Overdue', count: lf.overdue, color: '#ef4444' }
-          ].filter(s => s.count > 0);
+          let defaultColors = ['#94a3b8', '#cbd5e1', '#f1f5f9'];
+          let sortedStages = Object.keys(stageCounts).sort((a, b) => stageCounts[b] - stageCounts[a]);
+
+          let slices = sortedStages.map((stage, idx) => {
+              let c = defaultColors[idx % defaultColors.length];
+              let sLower = stage.toLowerCase();
+              if (sLower.includes('permit')) c = '#a855f7';
+              else if (sLower.includes('field cx') || sLower.includes('active') || sLower.includes('progress')) c = '#facc15';
+              else if (sLower.includes('complete')) c = '#22c55e';
+              else if (sLower.includes('ofs')) c = '#3b82f6';
+              else if (sLower.includes('hold')) c = '#64748b';
+              else if (sLower.includes('pending') || sLower.includes('assignment')) c = '#f97316';
+              return { label: stage, count: stageCounts[stage], color: c };
+          });
 
           let conicStr = [];
           let legendHtml = '';
@@ -4804,7 +4902,6 @@
               let pct = (s.count / total) * 100;
               conicStr.push(`${s.color} ${currentPct}% ${currentPct + pct}%`);
               currentPct += pct;
-
               legendHtml += `
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:8px;">
                   <div style="display:flex; align-items:center; gap:8px;">
@@ -4819,7 +4916,7 @@
 
           hud.innerHTML = `
               <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:#fde68a; letter-spacing:0.5px; border-bottom:1px solid #333338; padding-bottom:8px; margin-bottom:16px;">
-                  Queue Lifecycle
+                  Projects by Stage
               </div>
               <div style="display:flex; gap:24px; align-items:center;">
                   <div style="${pieStyle} flex-shrink:0;"></div>
