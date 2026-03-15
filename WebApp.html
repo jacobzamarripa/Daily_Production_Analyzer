@@ -1225,12 +1225,13 @@
           gap: 0;
           min-width: 0 !important;
       }
-      body.grid-mode-active .outbox-pane {
-          position: absolute !important;
-          right: 0 !important;
-          top: 0 !important;
-          height: 100% !important;
-          z-index: 1005 !important;
+body.grid-mode-active .outbox-pane,
+body.deck-mode-active .outbox-pane {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    height: 100% !important;
+    z-index: 1005 !important;
           box-shadow: -15px 0 40px rgba(0,0,0,0.2) !important;
       }
       .qb-grid {
@@ -3231,14 +3232,8 @@
           });
 
           let prodByVendor = {};
-          let totalCrit = 0;
-          let totalMissing = 0;
 
           (allActionItems || []).forEach(item => {
-              let flags = String(item.flags || '');
-              if (flags.includes("🚨") || flags.includes("🛑") || flags.includes("STATUS MISMATCH")) totalCrit++;
-              if (flags.includes("MISSING DAILY REPORT")) totalMissing++;
-
               let v = item.vendor || "Unknown";
               if (v === "-" || v === "") return;
 
@@ -3281,12 +3276,6 @@
                     <div class="digest-stat-row"><span>Projects reaching OFS</span><span class="digest-num" style="color:#22c55e;">${shifts.ofs}</span></div>
                     <div class="digest-stat-row"><span>Moved to Construction</span><span class="digest-num" style="color:#facc15;">${shifts.cx}</span></div>
                     <div class="digest-stat-row"><span>Permits Approved</span><span class="digest-num" style="color:#a855f7;">${shifts.permit}</span></div>
-                </div>
-
-                <div class="digest-section-title" style="margin-top:24px;">Queue Risks</div>
-                <div class="digest-card">
-                    <div class="digest-stat-row"><span>Critical Flags Active</span><span class="digest-num" style="color:#ef4444;">${totalCrit}</span></div>
-                    <div class="digest-stat-row"><span>Missing Daily Reports</span><span class="digest-num" style="color:#94a3b8;">${totalMissing}</span></div>
                 </div>
             </div>
 
@@ -3795,21 +3784,17 @@
           let movedToOfs = [];
           let movedToCx = [];
           let permitAppr = [];
+          let otherChanges = [];
 
           recentLogs.forEach(l => {
               let type = String(l.type || '').toUpperCase();
               let val = String(l.val || '').toUpperCase();
               if (type.includes("STATUS") || type.includes("STAGE")) {
                   if (val.includes("OPEN FOR SALE") || val.includes("OFS")) movedToOfs.push(l);
-                  if (val.includes("FIELD CX") || val.includes("CONSTRUCTION")) movedToCx.push(l);
-                  if (val.includes("PERMIT") && val.includes("APPROV")) permitAppr.push(l);
+                  else if (val.includes("FIELD CX") || val.includes("CONSTRUCTION")) movedToCx.push(l);
+                  else if (val.includes("PERMIT") && val.includes("APPROV")) permitAppr.push(l);
+                  else otherChanges.push(l);
               }
-          });
-
-          let missingReports = (allActionItems || []).filter(i => String(i.flags || '').includes("MISSING DAILY REPORT"));
-          let newRisks = (allActionItems || []).filter(i => {
-              let flags = String(i.flags || '');
-              return flags.includes("STATUS MISMATCH") || flags.includes("MAJOR CROSSING RISK");
           });
 
           const makeList = (items, emptyMsg) => {
@@ -3834,11 +3819,6 @@
               }).join('');
           };
 
-          let attentionHtml = '';
-          if (newRisks.length > 0) attentionHtml += makeList(newRisks, '');
-          if (missingReports.length > 0) attentionHtml += makeList(missingReports, '');
-          if (!attentionHtml) attentionHtml = `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No active critical alerts.</div>`;
-
           ws.innerHTML = `
         <div class="digest-ws-header">Daily Pipeline Digest</div>
         <div class="digest-ws-grid">
@@ -3854,11 +3834,9 @@
                 <div class="digest-ws-card-hdr"><span>Permits Approved</span> <span style="color:#a855f7;">${permitAppr.length}</span></div>
                 <div class="digest-ws-list">${makeList(permitAppr, "No permits approved today.")}</div>
             </div>
-            <div class="digest-ws-card" style="border-color:#fca5a5;">
-                <div class="digest-ws-card-hdr" style="background:#fef2f2; color:#ef4444;"><span>Attention Required</span> <span style="background:#ef4444; color:#fff; padding:2px 8px; border-radius:10px;">${missingReports.length + newRisks.length}</span></div>
-                <div class="digest-ws-list">
-                    ${attentionHtml}
-                </div>
+            <div class="digest-ws-card">
+                <div class="digest-ws-card-hdr"><span>Other Status Shifts</span> <span style="color:#3b82f6;">${otherChanges.length}</span></div>
+                <div class="digest-ws-list">${makeList(otherChanges, "No other stage/status changes logged.")}</div>
             </div>
         </div>
     `;
