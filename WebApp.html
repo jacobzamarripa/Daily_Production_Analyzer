@@ -149,11 +149,12 @@
         background: color-mix(in srgb, var(--card-bg) 85%, transparent);
         border: 1px solid var(--border);
         border-radius: 24px;
-        padding: 40px 60px;
+        padding: 30px 36px;
+        width: 320px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 16px;
+        gap: 6px;
         box-shadow: 0 30px 60px rgba(15, 23, 42, 0.15);
         transform: scale(0.95) translateY(10px);
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -170,9 +171,84 @@
         margin-top: 8px;
       }
       .frosted-sub {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         color: var(--text-muted);
+        text-align: center;
+      }
+      .frosted-data-core {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .frosted-data-core .ring-1,
+      .frosted-data-core .ring-2 {
+        position: absolute;
+        border-radius: 50%;
+        box-sizing: border-box;
+      }
+      .core-sync .ring-1 {
+        width: 100%;
+        height: 100%;
+        border: 3px solid transparent;
+        border-top-color: #3b82f6;
+        border-bottom-color: #06b6d4;
+        animation: spin-core 1.5s linear infinite;
+      }
+      .core-sync .ring-2 {
+        width: 65%;
+        height: 65%;
+        border: 3px solid transparent;
+        border-left-color: #8b5cf6;
+        border-right-color: #3b82f6;
+        animation: spin-core-reverse 1s linear infinite;
+      }
+      .core-engine .ring-1 {
+        width: 100%;
+        height: 100%;
+        border: 3.5px dashed #f59e0b;
+        animation: spin-core 3s linear infinite;
+      }
+      .core-engine .ring-2 {
+        width: 65%;
+        height: 65%;
+        border: 3.5px dashed #ef4444;
+        animation: spin-core-reverse 2s linear infinite;
+      }
+      .frost-progress-wrap {
+        width: 100%;
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 14px;
+        margin-bottom: 6px;
+      }
+      .frost-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #3b82f6, #a855f7);
+        transition: width 0.1s linear;
+      }
+      .frost-terminal {
+        width: 100%;
+        font-family: monospace;
+        font-size: 10px;
+        color: var(--text-muted);
+        text-align: left;
+        background: var(--bg);
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        box-sizing: border-box;
+      }
+      body.dark-mode .frost-terminal {
+        background: #0f172a;
+        border-color: #1e293b;
       }
 
       /* 🚀 Startup View Selector */
@@ -1583,9 +1659,18 @@
   <body>
     <div id="frosted-loader" class="frosted-loader">
       <div class="frosted-card">
-        <div class="loading-spinner"></div>
+        <div id="frosted-core" class="frosted-data-core core-sync">
+          <div class="ring-1"></div>
+          <div class="ring-2"></div>
+        </div>
         <div class="frosted-title" id="frosted-title">LOADING</div>
         <div class="frosted-sub" id="frosted-sub">Please wait...</div>
+        <div class="frost-progress-wrap">
+          <div class="frost-progress-bar" id="frosted-progress"></div>
+        </div>
+        <div class="frost-terminal">
+          <span style="color: #10b981;">&gt;_</span> <span id="frosted-terminal-text">Processing...</span>
+        </div>
       </div>
     </div>
 
@@ -2888,20 +2973,54 @@
               _filterDebounce = setTimeout(applyFilters, 300);
           });
       }
-      // ✨ FROSTED LOADER CONTROLLERS
-      function showFrostedLoader(title, subtitle) {
+      // ✨ KINETIC LOADER CONTROLLERS
+      let frostedInterval;
+
+      function showFrostedLoader(title, subtitle, type = 'sync', steps = ["Processing..."]) {
           let loader = getEl('frosted-loader');
           if (!loader) return;
+
           let titleEl = getEl('frosted-title');
           let subEl = getEl('frosted-sub');
           if (titleEl) titleEl.innerText = title;
           if (subEl) subEl.innerText = subtitle;
+
+          let core = getEl('frosted-core');
+          if (core) core.className = 'frosted-data-core core-' + type;
+
           loader.classList.add('visible');
+
+          let stepIdx = 0;
+          let progress = 0;
+          let textEl = getEl('frosted-terminal-text');
+          let barEl = getEl('frosted-progress');
+
+          if (textEl) textEl.innerText = steps[0];
+          if (barEl) barEl.style.width = '0%';
+
+          clearInterval(frostedInterval);
+          frostedInterval = setInterval(() => {
+              progress += Math.random() * 15;
+              if (progress >= 95) progress = 95;
+              else if (progress > (stepIdx + 1) * (100 / steps.length) && stepIdx < steps.length - 1) {
+                  stepIdx++;
+                  if (textEl) textEl.innerText = steps[stepIdx];
+              }
+              if (barEl) barEl.style.width = `${progress}%`;
+          }, 150);
       }
 
       function hideFrostedLoader() {
-          let loader = getEl('frosted-loader');
-          if (loader) loader.classList.remove('visible');
+          clearInterval(frostedInterval);
+          let barEl = getEl('frosted-progress');
+          let textEl = getEl('frosted-terminal-text');
+          if (barEl) barEl.style.width = '100%';
+          if (textEl) textEl.innerText = "Task complete. Rendering UI...";
+
+          setTimeout(() => {
+              let loader = getEl('frosted-loader');
+              if (loader) loader.classList.remove('visible');
+          }, 400);
       }
 
       // ── ⟳ Sync QB — pulls fresh reference data from QuickBase API ──────────
@@ -2915,7 +3034,12 @@
           if (!confirm(msg)) return;
           const btn = getEl('btn-qb-sync');
           if (btn) { btn.innerText = '⟳ Syncing…'; btn.disabled = true; }
-          showFrostedLoader("SYNCING QUICKBASE", "Pulling latest live reference data...");
+          showFrostedLoader("SYNCING QUICKBASE", "Pulling latest live reference data...", "sync", [
+              "Authenticating QuickBase API token...",
+              "Fetching multi-table payloads...",
+              "Normalizing relational database...",
+              "Rebuilding local reference dictionary..."
+          ]);
           google.script.run
               .withSuccessHandler(function(r) {
                   hideFrostedLoader();
@@ -2988,7 +3112,13 @@
               targetDates.push(sun.toISOString().split('T')[0]);
           }
 
-          showFrostedLoader("RUNNING ENGINE", "Processing diagnostic rules and logic...");
+          showFrostedLoader("RUNNING ENGINE", "Processing diagnostic rules and logic...", "engine", [
+              "Initializing Benny Engine...",
+              "Ingesting raw vendor reports...",
+              "Calculating pace and historical benchmarks...",
+              "Applying network topology logic...",
+              "Generating AI-assisted diagnostics..."
+          ]);
           google.script.run.withSuccessHandler((data) => {
               hideFrostedLoader();
               if(btn) { btn.innerText = "▶ Run Review"; btn.disabled = false; }
@@ -3002,7 +3132,11 @@
       // ── ↻ Refresh — fast re-read of mirror sheet, no engine re-run ────────
       function triggerUIRefresh() {
           let btn = getEl('btn-refresh'); if(btn) { btn.innerText = "↻ Loading…"; btn.disabled = true; }
-          showFrostedLoader("REFRESHING DASHBOARD", "Fetching latest UI state...");
+          showFrostedLoader("REFRESHING DASHBOARD", "Fetching latest UI state...", "sync", [
+              "Querying active mirror data...",
+              "Re-rendering DOM elements...",
+              "Applying active workspace filters..."
+          ]);
           google.script.run
               .withSuccessHandler((data) => {
                   hideFrostedLoader();
