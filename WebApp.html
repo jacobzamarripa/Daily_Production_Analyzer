@@ -427,6 +427,8 @@
           left: 50% !important;
           transform: translateX(-50%) !important;
           margin: 0 !important;
+          z-index: 2000005 !important;
+          display: flex !important;
           box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.15), inset 0 1px 1px rgba(255,255,255,0.8) !important;
       }
       body.dark-mode.deck-mode-active .filter-strip {
@@ -1851,6 +1853,11 @@
       .detail-main {
           min-width: 0 !important;
           position: relative !important;
+      }
+      body.deck-mode-active .detail-main,
+      body.presentation-active .detail-main {
+          overflow: visible !important;
+          z-index: 2000000 !important;
       }
       .pane-content {
           align-items: flex-start !important;
@@ -6745,25 +6752,17 @@
         showToast('⌨️ SPACE / ARROWS to navigate · ESC to exit', 'info');
       }
 
-      var preTheaterThemeWasDark = false;
       function togglePresentationMode() {
         isPresentationMode = !isPresentationMode;
-        const body = document.body;
-        body.classList.toggle('presentation-active', isPresentationMode);
+        document.body.classList.toggle('presentation-active', isPresentationMode);
         const btn = document.getElementById('dock-btn-presentation');
-        const activeContainer = isDeckMode ? getEl('deck-stage') : getEl('pane-content');
         if (btn) btn.innerHTML = isPresentationMode ? 'Exit Cinema' : 'Theater Mode';
         if (isPresentationMode) {
-          preTheaterThemeWasDark = body.classList.contains('dark-mode');
-          applyTheme(true);
           showCinemaTooltip();
           resetDeckIdleTimer();
-          if (activeContainer) activeContainer.onclick = (e) => { if (e.target === activeContainer) togglePresentationMode(); };
         } else {
-          applyTheme(preTheaterThemeWasDark);
           clearTimeout(deckIdleTimer);
           document.getElementById('filter-strip')?.classList.remove('dock-idle');
-          if (activeContainer) activeContainer.onclick = null;
         }
         syncGanttIslandState();
       }
@@ -7507,10 +7506,11 @@ ${item.comment || 'No notes provided.'}
       .filter-strip { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease, filter 0.8s ease !important; }
       body.presentation-active .filter-strip {
         position: fixed !important;
-        z-index: 2000000 !important; background: rgba(24, 24, 27, 0.96) !important; color: #fff !important;
+        z-index: 2000005 !important; background: rgba(24, 24, 27, 0.96) !important; color: #fff !important;
         border: 1px solid rgba(255,255,255,0.1) !important;
         top: auto !important; bottom: 40px !important;
         left: 50% !important; transform: translateX(-50%) !important; margin: 0 !important;
+        display: flex !important;
       }
       body.presentation-active #pane-content {
         padding-bottom: 120px !important;
@@ -7532,15 +7532,31 @@ ${item.comment || 'No notes provided.'}
       body.presentation-active .top-nav,
       body.presentation-active .inbox-sidebar,
       body.presentation-active .outbox-pane { display: none !important; }
-      /* ── INDEPENDENT SLIDE THEME (Dark Mode) ── */
-      #deck-stage-card.slide-dark-mode { background: #18181b !important; border-color: #27272a !important; color: #f4f4f5 !important; }
+      /* ── INDEPENDENT SLIDE THEME (Dark Mode via local CSS vars) ── */
+      .qb-grid.slide-dark-mode,
+      #deck-stage-card.slide-dark-mode {
+          --bg: #09090b;
+          --card-bg: #1e1e24;
+          --border: #333338;
+          --text-main: #fafafa;
+          --text-muted: #a1a1aa;
+          background: var(--card-bg) !important;
+          border-color: var(--border) !important;
+          color: var(--text-main) !important;
+      }
+      .qb-grid.slide-dark-mode .chat-bubble,
+      .qb-grid.slide-dark-mode .slide-input,
+      #deck-stage-card.slide-dark-mode .chat-bubble,
+      #deck-stage-card.slide-dark-mode .slide-input {
+          background: rgba(46, 16, 101, 0.3) !important;
+          color: #e9d5ff !important;
+          border-color: #6b21a8 !important;
+      }
       #deck-stage-card.slide-dark-mode .slide-ppt-q { color: #f4f4f5 !important; }
       #deck-stage-card.slide-dark-mode .slide-ppt-quad-header { color: #a1a1aa !important; border-color: #3f3f46 !important; }
       #deck-stage-card.slide-dark-mode .slide-header,
       #deck-stage-card.slide-dark-mode .slide-footer { background: #09090b !important; border-color: #27272a !important; }
       #deck-stage-card.slide-dark-mode .slide-ppt-ans.gap { color: #f87171 !important; }
-      /* Detail card independent dark theme */
-      .qb-grid.slide-dark-mode { background: #18181b !important; border-color: #27272a !important; color: #f4f4f5 !important; }
       .qb-grid.slide-dark-mode .qb-top-row,
       .qb-grid.slide-dark-mode .qb-section-header { background: #09090b !important; border-color: #27272a !important; color: #f4f4f5 !important; }
       /* Field change glow */
