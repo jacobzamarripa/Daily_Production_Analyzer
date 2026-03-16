@@ -1197,9 +1197,10 @@
           min-width: 0 !important;
           display: flex !important;
           align-items: center !important;
-          justify-content: center !important;
-          overflow-y: auto !important;
-          overflow-x: hidden !important;
+          justify-content: flex-start !important;
+          padding-top: 40px !important;
+          padding-bottom: 120px !important;
+          overflow: auto !important;
       }
       body.deck-mode-active .inbox-sidebar {
           display: flex !important;
@@ -2116,7 +2117,7 @@
                 <div class="dock-divider"></div>
                 <button class="btn hover-trigger" id="dock-btn-slide-theme" onclick="toggleSlideSpecificTheme()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);"></button>
                 <button class="btn hover-trigger" id="dock-btn-skip" onclick="navDeck(1)" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Skip (Next)</button>
-                <button class="btn hover-trigger" id="dock-btn-edit-mode" onclick="toggleDeckEditMode()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Edit Answers</button>
+
                 <button class="btn hover-trigger" id="dock-btn-stage" onclick="toggleStageCurrentDeckItem()" style="background:#a855f7; color:#fff; border-color:#9333ea;">Stage Project</button>
                 <button class="btn hover-trigger" onclick="exportDeckReport()" id="btn-export-deck" style="background:#16a34a; color:#fff; border-color:#15803d;">Copy Report</button>
                 <button class="btn collapsed hover-trigger" id="dock-btn-save" onclick="saveDeckToSheet(this)" style="background:#3b82f6; color:#fff; border-color:#2563eb;">Save to Sheet</button>
@@ -2748,7 +2749,7 @@
               const isGrid = currentWorkspaceView === 'grid';
               const isDeck = currentWorkspaceView === 'deck';
 
-              if (filtersZone) filtersZone.classList.toggle('collapsed', isDeck);
+              if (filtersZone) filtersZone.classList.remove('collapsed');
               if (pivotZone) pivotZone.classList.toggle('collapsed', !isGrid);
               if (deckZone) deckZone.classList.toggle('collapsed', !isDeck);
               if (navPrev) navPrev.classList.toggle('collapsed', !isDeck);
@@ -6397,7 +6398,7 @@
         const pivotZone = getEl('dock-pivot-zone');
         if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridMode);
         const filtersZone = getEl('dock-filters-zone');
-        if (filtersZone) filtersZone.classList.toggle('collapsed', isDeckMode);
+        if (filtersZone) filtersZone.classList.remove('collapsed');
         const deckActionsZone = getEl('dock-deck-actions-zone');
         const focusZone = getEl('dock-focus-zone');
         document.body.classList.toggle('deck-mode-active', isDeckMode);
@@ -6600,13 +6601,6 @@
       function toggleDeckEditMode() {
         isDeckEditing = !isDeckEditing;
         document.body.classList.toggle('deck-is-editing', isDeckEditing);
-        const btn = document.getElementById('dock-btn-edit-mode');
-        if (btn) {
-          btn.innerHTML = isDeckEditing ? 'View Slide' : 'Edit Answers';
-          btn.style.background = isDeckEditing ? '#3b82f6' : 'var(--card-bg)';
-          btn.style.color = isDeckEditing ? '#fff' : 'var(--text-main)';
-          btn.style.borderColor = isDeckEditing ? '#2563eb' : 'var(--border)';
-        }
         renderDeckStage();
       }
 
@@ -6749,8 +6743,9 @@
                 </div>
                 <div style="font-size:12px; font-weight:700; color:var(--text-muted);">${item.city} &bull; ${item.vendor}</div>
               </div>
-              <div>
-                ${item.rid ? `<a href="https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=${item.rid}" target="_blank" class="hover-trigger" style="text-decoration:none; font-size:10px; font-weight:900; color:var(--text-muted); background:var(--card-bg); padding:8px 14px; border-radius:12px; border:1px solid var(--border); box-shadow:0 2px 6px rgba(15,23,42,0.06); display:inline-flex; align-items:center; transition:all 0.2s;">VIEW RECORD</a>` : ''}
+              <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+                ${item.rid ? `<button class="btn hover-trigger" onclick="window.open('https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=${item.rid}', '_blank')" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border); width:100%;">VIEW RECORD</button>` : ''}
+                <button class="btn hover-trigger" onclick="toggleDeckEditMode()" style="padding:5px 12px; font-size:10px; width:100%; transition:all 0.2s; ${isDeckEditing ? 'background:#3b82f6; color:#fff; border-color:#2563eb;' : 'background:var(--bg); color:var(--text-main); border-color:var(--border);'}">${isDeckEditing ? 'VIEW SLIDE' : 'EDIT ANSWERS'}</button>
               </div>
             </div>
 
@@ -6862,14 +6857,6 @@
             </div>
         `;
         document.body.classList.toggle('deck-is-editing', isDeckEditing);
-        const dockBtn = document.getElementById('dock-btn-edit-mode');
-        if (dockBtn) {
-          dockBtn.innerHTML = isDeckEditing ? 'View Slide' : 'Edit Answers';
-          dockBtn.style.background = isDeckEditing ? '#3b82f6' : 'var(--card-bg)';
-          dockBtn.style.color = isDeckEditing ? '#fff' : 'var(--text-main)';
-          dockBtn.style.borderColor = isDeckEditing ? '#2563eb' : 'var(--border)';
-        }
-
         const actionPanel = getEl('deck-action-panel');
         if (actionPanel) {
           let diagClass = 'action-box';
