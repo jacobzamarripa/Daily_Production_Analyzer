@@ -483,3 +483,37 @@ ${JSON.stringify(payload, null, 2)}`;
   CacheService.getScriptCache().remove('dashboard_data_cache');
   return { text: insightText, date: dateStr };
 }
+
+function askBennyQuery(query, marketData) {
+  const apiKey = PropertiesService.getScriptProperties().getProperty("GEMINI_API_KEY");
+  if (!apiKey) throw new Error("API Key not found.");
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+  const prompt = `You are Benny, a highly analytical and friendly AI assistant for a fiber optic construction team.
+  Answer the user's question based strictly on the provided JSON data of active projects.
+  Keep your answer concise, conversational, and direct. Do not invent data.
+
+  User Question: "${query}"
+
+  Market Data (Current Active Projects):
+  ${JSON.stringify(marketData)}`;
+
+  const data = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.1 }
+  };
+
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(data),
+    muteHttpExceptions: true
+  };
+
+  const response = UrlFetchApp.fetch(url, options);
+  if (response.getResponseCode() !== 200) throw new Error("Gemini API Error: " + response.getContentText());
+
+  const json = JSON.parse(response.getContentText());
+  return json.candidates[0].content.parts[0].text.trim();
+}
