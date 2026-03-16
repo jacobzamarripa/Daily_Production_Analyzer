@@ -1219,11 +1219,6 @@
       body.deck-mode-active #deck-action-panel {
           display: flex !important;
       }
-      body.deck-mode-active .detail-main {
-          flex-direction: row !important;
-          gap: 0;
-          min-width: 0 !important;
-      }
       body.grid-mode-active .outbox-pane {
           position: absolute !important;
           right: 0 !important;
@@ -2256,12 +2251,11 @@
                </div>
                  </div>
               </div>
-            <div id="deck-stage" style="display:none; flex:1; min-width:0; flex-direction:column; padding:20px; overflow-y:auto; align-items:center; justify-content:center; box-sizing:border-box;">
+            <div id="deck-stage" style="display:none; flex:1; flex-direction:column; padding:40px; overflow-y:auto; align-items:center; justify-content:center; box-sizing:border-box;">
                 <div id="deck-stage-card" style="width:100%; max-width:1100px; max-height:calc(100vh - 200px); aspect-ratio:16/9; height:auto; flex-shrink:1; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden;"></div>
 
             </div>
             </div>
-
                 <div class="outbox-pane" id="outbox-pane">
                    <div id="review-hub-main-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0;">
                       <div style="font-size:16px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px;">Review Hub</div>
@@ -3032,7 +3026,10 @@
           const panel = getEl('gantt-panel');
           if (!panel || window.innerWidth <= 768 || panel.classList.contains('fullscreen')) return;
 
-          if (resetManualHeight) ganttManualHeight = null;
+          if (resetManualHeight) {
+              ganttManualHeight = null;
+              panel.classList.remove('minimized');
+          }
           if (ganttManualHeight && !resetManualHeight) return;
 
           const rawOptimal = getOptimalGanttHeight();
@@ -3051,14 +3048,10 @@
               return;
           }
 
-          if (!panel.classList.contains('minimized')) {
-              panel.style.height = `${rawOptimal}px`;
-              if (icon) icon.textContent = '▲';
-              if (minBtn) minBtn.innerText = 'Minimize';
-          } else {
-              if (icon) icon.textContent = '▶';
-              if (minBtn) minBtn.innerText = 'Expand';
-          }
+          panel.classList.remove('minimized');
+          panel.style.height = `${rawOptimal}px`;
+          if (icon) icon.textContent = '▲';
+          if (minBtn) minBtn.innerText = 'Minimize';
       }
 
       function showStartupSelector() {
@@ -5974,15 +5967,30 @@
       function openPaneFromGrid(fdh) {
           let item = filteredItems.find(i => i.fdh === fdh);
           if (!item) return;
+
+          currentActiveItem = item;
+
+          document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('is-selected'));
           let gCard = getEl(`grid-card-${item.fdh}`);
-          openPane(item, null);
-          if (gCard && currentWorkspaceView === 'grid') {
-              const container = getEl('grid-content');
-              if (container) {
-                  const scrollPos = gCard.offsetTop - (container.clientHeight / 2) + (gCard.offsetHeight / 2);
-                  container.scrollTo({ top: scrollPos, behavior: 'smooth' });
+          if (gCard) {
+              gCard.classList.add('is-selected');
+              if (currentWorkspaceView === 'grid') {
+                  const container = getEl('grid-content');
+                  if (container) {
+                      const scrollPos = gCard.offsetTop - (container.clientHeight / 2) + (gCard.offsetHeight / 2);
+                      container.scrollTo({ top: scrollPos, behavior: 'auto' });
+                  }
               }
           }
+
+          let ganttArea = getEl('gantt-area-main');
+          if (ganttArea) {
+              ganttArea.classList.add('has-focus');
+              document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
+              let gRow = getEl(`gantt-row-${item.fdh}`);
+              if (gRow) gRow.classList.add('is-active');
+          }
+
           if (isDeckMode) {
               deckIndex = filteredItems.indexOf(item);
               renderDeckStage();
@@ -6424,6 +6432,7 @@
                 if (currentActiveItem) {
                     if (welcome) welcome.style.display = 'none';
                     if (paneContent) paneContent.style.display = 'flex';
+                    openPane(currentActiveItem, null);
                 } else {
                     if (welcome) welcome.style.display = 'flex';
                     if (paneContent) paneContent.style.display = 'none';
