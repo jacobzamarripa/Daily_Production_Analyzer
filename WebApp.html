@@ -6635,9 +6635,12 @@
       }
 
       function toggleSlideSpecificTheme() {
-        const card = document.getElementById('deck-stage-card');
-        if (!card) return;
-        const isDark = card.classList.toggle('slide-dark-mode');
+        const isDeckActive = document.body.classList.contains('deck-mode-active');
+        const target = isDeckActive
+          ? document.getElementById('deck-stage-card')
+          : document.getElementById('main-qb-grid');
+        if (!target) return;
+        const isDark = target.classList.toggle('slide-dark-mode');
         const btn = document.getElementById('dock-btn-slide-theme');
         if (btn) btn.innerHTML = isDark ? _SUN_SVG : _MOON_SVG;
       }
@@ -6727,6 +6730,7 @@
         const activeContainer = isDeckMode ? getEl('deck-stage') : getEl('pane-content');
         if (btn) btn.innerHTML = isPresentationMode ? 'Exit Cinema' : 'Theater Mode';
         if (isPresentationMode) {
+          if (!document.body.classList.contains('dark-mode')) applyTheme(true);
           showCinemaTooltip();
           resetDeckIdleTimer();
           if (activeContainer) activeContainer.onclick = (e) => { if (e.target === activeContainer) togglePresentationMode(); };
@@ -6869,6 +6873,7 @@
         const mta = (id, label, refVal) => row(label, actionWrap(`<span class="slide-q-action" style="width:100%;">${stagedIcon(isMismatch(mem[id], refVal, 'text'))}${gapDot(!mem[id] && (!refVal || refVal === '' || refVal === '-'))}<textarea class="slide-input" id="${id}" placeholder="${(!mem[id] && (!refVal || refVal === '' || refVal === '-')) ? 'QB: No data yet' : label}" oninput="persistDeckInput(this)" style="resize:vertical;">${mem[id] !== undefined ? mem[id] : (refVal||'')}</textarea></span>`), true);
         const ms = (id, label, selected) => row(label, actionWrap(`<span class="slide-q-action">${stagedIcon(mem[id] !== undefined)}<select class="slide-input" id="${id}" onchange="persistDeckInput(this); toggleXingRows(this.value === 'true');"><option value="true" ${selected ? 'selected' : ''}>YES</option><option value="false" ${!selected ? 'selected' : ''}>NO</option></select></span>`));
 
+        var recentChangesCount = getRecentChangesForItem(item.fdh).length;
         stageCard.innerHTML = `
             <datalist id="smart-fdh-list">${buildSmartFdhDatalist(item.fdh)}</datalist>
 
@@ -6879,6 +6884,7 @@
                   <div class="slide-hdr-id" style="font-size:28px; font-weight:900; color:var(--text-main); letter-spacing:-1px; line-height:1;">${item.fdh}</div>
                   <div style="font-size:10px; font-weight:900; background:var(--card-bg); border:1px solid var(--border); padding:4px 10px; border-radius:12px; text-transform:uppercase; color:var(--text-main);">${item.stage} | ${item.status}</div>
                   ${isXingActive ? `<div style="background:#171717; color:#facc15; padding:4px 10px; border-radius:12px; font-size:10px; font-weight:900; border:1px solid #facc15; box-shadow:0 2px 4px rgba(0,0,0,0.1);">X-ING</div>` : ''}
+                  ${recentChangesCount > 0 ? `<div style="background:rgba(168,85,247,0.15); color:#a855f7; padding:4px 10px; border-radius:12px; font-size:10px; font-weight:900; border:1px solid rgba(168,85,247,0.5); cursor:pointer;" onclick="toggleCinemaHistory()">UPDATES (${recentChangesCount})</div>` : ''}
                 </div>
                 <div style="font-size:12px; font-weight:700; color:var(--text-muted);">${item.city} &bull; ${item.vendor}</div>
               </div>
@@ -7288,6 +7294,47 @@ ${item.comment || 'No notes provided.'}
           if (disp) disp.value = calcState || '0';
       }
 
+      function getRecentChangesForItem(fdh) {
+          var now = new Date();
+          var lookbackHours = (now.getDay() === 1 && now.getHours() < 11) ? 80 : 48;
+          var cutoff = now.getTime() - (lookbackHours * 60 * 60 * 1000);
+          return allGlobalLogs.filter(function(log) {
+              return log.fdh === fdh && Number(log.timestampObj || 0) >= cutoff;
+          });
+      }
+
+      function toggleCinemaHistory() {
+          var overlay = getEl('cinema-history-overlay');
+          if (!overlay) return;
+          if (overlay.classList.contains('active')) {
+              overlay.classList.remove('active');
+              return;
+          }
+          var item = currentActiveItem;
+          if (!item) return;
+          var changes = getRecentChangesForItem(item.fdh);
+          var content = getEl('cinema-history-content');
+          if (content) {
+              if (changes.length === 0) {
+                  content.innerHTML = '<div style="text-align:center; color:rgba(255,255,255,0.5); padding:40px; font-size:13px;">No recent activity in the lookback window.</div>';
+              } else {
+                  content.innerHTML = '<div style="font-size:11px; font-weight:900; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:1px; margin-bottom:20px;">Recent Activity &mdash; ' + esc(item.fdh) + '</div>' +
+                  changes.slice(0, 5).map(function(log) {
+                      var dateStr = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
+                      return '<div style="border-bottom:1px solid rgba(255,255,255,0.08); padding:14px 0;">' +
+                          '<div style="display:flex; justify-content:space-between; margin-bottom:6px;">' +
+                          '<span style="font-size:10px; font-weight:900; color:#a855f7; text-transform:uppercase;">' + esc(log.type) + '</span>' +
+                          '<span style="font-size:9px; color:rgba(255,255,255,0.4);">' + esc(dateStr) + '</span>' +
+                          '</div>' +
+                          '<div style="font-size:14px; font-weight:600; color:#f4f4f5; margin-bottom:4px;">&#8594; ' + esc(log.val) + '</div>' +
+                          '<div style="font-size:9px; color:rgba(255,255,255,0.4); text-transform:uppercase;">By: ' + esc(log.user) + '</div>' +
+                          '</div>';
+                  }).join('');
+              }
+          }
+          overlay.classList.add('active');
+      }
+
       // Calculator Keyboard Support
       document.addEventListener('keydown', function(e) {
           var calcWidget = document.getElementById('calc-widget');
@@ -7389,7 +7436,7 @@ ${item.comment || 'No notes provided.'}
       body.presentation-active #deck-stage,
       body.presentation-active #pane-content {
         position: fixed !important; inset: 0 !important; z-index: 999999 !important;
-        background: rgba(9, 9, 11, 0.28) !important;
+        background: rgba(9, 9, 11, 0.6) !important;
         backdrop-filter: blur(40px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
         display: flex !important; align-items: center !important; justify-content: center !important;
@@ -7434,6 +7481,7 @@ ${item.comment || 'No notes provided.'}
       body.presentation-active .filter-strip {
         z-index: 2000000 !important; background: rgba(24, 24, 27, 0.96) !important; color: #fff !important;
         border: 1px solid rgba(255,255,255,0.1) !important;
+        top: auto !important; bottom: 30px !important;
       }
       body.presentation-active .filter-strip.dock-idle {
         opacity: 0.05; filter: blur(6px); pointer-events: none; transform: translateX(-50%) translateY(20px);
@@ -7459,6 +7507,18 @@ ${item.comment || 'No notes provided.'}
       #deck-stage-card.slide-dark-mode .slide-header,
       #deck-stage-card.slide-dark-mode .slide-footer { background: #09090b !important; border-color: #27272a !important; }
       #deck-stage-card.slide-dark-mode .slide-ppt-ans.gap { color: #f87171 !important; }
+      /* Detail card independent dark theme */
+      .qb-grid.slide-dark-mode { background: #18181b !important; border-color: #27272a !important; color: #f4f4f5 !important; }
+      .qb-grid.slide-dark-mode .qb-top-row,
+      .qb-grid.slide-dark-mode .qb-section-header { background: #09090b !important; border-color: #27272a !important; color: #f4f4f5 !important; }
+      /* Field change glow */
+      .field-was-changed { box-shadow: 0 0 8px rgba(168, 85, 247, 0.4) !important; border-color: #a855f7 !important; }
+      /* Cinema History Overlay */
+      #cinema-history-overlay { position: fixed; inset: 0; z-index: 2000001; background: rgba(9,9,11,0.92); backdrop-filter: blur(20px); display: none; align-items: center; justify-content: center; padding: 40px; box-sizing: border-box; }
+      #cinema-history-overlay.active { display: flex !important; }
+      /* History dock button: hidden by default, shown in cinema */
+      #dock-btn-history { display: none !important; }
+      body.presentation-active #dock-btn-history { display: inline-flex !important; }
 
       /* ── RESPONSIVE EDIT MODE ── */
       .deck-edit-mode .slide-q-label { font-size: 11px; transition: font-size 0.2s; }
