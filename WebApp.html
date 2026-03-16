@@ -421,8 +421,12 @@
           box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18), inset 0 1px 1px rgba(255,255,255,1) !important;
       }
       body.deck-mode-active .filter-strip {
+          position: fixed !important;
           top: auto !important;
-          bottom: 30px !important;
+          bottom: 40px !important;
+          left: 50% !important;
+          transform: translateX(-50%) !important;
+          margin: 0 !important;
           box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.15), inset 0 1px 1px rgba(255,255,255,0.8) !important;
       }
       body.dark-mode.deck-mode-active .filter-strip {
@@ -2867,6 +2871,21 @@
               if (deckZone) deckZone.classList.add('collapsed');
               if (navPrev) navPrev.classList.add('collapsed');
               if (navNext) navNext.classList.add('collapsed');
+          } else if (isPresentationMode) {
+              if (filtersZone) filtersZone.classList.add('collapsed');
+              if (pivotZone) pivotZone.classList.add('collapsed');
+              const focusZone = getEl('dock-focus-zone');
+              if (focusZone) focusZone.classList.remove('collapsed');
+              if (deckZone) deckZone.classList.remove('collapsed');
+              if (navPrev) navPrev.classList.toggle('collapsed', !isDeckMode);
+              if (navNext) navNext.classList.toggle('collapsed', !isDeckMode);
+              const tBtn = getEl('dock-btn-slide-theme');
+              if (tBtn) {
+                  tBtn.style.display = 'inline-flex';
+                  const isDark = (isDeckMode && getEl('deck-stage-card')?.classList.contains('slide-dark-mode')) ||
+                                 (!isDeckMode && document.querySelector('.qb-grid')?.classList.contains('slide-dark-mode'));
+                  tBtn.innerHTML = isDark ? _SUN_SVG : _MOON_SVG;
+              }
           } else {
               const isGrid = currentWorkspaceView === 'grid';
               const isDeck = currentWorkspaceView === 'deck';
@@ -2876,6 +2895,8 @@
               if (deckZone) deckZone.classList.toggle('collapsed', !isDeck);
               if (navPrev) navPrev.classList.toggle('collapsed', !isDeck);
               if (navNext) navNext.classList.toggle('collapsed', !isDeck);
+              const tBtn = getEl('dock-btn-slide-theme');
+              if (tBtn) tBtn.style.display = '';
           }
       }
 
@@ -6635,12 +6656,14 @@
       }
 
       function toggleSlideSpecificTheme() {
-        const isDeckActive = document.body.classList.contains('deck-mode-active');
-        const target = isDeckActive
-          ? document.getElementById('deck-stage-card')
-          : document.getElementById('main-qb-grid');
-        if (!target) return;
-        const isDark = target.classList.toggle('slide-dark-mode');
+        const deckCard = document.getElementById('deck-stage-card');
+        const detailCard = document.querySelector('.qb-grid');
+        var isDark = false;
+        if (isDeckMode && deckCard) {
+          isDark = deckCard.classList.toggle('slide-dark-mode');
+        } else if (!isDeckMode && detailCard) {
+          isDark = detailCard.classList.toggle('slide-dark-mode');
+        }
         const btn = document.getElementById('dock-btn-slide-theme');
         if (btn) btn.innerHTML = isDark ? _SUN_SVG : _MOON_SVG;
       }
@@ -6722,6 +6745,7 @@
         showToast('⌨️ SPACE / ARROWS to navigate · ESC to exit', 'info');
       }
 
+      var preTheaterThemeWasDark = false;
       function togglePresentationMode() {
         isPresentationMode = !isPresentationMode;
         const body = document.body;
@@ -6730,15 +6754,18 @@
         const activeContainer = isDeckMode ? getEl('deck-stage') : getEl('pane-content');
         if (btn) btn.innerHTML = isPresentationMode ? 'Exit Cinema' : 'Theater Mode';
         if (isPresentationMode) {
-          if (!document.body.classList.contains('dark-mode')) applyTheme(true);
+          preTheaterThemeWasDark = body.classList.contains('dark-mode');
+          applyTheme(true);
           showCinemaTooltip();
           resetDeckIdleTimer();
           if (activeContainer) activeContainer.onclick = (e) => { if (e.target === activeContainer) togglePresentationMode(); };
         } else {
+          applyTheme(preTheaterThemeWasDark);
           clearTimeout(deckIdleTimer);
           document.getElementById('filter-strip')?.classList.remove('dock-idle');
           if (activeContainer) activeContainer.onclick = null;
         }
+        syncGanttIslandState();
       }
 
       function toggleDeckEditMode() {
@@ -7479,9 +7506,14 @@ ${item.comment || 'No notes provided.'}
       /* Stealth Dock Physics */
       .filter-strip { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease, filter 0.8s ease !important; }
       body.presentation-active .filter-strip {
+        position: fixed !important;
         z-index: 2000000 !important; background: rgba(24, 24, 27, 0.96) !important; color: #fff !important;
         border: 1px solid rgba(255,255,255,0.1) !important;
-        top: auto !important; bottom: 30px !important;
+        top: auto !important; bottom: 40px !important;
+        left: 50% !important; transform: translateX(-50%) !important; margin: 0 !important;
+      }
+      body.presentation-active #pane-content {
+        padding-bottom: 120px !important;
       }
       body.presentation-active .filter-strip.dock-idle {
         opacity: 0.05; filter: blur(6px); pointer-events: none; transform: translateX(-50%) translateY(20px);
