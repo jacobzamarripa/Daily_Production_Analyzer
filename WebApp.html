@@ -1213,6 +1213,9 @@
       body.deck-mode-active #ob-panel-reviewed {
           display: none !important;
       }
+      body.deck-mode-active #review-hub-main-header {
+          display: none !important;
+      }
       body.deck-mode-active #deck-action-panel {
           display: flex !important;
       }
@@ -2260,7 +2263,7 @@
             </div>
 
                 <div class="outbox-pane" id="outbox-pane">
-                   <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0;">
+                   <div id="review-hub-main-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0;">
                       <div style="font-size:16px; font-weight:900; color:var(--text-main); letter-spacing:-0.5px;">Review Hub</div>
                       <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel">✕</button>
                    </div>
@@ -6409,7 +6412,10 @@
         const welcome = getEl('welcome-screen');
         const paneContent = getEl('pane-content');
         const digestWs = getEl('digest-workspace');
-        if (digestWs) digestWs.style.display = (mode === 'digest') ? 'flex' : 'none';
+        const deckStage = getEl('deck-stage');
+        if (digestWs) digestWs.style.display = 'none';
+        if (grid) grid.style.display = 'none';
+        if (deckStage) deckStage.style.display = 'none';
         if (grid) grid.classList.toggle('active', isGridMode);
 
         // 2. DEFERRED HEAVY RENDERING (browser paints the dock animation first)
@@ -6429,11 +6435,11 @@
                 setAdminPanelOpen(false);
                 if (welcome) welcome.style.display = 'none';
                 if (paneContent) paneContent.style.display = 'none';
+                if (grid) grid.style.display = 'grid';
                 renderGrid();
             } else if (mode === 'deck') {
                 if (welcome) welcome.style.display = 'none';
                 if (paneContent) paneContent.style.display = 'none';
-                const deckStage = getEl('deck-stage');
                 if (deckStage) deckStage.style.display = 'flex';
                 setAdminPanelOpen(true);
                 applyFilters();
@@ -6447,7 +6453,7 @@
                 setAdminPanelOpen(false);
                 if (welcome) welcome.style.display = 'none';
                 if (paneContent) paneContent.style.display = 'none';
-                if (grid) grid.style.display = 'none';
+                if (digestWs) digestWs.style.display = 'flex';
                 renderDigestWorkspace();
             }
 
