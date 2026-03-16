@@ -1872,13 +1872,13 @@
 
     /* iOS STYLE UTILITY WIDGETS */
     .tool-widget {
-        position: absolute; top: 60px; left: 240px; width: 300px;
+        position: absolute; width: 300px;
         background: rgba(255, 255, 255, 0.65);
         backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%);
         border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 28px;
         box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.6);
         z-index: 100005; display: none; flex-direction: column; overflow: hidden;
-        transform-origin: top left;
+        transform-origin: top center;
         will-change: transform, opacity;
     }
     body.dark-mode .tool-widget {
@@ -2087,10 +2087,10 @@
           </button>
       </div>
       <div class="view-segment-group" style="margin-left: 8px;">
-          <button class="view-segment-btn" onclick="toggleWidget('calc-widget')" title="Benny Calculator">
+          <button class="view-segment-btn" onclick="toggleWidget('calc-widget', event)" title="Benny Calculator">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line></svg>
           </button>
-          <button class="view-segment-btn" onclick="toggleWidget('cal-widget')" title="Project Calendar">
+          <button class="view-segment-btn" onclick="toggleWidget('cal-widget', event)" title="Project Calendar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           </button>
       </div>
@@ -7192,13 +7192,23 @@ ${item.comment || 'No notes provided.'}
       }
 
       /* NATIVE TOOLS LOGIC */
-      function toggleWidget(id) {
+      function toggleWidget(id, event) {
           ['cal-widget', 'calc-widget'].forEach(function(w) {
               if (w !== id) document.getElementById(w).classList.remove('open');
           });
           var widget = document.getElementById(id);
-          widget.classList.toggle('open');
-          if (id === 'cal-widget' && widget.classList.contains('open')) renderCalendar();
+          var isOpen = widget.classList.toggle('open');
+
+          if (isOpen && event && event.currentTarget) {
+              var rect = event.currentTarget.getBoundingClientRect();
+              widget.style.top = (rect.bottom + 12) + 'px';
+              var leftPos = rect.left + (rect.width / 2) - (widget.offsetWidth / 2);
+              if (leftPos < 20) leftPos = 20;
+              if (leftPos + widget.offsetWidth > window.innerWidth - 20) leftPos = window.innerWidth - widget.offsetWidth - 20;
+              widget.style.left = leftPos + 'px';
+          }
+
+          if (id === 'cal-widget' && isOpen) renderCalendar();
       }
 
       // Calendar Logic
@@ -7254,6 +7264,28 @@ ${item.comment || 'No notes provided.'}
           var disp = document.getElementById('calc-display');
           if (disp) disp.value = calcState || '0';
       }
+
+      // Calculator Keyboard Support
+      document.addEventListener('keydown', function(e) {
+          var calcWidget = document.getElementById('calc-widget');
+          if (!calcWidget || !calcWidget.classList.contains('open')) return;
+          var key = e.key;
+          if (/[0-9\.]/.test(key)) {
+              e.preventDefault(); calcNum(key);
+          } else if (['+', '-', '*', '/', '(', ')'].includes(key)) {
+              e.preventDefault(); calcOp(key);
+          } else if (key === 'Enter' || key === '=') {
+              e.preventDefault(); calcOp('=');
+          } else if (key === 'Backspace') {
+              e.preventDefault();
+              if (calcState !== 'Err' && calcState.length > 0) {
+                  calcState = calcState.slice(0, -1);
+                  updateCalc();
+              }
+          } else if (key === 'Escape') {
+              e.preventDefault(); toggleWidget('calc-widget');
+          }
+      });
     </script>
     <style>
       /* Native deck stage presentation styles */
