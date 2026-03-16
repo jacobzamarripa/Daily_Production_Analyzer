@@ -6642,7 +6642,7 @@
         const stageCard = getEl('deck-stage-card');
         if (!stageCard) return;
 
-        stageCard.style.cssText = "width: 100%; max-width: 1100px; height: auto; aspect-ratio: 16/9; max-height: 75vh; flex-shrink: 1; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 30px 60px rgba(15,23,42,0.15); display: flex; flex-direction: column; overflow: hidden; margin: 0 auto;";
+        stageCard.style.cssText = "width: 100%; max-width: 1100px; height: auto; aspect-ratio: 16/9; max-height: 75vh; flex-shrink: 0; background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 30px 60px rgba(15,23,42,0.15); display: flex; flex-direction: column; overflow: hidden; margin: 0 auto;";
 
         const item = ensureDeckIndex();
         if (!item) {
@@ -7377,6 +7377,11 @@ ${item.comment || 'No notes provided.'}
         .slide-q-label { width: 100%; white-space: normal !important; }
         .slide-input-wrap { min-width: unset !important; width: 100% !important; }
         .slide-input { width: 100% !important; max-width: 100% !important; height: auto !important; }
+      }
+
+      #deck-stage-card, .qb-grid {
+        flex-shrink: 0 !important;
+        min-height: min-content !important;
       }
 
     </style>
