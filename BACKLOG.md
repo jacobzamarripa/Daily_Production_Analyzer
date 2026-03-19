@@ -26,9 +26,10 @@
 ## 🟡 NEXT (Core Workflow & Enhancements)
 *Focus: Queue management, Admin panels, and Core Data filtering.*
 
-- [ ] **Theater mode: Detail card / deck slide sizing**
+- [x] **Theater mode: Detail card / deck slide sizing**
   - **Expected:** Increase card/slide size slightly while maintaining aspect ratio.
   - **Acceptance:** Card is visibly larger but retains comfortable margins (not edge-to-edge).
+  - **Task 7.1:** Gantt Fullscreen view-switching and dock filters completed.
 - [ ] **Diagnostics Queue: Simplify view modes**
   - **Expected:** Remove "Relaxed mode". Standardize on Grid, List, and Inbox modes across Detail and Deck views.
   - **Acceptance:** Relaxed mode code is removed; UI layout matches current intent for remaining modes.

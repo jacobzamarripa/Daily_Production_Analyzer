@@ -398,6 +398,7 @@
           transform: translateX(-50%) !important;
           width: max-content !important;
           max-width: 95% !important;
+          min-width: 0 !important;
           margin: 0 !important;
           z-index: 2000 !important;
           padding: 8px 12px !important;
@@ -412,6 +413,7 @@
           justify-content: center !important;
           flex-wrap: nowrap !important;
           gap: 8px !important;
+          flex: 0 0 auto !important;
           flex-shrink: 0 !important;
           overflow: visible !important;
           scrollbar-width: none;
@@ -504,11 +506,13 @@
           will-change: transform, width, max-width;
       }
       .dock-zone {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           gap: 8px;
           opacity: 1;
-          max-width: 800px;
+          max-width: fit-content;
+          width: auto;
+          flex: 0 0 auto;
           overflow: visible;
           white-space: nowrap;
           will-change: max-width, opacity, margin, padding;
@@ -520,6 +524,14 @@
       .dock-zone > * {
           flex-shrink: 0;
           transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #dock-filters-zone {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          width: auto;
+          max-width: fit-content;
+          flex: 0 0 auto;
       }
       .dock-divider {
           width: 1px;
@@ -1883,6 +1895,13 @@
           bottom: 30px !important;
           z-index: 10005 !important;
       }
+      body.gantt-fullscreen #welcome-screen,
+      body.gantt-fullscreen #grid-content,
+      body.gantt-fullscreen #digest-workspace,
+      body.gantt-fullscreen #pane-content,
+      body.gantt-fullscreen #deck-stage {
+          display: none !important;
+      }
       body.gantt-fullscreen #workspace-view-switch,
       body.gantt-fullscreen #grid-pivot-select {
           display: none !important;
@@ -2888,11 +2907,11 @@
           if (btnFocusPill) btnFocusPill.style.display = (!isFs && hasFocus) ? 'inline-flex' : 'none';
 
           if (isFs) {
-              if (filtersZone) filtersZone.classList.add('collapsed');
+              if (filtersZone) filtersZone.classList.remove('collapsed');
               if (pivotZone) pivotZone.classList.add('collapsed');
               if (focusZone) focusZone.classList.add('collapsed');
               if (deckZone) deckZone.classList.add('collapsed');
-              if (clearZone) clearZone.classList.add('collapsed');
+              if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
               if (navPrev) navPrev.classList.add('collapsed');
               if (navNext) navNext.classList.add('collapsed');
           } else if (isPresentationMode) {
@@ -7521,10 +7540,11 @@ ${item.comment || 'No notes provided.'}
       }
       /* Shared focus properties */
       #deck-stage-card, .qb-grid {
-        width: 100% !important;
-        max-width: 1100px !important;
-        max-height: calc(100vh - 200px) !important;
-        margin: 0 !important; border-radius: 24px !important;
+        width: min(92vw, 1320px) !important;
+        max-width: min(92vw, 1320px) !important;
+        max-height: min(88vh, calc(100vh - 120px)) !important;
+        margin: 0 auto !important;
+        border-radius: 24px !important;
         cursor: default;
         transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
         box-shadow: 0 80px 160px rgba(0,0,0,0.5);
@@ -7539,14 +7559,26 @@ ${item.comment || 'No notes provided.'}
         overflow: hidden;
       }
       body.presentation-active #deck-stage-card {
-        width: 94vw !important; max-height: 85vh !important; transform: scale(1.02);
+        width: min(92vw, 1440px) !important;
+        max-width: min(92vw, 1440px) !important;
+        max-height: min(86vh, calc((92vw) * 9 / 16)) !important;
+        aspect-ratio: 16 / 9 !important;
+        transform: scale(1.04);
       }
       /* Detail card: flexible vertical */
       .qb-grid {
-        aspect-ratio: auto !important; width: 100%; max-width: 1100px;
-        max-height: 92vh; overflow-y: auto !important;
+        aspect-ratio: auto !important;
+        width: 100%;
+        max-width: 1100px;
+        max-height: 92vh;
+        overflow-y: auto !important;
       }
-      body.presentation-active .qb-grid { transform: scale(1.02); }
+      body.presentation-active .qb-grid {
+        width: min(92vw, 1280px) !important;
+        max-width: min(92vw, 1280px) !important;
+        max-height: min(88vh, calc(100vh - 110px)) !important;
+        transform: scale(1.04);
+      }
       /* Dynamic Executive Typography Scaling */
       body.presentation-active .slide-hdr-id { font-size: 32px !important; }
       body.presentation-active .slide-ppt-q { font-size: 15px !important; }
