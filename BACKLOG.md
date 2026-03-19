@@ -2,15 +2,15 @@
 
 ## 🔴 NOW (Bugs & Quick Wins)
 *Focus: UI Layout, Z-Index issues, and Data Formatting.*
-**Status:** Focus has returned to the remaining open NOW item below.
+**Status:** All `NOW` backlog items are complete.
 
 - [x] **Deck view: Calendar + calculator widgets z-index**
   - **Expected:** Widgets always float on top of all deck content.
   - **Acceptance:** Opening calendar/calculator renders above the slide across all interactions (open/close, resize).
-- [ ] **Diagnostics / action pills: Incorrect color mapping**
+- [x] **Diagnostics / action pills: Incorrect color mapping**
   - **Expected:** "OFS" and "Complete" pills consistently use the intended CSS variables.
   - **Acceptance:** No fallback to default/incorrect colors; matches design spec in all views.
-  - **Current focus:** Return pass on diagnostics / action pill color consistency.
+  - **Completed:** Unified web chip semantics for status and diagnostic surfaces.
 - [x] **Dates/times: Normalize formatting**
   - **Expected:** Ignore "midnight timestamp" noise (00:00:00) in change log and across app.
   - **Acceptance:** Change log displays date-only changes without time. Formatting is consistent.
@@ -40,6 +40,7 @@
 - [ ] **Diagnostics Queue: Simplify view modes**
   - **Expected:** Remove "Relaxed mode". Standardize on Grid, List, and Inbox modes across Detail and Deck views.
   - **Acceptance:** Relaxed mode code is removed; UI layout matches current intent for remaining modes.
+  - **Current focus:** Replacing the old density toggle with Inbox / List / Grid queue modes.
 - [ ] **Admin badges workflow: Diagnostics Queue → Reviewed**
   - **Expected:** Clearing an item removes it from the active queue and moves it to the Admin panel's Reviewed list.
   - **Acceptance:** Exports from the Reviewed tab produce correct groupings without duplicates.

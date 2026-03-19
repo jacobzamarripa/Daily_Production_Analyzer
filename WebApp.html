@@ -1217,12 +1217,6 @@
       .inbox-list.dense-view .em-vendor { font-size: 9px; }
       .inbox-list.dense-view .glass-pill { font-size: 8px; padding: 2px 6px; }
 
-      /* Relaxed view — generous spacing, larger text */
-      .inbox-list.relaxed-view .email-card { padding: 18px 18px; gap: 8px; }
-      .inbox-list.relaxed-view .em-fdh { font-size: 16px; }
-      .inbox-list.relaxed-view .em-vendor { font-size: 11px; }
-      .inbox-list.relaxed-view .em-tags { gap: 6px; }
-
       .email-card.crit { border-left-color: var(--color-critical); }
       .email-card.warn { border-left-color: var(--color-review); }
       .email-card.info { border-left-color: var(--color-insight); }
@@ -2846,9 +2840,9 @@
           }
 
           const sortQueue = getEl('sort-queue');
-          if (sortQueue) sortQueue.style.display = isDeckMode ? 'none' : '';
+          if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' ? 'none' : '';
           const sidebarPivot = getEl('sidebar-pivot-select');
-          if (sidebarPivot) sidebarPivot.style.display = isDeckMode ? 'inline-block' : 'none';
+          if (sidebarPivot) sidebarPivot.style.display = currentViewMode === 'grid' ? 'inline-block' : 'none';
           syncSlideActionDeck();
       }
 
@@ -3676,19 +3670,30 @@
           applyFilters();
           renderAdminPane(allActionItems);
       }
-      const _VIEW_MODES = ['regular', 'dense', 'relaxed'];
-      let currentViewMode = localStorage.getItem('queueViewMode') || 'regular';
+      const _VIEW_MODES = ['inbox', 'list', 'grid'];
+      let currentViewMode = (function() {
+          let stored = localStorage.getItem('queueViewMode') || 'inbox';
+          if (stored === 'regular') return 'inbox';
+          if (stored === 'dense') return 'list';
+          if (stored === 'relaxed') return 'grid';
+          return _VIEW_MODES.includes(stored) ? stored : 'inbox';
+      })();
       function cycleViewMode() {
           let idx = (_VIEW_MODES.indexOf(currentViewMode) + 1) % _VIEW_MODES.length;
           currentViewMode = _VIEW_MODES[idx];
           localStorage.setItem('queueViewMode', currentViewMode);
           applyViewMode();
+          syncWorkspaceChrome();
+          applyFilters();
       }
       function applyViewMode() {
           let list = getEl('inbox-list'); let btn = getEl('view-toggle-btn');
-          if (list) { list.classList.remove('dense-view', 'relaxed-view'); if (currentViewMode === 'dense') list.classList.add('dense-view'); if (currentViewMode === 'relaxed') list.classList.add('relaxed-view'); }
-          const icons = { regular: '⊟', dense: '☰', relaxed: '⊞' };
-          const tips  = { regular: 'Switch to Dense', dense: 'Switch to Relaxed', relaxed: 'Switch to Regular' };
+          if (list) {
+              list.classList.remove('dense-view');
+              if (currentViewMode === 'list') list.classList.add('dense-view');
+          }
+          const icons = { inbox: '⊟', list: '☰', grid: '⊞' };
+          const tips  = { inbox: 'Switch to List', list: 'Switch to Grid', grid: 'Switch to Inbox' };
           if (btn) { btn.innerHTML = icons[currentViewMode]; btn.setAttribute('data-tooltip', tips[currentViewMode]); }
       }
       function _syncDrawerTop() { /* no-op */ }
@@ -5521,7 +5526,7 @@
       function renderList(items) {
         let list = getEl('inbox-list'); if(!list) return; setTxt('inbox-count', items.length); list.innerHTML = '';
 
-        if (!isDeckMode) {
+        if (currentViewMode !== 'grid') {
           items.forEach((item) => {
               let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== ""); let highestSev = "info", tagsHtml = '';
 
@@ -5555,7 +5560,7 @@
               list.appendChild(card);
           });
         } else {
-          // DECK MODE: render as Grid Cards
+          // GRID MODE: render as compact project cards in both Detail and Slide
           let pivot = getEl('sidebar-pivot-select')?.value || 'schedule';
           let today = new Date(); today.setHours(0,0,0,0);
 
@@ -5615,7 +5620,15 @@
               let card = document.createElement('div');
               card.className = `grid-card ${isSelected}`;
               card.id = `card-${item.fdh}`;
-              card.onclick = () => { deckIndex = idx; openPane(item, card); renderDeckStage(); };
+              card.onclick = () => {
+                  if (isDeckMode) {
+                      deckIndex = idx;
+                      openPane(item, card);
+                      renderDeckStage();
+                  } else {
+                      openPane(item, card);
+                  }
+              };
               card.innerHTML = `
                   <div class="grid-card-header" style="padding-bottom:6px;">
                       <div>
