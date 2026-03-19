@@ -320,12 +320,17 @@ function syncChangeLogs() {
   const result = JSON.parse(response.getContentText());
   const rows = (result.data || []).map(function(rec) {
     const userVal = rec["10"] ? rec["10"].value : null;
+    const dateObj = new Date(rec["11"].value);
+    // QB date-only fields arrive as midnight CST (GMT-6). Suppress time when it's 00:00.
+    const timeStr  = Utilities.formatDate(dateObj, "GMT-6", "HH:mm");
+    const dateStr  = Utilities.formatDate(dateObj, "GMT-6", "MM/dd/yyyy");
+    const displayDate = timeStr === "00:00" ? dateStr : dateStr + " " + timeStr;
     return [
       rec["8"] ? rec["8"].value : "",
       rec["13"] ? rec["13"].value : "",
       rec["17"] ? rec["17"].value : "",
       (userVal && (userVal.name || userVal.email)) || "System",
-      Utilities.formatDate(new Date(rec["11"].value), "GMT-5", "MM/dd/yyyy HH:mm")
+      displayDate
     ];
   });
 

@@ -165,7 +165,33 @@ function getDashboardData() {
     const logData = logSheet.getDataRange().getValues();
     for (let j = 1; j < logData.length; j++) {
       let timeVal = logData[j][4];
-      let logTime = timeVal instanceof Date ? new Date(timeVal.getTime()) : new Date(timeVal);
+      let logTime;
+      let timeDisplay;
+      if (timeVal instanceof Date) {
+          // Sheets auto-converts date strings to Date objects; never call String() on them.
+          const hm = Utilities.formatDate(timeVal, "GMT-6", "HH:mm");
+          const dm = Utilities.formatDate(timeVal, "GMT-6", "MM/dd/yyyy");
+          if (hm === "00:00") {
+              // QB date-only field (midnight CST) → normalize to UTC midnight so
+              // the frontend isMidnightUTC check suppresses the time display.
+              const p = dm.split('/');
+              logTime = new Date(Date.UTC(parseInt(p[2]), parseInt(p[0]) - 1, parseInt(p[1])));
+              timeDisplay = dm;
+          } else {
+              logTime = new Date(timeVal.getTime());
+              timeDisplay = dm + " " + hm;
+          }
+      } else {
+          const s = String(timeVal || '').trim();
+          // Date-only strings (MM/dd/yyyy) are parsed as UTC midnight to prevent TZ drift.
+          const dateOnly = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+          if (dateOnly) {
+              logTime = new Date(Date.UTC(parseInt(dateOnly[3]), parseInt(dateOnly[1]) - 1, parseInt(dateOnly[2])));
+          } else {
+              logTime = new Date(s);
+          }
+          timeDisplay = s;
+      }
       let timestampObj = isNaN(logTime.getTime()) ? 0 : logTime.getTime();
       if (timestampObj > yesterday.getTime()) hasRecentGlobalChange = true;
 
@@ -174,7 +200,7 @@ function getDashboardData() {
         type: String(logData[j][1] || ""),
         val: String(logData[j][2] || ""),
         user: String(logData[j][3] || "System"),
-        time: String(logData[j][4] || ""),
+        time: timeDisplay,
         timestampObj: timestampObj
       });
     }
