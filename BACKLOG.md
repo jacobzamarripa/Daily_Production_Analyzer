@@ -7,9 +7,10 @@
 - [x] **Deck view: Calendar + calculator widgets z-index**
   - **Expected:** Widgets always float on top of all deck content.
   - **Acceptance:** Opening calendar/calculator renders above the slide across all interactions (open/close, resize).
-- [x] **Diagnostics / action pills: Incorrect color mapping**
+- [ ] **Diagnostics / action pills: Incorrect color mapping**
   - **Expected:** "OFS" and "Complete" pills consistently use the intended CSS variables.
   - **Acceptance:** No fallback to default/incorrect colors; matches design spec in all views.
+  - **Task 7.2:** Layout bleed, Gantt dock positioning, and pill color audit in progress.
 - [x] **Dates/times: Normalize formatting**
   - **Expected:** Ignore "midnight timestamp" noise (00:00:00) in change log and across app.
   - **Acceptance:** Change log displays date-only changes without time. Formatting is consistent.
@@ -30,6 +31,7 @@
   - **Expected:** Increase card/slide size slightly while maintaining aspect ratio.
   - **Acceptance:** Card is visibly larger but retains comfortable margins (not edge-to-edge).
   - **Task 7.1:** Gantt Fullscreen view-switching and dock filters completed.
+  - **Follow-up:** Task 7.2 addresses post-fix layout bleed and fullscreen dock regressions.
 - [ ] **Diagnostics Queue: Simplify view modes**
   - **Expected:** Remove "Relaxed mode". Standardize on Grid, List, and Inbox modes across Detail and Deck views.
   - **Acceptance:** Relaxed mode code is removed; UI layout matches current intent for remaining modes.

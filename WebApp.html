@@ -533,6 +533,10 @@
           max-width: fit-content;
           flex: 0 0 auto;
       }
+      #dock-filters-zone .ms-wrap,
+      #dock-filters-zone select {
+          flex: 0 0 auto;
+      }
       .dock-divider {
           width: 1px;
           height: 20px;
@@ -1893,7 +1897,15 @@
           position: fixed !important;
           top: auto !important;
           bottom: 30px !important;
+          left: 50vw !important;
+          right: auto !important;
+          transform: translateX(-50%) !important;
+          margin: 0 !important;
           z-index: 10005 !important;
+      }
+      body.gantt-fullscreen .detail-main {
+          display: block !important;
+          width: 100vw !important;
       }
       body.gantt-fullscreen #welcome-screen,
       body.gantt-fullscreen #grid-content,
@@ -3175,6 +3187,16 @@
           let st = (stage || "").toLowerCase(), stat = (status || "").toLowerCase();
           if (st.includes('ofs')) return 'pill-ofs'; if (st.includes('permit')) return 'pill-permit'; if (stat.includes('complete')) return 'pill-complete'; if (stat.includes('hold') || stat.includes('assign')) return 'pill-hold';
           return 'pill-active';
+      }
+
+      function getDiagnosticTagClass(flag) {
+          let f = String(flag || '').toUpperCase();
+          if (f.includes('ADMIN: CHECK CROSSINGS') || f.includes('ADMIN: REFRESH REF DATA')) return 'tag-admin';
+          if (f.includes('STATUS MISMATCH') || f.includes('MISSING QB STATUS') || f.includes('🚨') || f.includes('🛑') || f.includes('🚩')) return 'tag-red';
+          if (f.includes('⚠️') || f.includes('🖍️') || f.includes('🚧')) return 'tag-yellow';
+          if (f.includes('🪄') || f.includes('🟣')) return 'tag-purple';
+          if (f === 'MISSING DAILY REPORT') return 'tag-ghost';
+          return 'tag-muted';
       }
 
       function populateDropdown(id, values) {
@@ -5197,13 +5219,12 @@
 
               rawFlags.slice(0, 3).forEach(f => {
                   let cleanText = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
-                  if (f.includes("ADMIN: CHECK CROSSINGS") || f.includes("ADMIN: REFRESH REF DATA")) { highestSev = f.includes("REFRESH") ? "warn" : "crit"; tagsHtml += `<span class="tag tag-admin">${cleanText}</span>`; }
-                  else if (f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS")) { highestSev = "crit"; tagsHtml += `<span class="tag tag-red">${cleanText}</span>`; }
-                  else if (f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { highestSev = "crit"; tagsHtml += `<span class="tag tag-red">${cleanText}</span>`; }
-                  else if (f.includes("⚠️") || f.includes("🖍️") || f.includes("🚧")) { if(highestSev!=="crit") highestSev="warn"; tagsHtml += `<span class="tag tag-yellow">${cleanText}</span>`; }
-                  else if (f.includes("🪄") || f.includes("🟣")) tagsHtml += `<span class="tag tag-purple">${cleanText}</span>`;
-                  else if (f === "MISSING DAILY REPORT") { if(highestSev !== "crit" && highestSev !== "warn") highestSev = "ghost"; tagsHtml += `<span class="tag tag-ghost">${cleanText}</span>`; }
-                  else tagsHtml += `<span class="tag tag-muted">${cleanText}</span>`;
+                  let tagCls = getDiagnosticTagClass(f);
+                  if (tagCls === 'tag-admin') highestSev = f.includes("REFRESH") ? "warn" : "crit";
+                  else if (tagCls === 'tag-red') highestSev = "crit";
+                  else if (tagCls === 'tag-yellow' && highestSev !== "crit") highestSev = "warn";
+                  else if (tagCls === 'tag-ghost' && highestSev !== "crit" && highestSev !== "warn") highestSev = "ghost";
+                  tagsHtml += `<span class="tag ${tagCls}">${cleanText}</span>`;
               });
               if(rawFlags.length > 3) tagsHtml += `<span class="tag tag-muted">+${rawFlags.length-3}</span>`;
 
@@ -5589,13 +5610,11 @@
               
               rawFlags.forEach(f => {
                   let cleanText = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
-                  if (f.includes("ADMIN: CHECK CROSSINGS") || f.includes("ADMIN: REFRESH REF DATA")) { isCritical = !f.includes("REFRESH"); if(isCritical) isWarn = false; else if(!isCritical) isWarn = true; if(f.includes("CHECK CROSSINGS")) needsAdminCheck = true; tagsHtml += `<span class="tag tag-admin admin-flag-tag">${cleanText}</span>`; }
-                  else if (f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS")) { isCritical = true; needsQbSync = true; tagsHtml += `<span class="tag tag-red status-flag-tag" style="border-color:#fca5a5;">${cleanText}</span>`; }
-                  else if (f.includes("🚨") || f.includes("🛑") || f.includes("🚩")) { isCritical = true; tagsHtml += `<span class="tag tag-red" style="border-color:#fca5a5;">${cleanText}</span>`; }
-                  else if (f.includes("⚠️") || f.includes("🖍️") || f.includes("🚧")) { isWarn = true; tagsHtml += `<span class="tag tag-yellow" style="border-color:#fde047;">${cleanText}</span>`; }
-                  else if (f.includes("🪄") || f.includes("🟣")) { tagsHtml += `<span class="tag tag-purple">${cleanText}</span>`; }
-                  else if (f === "MISSING DAILY REPORT") { tagsHtml += `<span class="tag tag-ghost">${cleanText}</span>`; }
-                  else { tagsHtml += `<span class="tag tag-muted">${cleanText}</span>`; }
+                  let tagCls = getDiagnosticTagClass(f);
+                  if (tagCls === "tag-admin") { isCritical = !f.includes("REFRESH"); if(isCritical) isWarn = false; else if(!isCritical) isWarn = true; if(f.includes("CHECK CROSSINGS")) needsAdminCheck = true; tagsHtml += `<span class="tag ${tagCls} admin-flag-tag">${cleanText}</span>`; }
+                  else if (tagCls === "tag-red") { isCritical = true; if (f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS")) needsQbSync = true; tagsHtml += `<span class="tag ${tagCls} status-flag-tag">${cleanText}</span>`; }
+                  else if (tagCls === "tag-yellow") { isWarn = true; tagsHtml += `<span class="tag ${tagCls}">${cleanText}</span>`; }
+                  else { tagsHtml += `<span class="tag ${tagCls}">${cleanText}</span>`; }
               });
               
               let nPath = getEl('p-network-path');
@@ -6643,9 +6662,28 @@
         const paneContent = getEl('pane-content');
         const digestWs = getEl('digest-workspace');
         const deckStage = getEl('deck-stage');
-        if (digestWs) digestWs.style.display = 'none';
-        if (grid) grid.style.display = 'none';
-        if (deckStage) deckStage.style.display = 'none';
+        if (digestWs) {
+            digestWs.style.display = 'none';
+            digestWs.style.flex = '';
+            digestWs.style.width = '';
+        }
+        if (grid) {
+            grid.style.display = 'none';
+            grid.style.flex = '';
+            grid.style.width = '';
+        }
+        if (paneContent) {
+            paneContent.style.display = 'none';
+            paneContent.style.flex = '';
+            paneContent.style.width = '';
+        }
+        if (deckStage) {
+            deckStage.style.display = 'none';
+            deckStage.style.flex = '0 0 auto';
+            deckStage.style.width = '0';
+            deckStage.style.padding = '0';
+            deckStage.style.overflow = 'hidden';
+        }
         if (grid) grid.classList.toggle('active', isGridMode);
 
         // 2. DEFERRED HEAVY RENDERING (browser paints the dock animation first)
@@ -6671,7 +6709,13 @@
             } else if (mode === 'deck') {
                 if (welcome) welcome.style.display = 'none';
                 if (paneContent) paneContent.style.display = 'none';
-                if (deckStage) deckStage.style.display = 'flex';
+                if (deckStage) {
+                    deckStage.style.display = 'flex';
+                    deckStage.style.flex = '';
+                    deckStage.style.width = '';
+                    deckStage.style.padding = '';
+                    deckStage.style.overflow = '';
+                }
                 setAdminPanelOpen(true);
                 applyFilters();
                 if (currentActiveItem) {
@@ -7105,10 +7149,7 @@
           let tagsHtml = '';
           rawFlags.forEach(f => {
             const cleanText = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
-            if (f.includes('ADMIN')) tagsHtml += `<span class="tag tag-admin" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
-            else if (f.includes('🚨') || f.includes('🛑') || f.includes('🚩') || f.includes('STATUS') || f.includes('MISSING')) tagsHtml += `<span class="tag tag-red" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
-            else if (f.includes('⚠️') || f.includes('🖍️') || f.includes('🚧')) tagsHtml += `<span class="tag tag-yellow" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
-            else tagsHtml += `<span class="tag tag-muted" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
+            tagsHtml += `<span class="tag ${getDiagnosticTagClass(f)}" style="font-size:10px; padding:4px 8px;">${cleanText}</span>`;
           });
           syncDockStagingButton();
           let stagingBannerHtml = '';
