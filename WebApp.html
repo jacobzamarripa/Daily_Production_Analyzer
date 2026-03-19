@@ -430,9 +430,13 @@
           box-shadow: 0 20px 48px rgba(15, 23, 42, 0.18), inset 0 1px 1px rgba(255,255,255,1) !important;
       }
       body.deck-mode-active:not(.presentation-active) .filter-strip {
-          position: absolute !important;
+          position: fixed !important;
           top: auto !important;
           bottom: 30px !important;
+          left: 50vw !important;
+          right: auto !important;
+          transform: translateX(-50%) !important;
+          margin: 0 !important;
           z-index: 2000 !important;
           box-shadow: 0 -10px 40px rgba(15, 23, 42, 0.15), inset 0 1px 1px rgba(255,255,255,0.8) !important;
       }
@@ -1228,6 +1232,11 @@
           width: 100% !important;
           overflow: visible !important;
           z-index: 25 !important;
+          pointer-events: none !important;
+      }
+      body.deck-mode-active .detail-main > #filter-strip,
+      body.deck-mode-active .detail-main > #active-filter-pills {
+          pointer-events: auto !important;
       }
       body.deck-mode-active #deck-stage {
           width: 100% !important;
@@ -1912,6 +1921,11 @@
           transform: translateX(-50%) !important;
           margin: 0 !important;
           z-index: 10005 !important;
+      }
+      body.gantt-fullscreen .detail-main {
+          display: block !important;
+          width: 100vw !important;
+          max-width: 100vw !important;
       }
       body.gantt-fullscreen #welcome-screen,
       body.gantt-fullscreen #grid-content,
@@ -3036,10 +3050,7 @@
           const rawFlags = (item.flags || '').split('\n').map(f => f.trim()).filter(f => f !== '');
           const tagsHtml = rawFlags.map(f => {
               const clean = f.replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
-              let tagCls = 'tag-muted';
-              if (f.includes('ADMIN')) tagCls = 'tag-admin';
-              else if (f.includes('🚨') || f.includes('🛑') || f.includes('🚩') || f.includes('STATUS') || f.includes('MISSING')) tagCls = 'tag-red';
-              else if (f.includes('⚠️') || f.includes('🖍️') || f.includes('🚧')) tagCls = 'tag-yellow';
+              const tagCls = getDiagnosticTagClass(f);
               return `<span class="tag ${tagCls}" style="font-size:9px; padding:3px 7px;">${clean}</span>`;
           }).join('') || '<span style="color:var(--text-muted);">No anomalies.</span>';
 
@@ -3198,7 +3209,8 @@
       function getDiagnosticTagClass(flag) {
           let f = String(flag || '').toUpperCase();
           if (f.includes('ADMIN: CHECK CROSSINGS') || f.includes('ADMIN: REFRESH REF DATA')) return 'tag-admin';
-          if (f.includes('STATUS MISMATCH') || f.includes('MISSING QB STATUS') || f.includes('🚨') || f.includes('🛑') || f.includes('🚩')) return 'tag-red';
+          if (f.includes('STATUS MISMATCH') || f.includes('MISSING QB STATUS')) return 'tag-yellow';
+          if (f.includes('🚨') || f.includes('🛑') || f.includes('🚩')) return 'tag-red';
           if (f.includes('⚠️') || f.includes('🖍️') || f.includes('🚧')) return 'tag-yellow';
           if (f.includes('🪄') || f.includes('🟣')) return 'tag-purple';
           if (f === 'MISSING DAILY REPORT') return 'tag-ghost';
@@ -6668,6 +6680,8 @@
         const paneContent = getEl('pane-content');
         const digestWs = getEl('digest-workspace');
         const deckStage = getEl('deck-stage');
+        const detailLayout = getEl('detail-layout');
+        const detailMain = document.querySelector('.detail-main');
         if (digestWs) {
             digestWs.style.display = 'none';
             digestWs.style.flex = '';
@@ -6683,12 +6697,25 @@
             paneContent.style.flex = '';
             paneContent.style.width = '';
         }
+        if (detailLayout) {
+            detailLayout.style.display = 'flex';
+        }
+        if (detailMain) {
+            detailMain.style.position = '';
+            detailMain.style.inset = '';
+            detailMain.style.width = '';
+            detailMain.style.overflow = '';
+            detailMain.style.zIndex = '';
+            detailMain.style.pointerEvents = '';
+        }
         if (deckStage) {
             deckStage.style.display = 'none';
-            deckStage.style.flex = '';
-            deckStage.style.width = '';
-            deckStage.style.padding = '';
-            deckStage.style.overflow = '';
+            deckStage.style.flex = '0 0 auto';
+            deckStage.style.width = '0';
+            deckStage.style.maxWidth = '0';
+            deckStage.style.padding = '0';
+            deckStage.style.margin = '0';
+            deckStage.style.overflow = 'hidden';
         }
         if (grid) grid.classList.toggle('active', isGridMode);
 
@@ -6719,7 +6746,9 @@
                     deckStage.style.display = 'flex';
                     deckStage.style.flex = '';
                     deckStage.style.width = '';
+                    deckStage.style.maxWidth = '';
                     deckStage.style.padding = '';
+                    deckStage.style.margin = '';
                     deckStage.style.overflow = '';
                 }
                 setAdminPanelOpen(true);
