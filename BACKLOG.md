@@ -2,7 +2,7 @@
 
 ## 🔴 NOW (Bugs & Quick Wins)
 *Focus: UI Layout, Z-Index issues, and Data Formatting.*
-**Status:** All `NOW` backlog items are complete.
+**Status:** Focus has returned to the remaining open NOW item below.
 
 - [x] **Deck view: Calendar + calculator widgets z-index**
   - **Expected:** Widgets always float on top of all deck content.
@@ -10,7 +10,7 @@
 - [ ] **Diagnostics / action pills: Incorrect color mapping**
   - **Expected:** "OFS" and "Complete" pills consistently use the intended CSS variables.
   - **Acceptance:** No fallback to default/incorrect colors; matches design spec in all views.
-  - **Task 7.2:** Layout bleed, Gantt dock positioning, and pill color audit in progress.
+  - **Current focus:** Return pass on diagnostics / action pill color consistency.
 - [x] **Dates/times: Normalize formatting**
   - **Expected:** Ignore "midnight timestamp" noise (00:00:00) in change log and across app.
   - **Acceptance:** Change log displays date-only changes without time. Formatting is consistent.
@@ -27,7 +27,7 @@
 ## 🟡 NEXT (Core Workflow & Enhancements)
 *Focus: Queue management, Admin panels, and Core Data filtering.*
 
-- [ ] **Task 8: Split Slide Dock / Bottom Action Deck / Theater Dock Simplification**
+- [x] **Task 8: Split Slide Dock / Bottom Action Deck / Theater Dock Simplification**
   - Keep filters/search/face toggle in the shared top dock
   - Move Slide-only actions into a dedicated bottom action deck
   - Hide the top dock in Slide Theater mode and keep only the bottom control rail
