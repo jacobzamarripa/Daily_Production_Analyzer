@@ -595,7 +595,6 @@
       }
       body.gantt-fullscreen #view-btn-detail,
       body.gantt-fullscreen #view-btn-grid,
-      body.gantt-fullscreen #view-btn-deck,
       body.gantt-fullscreen #view-btn-digest {
           background: transparent !important;
           color: var(--text-muted) !important;
@@ -2033,10 +2032,10 @@
             <h3>Grid</h3>
             <p>High Density</p>
           </div>
-          <div class="startup-card" onclick="completeStartup('deck')">
+          <div class="startup-card" onclick="completeStartup('slide')">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
-            <h3>Deck</h3>
-            <p>Presentation</p>
+            <h3>Slide</h3>
+            <p>Presentation Face</p>
           </div>
           <div class="startup-card" onclick="completeStartup('digest')">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -2128,9 +2127,6 @@
           </button>
           <button class="view-segment-btn" id="view-btn-grid" onclick="switchWorkspaceView('grid')" title="Grid View">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          </button>
-          <button class="view-segment-btn" id="view-btn-deck" onclick="switchWorkspaceView('deck')" title="Deck Mode">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
           </button>
           <button class="view-segment-btn" id="view-btn-digest" onclick="switchWorkspaceView('digest')" title="Daily Digest">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -2280,6 +2276,7 @@
 
             <div class="dock-zone collapsed" id="dock-focus-zone">
                 <div class="dock-divider"></div>
+                <button class="btn hover-trigger" id="dock-btn-face-toggle" onclick="toggleDetailFace()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Slide View</button>
                 <button class="btn hover-trigger" id="dock-btn-presentation" onclick="togglePresentationMode()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Theater Mode</button>
             </div>
 
@@ -2663,6 +2660,7 @@
       let isGridMode = false;
       let currentGridPivot = 'velocity';
       let currentWorkspaceView = 'detail';
+      let currentDetailFace = 'detail';
       let deckIndex = 0;
       let isDeckMode = false;
       let isDeckEditing = false;
@@ -2677,6 +2675,102 @@
       const CHANGELOG_PULSE_SESSION_KEY = 'changelogPulseSeen';
       let showDigestAfterNextDataLoad = false;
       let showDigestAfterStartupSelection = false;
+
+      function syncWorkspaceModeState() {
+          isGridMode = (currentWorkspaceView === 'grid');
+          isDeckMode = (currentWorkspaceView === 'detail' && currentDetailFace === 'slide');
+
+          document.body.classList.remove('grid-mode-active', 'deck-mode-active');
+          if (isGridMode || currentWorkspaceView === 'digest') document.body.classList.add('grid-mode-active');
+          if (isDeckMode) document.body.classList.add('deck-mode-active');
+      }
+
+      function syncWorkspaceChrome() {
+          ['detail', 'grid', 'digest'].forEach(v => {
+              const btn = getEl(`view-btn-${v}`);
+              if (btn) btn.classList.toggle('active', v === currentWorkspaceView);
+          });
+
+          const isDetailMode = currentWorkspaceView === 'detail';
+          const isGridModeView = currentWorkspaceView === 'grid';
+          const pivotZone = getEl('dock-pivot-zone');
+          const filtersZone = getEl('dock-filters-zone');
+          const focusZone = getEl('dock-focus-zone');
+          const deckActionsZone = getEl('dock-deck-actions-zone');
+          const clearZone = getEl('dock-clear-zone');
+          const navPrev = getEl('dock-nav-prev');
+          const navNext = getEl('dock-nav-next');
+          const faceBtn = getEl('dock-btn-face-toggle');
+
+          if (filtersZone) filtersZone.classList.remove('collapsed');
+          if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridModeView);
+          if (focusZone) focusZone.classList.toggle('collapsed', !isDetailMode);
+          if (deckActionsZone) deckActionsZone.classList.toggle('collapsed', !isDeckMode);
+          if (navPrev) navPrev.classList.toggle('collapsed', !isDeckMode);
+          if (navNext) navNext.classList.toggle('collapsed', !isDeckMode);
+          if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
+
+          if (faceBtn) {
+              faceBtn.style.display = isDetailMode ? 'inline-flex' : 'none';
+              faceBtn.innerText = isDeckMode ? 'Detail View' : 'Slide View';
+          }
+
+          const sortQueue = getEl('sort-queue');
+          if (sortQueue) sortQueue.style.display = isDeckMode ? 'none' : '';
+          const sidebarPivot = getEl('sidebar-pivot-select');
+          if (sidebarPivot) sidebarPivot.style.display = isDeckMode ? 'inline-block' : 'none';
+      }
+
+      function renderDetailWorkspaceFace() {
+          if (currentWorkspaceView !== 'detail') return;
+
+          const welcome = getEl('welcome-screen');
+          const paneContent = getEl('pane-content');
+          const deckStage = getEl('deck-stage');
+
+          if (!currentActiveItem) {
+              if (welcome) welcome.style.display = 'flex';
+              if (paneContent) paneContent.style.display = 'none';
+              if (deckStage) deckStage.style.display = 'none';
+              setAdminPanelOpen(false);
+              return;
+          }
+
+          if (welcome) welcome.style.display = 'none';
+
+          if (isDeckMode) {
+              if (paneContent) paneContent.style.display = 'none';
+              if (deckStage) {
+                  deckStage.style.display = 'flex';
+                  deckStage.style.flex = '';
+                  deckStage.style.width = '';
+                  deckStage.style.padding = '';
+                  deckStage.style.overflow = '';
+              }
+              setAdminPanelOpen(true);
+              deckIndex = Math.max(0, filteredItems.findIndex(i => i.fdh === currentActiveItem.fdh));
+              renderDeckStage();
+          } else {
+              if (deckStage) deckStage.style.display = 'none';
+              if (paneContent) paneContent.style.display = 'flex';
+              openPane(currentActiveItem, getEl(`card-${currentActiveItem.fdh}`) || null);
+              if (window.innerWidth > 768) syncAdminPanelForViewport();
+          }
+      }
+
+      function toggleDetailFace(forceFace) {
+          const nextFace = forceFace === 'slide' ? 'slide' : forceFace === 'detail' ? 'detail' : (isDeckMode ? 'detail' : 'slide');
+          if (nextFace === 'slide' && !currentActiveItem) {
+              showToast('Select a project before opening Slide View.', 'info');
+              return;
+          }
+
+          currentDetailFace = nextFace;
+          syncWorkspaceModeState();
+          syncWorkspaceChrome();
+          renderDetailWorkspaceFace();
+          syncGanttIslandState();
+      }
 
       function getStageColor(stage) {
           let sLower = (stage || "").toLowerCase();
@@ -2903,9 +2997,9 @@
           const navPrev     = getEl('dock-nav-prev');
           const navNext     = getEl('dock-nav-next');
           const isGrid      = currentWorkspaceView === 'grid';
-          const isDeck      = currentWorkspaceView === 'deck';
+          const isDeck      = isDeckMode;
           const isDetail    = currentWorkspaceView === 'detail';
-          const showFocusZone = isDetail || isDeck;
+          const showFocusZone = isDetail;
 
           if (btnFs) btnFs.classList.toggle('collapsed', !isFs);
           if (btnFocus) btnFocus.classList.toggle('collapsed', !(isFs && hasFocus));
@@ -3287,7 +3381,11 @@
           const overlay = getEl('startup-overlay');
           if (overlay) overlay.classList.remove('visible');
 
-          switchWorkspaceView(mode);
+          const startupMode = mode === 'slide' ? 'detail' : mode;
+          switchWorkspaceView(startupMode);
+          if (mode === 'slide') {
+              setTimeout(() => toggleDetailFace('slide'), 80);
+          }
           if (showDigestAfterStartupSelection) {
               showDigestAfterStartupSelection = false;
               setTimeout(() => {
@@ -5017,7 +5115,7 @@
             renderList(displayFiltered);
             renderGantt(displayFiltered);
             if (currentWorkspaceView === 'grid') renderGrid();
-            if (currentWorkspaceView === 'deck') {
+            if (isDeckMode) {
                 renderGrid();
                 renderDeckStage();
             }
@@ -5789,6 +5887,10 @@
                       requestAnimationFrame(() => applySmartGanttDocking({ resetManualHeight: shouldReset }));
                   }
               });
+
+              if (currentWorkspaceView === 'detail' && isDeckMode) {
+                  renderDeckStage();
+              }
           });
       }
 
@@ -6592,15 +6694,18 @@
       }
 
       function switchWorkspaceView(mode) {
-        if (currentWorkspaceView === 'deck' && mode !== 'deck') saveCurrentCardState();
+        const requestedMode = mode;
+        const normalizedMode = (requestedMode === 'deck' || requestedMode === 'slide') ? 'detail' : requestedMode;
+        if (isDeckMode && normalizedMode !== 'detail') saveCurrentCardState();
         if (document.body.classList.contains('gantt-fullscreen')) toggleFullscreen();
 
-        const prevMode = currentWorkspaceView;
-        currentWorkspaceView = mode;
-        isGridMode = (mode === 'grid');
-        isDeckMode = (mode === 'deck');
+        const prevWasSlide = isDeckMode;
+        currentWorkspaceView = normalizedMode;
+        if (requestedMode === 'detail') currentDetailFace = 'detail';
+        if (requestedMode === 'deck' || requestedMode === 'slide') currentDetailFace = 'slide';
+        syncWorkspaceModeState();
 
-        if (mode !== 'grid' && currentGridPivot === 'global-log') {
+        if (normalizedMode !== 'grid' && currentGridPivot === 'global-log') {
             currentGridPivot = 'velocity';
             const pivot = getEl('grid-pivot-select');
             if (pivot) pivot.value = currentGridPivot;
@@ -6608,46 +6713,12 @@
 
         const userFilter = getEl('filter-log-user');
         if (userFilter) {
-            userFilter.style.display = (mode === 'grid' && (currentGridPivot === 'changelog' || currentGridPivot === 'global-log')) ? 'inline-flex' : 'none';
+            userFilter.style.display = (normalizedMode === 'grid' && (currentGridPivot === 'changelog' || currentGridPivot === 'global-log')) ? 'inline-flex' : 'none';
         }
 
-        // 1. INSTANT UI STATE CHANGES (lets CSS transitions start before heavy rendering)
-        document.body.classList.remove('grid-mode-active', 'deck-mode-active');
-        if (isGridMode) document.body.classList.add('grid-mode-active');
-        if (isDeckMode) document.body.classList.add('deck-mode-active');
-        if (mode === 'digest') document.body.classList.add('grid-mode-active');
+        syncWorkspaceChrome();
 
-        ['detail', 'grid', 'deck', 'digest'].forEach(v => {
-            const btn = getEl(`view-btn-${v}`);
-            if (btn) btn.classList.toggle('active', v === mode);
-        });
-
-        const isDetailMode = mode === 'detail';
-        const isGridModeView = mode === 'grid';
-        const isDeckModeView = mode === 'deck';
-
-        const pivotZone = getEl('dock-pivot-zone');
-        const filtersZone = getEl('dock-filters-zone');
-        const focusZone = getEl('dock-focus-zone');
-        const deckActionsZone = getEl('dock-deck-actions-zone');
-        const clearZone = getEl('dock-clear-zone');
-        document.body.classList.toggle('deck-mode-active', isDeckMode);
-        const navPrev = getEl('dock-nav-prev');
-        const navNext = getEl('dock-nav-next');
-        if (filtersZone) filtersZone.classList.remove('collapsed');
-        if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridModeView);
-        if (focusZone) focusZone.classList.toggle('collapsed', !(isDetailMode || isDeckModeView));
-        if (deckActionsZone) deckActionsZone.classList.toggle('collapsed', !isDeckModeView);
-        if (navPrev) navPrev.classList.toggle('collapsed', !isDeckModeView);
-        if (navNext) navNext.classList.toggle('collapsed', !isDeckModeView);
-        if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
-
-        const sortQueue = getEl('sort-queue');
-        if (sortQueue) sortQueue.style.display = isDeckMode ? 'none' : '';
-        const sidebarPivot = getEl('sidebar-pivot-select');
-        if (sidebarPivot) sidebarPivot.style.display = isDeckMode ? 'inline-block' : 'none';
-
-        if (prevMode === 'deck' && mode !== 'deck') {
+        if (prevWasSlide && normalizedMode !== 'detail') {
             currentGridPivot = deckPrevPivot || currentGridPivot;
             const pivot = getEl('grid-pivot-select');
             if (pivot) pivot.value = currentGridPivot;
@@ -6684,46 +6755,22 @@
 
         // 2. DEFERRED HEAVY RENDERING (browser paints the dock animation first)
         setTimeout(() => {
-            if (mode === 'detail') {
-                if (currentActiveItem) {
-                    if (welcome) welcome.style.display = 'none';
-                    if (paneContent) paneContent.style.display = 'flex';
-                    openPane(currentActiveItem, null);
-                } else {
-                    if (welcome) welcome.style.display = 'flex';
-                    if (paneContent) paneContent.style.display = 'none';
-                }
+            if (normalizedMode === 'detail') {
+                renderDetailWorkspaceFace();
                 if (grid) grid.style.display = 'none';
-                if (window.innerWidth > 768) syncAdminPanelForViewport();
                 applyFilters();
-            } else if (mode === 'grid') {
+            } else if (normalizedMode === 'grid') {
                 setAdminPanelOpen(false);
                 if (welcome) welcome.style.display = 'none';
                 if (paneContent) paneContent.style.display = 'none';
+                if (deckStage) deckStage.style.display = 'none';
                 if (grid) grid.style.display = 'grid';
                 renderGrid();
-            } else if (mode === 'deck') {
-                if (welcome) welcome.style.display = 'none';
-                if (paneContent) paneContent.style.display = 'none';
-                if (deckStage) {
-                    deckStage.style.display = 'flex';
-                    deckStage.style.flex = '';
-                    deckStage.style.width = '';
-                    deckStage.style.padding = '';
-                    deckStage.style.overflow = '';
-                }
-                setAdminPanelOpen(true);
-                applyFilters();
-                if (currentActiveItem) {
-                    deckIndex = Math.max(0, filteredItems.findIndex(i => i.fdh === currentActiveItem.fdh));
-                }
-                const activeItem = ensureDeckIndex();
-                if (activeItem) openPane(activeItem, getEl(`card-${activeItem.fdh}`));
-                renderDeckStage();
-            } else if (mode === 'digest') {
+            } else if (normalizedMode === 'digest') {
                 setAdminPanelOpen(false);
                 if (welcome) welcome.style.display = 'none';
                 if (paneContent) paneContent.style.display = 'none';
+                if (deckStage) deckStage.style.display = 'none';
                 if (digestWs) digestWs.style.display = 'flex';
                 renderDigestWorkspace();
             }
@@ -6802,7 +6849,7 @@
       });
 
       function navGlobal(dir, isVertical) {
-        if (currentWorkspaceView === 'deck') {
+        if (isDeckMode) {
           const len = filteredItems?.length || 1;
           deckIndex = (deckIndex + dir + len) % len;
           renderDeckStage();
