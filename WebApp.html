@@ -1176,6 +1176,7 @@
       .inbox-title-stack span:last-child { color: var(--text-main); }
       .inbox-count { background: var(--border); padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 900; color: var(--text-main);}
       .inbox-list { overflow-y: auto !important; flex-grow: 1; display: flex; flex-direction: column; padding: 0; gap: 0;}
+      .inbox-list.grid-view { padding: 14px; gap: 12px; }
 
       .admin-strip { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--card-bg); flex-shrink: 0; transition: background 0.3s, border-color 0.3s; position: sticky; top: 0; z-index: 10; }
       .admin-kpi { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; text-align: center; transition: all 0.15s; }
@@ -3690,6 +3691,7 @@
           let list = getEl('inbox-list'); let btn = getEl('view-toggle-btn');
           if (list) {
               list.classList.remove('dense-view');
+              list.classList.toggle('grid-view', currentViewMode === 'grid');
               if (currentViewMode === 'list') list.classList.add('dense-view');
           }
           const icons = { inbox: '⊟', list: '☰', grid: '⊞' };
@@ -5591,6 +5593,7 @@
                       </div>
                       <div class="qb-time-bar" style="margin-bottom:12px;">
                           <div class="qb-time-fill" style="width:${pct}%; background:${sColor};"></div>
+                          ${pct > 0 && pct < 100 ? `<div class="qb-time-bead" style="left:calc(${pct}% - 7px); border-color:${sColor}; display:block;"></div>` : ''}
                       </div>
                       <div class="qb-target-wrap ${item.isXing ? 'xing' : ''}" style="margin-top:auto;">
                           <div class="qb-target-inner" style="border-radius:${item.isXing ? '9px 9px 0 0' : '12px 12px 0 0'}; padding:8px 6px; position:relative;">

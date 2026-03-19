@@ -41,6 +41,7 @@
   - **Expected:** Remove "Relaxed mode". Standardize on Grid, List, and Inbox modes across Detail and Slide views.
   - **Acceptance:** Relaxed mode code is removed; UI layout matches current intent for remaining modes.
   - **Completed:** Queue modes now use one Inbox / List / Grid system with matching behavior across Detail and Slide.
+  - **Follow-up complete:** Queue Grid spacing and schedule beads now match between Detail and Slide.
 - [ ] **Admin badges workflow: Diagnostics Queue → Reviewed**
   - **Expected:** Clearing an item removes it from the active queue and moves it to the Admin panel's Reviewed list.
   - **Acceptance:** Exports from the Reviewed tab produce correct groupings without duplicates.
