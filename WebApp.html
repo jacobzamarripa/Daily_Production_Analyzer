@@ -434,6 +434,9 @@
           bottom: auto !important;
           z-index: 2000 !important;
       }
+      body.deck-mode-active:not(.presentation-active) #deck-stage {
+          padding-top: 96px !important;
+      }
       .filter-strip.dock-slide-down-enter {
           animation: dockSlideDownIn 420ms cubic-bezier(0.16, 1, 0.3, 1);
       }
@@ -2585,7 +2588,6 @@
                          <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
                             Reviewed
                          </div>
-                         <button class="btn" style="font-size:10px; padding:3px 8px;" onclick="promptEmailExport()">↑ Export</button>
                       </div>
                       <div class="ob-list" id="outbox-list" style="flex-grow:1; overflow-y:auto;">
                          <div class="empty-msg" style="margin-top:20px; font-size:11px;">No items reviewed.</div>
@@ -3669,7 +3671,7 @@
           if (kpiS) kpiS.classList.toggle('active', activeAdminFilter === 'status');
           if (kpiB) kpiB.classList.toggle('active', activeAdminFilter === 'boms');
           applyFilters();
-          renderAdminPane(allActionItems);
+          renderAdminPane(getActiveQueueItems());
       }
       const _VIEW_MODES = ['inbox', 'list', 'grid'];
       let currentViewMode = (function() {
@@ -3797,6 +3799,12 @@
           let pane = getEl('outbox-pane');
           let isOpen = pane && pane.classList.contains('open');
           setAdminPanelOpen(!isOpen);
+      }
+      function getStagedReviewItems() {
+          return (stagedDeckItems || []).map(fdh => (allActionItems || []).find(i => i.fdh === fdh)).filter(Boolean);
+      }
+      function getReviewedBadgeCount() {
+          return getStagedReviewItems().length + (committedItems || []).length;
       }
       function switchPanelTab(tab) {
           currentPanelTab = tab;
@@ -4039,6 +4047,8 @@
       applyTheme(_sysDark.matches);
       _sysDark.addEventListener('change', e => applyTheme(e.matches));
       applyViewMode(); // restore persisted queue view (card/list/grid)
+      loadReviewedTray();
+      renderOutbox();
       if (navigator.maxTouchPoints > 1 && window.innerWidth >= 769) document.body.classList.add('touch-tablet');
       // Debounced search filter (300ms delay prevents re-render on every keystroke)
       let _filterDebounce;
@@ -4543,21 +4553,18 @@
           let btn = getEl('admin-verify-' + fdhId);
           if (btn) { btn.innerText = 'Saving...'; btn.disabled = true; }
           google.script.run.withSuccessHandler(function(dateStr) {
-              let card = getEl('admin-card-' + fdhId);
-              if (card) {
-                  let btnEl = card.querySelector('button');
-                  if (btnEl) btnEl.remove();
-                  let staged = document.createElement('div');
-                  staged.style.cssText = 'font-size:10px; font-weight:900; color:#16a34a; padding:4px 8px; border:1px solid #16a34a; border-radius:6px; flex-shrink:0;';
-                  staged.textContent = '✓ Staged';
-                  card.querySelector('div').appendChild(staged);
+              let item = (allActionItems || []).find(i => i.fdh === fdhId) || currentActiveItem;
+              if (item) {
+                  item.flags = String(item.flags || '').replace('🚩 ADMIN: CHECK CROSSINGS', '').trim();
+                  item.comment = `Crossings verified on ${dateStr}.`;
+                  if (currentActiveItem && currentActiveItem.fdh === fdhId) setTxt('p-last-check', 'LAST CHECKED: ' + dateStr);
+                  let wasCurrent = currentActiveItem && currentActiveItem.fdh === fdhId;
+                  if (wasCurrent) currentActiveItem = null;
+                  moveItemToReviewed(item, { comment: item.comment, action: 'admin-crossings' });
+                  if (wasCurrent) advanceAfterAction();
+                  else applyFilters();
+                  showToast(`✓ ${fdhId} moved to Reviewed`);
               }
-              if (currentActiveItem && currentActiveItem.fdh === fdhId) {
-                  currentActiveItem.flags = currentActiveItem.flags.replace('🚩 ADMIN: CHECK CROSSINGS', '').trim();
-                  setTxt('p-last-check', 'LAST CHECKED: ' + dateStr);
-              }
-              let qCard = getEl('card-' + fdhId);
-              if (qCard) { let t = qCard.querySelectorAll('.tag-admin'); t.forEach(el => { if (el.innerText.includes('ADMIN: CHECK CROSSINGS')) el.remove(); }); }
           }).withFailureHandler(function(err) {
               alert('Failed to verify: ' + err.message);
               let b = getEl('admin-verify-' + fdhId);
@@ -4568,9 +4575,19 @@
       function markQbUpdatedFromAdmin(fdhId, btn) {
           if (btn) { btn.innerText = 'Saving...'; btn.disabled = true; }
           google.script.run.withSuccessHandler(function() {
-              if (btn) { btn.innerText = '✓ Done'; btn.style.background = '#16a34a'; btn.style.borderColor = '#15803d'; }
-              if (currentActiveItem && currentActiveItem.fdh === fdhId) {
-                  currentActiveItem.flags = currentActiveItem.flags.replace('🚩 STATUS MISMATCH', '⚠️ ADMIN: REFRESH REF DATA').replace('🚩 MISSING QB STATUS', '⚠️ ADMIN: REFRESH REF DATA');
+              let item = (allActionItems || []).find(i => i.fdh === fdhId) || currentActiveItem;
+              if (item) {
+                  item.flags = String(item.flags || '')
+                      .replace('🚩 STATUS MISMATCH', '⚠️ ADMIN: REFRESH REF DATA')
+                      .replace('🚩 MISSING QB STATUS', '⚠️ ADMIN: REFRESH REF DATA')
+                      .trim();
+                  item.comment = 'QB status updated; waiting on refreshed reference data.';
+                  let wasCurrent = currentActiveItem && currentActiveItem.fdh === fdhId;
+                  if (wasCurrent) currentActiveItem = null;
+                  moveItemToReviewed(item, { comment: item.comment, action: 'admin-status' });
+                  if (wasCurrent) advanceAfterAction();
+                  else applyFilters();
+                  showToast(`✓ ${fdhId} moved to Reviewed`);
               }
           }).withFailureHandler(function(err) {
               alert('Failed to save: ' + err.message);
@@ -4580,7 +4597,7 @@
 
       function updateAdminBadge() {
           if (!allActionItems) return;
-          let count = allActionItems.filter(i =>
+          let count = getActiveQueueItems().filter(i =>
               i.flags.includes('ADMIN: CHECK CROSSINGS') ||
               i.flags.includes('PLEASE INPUT BOM') ||
               i.flags.includes('CHECK BOM (UG/AE)') ||
@@ -4599,7 +4616,7 @@
               .withSuccessHandler(function(r) {
                   if (r.success) {
                       showToast('✅ ' + r.count + ' crossings committed to queue');
-                      renderAdminPane(allActionItems);
+                      renderAdminPane(getActiveQueueItems());
                   } else {
                       alert('Commit failed: ' + r.error);
                       if (btn) { btn.innerText = 'Commit Staged →'; btn.disabled = false; }
@@ -4716,12 +4733,57 @@
 
       function moveSpikeHUD(e) { moveHUD(e); } function hideSpikeHUD() { hideHUD(); }
 
+      const REVIEWED_TRAY_STORAGE_KEY = 'dpa.reviewedTray.v1';
       let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
       let currentFilterStats = { bslByVendor: {}, bslByMonth: {}, bslMatrix: {}, lifecycle: { active: 0, pending: 0, overdue: 0 }, stageCounts: {}, pieCounts: {} };
       let filteredItems = []; let currentQueueIndex = -1; let ganttManualHeight = null;
       let globalRefDataDate = "";
       let globalAllFdhIds = [];
       // View mode is managed by currentViewMode + applyViewMode()
+
+      function persistReviewedTray() {
+          try { localStorage.setItem(REVIEWED_TRAY_STORAGE_KEY, JSON.stringify(committedItems || [])); } catch (e) {}
+      }
+
+      function loadReviewedTray() {
+          try {
+              let raw = localStorage.getItem(REVIEWED_TRAY_STORAGE_KEY);
+              let parsed = raw ? JSON.parse(raw) : [];
+              committedItems = Array.isArray(parsed) ? parsed.filter(i => i && i.fdh) : [];
+          } catch (e) {
+              committedItems = [];
+          }
+      }
+
+      function getReviewedFdhSet() {
+          return new Set((committedItems || []).map(i => String(i.fdh || '')));
+      }
+
+      function getActiveQueueItems() {
+          let reviewedFdhs = getReviewedFdhSet();
+          return (allActionItems || []).filter(item => !reviewedFdhs.has(String(item.fdh || '')));
+      }
+
+      function addToReviewedTray(item, meta) {
+          if (!item || !item.fdh) return;
+          let reviewedItem = JSON.parse(JSON.stringify(item));
+          reviewedItem.comment = meta && meta.comment !== undefined ? meta.comment : (reviewedItem.comment || '');
+          reviewedItem._reviewedAction = meta && meta.action ? meta.action : (reviewedItem._reviewedAction || 'reviewed');
+          reviewedItem._reviewedAt = meta && meta.reviewedAt ? meta.reviewedAt : Date.now();
+          committedItems = committedItems.filter(i => String(i.fdh || '') !== String(reviewedItem.fdh || ''));
+          committedItems.unshift(reviewedItem);
+          persistReviewedTray();
+      }
+
+      function clearReviewedTray(silent) {
+          committedItems = [];
+          persistReviewedTray();
+          updateAdminBadge();
+          renderAdminPane(getActiveQueueItems());
+          applyFilters();
+          renderOutbox();
+          if (!silent) showToast('Reviewed tray cleared');
+      }
 
       // UTC-locked date parser — prevents browser local-time shifting across timezones.
       function safeDate(str) {
@@ -5078,12 +5140,14 @@
             }
             allActionItems = data.actionItems; globalHeaders = data.headers;
             globalRefDataDate = data.refDataDate || "";
+            let activeQueueItems = getActiveQueueItems();
             updateRefDataIndicator();
             updateAdminBadge();
-            renderAdminPane(allActionItems);
+            renderAdminPane(activeQueueItems);
+            renderOutbox();
             openAdminPanelByDefault();
-            populateDropdown('filter-vendor', [...new Set(allActionItems.map(i => i.vendor).filter(Boolean))]); populateDropdown('filter-city', [...new Set(allActionItems.map(i => i.city).filter(Boolean))]);
-            let ofsMonths = allActionItems.map(i => {
+            populateDropdown('filter-vendor', [...new Set(activeQueueItems.map(i => i.vendor).filter(Boolean))]); populateDropdown('filter-city', [...new Set(activeQueueItems.map(i => i.city).filter(Boolean))]);
+            let ofsMonths = activeQueueItems.map(i => {
                 if(!i.ofsDate || i.ofsDate === "-" || i.ofsDate === "Unknown") return null;
                 try { let d = safeDate(i.ofsDate); return d ? d.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'}).toUpperCase() : null; } catch(e) { return null; }
             }).filter(Boolean);
@@ -5152,6 +5216,7 @@
         safeExecute('applyFilters', () => {
             const sortVal = getEl('sort-queue')?.value || 'default';
             const searchTerm = (getEl('search-input')?.value || '').toLowerCase();
+            const activeQueueItems = getActiveQueueItems();
             let searchEl = getEl('search-input');
             if (searchEl) searchEl.classList.toggle('is-active', searchEl.value.trim() !== '');
 
@@ -5167,11 +5232,11 @@
                 return mSev && mVen && mCit && mOfs && mSearch;
             };
 
-            let validSev = [...new Set(allActionItems.filter(i => filterMatch(i, 'sev')).map(i => getSeverity(i.flags)))];
-            let validVen = [...new Set(allActionItems.filter(i => filterMatch(i, 'vendor')).map(i => i.vendor).filter(Boolean))].sort();
-            let validCit = [...new Set(allActionItems.filter(i => filterMatch(i, 'city')).map(i => i.city).filter(Boolean))].sort();
+            let validSev = [...new Set(activeQueueItems.filter(i => filterMatch(i, 'sev')).map(i => getSeverity(i.flags)))];
+            let validVen = [...new Set(activeQueueItems.filter(i => filterMatch(i, 'vendor')).map(i => i.vendor).filter(Boolean))].sort();
+            let validCit = [...new Set(activeQueueItems.filter(i => filterMatch(i, 'city')).map(i => i.city).filter(Boolean))].sort();
             let validOfsSet = new Set();
-            allActionItems.filter(i => filterMatch(i, 'ofs')).forEach(i => {
+            activeQueueItems.filter(i => filterMatch(i, 'ofs')).forEach(i => {
                 getOfsFilterBuckets(i, today).forEach(bucket => validOfsSet.add(bucket));
             });
             let validOfsMonths = [...validOfsSet].filter(v => v !== '60_DAYS' && v !== '90_DAYS').sort();
@@ -5202,7 +5267,7 @@
 
             // Base filter: vendor/city/OFS/severity/search — NO admin filter
             // Used for badge counts so Crossings & QB Status always show correct totals
-            let baseFiltered = allActionItems.filter(i => {
+            let baseFiltered = activeQueueItems.filter(i => {
                 let ofsBuckets = getOfsFilterBuckets(i, today);
                 let mSev = activeFilters.sev.length === 0 || activeFilters.sev.includes(getSeverity(i.flags));
                 let mVen = activeFilters.vendor.length === 0 || activeFilters.vendor.includes(i.vendor);
@@ -5335,6 +5400,7 @@
             filteredItems = displayFiltered;
             renderList(displayFiltered);
             renderGantt(displayFiltered);
+            renderAdminPane(activeQueueItems);
             if (currentWorkspaceView === 'grid') renderGrid();
             if (isDeckMode) {
                 renderGrid();
@@ -6134,37 +6200,98 @@
       function skipReview() {
           safeExecute('skipReview', () => {
               let item = currentActiveItem; item.comment = "Reviewed - No Action Required.";
-              clearDeckSessionForFdh(item && item.fdh);
-              removeDeckItemFromSource(item && item.fdh);
               currentActiveItem = null; // null first so renderList auto-advances
-              allActionItems = allActionItems.filter(i => i.fdh !== item.fdh);
-              committedItems = committedItems.filter(i => i.fdh !== item.fdh);
-              committedItems.unshift(item); advanceAfterAction();
+              moveItemToReviewed(item, { comment: item.comment, action: 'skip' });
+              advanceAfterAction();
           });
       }
 
       function commitReview() {
           safeExecute('commitReview', () => {
               let item = currentActiveItem; item.comment = getEl('p-comment').value;
-              clearDeckSessionForFdh(item && item.fdh);
-              removeDeckItemFromSource(item && item.fdh);
               currentActiveItem = null; // null first so renderList auto-advances
-              allActionItems = allActionItems.filter(i => i.fdh !== item.fdh);
-              committedItems = committedItems.filter(i => i.fdh !== item.fdh);
-              committedItems.unshift(item); advanceAfterAction(); showToast(`✔ ${item.fdh} Committed`);
+              moveItemToReviewed(item, { comment: item.comment, action: 'commit' });
+              advanceAfterAction(); showToast(`✔ ${item.fdh} Committed`);
           });
       }
 
       function renderOutbox() {
-          const list = getEl('outbox-list'); if(!list) return; setTxt('ob-count', committedItems.length);
-          let tabBadge = getEl('ob-count'); if(tabBadge) { tabBadge.innerText = committedItems.length; tabBadge.style.display = committedItems.length > 0 ? 'inline-flex' : 'none'; }
+          const list = getEl('outbox-list');
+          if (!list) return;
+          const stagedItems = getStagedReviewItems();
+          const reviewedItems = committedItems || [];
+          const totalCount = stagedItems.length + reviewedItems.length;
+          setTxt('ob-count', totalCount);
+          let tabBadge = getEl('ob-count');
+          if (tabBadge) {
+              tabBadge.innerText = totalCount;
+              tabBadge.style.display = totalCount > 0 ? 'inline-flex' : 'none';
+          }
           list.innerHTML = '';
-          if(committedItems.length === 0) { list.innerHTML = `<div class="empty-msg">No items reviewed.</div>`; return; }
-          committedItems.forEach(item => {
-              let card = document.createElement('div'); card.className = 'ob-card'; card.onclick = () => { openPane(item, null); };
-              card.innerHTML = `<div style="font-weight:900; font-size:12px; color:var(--text-main);">${item.fdh}</div><div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; max-height:30px; overflow:hidden;">${item.comment}</div>`;
-              list.appendChild(card);
-          });
+          if (totalCount === 0) {
+              list.innerHTML = `<div class="empty-msg">No staged or reviewed items.</div>`;
+              return;
+          }
+
+          const createSection = function(title, count, actions, items, type) {
+              let section = document.createElement('div');
+              if (type === 'staged') section.style.borderBottom = '1px solid var(--border)';
+
+              let header = document.createElement('div');
+              header.className = 'ob-header';
+              header.style.padding = '10px 16px';
+              let titleEl = document.createElement('div');
+              titleEl.style.cssText = 'font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted);';
+              titleEl.innerHTML = `${title} <span style="margin-left:6px; color:var(--text-main);">${count}</span>`;
+              let actionWrap = document.createElement('div');
+              actionWrap.style.cssText = 'display:flex; gap:6px;';
+              actions.forEach(function(def) {
+                  let btn = document.createElement('button');
+                  btn.className = 'btn';
+                  btn.style.cssText = 'font-size:10px; padding:3px 8px;';
+                  btn.textContent = def.label;
+                  btn.onclick = def.onClick;
+                  actionWrap.appendChild(btn);
+              });
+              header.appendChild(titleEl);
+              header.appendChild(actionWrap);
+              section.appendChild(header);
+
+              if (!items.length) {
+                  let empty = document.createElement('div');
+                  empty.className = 'empty-msg';
+                  empty.style.cssText = 'padding:14px 16px; margin:0; font-size:11px;';
+                  empty.textContent = type === 'staged' ? 'No staged items.' : 'No reviewed items.';
+                  section.appendChild(empty);
+                  return section;
+              }
+
+              items.forEach(function(item) {
+                  let card = document.createElement('div');
+                  card.className = 'ob-card';
+                  card.onclick = function() { openPane(item, null); };
+                  card.innerHTML = `
+                      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                          <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
+                          <span class="tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}">${type === 'staged' ? 'STAGED' : 'REVIEWED'}</span>
+                      </div>
+                      <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${esc(item.vendor || item.city || 'Unknown')}</div>
+                      <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; max-height:30px; overflow:hidden;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
+                  section.appendChild(card);
+              });
+
+              return section;
+          };
+
+          list.appendChild(createSection('Staged', stagedItems.length, [
+              { label: '↑ Export Batch', onClick: function() { promptBatchDeckExport(); } },
+              { label: 'Clear', onClick: function() { clearStagedDeckItems(); } }
+          ], stagedItems, 'staged'));
+
+          list.appendChild(createSection('Reviewed', reviewedItems.length, [
+              { label: '↑ Export', onClick: function() { promptEmailExport(); } },
+              { label: 'Clear', onClick: function() { clearReviewedTray(); } }
+          ], reviewedItems, 'reviewed'));
       }
 
       function promptEmailExport() {
@@ -6175,7 +6302,7 @@
           let btn = getEl('btn-export-all'); if(btn) { btn.innerText = "Sending Email..."; btn.disabled = true; }
 
           google.script.run.withSuccessHandler((msg) => {
-              alert(msg); committedItems = []; renderOutbox(); if(btn) { btn.innerText = "Export All"; btn.disabled = false; }
+              alert(msg); clearReviewedTray(true); if(btn) { btn.innerText = "Export All"; btn.disabled = false; }
           }).withFailureHandler((err) => {
               alert("Error sending email: " + err.message); if(btn) { btn.innerText = "Export All"; btn.disabled = false; }
           }).emailExportCSV(committedItems, email.trim());
@@ -6784,6 +6911,18 @@
           stagedDeckItems = [];
           syncDockStagingButton();
           renderDeckStage();
+          renderOutbox();
+      }
+
+      function moveItemToReviewed(item, meta) {
+          if (!item || !item.fdh) return;
+          clearDeckSessionForFdh(item.fdh);
+          removeDeckItemFromSource(item.fdh);
+          allActionItems = allActionItems.filter(i => String(i.fdh || '') !== String(item.fdh || ''));
+          addToReviewedTray(item, meta || {});
+          updateAdminBadge();
+          renderAdminPane(getActiveQueueItems());
+          renderOutbox();
       }
 
       function toggleStageCurrentDeckItem() {
@@ -6796,11 +6935,13 @@
               showDockSuccess('Removed from Batch');
               syncDockStagingButton();
               renderDeckStage();
+              renderOutbox();
           } else {
               stagedDeckItems.push(item.fdh);
               showDockSuccess('Staged for Batch');
               syncDockStagingButton();
               renderDeckStage();
+              renderOutbox();
 
               setTimeout(() => {
                   navDeck(1);
@@ -6879,6 +7020,7 @@
                   stagedDeckItems = [];
                   syncDockStagingButton();
                   renderDeckStage();
+                  renderOutbox();
               })
               .withFailureHandler(err => {
                   showDockError('Export Failed');

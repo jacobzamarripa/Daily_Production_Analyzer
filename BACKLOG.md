@@ -42,9 +42,10 @@
   - **Acceptance:** Relaxed mode code is removed; UI layout matches current intent for remaining modes.
   - **Completed:** Queue modes now use one Inbox / List / Grid system with matching behavior across Detail and Slide.
   - **Follow-up complete:** Queue Grid spacing and schedule beads now match between Detail and Slide.
-- [ ] **Admin badges workflow: Diagnostics Queue → Reviewed**
+- [x] **Admin badges workflow: Diagnostics Queue → Reviewed**
   - **Expected:** Clearing an item removes it from the active queue and moves it to the Admin panel's Reviewed list.
   - **Acceptance:** Exports from the Reviewed tab produce correct groupings without duplicates.
+  - **Completed:** Reviewed now persists locally until export/clear, Admin clears feed the Reviewed tray, and the panel is sectioned into Staged + Reviewed.
 - [ ] **Review Hub: "Staged" items grouped section**
   - **Expected:** Staged items appear under a collapsible "Staged" group in the Review tab. Commit/Export actions move to the group header.
   - **Acceptance:** Grouping persists per session; Commit/Export operates only on staged items.
