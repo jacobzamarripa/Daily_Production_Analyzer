@@ -453,15 +453,35 @@
       body.dark-mode.deck-mode-active .filter-strip {
           box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.05) !important;
       }
-      .btn-icon {
+      .dock-face-icon {
           display: inline-flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          line-height: 1;
       }
       .btn-label {
           display: inline-flex;
           align-items: center;
+      }
+      #dock-btn-face-toggle {
+          gap: 8px;
+          font-weight: 800;
+      }
+      #dock-btn-face-toggle.is-slide-cta {
+          background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+          color: #fff !important;
+          border-color: #6d28d9 !important;
+          box-shadow: 0 8px 18px rgba(124, 58, 237, 0.28) !important;
+      }
+      #dock-btn-face-toggle.is-detail-cta {
+          background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+          color: #fff !important;
+          border-color: #1d4ed8 !important;
+          box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24) !important;
+      }
+      #dock-btn-face-toggle.is-detail-cta .dock-face-icon svg {
+          transform: rotate(180deg);
       }
       /* Stop Clipping: Replace physical lift with lighting/shadow on hover */
       .smart-dock .btn:hover,
@@ -570,6 +590,7 @@
       }
       .dock-zone.collapsed,
       .btn.collapsed {
+          display: none !important;
           max-width: 0 !important;
           opacity: 0 !important;
           margin-left: 0 !important;
@@ -2738,7 +2759,9 @@
 
           if (faceBtn) {
               faceBtn.style.display = isDetailMode ? 'inline-flex' : 'none';
-              faceBtn.innerHTML = (isDeckMode ? '' : _SLIDE_SVG) + `<span class="btn-label">${isDeckMode ? 'Detail View' : 'Slide View'}</span>`;
+              faceBtn.classList.toggle('is-slide-cta', !isDeckMode);
+              faceBtn.classList.toggle('is-detail-cta', isDeckMode);
+              faceBtn.innerHTML = `${_SLIDE_SVG}<span class="btn-label">${isDeckMode ? 'Detail View' : 'Slide View'}</span>`;
           }
 
           const sortQueue = getEl('sort-queue');
@@ -3912,7 +3935,7 @@
       
       const _SUN_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
       const _MOON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
-      const _SLIDE_SVG = `<span class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 18v3"></path><path d="M15 9l-4 3 4 3"></path></svg></span>`;
+      const _SLIDE_SVG = `<span class="dock-face-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 18v3"></path><path d="M15 9l-4 3 4 3"></path></svg></span>`;
       function applyTheme(dark) {
           document.body.classList.toggle('dark-mode', dark);
           let btn = getEl('btn-theme'); if (btn) btn.innerHTML = dark ? _MOON_SVG : _SUN_SVG;
