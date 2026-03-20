@@ -400,7 +400,7 @@
           max-width: 95% !important;
           min-width: 0 !important;
           margin: 0 !important;
-          z-index: 2000 !important;
+          z-index: 4000 !important;
           padding: 8px 10px !important;
           border-radius: 34px !important;
           background: rgba(255, 255, 255, 0.65) !important;
@@ -3604,8 +3604,10 @@
 
       function getOfsFilterBuckets(item, today) {
           let buckets = [];
-          if (!item || !item.ofsDate || item.ofsDate === "-" || item.ofsDate === "Unknown") return buckets;
-          let d = safeDate(item.ofsDate);
+          if (!item) return buckets;
+          let rawOfs = item.ofsDate;
+          let rawFallback = item.targetDate;
+          let d = safeDate(rawOfs) || safeDate(rawFallback);
           if (!d || isNaN(d.getTime())) return buckets;
           buckets.push(d.toLocaleString('default', { month: 'short', timeZone: 'UTC' }).toUpperCase());
           let diffDays = (d - today) / 86400000;
@@ -3922,10 +3924,27 @@
           const daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
 
           const v = item.vel;
+          let ofsMonthStr = 'TBD';
+          let isOfsMonth = false;
+          const ofsDate = safeDate(item.ofsDate) || safeDate(item.targetDate);
+          if (ofsDate && !isNaN(ofsDate.getTime())) {
+              ofsMonthStr = ofsDate.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase();
+              isOfsMonth = ofsDate.getUTCMonth() === today.getMonth() && ofsDate.getUTCFullYear() === today.getFullYear();
+          }
+          const ofsPillStyle = isOfsMonth ? 'color:#2563eb; background:rgba(239,246,255,0.7); border-color:#2563eb;' : 'color:var(--text-main); background:var(--card-bg); border-color:var(--border);';
           const velHtml = v ? `
-              <div class="velocity-grid" style="grid-template-columns:1fr; gap:10px;">
+              <div class="velocity-grid" style="gap:10px; align-content:flex-start;">
                   ${buildVelocityBar('UG', v.ug.daily, v.ug.tot, v.ug.bom, 'UG', daysLeft)}
+                  ${buildVelocityBar('Aerial', v.ae.daily, v.ae.tot, v.ae.bom, 'AE', daysLeft)}
                   ${buildVelocityBar('Fiber', v.fib.daily, v.fib.tot, v.fib.bom, 'FIB', daysLeft)}
+                  ${buildVelocityBar('Splicing', v.nap.daily, v.nap.tot, v.nap.bom, 'NAP', daysLeft)}
+              </div>
+              <div class="qb-vel-footer" style="margin-top:12px;">
+                  <div style="font-size:10px; font-weight:900; color:var(--text-muted);">${daysLeftTxt}</div>
+                  <div style="display:flex; gap:8px;">
+                      <div class="vel-footer-pill">BSLS: ${item.bsls || 0}</div>
+                      <div class="vel-footer-pill" style="${ofsPillStyle}">OFS: ${ofsMonthStr}</div>
+                  </div>
               </div>
           ` : '<div class="empty-msg">No velocity data tracked.</div>';
 
