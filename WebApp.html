@@ -857,6 +857,10 @@
           overflow-y: auto;
           z-index: 100000;
       }
+      body.gantt-view-active .filter-strip .ms-dropdown {
+          top: auto;
+          bottom: calc(100% + 8px);
+      }
       /* ── 🧠 DYNAMIC ANCHORED FILTER TAGS ── */
       #active-filter-pills {
           position: fixed !important;
@@ -3662,7 +3666,7 @@
           }
 
           const sortQueue = getEl('sort-queue');
-          if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' || isGanttView ? 'none' : '';
+          if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' ? 'none' : '';
           const sidebarPivot = getEl('sidebar-pivot-select');
           if (sidebarPivot) sidebarPivot.style.display = currentViewMode === 'grid' ? 'inline-block' : 'none';
           syncGanttViewportLayout();
@@ -4170,7 +4174,7 @@
 
           const gap = 8;
           const rect = anchor.getBoundingClientRect();
-          const anchorIsBottomDock = rect.top > (window.innerHeight / 2);
+          const anchorIsBottomDock = currentDockPlacement === 'bottom' || rect.top > (window.innerHeight / 2);
 
           if (anchorIsBottomDock) {
               container.style.top = 'auto';
@@ -4433,21 +4437,7 @@
               openGanttView(fdh);
               return;
           }
-          const item = allActionItems.find(i => i.fdh === fdh);
-          if (!item) return;
-          ganttFocusedFdh = null;
-          persistGanttViewSession();
-          const ganttArea = getEl('gantt-area-main');
-          if (ganttArea) ganttArea.classList.remove('has-focus');
-          document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
-          const row = document.querySelector(`#gantt-row-${fdh}`);
-          if (row) row.classList.add('is-active');
-          if (typeof currentActiveItem !== 'undefined') currentActiveItem = item;
-          renderQuickPeek(item);
-          requestAnimationFrame(() => {
-              getEl('gantt-quick-peek').classList.add('open');
-          });
-          syncGanttIslandState();
+          handleGanttClick(fdh);
       }
 
       function renderQuickPeek(item) {
