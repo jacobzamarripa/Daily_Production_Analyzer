@@ -4326,8 +4326,14 @@
                   let chartWidth = grid ? grid.offsetWidth : 0;
                   let leftTarget = scroll.scrollLeft;
                   if (chartWidth) {
-                      let bar = row.querySelector('.gantt-bar-fill');
-                      if (bar) leftTarget = Math.max(0, bar.offsetLeft + (bar.offsetWidth / 2) - (scroll.clientWidth / 2));
+                      let todayLine = ganttArea.querySelector('.gantt-today-line');
+                      if (todayLine) {
+                          let todayPct = parseFloat(todayLine.style.left) || 0;
+                          leftTarget = Math.max(0, (chartWidth * (todayPct / 100)) + 140 - (scroll.clientWidth / 2));
+                      } else {
+                          let bar = row.querySelector('.gantt-bar-fill');
+                          if (bar) leftTarget = Math.max(0, bar.offsetLeft + (bar.offsetWidth / 2) - (scroll.clientWidth / 2));
+                      }
                   }
                   scroll.scrollTo({ top: Math.max(0, topTarget), left: Math.max(0, leftTarget), behavior: behavior || 'smooth' });
               }
@@ -9284,7 +9290,7 @@
                 if (paneContent) paneContent.style.display = 'none';
                 if (deckStage) deckStage.style.display = 'none';
                 if (ganttPanel) ganttPanel.style.display = 'flex';
-                ensureGanttRendered({ focusFdh: ganttFocusedFdh, defer: true });
+                applyFilters();
             }
 
             syncGanttIslandState();
