@@ -50,13 +50,14 @@
   - **Expected:** Staged items appear under a collapsible "Staged" group in the Review tab. Commit/Export actions move to the group header.
   - **Acceptance:** Grouping persists per session; Commit/Export operates only on staged items.
   - **Completed:** Staged items now persist for the browser session, render in a collapsible Review-tab group, and header actions operate only on staged items.
-- [ ] **All views: Audit + clean up view-specific docks**
+- [x] **All views: Audit + clean up view-specific docks**
   - **Expected:** Each view's dock is verified and cleaned so spacing is consistent with no dead space.
   - **Scope:** Review each view dock (Deck, Theater, and all other supported view modes).
   - **Acceptance:**
     - Every view dock has intentional spacing only — no dead/blank zones.
     - No duplicate or unused spacer components remain.
     - Dock alignment and padding matches the design system across all views.
+  - **Completed:** Dock spacing is now normalized across detail, grid, deck, and theater states; empty dock zones and slide-action clusters are auto-suppressed; and floating active-filter pills anchor with a small gap from the currently visible dock instead of using fixed positions.
 - [x] **Projects header pill HUD: Visual fixes & multi-select**
   - **Expected:** Fix spacing/typography mismatch vs. design spec. Support AND/OR multi-select filters.
   - **Scope:** Pill HUD layout, responsive behavior, and filter logic.
