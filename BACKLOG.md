@@ -46,9 +46,10 @@
   - **Expected:** Clearing an item removes it from the active queue and moves it to the Admin panel's Reviewed list.
   - **Acceptance:** Exports from the Reviewed tab produce correct groupings without duplicates.
   - **Completed:** Reviewed now persists locally until export/clear, Admin clears feed the Reviewed tray, and the panel is sectioned into Staged + Reviewed.
-- [ ] **Review Hub: "Staged" items grouped section**
+- [x] **Review Hub: "Staged" items grouped section**
   - **Expected:** Staged items appear under a collapsible "Staged" group in the Review tab. Commit/Export actions move to the group header.
   - **Acceptance:** Grouping persists per session; Commit/Export operates only on staged items.
+  - **Completed:** Staged items now persist for the browser session, render in a collapsible Review-tab group, and header actions operate only on staged items.
 - [ ] **Projects header pill HUD: Visual fixes & multi-select**
   - **Expected:** Fix spacing/typography. Support AND/OR multi-select filters.
   - **Acceptance:** User can select multiple vendors/cities simultaneously.

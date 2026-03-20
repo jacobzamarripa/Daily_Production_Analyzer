@@ -2795,10 +2795,13 @@
       let activeFilters = { sev: [], vendor: [], city: [], ofs: [] };
       let openDropdownId = null;
       const CHANGELOG_PULSE_SESSION_KEY = 'changelogPulseSeen';
+      const STAGED_REVIEW_SESSION_KEY = 'dpa.stagedReviewItems.v1';
+      const STAGED_REVIEW_COLLAPSED_SESSION_KEY = 'dpa.stagedReviewCollapsed.v1';
       let showDigestAfterNextDataLoad = false;
       let showDigestAfterStartupSelection = false;
       let pendingFaceAnimation = null;
       let preferredPresentationCardTheme = null;
+      let isStagedReviewCollapsed = false;
 
       function isSlideFaceActive() {
           return currentWorkspaceView === 'detail' && currentDetailFace === 'slide';
@@ -3800,8 +3803,45 @@
           let isOpen = pane && pane.classList.contains('open');
           setAdminPanelOpen(!isOpen);
       }
+      function persistStagedReviewSession() {
+          try {
+              sessionStorage.setItem(STAGED_REVIEW_SESSION_KEY, JSON.stringify(stagedDeckItems || []));
+              sessionStorage.setItem(STAGED_REVIEW_COLLAPSED_SESSION_KEY, isStagedReviewCollapsed ? '1' : '0');
+          } catch (e) {}
+      }
+      function loadStagedReviewSession() {
+          try {
+              let rawItems = sessionStorage.getItem(STAGED_REVIEW_SESSION_KEY);
+              let parsed = rawItems ? JSON.parse(rawItems) : [];
+              stagedDeckItems = Array.isArray(parsed) ? parsed.filter(Boolean).map(v => String(v)) : [];
+              isStagedReviewCollapsed = sessionStorage.getItem(STAGED_REVIEW_COLLAPSED_SESSION_KEY) === '1';
+          } catch (e) {
+              stagedDeckItems = [];
+              isStagedReviewCollapsed = false;
+          }
+      }
+      function reconcileStagedReviewItems() {
+          let activeFdhs = new Set(getActiveQueueItems().map(item => String(item.fdh || '')));
+          let seen = new Set();
+          stagedDeckItems = (stagedDeckItems || []).filter(function(fdh) {
+              let key = String(fdh || '');
+              if (!key || seen.has(key) || !activeFdhs.has(key)) return false;
+              seen.add(key);
+              return true;
+          });
+          persistStagedReviewSession();
+      }
+      function setStagedReviewCollapsed(collapsed) {
+          isStagedReviewCollapsed = !!collapsed;
+          persistStagedReviewSession();
+          renderOutbox();
+      }
+      function toggleStagedReviewSection() {
+          setStagedReviewCollapsed(!isStagedReviewCollapsed);
+      }
       function getStagedReviewItems() {
-          return (stagedDeckItems || []).map(fdh => (allActionItems || []).find(i => i.fdh === fdh)).filter(Boolean);
+          let activeLookup = new Map(getActiveQueueItems().map(item => [String(item.fdh || ''), item]));
+          return (stagedDeckItems || []).map(fdh => activeLookup.get(String(fdh || ''))).filter(Boolean);
       }
       function getReviewedBadgeCount() {
           return getStagedReviewItems().length + (committedItems || []).length;
@@ -4738,6 +4778,7 @@
       let globalRefDataDate = "";
       let globalAllFdhIds = [];
       // View mode is managed by currentViewMode + applyViewMode()
+      loadStagedReviewSession();
       loadReviewedTray();
       renderOutbox();
 
@@ -5140,6 +5181,7 @@
             }
             allActionItems = data.actionItems; globalHeaders = data.headers;
             globalRefDataDate = data.refDataDate || "";
+            reconcileStagedReviewItems();
             let activeQueueItems = getActiveQueueItems();
             updateRefDataIndicator();
             updateAdminBadge();
@@ -6234,16 +6276,23 @@
               return;
           }
 
-          const createSection = function(title, count, actions, items, type) {
+          const createSection = function(title, count, actions, items, type, opts) {
+              opts = opts || {};
+              let isCollapsible = !!opts.collapsible;
+              let isCollapsed = !!opts.collapsed;
               let section = document.createElement('div');
               if (type === 'staged') section.style.borderBottom = '1px solid var(--border)';
 
               let header = document.createElement('div');
               header.className = 'ob-header';
               header.style.padding = '10px 16px';
+              if (isCollapsible) {
+                  header.style.cursor = 'pointer';
+                  header.onclick = function() { toggleStagedReviewSection(); };
+              }
               let titleEl = document.createElement('div');
-              titleEl.style.cssText = 'font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted);';
-              titleEl.innerHTML = `${title} <span style="margin-left:6px; color:var(--text-main);">${count}</span>`;
+              titleEl.style.cssText = 'font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:8px;';
+              titleEl.innerHTML = `${isCollapsible ? `<span style="display:inline-flex; align-items:center; justify-content:center; width:14px; color:var(--text-main); font-size:11px;">${isCollapsed ? '&#9656;' : '&#9662;'}</span>` : ''}<span>${title} <span style="margin-left:6px; color:var(--text-main);">${count}</span></span>`;
               let actionWrap = document.createElement('div');
               actionWrap.style.cssText = 'display:flex; gap:6px;';
               actions.forEach(function(def) {
@@ -6251,19 +6300,26 @@
                   btn.className = 'btn';
                   btn.style.cssText = 'font-size:10px; padding:3px 8px;';
                   btn.textContent = def.label;
-                  btn.onclick = def.onClick;
+                  btn.onclick = function(event) {
+                      event.stopPropagation();
+                      def.onClick();
+                  };
                   actionWrap.appendChild(btn);
               });
               header.appendChild(titleEl);
               header.appendChild(actionWrap);
               section.appendChild(header);
 
+              let body = document.createElement('div');
+              body.style.display = isCollapsed ? 'none' : '';
+
               if (!items.length) {
                   let empty = document.createElement('div');
                   empty.className = 'empty-msg';
                   empty.style.cssText = 'padding:14px 16px; margin:0; font-size:11px;';
                   empty.textContent = type === 'staged' ? 'No staged items.' : 'No reviewed items.';
-                  section.appendChild(empty);
+                  body.appendChild(empty);
+                  section.appendChild(body);
                   return section;
               }
 
@@ -6278,16 +6334,17 @@
                       </div>
                       <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${esc(item.vendor || item.city || 'Unknown')}</div>
                       <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; max-height:30px; overflow:hidden;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
-                  section.appendChild(card);
+                  body.appendChild(card);
               });
 
+              section.appendChild(body);
               return section;
           };
 
           list.appendChild(createSection('Staged', stagedItems.length, [
               { label: '↑ Export Batch', onClick: function() { promptBatchDeckExport(); } },
               { label: 'Clear', onClick: function() { clearStagedDeckItems(); } }
-          ], stagedItems, 'staged'));
+          ], stagedItems, 'staged', { collapsible: true, collapsed: isStagedReviewCollapsed }));
 
           list.appendChild(createSection('Reviewed', reviewedItems.length, [
               { label: '↑ Export', onClick: function() { promptEmailExport(); } },
@@ -6910,6 +6967,7 @@
 
       function clearStagedDeckItems() {
           stagedDeckItems = [];
+          persistStagedReviewSession();
           syncDockStagingButton();
           renderDeckStage();
           renderOutbox();
@@ -6920,6 +6978,8 @@
           clearDeckSessionForFdh(item.fdh);
           removeDeckItemFromSource(item.fdh);
           allActionItems = allActionItems.filter(i => String(i.fdh || '') !== String(item.fdh || ''));
+          stagedDeckItems = (stagedDeckItems || []).filter(fdh => String(fdh || '') !== String(item.fdh || ''));
+          persistStagedReviewSession();
           addToReviewedTray(item, meta || {});
           updateAdminBadge();
           renderAdminPane(getActiveQueueItems());
@@ -6933,12 +6993,14 @@
           let idx = stagedDeckItems.indexOf(item.fdh);
           if (idx > -1) {
               stagedDeckItems.splice(idx, 1);
+              persistStagedReviewSession();
               showDockSuccess('Removed from Batch');
               syncDockStagingButton();
               renderDeckStage();
               renderOutbox();
           } else {
               stagedDeckItems.push(item.fdh);
+              persistStagedReviewSession();
               showDockSuccess('Staged for Batch');
               syncDockStagingButton();
               renderDeckStage();
@@ -7019,6 +7081,7 @@
               .withSuccessHandler(count => {
                   showDockSuccess(`Emailed & Saved ${count} projects!`);
                   stagedDeckItems = [];
+                  persistStagedReviewSession();
                   syncDockStagingButton();
                   renderDeckStage();
                   renderOutbox();
