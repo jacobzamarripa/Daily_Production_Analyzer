@@ -904,16 +904,60 @@
       body.dark-mode .log-grid-item {
           background: rgba(30, 30, 36, 0.6);
       }
-      .digest-ws-header { font-size:24px; font-weight:900; letter-spacing:-1px; color:var(--text-main); margin-bottom:20px; border-bottom:2px solid var(--border); padding-bottom:10px; }
+      /* --- Digest Workspace Layout --- */
+      .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--border); padding-bottom:14px; margin-bottom:20px; }
+      .digest-ws-header { font-size:24px; font-weight:900; letter-spacing:-1px; color:var(--text-main); margin-bottom:4px; }
+      .digest-doc-subheader { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
       .digest-ws-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px; align-items:start; width:100%; }
-      .digest-ws-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 30px rgba(15,23,42,0.05); overflow:hidden; }
-      .digest-ws-card-hdr { padding:14px 18px; background:var(--bg); border-bottom:1px solid var(--border); font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); display:flex; justify-content:space-between; }
+      .digest-ws-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; box-shadow:0 4px 20px rgba(15,23,42,0.04); overflow:hidden; }
+      .digest-ws-card-hdr { padding:12px 18px; background:var(--bg); border-bottom:1px solid var(--border); font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; }
       .digest-ws-list { display:flex; flex-direction:column; }
       .digest-ws-item { padding:12px 18px; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background 0.15s; gap:12px; }
       .digest-ws-item:last-child { border-bottom:none; }
       .digest-ws-item:hover { background:rgba(59,130,246,0.05); }
       .digest-ws-fdh { font-size:14px; font-weight:900; color:var(--text-main); }
       .digest-ws-detail { font-size:11px; font-weight:600; color:var(--text-muted); margin-top:2px; }
+      /* KPI strip */
+      .digest-kpi-strip { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+      .digest-kpi-pill { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px 18px; flex:1; min-width:90px; }
+      .digest-kpi-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px; }
+      .digest-kpi-num { font-size:22px; font-weight:900; color:var(--text-main); font-family:monospace; letter-spacing:-1px; }
+      /* Section labels */
+      .digest-section-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin:20px 0 10px 2px; }
+      .digest-section-label-row { display:flex; justify-content:space-between; align-items:center; margin:20px 0 10px 0; flex-wrap:wrap; gap:8px; }
+      .digest-section-label-row > span { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+      /* Morning brief 2-col */
+      .digest-brief-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; }
+      /* Leaderboard */
+      .digest-leaderboard { display:flex; flex-direction:column; padding:4px 0; }
+      .digest-leaderboard-row { display:flex; align-items:center; gap:14px; padding:10px 18px; border-bottom:1px dashed var(--border); }
+      .digest-leaderboard-row:last-child { border-bottom:none; }
+      .digest-leaderboard-rank { font-size:15px; width:30px; flex-shrink:0; text-align:center; font-weight:900; color:var(--text-muted); }
+      .digest-leaderboard-info { flex:1; min-width:0; }
+      .digest-leaderboard-name { font-size:13px; font-weight:900; color:var(--text-main); }
+      .digest-leaderboard-breakdown { font-size:10px; font-weight:600; color:var(--text-muted); margin:2px 0 5px 0; }
+      .digest-leaderboard-bar-track { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+      .digest-leaderboard-bar-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#6366f1); border-radius:2px; transition:width 0.5s ease; }
+      .digest-leaderboard-count { font-size:18px; font-weight:900; font-family:monospace; color:var(--color-insight); min-width:36px; text-align:right; }
+      /* Filter buttons */
+      .digest-filter-strip { display:flex; gap:6px; flex-wrap:wrap; }
+      .digest-filter-btn { background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:10px; font-weight:800; cursor:pointer; color:var(--text-muted); transition:all 0.15s; font-family:inherit; }
+      .digest-filter-btn:hover { background:var(--card-bg); color:var(--text-main); }
+      .digest-filter-btn.active { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+      /* Activity feed */
+      .digest-feed-item { display:flex; align-items:flex-start; gap:12px; padding:12px 18px; border-bottom:1px dashed var(--border); cursor:pointer; transition:background 0.15s; }
+      .digest-feed-item:last-child { border-bottom:none; }
+      .digest-feed-item:hover { background:rgba(59,130,246,0.04); }
+      .digest-feed-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+      .digest-feed-body { flex:1; min-width:0; }
+      .digest-feed-row1 { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px; }
+      .digest-feed-fdh { font-size:13px; font-weight:900; color:var(--text-main); }
+      .digest-feed-vendor { font-size:9px; font-weight:700; color:var(--text-muted); text-transform:uppercase; }
+      .digest-feed-cat { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.3px; }
+      .digest-feed-time { font-size:10px; font-weight:600; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
+      .digest-feed-row2 { display:flex; align-items:center; gap:8px; }
+      .digest-feed-change { font-size:12px; font-weight:700; color:var(--text-main); }
+      .digest-feed-user { font-size:10px; font-weight:700; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
       .ms-opt input { display: none !important; }
       .ms-wrap.open .ms-dropdown { display: flex; }
       .ms-opt {
@@ -5146,98 +5190,233 @@
           }
       }
 
+      let currentDigestFilter = 'all';
+
       function renderDigestWorkspace() {
           const ws = getEl('digest-workspace');
           if (!ws) return;
 
+          // --- 1. Lookback window ---
           let now = new Date();
           let lookbackHours = 48;
           if (now.getDay() === 1 && now.getHours() < 11) { lookbackHours = 80; }
           let cutoff = new Date(now.getTime() - (lookbackHours * 60 * 60 * 1000));
-          let recentLogs = allGlobalLogs.filter(l => Number(l.timestampObj || 0) >= cutoff.getTime());
+          let recentLogs = allGlobalLogs.filter(function(l) { return Number(l.timestampObj || 0) >= cutoff.getTime(); });
 
+          // --- 2. Pipeline shift counts ---
+          let shifts = { ofs: 0, cx: 0, permit: 0, totalChanges: recentLogs.length };
+          recentLogs.forEach(function(l) {
+              let type = String(l.type || '').toUpperCase();
+              let val = String(l.val || '').toUpperCase();
+              if (type.includes('STATUS') || type.includes('STAGE')) {
+                  if (val.includes('OPEN FOR SALE') || val.includes('OFS')) shifts.ofs++;
+                  if (val.includes('FIELD CX') || val.includes('CONSTRUCTION')) shifts.cx++;
+                  if (val.includes('PERMIT') && val.includes('APPROV')) shifts.permit++;
+              }
+          });
+
+          // --- 3. Production by vendor ---
+          let prodByVendor = {};
+          (allActionItems || []).forEach(function(item) {
+              let v = item.vendor || 'Unknown';
+              if (v === '-' || v === '') return;
+              if (!prodByVendor[v]) prodByVendor[v] = { ug: 0, ae: 0, fib: 0, nap: 0 };
+              if (item.vel) {
+                  prodByVendor[v].ug += Number((item.vel.ug && item.vel.ug.daily) || 0);
+                  prodByVendor[v].ae += Number((item.vel.ae && item.vel.ae.daily) || 0);
+                  prodByVendor[v].fib += Number((item.vel.fib && item.vel.fib.daily) || 0);
+                  prodByVendor[v].nap += Number((item.vel.nap && item.vel.nap.daily) || 0);
+              }
+          });
+
+          // --- 4. Categorize actionable logs ---
           let actionableLogs = recentLogs.filter(function(log) {
               let item = allActionItems.find(function(i) { return i.fdh === log.fdh; });
               if (!item) return false;
               let stage = (item.stage || '').toUpperCase();
               let status = (item.status || '').toUpperCase();
-              let isPermitApproved = stage.includes('PERMITTING') && status.includes('APPROVED');
-              let isConstruction = stage.includes('FIELD CX') || stage.includes('CONSTRUCTION');
-              let isOFS = stage.includes('OFS');
-              return isPermitApproved || isConstruction || isOFS;
+              return (stage.includes('PERMITTING') && status.includes('APPROVED')) ||
+                     stage.includes('FIELD CX') || stage.includes('CONSTRUCTION') ||
+                     stage.includes('OFS');
           });
 
-          let movedToOfs = [];
-          let movedToCx = [];
-          let permitAppr = [];
-          let otherChanges = [];
-
+          let movedToOfs = [], movedToCx = [], permitAppr = [], otherChanges = [];
           actionableLogs.forEach(function(l) {
               let type = String(l.type || '').toUpperCase();
               let val = String(l.val || '').toUpperCase();
-              if (type.includes("STATUS") || type.includes("STAGE")) {
-                  if (val.includes("OPEN FOR SALE") || val.includes("OFS")) movedToOfs.push(l);
-                  else if (val.includes("FIELD CX") || val.includes("CONSTRUCTION")) movedToCx.push(l);
-                  else if (val.includes("PERMIT") && val.includes("APPROV")) permitAppr.push(l);
+              if (type.includes('STATUS') || type.includes('STAGE')) {
+                  if (val.includes('OPEN FOR SALE') || val.includes('OFS')) movedToOfs.push(l);
+                  else if (val.includes('FIELD CX') || val.includes('CONSTRUCTION')) movedToCx.push(l);
+                  else if (val.includes('PERMIT') && val.includes('APPROV')) permitAppr.push(l);
                   else otherChanges.push(l);
               } else {
                   otherChanges.push(l);
               }
           });
 
-          const makeList = (logs, emptyMsg) => {
-              if (logs.length === 0) {
-                  return emptyMsg ? `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">${esc(emptyMsg)}</div>` : '';
-              }
-              return `<div style="display:flex; flex-direction:column; gap:12px; padding:12px; background:var(--bg);">` +
-              logs.map(log => {
-                  let item = allActionItems.find(i => i.fdh === log.fdh);
-                  let combinedPill = item ? `${item.stage || '-'} | ${item.status || '-'}` : '';
-                  let pillCls = item ? getQBStatusClass(item.stage, item.status, false) : 'pill-default';
-                  let dateStr = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
-                  let cleanVal = String(log.val ?? '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
-                  return `
-                  <div class="grid-card glow-active" style="margin:0; cursor:pointer;" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(log.fdh)}')">
-                      <div class="grid-card-header" style="padding-bottom:8px;">
-                          <div>
-                              <div style="font-size:14px; font-weight:900; color:var(--text-main);">${esc(log.fdh)}</div>
-                              <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item ? esc(item.vendor) : 'UNKNOWN VENDOR'}</div>
-                          </div>
-                          <span class="glass-pill ${pillCls}">${esc(combinedPill)}</span>
-                      </div>
-                      <div class="grid-card-body" style="justify-content:center; gap:0;">
-                          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                              <span style="font-weight:900; font-size:10px; color:var(--color-insight); text-transform:uppercase;">${esc(log.type)}</span>
-                              <span style="color:var(--text-muted); font-size:9px; font-weight:700;">${esc(dateStr)}</span>
-                          </div>
-                          <div style="color:var(--text-main); font-size:12px; font-weight:600; line-height:1.4; margin:6px 0;">&#8594; ${esc(cleanVal)}</div>
-                          <div style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">By: ${esc(log.user)}</div>
-                      </div>
-                  </div>`;
-              }).join('') + `</div>`;
-          };
+          // --- 5. Editor leaderboard ---
+          let editorMap = {};
+          recentLogs.forEach(function(l) {
+              let u = String(l.user || '').trim();
+              if (!u || u === '-') return;
+              if (!editorMap[u]) editorMap[u] = { total: 0, status: 0, stage: 0, other: 0 };
+              editorMap[u].total++;
+              let type = String(l.type || '').toUpperCase();
+              if (type.includes('STATUS')) editorMap[u].status++;
+              else if (type.includes('STAGE')) editorMap[u].stage++;
+              else editorMap[u].other++;
+          });
+          let editorList = Object.keys(editorMap)
+              .map(function(u) { return Object.assign({ user: u }, editorMap[u]); })
+              .sort(function(a, b) { return b.total - a.total; })
+              .slice(0, 8);
+          let maxEdits = editorList.length > 0 ? editorList[0].total : 1;
 
-          ws.innerHTML = `
-        <div class="digest-ws-header">Daily Pipeline Digest <span style="font-size:12px; color:var(--text-muted); font-weight:normal; margin-left:12px;">(Lookback: ${lookbackHours}h)</span></div>
-        <div class="digest-ws-grid">
-            <div class="digest-ws-card">
-                <div class="digest-ws-card-hdr"><span>Permits Approved</span> <span style="color:#a855f7;">${permitAppr.length}</span></div>
-                <div class="digest-ws-list" style="padding:0;">${makeList(permitAppr, "No permits approved.")}</div>
-            </div>
-            <div class="digest-ws-card">
-                <div class="digest-ws-card-hdr"><span>Moved to Construction</span> <span style="color:#facc15;">${movedToCx.length}</span></div>
-                <div class="digest-ws-list" style="padding:0;">${makeList(movedToCx, "No projects moved to construction.")}</div>
-            </div>
-            <div class="digest-ws-card">
-                <div class="digest-ws-card-hdr"><span>Other Status Shifts</span> <span style="color:#3b82f6;">${otherChanges.length}</span></div>
-                <div class="digest-ws-list" style="padding:0;">${makeList(otherChanges, "No other status shifts.")}</div>
-            </div>
-            <div class="digest-ws-card">
-                <div class="digest-ws-card-hdr"><span>Reached OFS</span> <span style="color:#22c55e;">${movedToOfs.length}</span></div>
-                <div class="digest-ws-list" style="padding:0;">${makeList(movedToOfs, "No projects reached OFS.")}</div>
-            </div>
-        </div>
-    `;
+          // --- 6. Store feed data for interactive filter ---
+          window._digestFeedData = { movedToOfs: movedToOfs, movedToCx: movedToCx, permitAppr: permitAppr, otherChanges: otherChanges };
+          currentDigestFilter = 'all';
+
+          // --- 7. Build production rows HTML ---
+          let prodRows = Object.keys(prodByVendor).sort().filter(function(v) {
+              let d = prodByVendor[v];
+              return d.ug > 0 || d.ae > 0 || d.fib > 0 || d.nap > 0;
+          }).map(function(v) {
+              let d = prodByVendor[v];
+              let stats = [];
+              if (d.ug > 0) stats.push('<span style="color:#f97316; font-weight:800;">+' + d.ug.toLocaleString() + 'ft UG</span>');
+              if (d.ae > 0) stats.push('<span style="color:#64748b; font-weight:800;">+' + d.ae.toLocaleString() + 'ft Strand</span>');
+              if (d.fib > 0) stats.push('<span style="color:#ef4444; font-weight:800;">+' + d.fib.toLocaleString() + 'ft Fiber</span>');
+              if (d.nap > 0) stats.push('<span style="color:#6366f1; font-weight:800;">+' + d.nap.toLocaleString() + ' NAPs</span>');
+              return '<div class="digest-stat-row"><span style="font-weight:800; font-size:11px;">' + esc(v) + '</span><div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; font-size:11px;">' + stats.join('') + '</div></div>';
+          }).join('');
+          if (!prodRows) prodRows = '<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No production reported today.</div>';
+
+          // --- 8. Build editor leaderboard HTML ---
+          let medalLabels = ['1st', '2nd', '3rd'];
+          let leaderHtml = editorList.length === 0
+              ? '<div style="padding:24px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No editor activity in this window.</div>'
+              : editorList.map(function(e, i) {
+                  let barPct = Math.round((e.total / maxEdits) * 100);
+                  let rankLabel = i < 3 ? medalLabels[i] : '#' + (i + 1);
+                  let breakdown = [];
+                  if (e.status > 0) breakdown.push(e.status + ' status');
+                  if (e.stage > 0) breakdown.push(e.stage + ' stage');
+                  if (e.other > 0) breakdown.push(e.other + ' other');
+                  return '<div class="digest-leaderboard-row">' +
+                      '<div class="digest-leaderboard-rank">' + rankLabel + '</div>' +
+                      '<div class="digest-leaderboard-info">' +
+                          '<div class="digest-leaderboard-name">' + esc(e.user) + '</div>' +
+                          '<div class="digest-leaderboard-breakdown">' + (breakdown.join(' &middot; ') || 'field edits') + '</div>' +
+                          '<div class="digest-leaderboard-bar-track"><div class="digest-leaderboard-bar-fill" style="width:' + barPct + '%;"></div></div>' +
+                      '</div>' +
+                      '<div class="digest-leaderboard-count">' + e.total + '</div>' +
+                  '</div>';
+              }).join('');
+
+          // --- 9. Date string ---
+          let dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+
+          ws.innerHTML =
+              '<div class="digest-doc-header">' +
+                  '<div>' +
+                      '<div class="digest-ws-header">Daily Pipeline Digest</div>' +
+                      '<div class="digest-doc-subheader">' + esc(dateStr) + ' &nbsp;&middot;&nbsp; Lookback: ' + lookbackHours + 'h</div>' +
+                  '</div>' +
+              '</div>' +
+
+              '<div class="digest-kpi-strip">' +
+                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">QB Edits</div><div class="digest-kpi-num">' + shifts.totalChanges + '</div></div>' +
+                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">Reached OFS</div><div class="digest-kpi-num" style="color:#22c55e;">' + shifts.ofs + '</div></div>' +
+                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">To Construction</div><div class="digest-kpi-num" style="color:#facc15;">' + shifts.cx + '</div></div>' +
+                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">Permits Approved</div><div class="digest-kpi-num" style="color:#a855f7;">' + shifts.permit + '</div></div>' +
+                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">Editors Active</div><div class="digest-kpi-num" style="color:#3b82f6;">' + editorList.length + '</div></div>' +
+              '</div>' +
+
+              '<div class="digest-section-label">Morning Briefing</div>' +
+              '<div class="digest-brief-grid">' +
+                  '<div class="digest-ws-card">' +
+                      '<div class="digest-ws-card-hdr"><span>Pipeline Shifts</span><span style="color:var(--text-muted); font-weight:600;">Last ' + lookbackHours + 'h</span></div>' +
+                      '<div style="padding:14px 18px;">' +
+                          '<div class="digest-stat-row"><span>QB Edits Logged</span><span class="digest-num">' + shifts.totalChanges + '</span></div>' +
+                          '<div class="digest-stat-row"><span>Projects reaching OFS</span><span class="digest-num" style="color:#22c55e;">' + shifts.ofs + '</span></div>' +
+                          '<div class="digest-stat-row"><span>Moved to Construction</span><span class="digest-num" style="color:#facc15;">' + shifts.cx + '</span></div>' +
+                          '<div class="digest-stat-row"><span>Permits Approved</span><span class="digest-num" style="color:#a855f7;">' + shifts.permit + '</span></div>' +
+                      '</div>' +
+                  '</div>' +
+                  '<div class="digest-ws-card">' +
+                      '<div class="digest-ws-card-hdr"><span>Production Today</span></div>' +
+                      '<div style="padding:14px 18px;">' + prodRows + '</div>' +
+                  '</div>' +
+              '</div>' +
+
+              '<div class="digest-section-label">Editor Activity</div>' +
+              '<div class="digest-ws-card"><div class="digest-leaderboard">' + leaderHtml + '</div></div>' +
+
+              '<div class="digest-section-label-row">' +
+                  '<span>Project Changes <span style="color:var(--text-muted); font-weight:600; font-size:9px; margin-left:4px;">' + actionableLogs.length + ' events</span></span>' +
+                  '<div class="digest-filter-strip">' +
+                      '<button class="digest-filter-btn active" data-filter="all" onclick="filterDigestFeed(\'all\')">All (' + actionableLogs.length + ')</button>' +
+                      '<button class="digest-filter-btn" data-filter="permit" onclick="filterDigestFeed(\'permit\')"><span style="color:#a855f7;">&#9679;</span> Permits (' + permitAppr.length + ')</button>' +
+                      '<button class="digest-filter-btn" data-filter="cx" onclick="filterDigestFeed(\'cx\')"><span style="color:#facc15;">&#9679;</span> Construction (' + movedToCx.length + ')</button>' +
+                      '<button class="digest-filter-btn" data-filter="ofs" onclick="filterDigestFeed(\'ofs\')"><span style="color:#22c55e;">&#9679;</span> OFS (' + movedToOfs.length + ')</button>' +
+                      '<button class="digest-filter-btn" data-filter="other" onclick="filterDigestFeed(\'other\')"><span style="color:#3b82f6;">&#9679;</span> Other (' + otherChanges.length + ')</button>' +
+                  '</div>' +
+              '</div>' +
+              '<div class="digest-ws-card" style="margin-bottom:40px;">' +
+                  '<div id="digest-feed-list">' + renderDigestFeedItems(window._digestFeedData, 'all') + '</div>' +
+              '</div>';
+      }
+
+      function filterDigestFeed(type) {
+          currentDigestFilter = type;
+          document.querySelectorAll('.digest-filter-btn').forEach(function(b) {
+              b.classList.toggle('active', b.dataset.filter === type);
+          });
+          let feedList = getEl('digest-feed-list');
+          if (!feedList || !window._digestFeedData) return;
+          feedList.innerHTML = renderDigestFeedItems(window._digestFeedData, type);
+      }
+
+      function renderDigestFeedItems(data, filter) {
+          let allLogs = [];
+          let catConfig = {
+              ofs:    { label: 'Reached OFS',    color: '#22c55e' },
+              cx:     { label: 'Construction',    color: '#facc15' },
+              permit: { label: 'Permit Approved', color: '#a855f7' },
+              other:  { label: 'Status Shift',    color: '#3b82f6' }
+          };
+          if (filter === 'all' || filter === 'ofs')    data.movedToOfs.forEach(function(l)  { allLogs.push(Object.assign({}, l, { _cat: 'ofs' })); });
+          if (filter === 'all' || filter === 'cx')     data.movedToCx.forEach(function(l)   { allLogs.push(Object.assign({}, l, { _cat: 'cx' })); });
+          if (filter === 'all' || filter === 'permit') data.permitAppr.forEach(function(l)  { allLogs.push(Object.assign({}, l, { _cat: 'permit' })); });
+          if (filter === 'all' || filter === 'other')  data.otherChanges.forEach(function(l){ allLogs.push(Object.assign({}, l, { _cat: 'other' })); });
+          allLogs.sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
+
+          if (allLogs.length === 0) {
+              return '<div style="padding:32px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No changes in this category.</div>';
+          }
+
+          return allLogs.map(function(log) {
+              let item = allActionItems.find(function(i) { return i.fdh === log.fdh; });
+              let cfg = catConfig[log._cat] || catConfig.other;
+              let dateStr = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
+              let cleanVal = String(log.val || '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
+              let vendor = item ? item.vendor : '';
+              return '<div class="digest-feed-item" onclick="switchWorkspaceView(\'detail\'); selectItemForNav(\'' + escJs(log.fdh) + '\')">' +
+                  '<div class="digest-feed-dot" style="background:' + cfg.color + ';"></div>' +
+                  '<div class="digest-feed-body">' +
+                      '<div class="digest-feed-row1">' +
+                          '<span class="digest-feed-fdh">' + esc(log.fdh) + '</span>' +
+                          (vendor ? '<span class="digest-feed-vendor">' + esc(vendor) + '</span>' : '') +
+                          '<span class="digest-feed-cat" style="color:' + cfg.color + ';">' + cfg.label + '</span>' +
+                          '<span class="digest-feed-time">' + esc(dateStr) + '</span>' +
+                      '</div>' +
+                      '<div class="digest-feed-row2">' +
+                          '<span class="digest-feed-change">&#8594; ' + esc(cleanVal) + '</span>' +
+                          '<span class="digest-feed-user">by ' + esc(log.user || '\u2014') + '</span>' +
+                      '</div>' +
+                  '</div>' +
+              '</div>';
+          }).join('');
       }
 
       function parseMiniSldFdh(value) {
