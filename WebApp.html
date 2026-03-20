@@ -3,6 +3,8 @@
   <head>
     <base target="_top">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <style>
       /* 🧠 PREMIUM ENTERPRISE COLOR PALETTE */
       :root {
@@ -905,56 +907,42 @@
           background: rgba(30, 30, 36, 0.6);
       }
       /* --- Digest Workspace Layout --- */
-      .digest-shell { width:100%; max-width:1680px; margin:0 auto; display:flex; flex-direction:column; gap:22px; }
-      .digest-shell.compact { gap:18px; }
+      .digest-shell { width:100%; max-width:1720px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
       .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--border); padding:0 4px 14px; gap:16px; }
       .digest-ws-header { font-size:34px; line-height:1; font-weight:900; letter-spacing:-1.4px; color:var(--text-main); margin-bottom:8px; }
       .digest-doc-subheader { font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
       .digest-section-block { display:flex; flex-direction:column; gap:10px; min-width:0; }
       .digest-section-label { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin:0 0 0 2px; }
-      .digest-main-grid { display:grid; grid-template-columns:minmax(0, 1.3fr) minmax(320px, 0.85fr); gap:18px; align-items:start; }
-      .digest-column { display:flex; flex-direction:column; gap:18px; min-width:0; }
-      .digest-panel-shell { display:flex; flex-direction:column; flex-grow:1; min-height:0; }
-      .digest-panel-head { padding:18px 20px 16px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:14px; background:color-mix(in srgb, var(--card-bg) 96%, transparent); }
-      .digest-panel-title { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-      .digest-panel-kicker { font-size:10px; font-weight:900; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); }
-      .digest-panel-count { font-size:24px; line-height:1; font-weight:900; color:var(--text-main); letter-spacing:-0.8px; }
-      .digest-panel-sub { font-size:11px; font-weight:700; color:var(--text-muted); }
-      .digest-panel-body { flex:1 1 auto; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
+      .digest-mono { font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-variant-numeric:tabular-nums; }
       .digest-panel-empty { padding:24px 18px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic; }
-      .digest-filter-tabs { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
-      .digest-filter-btn { background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:10px 12px; font-size:10px; font-weight:900; cursor:pointer; color:var(--text-muted); transition:all 0.15s; font-family:inherit; display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:left; box-shadow:0 4px 12px rgba(15,23,42,0.04); }
-      .digest-filter-btn:hover { background:var(--card-bg); color:var(--text-main); transform:translateY(-1px); }
-      .digest-filter-btn.active { background:var(--card-bg); color:var(--text-main); border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.14), 0 8px 20px rgba(59,130,246,0.08); }
-      .digest-filter-btn-label { font-size:10px; font-weight:900; letter-spacing:0.35px; text-transform:uppercase; }
-      .digest-filter-btn-count { font-size:16px; line-height:1; font-weight:900; font-family:monospace; color:var(--text-main); }
-      .digest-hero { background:var(--card-bg); border:1px solid var(--border); border-radius:24px; box-shadow:0 14px 40px rgba(15,23,42,0.06); overflow:hidden; }
-      .digest-hero-head { padding:18px 22px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
-      .digest-hero-grid { padding:18px 22px 22px; display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:16px; }
-      .digest-vendor-card { background:color-mix(in srgb, var(--bg) 78%, transparent); border:1px solid var(--border); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:12px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
-      .digest-vendor-card:hover { transform:translateY(-1px); box-shadow:0 10px 22px rgba(15,23,42,0.08); }
-      .digest-vendor-card.active { border-color:#0f172a; box-shadow:0 0 0 2px rgba(15,23,42,0.1), 0 14px 24px rgba(15,23,42,0.08); }
-      .digest-vendor-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-      .digest-vendor-name { font-size:13px; font-weight:900; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px; }
-      .digest-mono { font-family:monospace; font-variant-numeric:tabular-nums; }
-      .digest-vendor-total { font-size:28px; line-height:1; font-weight:900; color:var(--text-main); }
-      .digest-vendor-target { font-size:11px; font-weight:700; color:var(--text-muted); }
-      .digest-goal-track { width:100%; height:12px; border-radius:999px; background:color-mix(in srgb, var(--border) 82%, transparent); overflow:hidden; }
-      .digest-goal-fill { height:100%; border-radius:999px; transition:width 0.35s ease; }
-      .digest-vendor-submetrics { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
-      .digest-vendor-subcard { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:8px 9px; display:flex; flex-direction:column; gap:5px; }
-      .digest-vendor-subcard-label { font-size:9px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
-      .digest-vendor-subcard-val { font-size:14px; font-weight:900; color:var(--text-main); }
-      .digest-mini-track { width:100%; height:6px; border-radius:999px; background:color-mix(in srgb, var(--border) 82%, transparent); overflow:hidden; }
-      .digest-mini-fill { height:100%; border-radius:999px; }
-      .digest-pulse-card,
-      .digest-rank-card,
-      .digest-stage-card,
-      .digest-blocker-card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; box-shadow:0 12px 34px rgba(15,23,42,0.06); overflow:hidden; }
+      .digest-card { background:var(--card-bg); border:1px solid var(--border); border-radius:22px; box-shadow:0 12px 34px rgba(15,23,42,0.06); overflow:hidden; }
       .digest-card-head { padding:16px 18px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
       .digest-card-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
-      .digest-pulse-list { display:flex; flex-direction:column; gap:10px; max-height:620px; overflow:auto; }
-      .digest-pulse-item { border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); padding:12px 14px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:background 0.15s, transform 0.15s; }
+      .digest-map-card { min-height:420px; }
+      .digest-map-shell { display:grid; grid-template-columns:minmax(0, 1fr) 260px; min-height:420px; }
+      .digest-map-wrap { position:relative; min-height:420px; background:linear-gradient(180deg, rgba(59,130,246,0.04), rgba(255,255,255,0)); }
+      #digest-vendor-map { width:100%; height:100%; min-height:420px; }
+      .digest-map-sidecar { border-left:1px solid var(--border); background:color-mix(in srgb, var(--card-bg) 92%, transparent); padding:18px; display:flex; flex-direction:column; gap:14px; }
+      .digest-filter-chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+      .digest-filter-chip { background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:10px; font-weight:900; color:var(--text-muted); cursor:pointer; transition:all 0.15s; }
+      .digest-filter-chip:hover { background:var(--card-bg); color:var(--text-main); transform:translateY(-1px); }
+      .digest-filter-chip.active { color:var(--text-main); border-color:#0f172a; box-shadow:0 0 0 2px rgba(15,23,42,0.08); }
+      .digest-map-kpi { padding:12px 14px; border:1px solid var(--border); border-radius:16px; background:color-mix(in srgb, var(--bg) 80%, transparent); display:flex; flex-direction:column; gap:4px; }
+      .digest-map-kpi-label { font-size:9px; font-weight:900; color:var(--text-muted); letter-spacing:0.5px; text-transform:uppercase; }
+      .digest-map-kpi-value { font-size:24px; font-weight:900; color:var(--text-main); }
+      .digest-map-kpi-sub { font-size:10px; font-weight:700; color:var(--text-muted); }
+      .digest-map-legend { display:flex; flex-direction:column; gap:8px; }
+      .digest-map-legend-row { display:flex; align-items:center; gap:10px; font-size:10px; font-weight:700; color:var(--text-muted); }
+      .digest-map-legend-dot { width:10px; height:10px; border-radius:999px; flex-shrink:0; }
+      .digest-map-legend-dot.red { background:#dc2626; }
+      .digest-map-legend-dot.yellow { background:#f59e0b; }
+      .digest-map-legend-dot.neutral { background:#64748b; }
+      .digest-map-legend-dot.green { background:#22c55e; }
+      .digest-middle-grid { display:grid; grid-template-columns:minmax(0, 1.45fr) minmax(280px, 0.75fr); gap:18px; align-items:start; }
+      .digest-pulse-lane-wrap { overflow-x:auto; overflow-y:hidden; scrollbar-width:none; padding-bottom:4px; }
+      .digest-pulse-lane-wrap::-webkit-scrollbar { display:none; }
+      .digest-pulse-lane { display:flex; gap:12px; width:max-content; min-width:100%; }
+      .digest-pulse-item { width:300px; min-width:300px; border:1px solid var(--border); border-radius:16px; background:color-mix(in srgb, var(--bg) 72%, transparent); padding:12px 14px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:background 0.15s, transform 0.15s; }
       .digest-pulse-item:hover { background:rgba(59,130,246,0.04); transform:translateY(-1px); }
       .digest-pulse-meta { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
       .digest-pulse-title { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -962,15 +950,21 @@
       .digest-pulse-vendor { font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase; }
       .digest-pulse-change { font-size:11px; font-weight:700; color:var(--text-main); line-height:1.45; }
       .digest-pulse-foot { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:10px; font-weight:700; color:var(--text-muted); }
-      .digest-rank-list { display:flex; flex-direction:column; gap:10px; }
-      .digest-rank-row { display:grid; grid-template-columns:28px minmax(0, 1fr) auto; gap:12px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); }
+      .digest-leaderboard-list,
+      .digest-blocker-list { display:flex; flex-direction:column; gap:10px; }
+      .digest-rank-row,
+      .digest-blocker-row { border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); padding:12px; }
+      .digest-rank-row { display:grid; grid-template-columns:28px minmax(0, 1fr) auto; gap:12px; align-items:center; }
       .digest-rank-place { font-size:14px; font-weight:900; color:var(--text-muted); text-align:center; }
       .digest-rank-name { font-size:13px; font-weight:900; color:var(--text-main); }
       .digest-rank-sub { font-size:10px; font-weight:700; color:var(--text-muted); margin-top:4px; }
       .digest-rank-count { font-size:24px; font-weight:900; color:var(--color-insight); text-align:right; }
       .digest-rank-track { margin-top:8px; width:100%; height:6px; border-radius:999px; background:var(--border); overflow:hidden; }
       .digest-rank-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#3b82f6,#6366f1); }
+      .digest-pill-row { display:flex; gap:6px; flex-wrap:wrap; }
       .digest-kanban-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; }
+      .digest-stage-card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; box-shadow:0 12px 34px rgba(15,23,42,0.05); overflow:hidden; }
+      .digest-stage-body { padding:12px; display:flex; flex-direction:column; gap:10px; min-height:260px; }
       .digest-stage-list { display:flex; flex-direction:column; gap:10px; }
       .digest-stage-project { border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; }
       .digest-stage-project:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,0.08); }
@@ -978,65 +972,69 @@
       .digest-stage-project-fdh { font-size:13px; font-weight:900; color:var(--text-main); }
       .digest-stage-project-meta { font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; }
       .digest-stage-project-foot { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:9px; font-weight:700; color:var(--text-muted); }
-      .digest-blocker-list { display:flex; flex-direction:column; gap:10px; }
-      .digest-blocker-row { display:grid; grid-template-columns:minmax(0, 1fr) auto auto; gap:12px; align-items:center; padding:12px 14px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); }
+      .digest-blocker-row { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:12px; align-items:center; }
       .digest-blocker-main { display:flex; flex-direction:column; gap:6px; min-width:0; }
       .digest-blocker-score { font-size:12px; font-weight:900; color:var(--text-main); }
-      .digest-blocker-age { font-size:26px; font-weight:900; color:var(--color-critical); }
-      .digest-blocker-cta { white-space:nowrap; }
-      .digest-pill-row { display:flex; gap:6px; flex-wrap:wrap; }
-      .log-card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; }
-      .log-header { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+      .digest-blocker-age { font-size:26px; font-weight:900; color:var(--color-critical); text-align:right; }
+      .digest-rail-shell { display:flex; flex-direction:column; flex-grow:1; min-height:0; }
+      .digest-panel-head { padding:18px 20px 16px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:10px; background:color-mix(in srgb, var(--card-bg) 96%, transparent); }
+      .digest-panel-title { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+      .digest-panel-kicker { font-size:10px; font-weight:900; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); }
+      .digest-panel-count { font-size:24px; line-height:1; font-weight:900; color:var(--text-main); letter-spacing:-0.8px; }
+      .digest-panel-sub { font-size:11px; font-weight:700; color:var(--text-muted); }
+      .digest-panel-body { flex:1 1 auto; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:14px; padding:16px; }
+      .digest-rail-card { background:var(--card-bg); border:1px solid var(--border); border-radius:18px; overflow:hidden; box-shadow:0 10px 22px rgba(15,23,42,0.05); }
+      .digest-rail-card .digest-card-head { padding:14px 16px 10px; }
+      .digest-rail-card .digest-card-body { padding:12px 14px 14px; }
+      .digest-rail-stat-row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+      .digest-map-tooltip { background:rgba(255,255,255,0.98); border:1px solid var(--border); border-radius:16px; box-shadow:0 16px 32px rgba(15,23,42,0.18); color:var(--text-main); padding:0; }
+      .digest-map-tooltip .leaflet-tooltip-content { margin:0; }
+      .digest-map-tooltip-inner { width:320px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+      .digest-map-tooltip-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+      .digest-map-tooltip-title { font-size:13px; font-weight:900; color:var(--text-main); text-transform:uppercase; letter-spacing:0.4px; }
+      .digest-map-tooltip-city { font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; }
+      .digest-tooltip-metrics { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+      .digest-tooltip-metric { border:1px solid var(--border); border-radius:12px; padding:8px 10px; background:color-mix(in srgb, var(--bg) 78%, transparent); display:flex; flex-direction:column; gap:4px; }
+      .digest-tooltip-metric-label { font-size:8px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+      .digest-tooltip-metric-value { font-size:18px; font-weight:900; color:var(--text-main); }
+      .digest-tooltip-bars .qb-vel-item { min-width:0 !important; }
+      body.dark-mode .digest-map-tooltip { background:rgba(24,24,27,0.96); border-color:rgba(255,255,255,0.08); color:#e5e7eb; }
+      body.dark-mode .digest-map-sidecar,
+      body.dark-mode .digest-map-kpi,
+      body.dark-mode .digest-tooltip-metric,
+      body.dark-mode .digest-rank-row,
+      body.dark-mode .digest-blocker-row,
+      body.dark-mode .digest-stage-project,
+      body.dark-mode .digest-pulse-item { background:rgba(30,30,36,0.65); }
       body.digest-mode-active .inbox-sidebar { display: none !important; }
       body.digest-mode-active #review-hub-main-header { display:none !important; }
       body.digest-mode-active #grid-content,
       body.digest-mode-active #pane-content,
       body.digest-mode-active #welcome-screen,
       body.digest-mode-active #deck-stage { display: none !important; }
-      body.digest-mode-active #digest-workspace { transition:width 0.28s ease, max-width 0.28s ease, padding 0.28s ease; }
-      body.digest-mode-active .outbox-pane {
-          position: absolute !important;
-          right: var(--panel-gutter-x) !important;
-          top: var(--panel-gutter-y) !important;
-          bottom: var(--panel-gutter-y) !important;
-          height: auto !important;
-          z-index: 1005 !important;
-          box-shadow: -15px 0 40px rgba(0,0,0,0.2) !important;
-      }
+      body.digest-mode-active #digest-workspace { transition:padding 0.28s ease; }
       @media screen and (min-width: 1100px) {
-          body.digest-mode-active .outbox-pane { width: 410px !important; min-width: 410px !important; }
           body.digest-mode-active .reading-pane.admin-open #digest-workspace {
-              width: calc(100% - 438px) !important;
-              max-width: calc(100% - 438px) !important;
-              padding-right: 18px !important;
+              padding-right: calc(var(--inbox-panel-width) + 22px) !important;
           }
       }
       @media screen and (max-width: 1440px) {
-          .digest-main-grid { grid-template-columns: minmax(0, 1fr); }
+          .digest-map-shell,
+          .digest-middle-grid { grid-template-columns:minmax(0, 1fr); }
           .digest-kanban-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       }
       @media screen and (max-width: 1080px) {
-          .digest-shell { gap:24px; }
           .digest-ws-header { font-size:30px; }
-          .digest-filter-tabs { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-          .digest-vendor-submetrics { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-          .digest-blocker-row { grid-template-columns:minmax(0, 1fr) auto; }
+          .digest-map-shell { min-height:auto; }
+          .digest-map-wrap,
+          #digest-vendor-map { min-height:360px; }
       }
       @media screen and (max-width: 720px) {
           .digest-doc-header { padding:0 0 14px; }
           .digest-ws-header { font-size:26px; }
-          .digest-filter-tabs { grid-template-columns:minmax(0, 1fr); }
-          .digest-vendor-submetrics,
-          .digest-kanban-grid,
-          .digest-blocker-row { grid-template-columns:minmax(0, 1fr); }
-          .digest-feed-time,
-          .digest-feed-user { margin-left: 0; }
-          body.digest-mode-active .outbox-pane {
-              right: 0 !important;
-              top: 0 !important;
-              bottom: 0 !important;
-              height: 100% !important;
-          }
+          .digest-kanban-grid { grid-template-columns:minmax(0, 1fr); }
+          .digest-pulse-item { width:280px; min-width:280px; }
+          .digest-tooltip-metrics { grid-template-columns:minmax(0, 1fr); }
       }
       .ms-opt input { display: none !important; }
       .ms-wrap.open .ms-dropdown { display: flex; }
@@ -3476,7 +3474,11 @@
       let ganttScrollState = { top: 0, left: 0 };
       let ganttHasVisited = false;
       let digestVendorGoals = {};
+      let digestVendorCities = {};
       let currentDigestVendorFilter = 'ALL';
+      let digestLeafletMap = null;
+      let digestLeafletLayer = null;
+      let digestPulseAutoScrollTimer = null;
 
       function isSlideFaceActive() {
           return currentWorkspaceView === 'detail' && currentDetailFace === 'slide';
@@ -4793,14 +4795,14 @@
           let isDeckView = isSlideFaceActive();
 
           if (title) {
-              title.innerHTML = isDigestView ? '<span>Project</span><span>Changes</span>' : '<span>Review</span><span>Hub</span>';
+              title.innerHTML = isDigestView ? '<span>Operations</span><span>Rail</span>' : '<span>Review</span><span>Hub</span>';
           }
           if (tabBar) tabBar.style.display = (isDigestView || isDeckView) ? 'none' : 'flex';
           if (deckPanel) deckPanel.style.display = isDeckView ? 'flex' : 'none';
           if (digestPanel) digestPanel.style.display = isDigestView ? 'flex' : 'none';
           if (fab) {
-              fab.title = isDigestView ? 'Project Changes' : 'Admin / Reviewed';
-              fab.setAttribute('aria-label', isDigestView ? 'Open project changes panel' : 'Open admin panel');
+              fab.title = isDigestView ? 'Operations Rail' : 'Admin / Reviewed';
+              fab.setAttribute('aria-label', isDigestView ? 'Open operations rail' : 'Open admin panel');
           }
 
           if (isDigestView) {
@@ -5330,7 +5332,6 @@
           }
       }
 
-      let currentDigestFilter = 'permitApproved';
       const DIGEST_STAGE_ORDER = ['permitApproved', 'construction', 'completed', 'ofs'];
       const DIGEST_STAGE_META = {
           permitApproved: { label: 'Permitting Approved', shortLabel: 'Permits', pillClass: 'pill-permit', accent: '#a855f7' },
@@ -5364,13 +5365,27 @@
           return getDigestStageKeyFromValues(item && item.stage, item && item.status, log && log.type, log && log.val);
       }
 
-      function getDigestVendorGoal(vendor) {
-          let exact = Number((digestVendorGoals || {})[vendor] || 0);
-          if (exact > 0) return exact;
-          let match = Object.keys(digestVendorGoals || {}).find(function(key) {
-              return String(key || '').trim().toLowerCase() === String(vendor || '').trim().toLowerCase();
+      function getDigestConfigValue(dict, key) {
+          if (!dict || !key) return null;
+          if (dict[key]) return dict[key];
+          let wanted = String(key || '').trim().toLowerCase();
+          let match = Object.keys(dict).find(function(dictKey) {
+              return String(dictKey || '').trim().toLowerCase() === wanted;
           });
-          return match ? Number(digestVendorGoals[match] || 0) : 0;
+          return match ? dict[match] : null;
+      }
+
+      function getDigestVendorGoal(vendor) {
+          let match = Number(getDigestConfigValue(digestVendorGoals || {}, vendor) || 0);
+          return match > 0 ? match : 0;
+      }
+
+      function getDigestVendorCityEntry(vendor, fallbackCity) {
+          let match = getDigestConfigValue(digestVendorCities || {}, vendor);
+          if (match && !isNaN(Number(match.lat)) && !isNaN(Number(match.lng))) {
+              return { city: String(match.city || fallbackCity || vendor || 'Unknown'), lat: Number(match.lat), lng: Number(match.lng) };
+          }
+          return { city: String(fallbackCity || vendor || 'Unknown'), lat: null, lng: null };
       }
 
       function getDigestFootageTotal(item) {
@@ -5378,6 +5393,13 @@
           return Number((item.vel.ug && item.vel.ug.daily) || 0) +
               Number((item.vel.ae && item.vel.ae.daily) || 0) +
               Number((item.vel.fib && item.vel.fib.daily) || 0);
+      }
+
+      function getDigestFootagePotential(item) {
+          if (!item || !item.vel) return 0;
+          return Number((item.vel.ug && item.vel.ug.bom) || 0) +
+              Number((item.vel.ae && item.vel.ae.bom) || 0) +
+              Number((item.vel.fib && item.vel.fib.bom) || 0);
       }
 
       function getDigestRemainingFootage(item) {
@@ -5391,11 +5413,11 @@
           let pct = goal > 0 ? (actual / goal) * 100 : 0;
           let isBeforeNoon = now.getHours() < 12;
           let fill = '#94a3b8';
-          if (pct >= 100) fill = '#22c55e';
-          else if ((isBeforeNoon && pct < 50) || pct < 50) fill = '#dc2626';
-          else if (pct < 90) fill = '#f59e0b';
-          else fill = '#64748b';
-          return { pct: Math.max(0, Math.min(100, Math.round(pct))), fill: fill };
+          let tone = 'neutral';
+          if (pct >= 100) { fill = '#22c55e'; tone = 'good'; }
+          else if ((isBeforeNoon && pct < 50) || pct < 50) { fill = '#dc2626'; tone = 'critical'; }
+          else if (pct < 90) { fill = '#f59e0b'; tone = 'watch'; }
+          return { pctRaw: Math.max(0, pct), pct: Math.max(0, Math.min(100, Math.round(pct))), fill: fill, tone: tone };
       }
 
       function getDigestStageAgeDate(item, latestTs) {
@@ -5408,9 +5430,54 @@
           return Math.max(0, Math.floor((Date.now() - anchor.getTime()) / 86400000));
       }
 
-      function getDigestAgeHeatBackground(ageDays) {
-          let alpha = Math.min(0.18, ageDays / 180);
-          return 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,68,68,' + alpha.toFixed(3) + '))';
+      function getDigestItemDaysLeft(item) {
+          let end = safeDate(item && (item.cxEnd || item.targetDate));
+          if (!end || isNaN(end.getTime())) return 14;
+          let today = new Date();
+          today.setHours(0, 0, 0, 0);
+          return Math.max(1, Math.ceil((end.getTime() - today.getTime()) / 86400000));
+      }
+
+      function isDigestActiveConstructionItem(item) {
+          return !!item && getDigestStageKeyForItem(item) === 'construction';
+      }
+
+      function getDigestProjectCardStyle(stageKey, ageDays) {
+          let stageTint = {
+              permitApproved: 'rgba(168,85,247,0.10)',
+              construction: 'rgba(245,158,11,0.10)',
+              completed: 'rgba(34,197,94,0.10)',
+              ofs: 'rgba(6,182,212,0.10)'
+          }[stageKey] || 'rgba(148,163,184,0.08)';
+          let heatAlpha = Math.min(0.16, ageDays / 180);
+          return 'linear-gradient(180deg, ' + stageTint + ', rgba(239,68,68,' + heatAlpha.toFixed(3) + '))';
+      }
+
+      function clearDigestPulseAutoScroll() {
+          if (digestPulseAutoScrollTimer) {
+              clearInterval(digestPulseAutoScrollTimer);
+              digestPulseAutoScrollTimer = null;
+          }
+      }
+
+      function setupDigestPulseAutoScroll() {
+          clearDigestPulseAutoScroll();
+          let wrap = getEl('digest-pulse-lane-wrap');
+          if (!wrap) return;
+          if (!wrap.dataset.bound) {
+              wrap.addEventListener('mouseenter', function() { wrap.dataset.paused = '1'; });
+              wrap.addEventListener('mouseleave', function() { wrap.dataset.paused = '0'; });
+              wrap.addEventListener('focusin', function() { wrap.dataset.paused = '1'; });
+              wrap.addEventListener('focusout', function() { wrap.dataset.paused = '0'; });
+              wrap.dataset.bound = '1';
+          }
+          wrap.dataset.paused = '0';
+          if (wrap.scrollWidth <= wrap.clientWidth + 24) return;
+          digestPulseAutoScrollTimer = setInterval(function() {
+              if (!document.body.classList.contains('digest-mode-active')) return;
+              if (wrap.dataset.paused === '1') return;
+              wrap.scrollLeft = wrap.scrollLeft >= (wrap.scrollWidth - wrap.clientWidth - 2) ? 0 : wrap.scrollLeft + 1;
+          }, 45);
       }
 
       function setDigestVendorFilter(vendor) {
@@ -5418,52 +5485,119 @@
           renderDigestWorkspace();
       }
 
-      function renderDigestVendorCard(entry, now) {
-          let goal = getDigestVendorGoal(entry.vendor);
-          let actual = entry.total;
-          let gauge = getDigestVendorGaugeStyle(actual, goal, now);
-          let active = currentDigestVendorFilter === entry.vendor;
-          let denom = Math.max(actual, 1);
-          let ugPct = Math.round((entry.ug / denom) * 100);
-          let aePct = Math.round((entry.ae / denom) * 100);
-          let fibPct = Math.round((entry.fib / denom) * 100);
-          return `<div class="digest-vendor-card ${active ? 'active' : ''}" onclick="setDigestVendorFilter('${escJs(entry.vendor)}')">
-              <div class="digest-vendor-head">
+      function buildDigestVendorMetrics() {
+          let vendorMap = {};
+          (allActionItems || []).forEach(function(item) {
+              if (!isDigestActiveConstructionItem(item)) return;
+              let vendor = String(item.vendor || '').trim();
+              if (!vendor || vendor === '-') return;
+              let cityEntry = getDigestVendorCityEntry(vendor, item.city);
+              if (!vendorMap[vendor]) {
+                  vendorMap[vendor] = {
+                      vendor: vendor,
+                      city: cityEntry.city,
+                      lat: cityEntry.lat,
+                      lng: cityEntry.lng,
+                      projectCount: 0,
+                      ugDaily: 0, ugTot: 0, ugBom: 0,
+                      aeDaily: 0, aeTot: 0, aeBom: 0,
+                      fibDaily: 0, fibTot: 0, fibBom: 0,
+                      napDaily: 0, napTot: 0, napBom: 0,
+                      daysLeftTotal: 0, daysLeftCount: 0
+                  };
+              }
+              let entry = vendorMap[vendor];
+              entry.projectCount++;
+              entry.ugDaily += Number((item.vel && item.vel.ug && item.vel.ug.daily) || 0);
+              entry.ugTot += Number((item.vel && item.vel.ug && item.vel.ug.tot) || 0);
+              entry.ugBom += Number((item.vel && item.vel.ug && item.vel.ug.bom) || 0);
+              entry.aeDaily += Number((item.vel && item.vel.ae && item.vel.ae.daily) || 0);
+              entry.aeTot += Number((item.vel && item.vel.ae && item.vel.ae.tot) || 0);
+              entry.aeBom += Number((item.vel && item.vel.ae && item.vel.ae.bom) || 0);
+              entry.fibDaily += Number((item.vel && item.vel.fib && item.vel.fib.daily) || 0);
+              entry.fibTot += Number((item.vel && item.vel.fib && item.vel.fib.tot) || 0);
+              entry.fibBom += Number((item.vel && item.vel.fib && item.vel.fib.bom) || 0);
+              entry.napDaily += Number((item.vel && item.vel.nap && item.vel.nap.daily) || 0);
+              entry.napTot += Number((item.vel && item.vel.nap && item.vel.nap.tot) || 0);
+              entry.napBom += Number((item.vel && item.vel.nap && item.vel.nap.bom) || 0);
+              entry.daysLeftTotal += getDigestItemDaysLeft(item);
+              entry.daysLeftCount++;
+          });
+          return Object.keys(vendorMap).map(function(vendor) {
+              let entry = vendorMap[vendor];
+              entry.totalDaily = entry.ugDaily + entry.aeDaily + entry.fibDaily;
+              entry.goal = getDigestVendorGoal(entry.vendor);
+              entry.gauge = getDigestVendorGaugeStyle(entry.totalDaily, entry.goal, new Date());
+              entry.avgDaysLeft = entry.daysLeftCount ? Math.max(1, Math.round(entry.daysLeftTotal / entry.daysLeftCount)) : 14;
+              return entry;
+          }).sort(function(a, b) { return b.totalDaily - a.totalDaily; });
+      }
+
+      function renderDigestVendorMapTooltip(entry) {
+          return `<div class="digest-map-tooltip-inner">
+              <div class="digest-map-tooltip-head">
                   <div>
-                      <div class="digest-vendor-name">${esc(entry.vendor)}</div>
-                      <div class="digest-vendor-target">Target ${goal > 0 ? goal.toLocaleString() + ' ft' : 'Not Set'}</div>
+                      <div class="digest-map-tooltip-title">${esc(entry.vendor)}</div>
+                      <div class="digest-map-tooltip-city">${esc(entry.city || 'Unknown City')}</div>
                   </div>
-                  <span class="glass-pill ${actual >= goal && goal > 0 ? 'pill-complete' : actual > 0 ? 'pill-active' : 'pill-default'}" style="font-size:9px; padding:4px 8px;">${entry.projectCount} projects</span>
+                  <span class="glass-pill ${entry.gauge.tone === 'good' ? 'pill-complete' : entry.gauge.tone === 'critical' ? 'pill-missing' : entry.gauge.tone === 'watch' ? 'pill-active' : 'pill-default'}" style="font-size:9px; padding:4px 8px;">${entry.projectCount} active projects</span>
               </div>
-              <div class="digest-vendor-total digest-mono">${actual.toLocaleString()}</div>
-              <div style="display:flex; justify-content:space-between; gap:10px; font-size:10px; font-weight:800; color:var(--text-muted);">
-                  <span>Progress Today</span>
-                  <span class="digest-mono">${goal > 0 ? gauge.pct + '%' : '--'}</span>
+              <div class="digest-tooltip-metrics">
+                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Actual Today</div><div class="digest-tooltip-metric-value digest-mono">${entry.totalDaily.toLocaleString()}</div></div>
+                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Daily Goal</div><div class="digest-tooltip-metric-value digest-mono">${entry.goal > 0 ? entry.goal.toLocaleString() : '--'}</div></div>
+                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Progress Today</div><div class="digest-tooltip-metric-value digest-mono">${entry.goal > 0 ? entry.gauge.pct + '%' : '--'}</div></div>
+                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Avg Days Left</div><div class="digest-tooltip-metric-value digest-mono">${entry.avgDaysLeft}</div></div>
               </div>
-              <div class="digest-goal-track"><div class="digest-goal-fill" style="width:${goal > 0 ? Math.min(100, gauge.pct) : 0}%; background:${gauge.fill};"></div></div>
-              <div class="digest-vendor-submetrics">
-                  <div class="digest-vendor-subcard">
-                      <div class="digest-vendor-subcard-label">UG</div>
-                      <div class="digest-vendor-subcard-val digest-mono">${entry.ug.toLocaleString()}</div>
-                      <div class="digest-mini-track"><div class="digest-mini-fill" style="width:${ugPct}%; background:#f97316;"></div></div>
-                  </div>
-                  <div class="digest-vendor-subcard">
-                      <div class="digest-vendor-subcard-label">Strand</div>
-                      <div class="digest-vendor-subcard-val digest-mono">${entry.ae.toLocaleString()}</div>
-                      <div class="digest-mini-track"><div class="digest-mini-fill" style="width:${aePct}%; background:#64748b;"></div></div>
-                  </div>
-                  <div class="digest-vendor-subcard">
-                      <div class="digest-vendor-subcard-label">Fiber</div>
-                      <div class="digest-vendor-subcard-val digest-mono">${entry.fib.toLocaleString()}</div>
-                      <div class="digest-mini-track"><div class="digest-mini-fill" style="width:${fibPct}%; background:#ef4444;"></div></div>
-                  </div>
+              <div class="digest-tooltip-bars">
+                  ${buildVelocityBar('UG', entry.ugDaily, entry.ugTot, entry.ugBom, 'UG', entry.avgDaysLeft)}
+                  ${buildVelocityBar('Aerial', entry.aeDaily, entry.aeTot, entry.aeBom, 'AE', entry.avgDaysLeft)}
+                  ${buildVelocityBar('Fiber', entry.fibDaily, entry.fibTot, entry.fibBom, 'FIB', entry.avgDaysLeft)}
               </div>
           </div>`;
       }
 
+      function initializeDigestVendorMap(vendorEntries) {
+          let host = getEl('digest-vendor-map');
+          if (!host || typeof L === 'undefined') return;
+          let usableEntries = (vendorEntries || []).filter(function(entry) {
+              return typeof entry.lat === 'number' && typeof entry.lng === 'number' && !isNaN(entry.lat) && !isNaN(entry.lng);
+          });
+          if (digestLeafletMap) {
+              if (digestLeafletLayer) digestLeafletLayer.clearLayers();
+              digestLeafletMap.remove();
+              digestLeafletMap = null;
+              digestLeafletLayer = null;
+          }
+          digestLeafletMap = L.map(host, { zoomControl: false, scrollWheelZoom: false, dragging: true, doubleClickZoom: false, attributionControl: false });
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 11 }).addTo(digestLeafletMap);
+          digestLeafletLayer = L.layerGroup().addTo(digestLeafletMap);
+          if (!usableEntries.length) {
+              digestLeafletMap.setView([31.0, -97.0], 6);
+              return;
+          }
+          let maxDaily = usableEntries.reduce(function(max, entry) { return Math.max(max, entry.totalDaily || 0); }, 1);
+          let bounds = [];
+          usableEntries.forEach(function(entry) {
+              let radius = 10 + Math.round(((entry.totalDaily || 0) / maxDaily) * 18);
+              let active = currentDigestVendorFilter === entry.vendor;
+              let marker = L.circleMarker([entry.lat, entry.lng], {
+                  radius: radius,
+                  color: active ? '#0f172a' : entry.gauge.fill,
+                  weight: active ? 3 : 2,
+                  fillColor: entry.gauge.fill,
+                  fillOpacity: active ? 0.92 : 0.78
+              }).addTo(digestLeafletLayer);
+              marker.bindTooltip(renderDigestVendorMapTooltip(entry), { sticky: true, direction: 'top', className: 'digest-map-tooltip', opacity: 1 });
+              marker.on('mouseover', function() { marker.openTooltip(); });
+              marker.on('click', function() { setDigestVendorFilter(currentDigestVendorFilter === entry.vendor ? 'ALL' : entry.vendor); });
+              bounds.push([entry.lat, entry.lng]);
+          });
+          digestLeafletMap.fitBounds(bounds, { padding: [36, 36], maxZoom: 7 });
+      }
+
       function renderDigestPulseFeed(logs, itemMap) {
           if (!logs.length) return '<div class="digest-panel-empty">No recent moves for this selection.</div>';
-          return `<div class="digest-pulse-list">` + logs.map(function(log) {
+          return `<div class="digest-pulse-lane-wrap" id="digest-pulse-lane-wrap"><div class="digest-pulse-lane">` + logs.map(function(log) {
               let item = itemMap[log.fdh] || null;
               let stageKey = getDigestStageKeyForLog(log, item);
               let meta = getDigestStageMeta(stageKey);
@@ -5484,13 +5618,13 @@
                       ${item ? `<span class="glass-pill ${getQBStatusClass(item.stage, item.status, false)}" style="font-size:9px; padding:3px 8px;">${esc((item.stage || '-') + ' | ' + (item.status || '-'))}</span>` : ''}
                   </div>
               </div>`;
-          }).join('') + `</div>`;
+          }).join('') + `</div></div>`;
       }
 
       function renderDigestLeaderboard(entries) {
           if (!entries.length) return '<div class="digest-panel-empty">No movers in the current window.</div>';
           let max = entries[0].total || 1;
-          return `<div class="digest-rank-list">` + entries.map(function(entry, idx) {
+          return `<div class="digest-leaderboard-list">` + entries.map(function(entry, idx) {
               let width = Math.max(8, Math.round((entry.total / max) * 100));
               return `<div class="digest-rank-row">
                   <div class="digest-rank-place">${idx + 1}</div>
@@ -5511,22 +5645,20 @@
 
       function renderDigestStageCard(stageKey, stageEntry) {
           let meta = getDigestStageMeta(stageKey);
-          let projects = stageEntry.projects.slice(0, 5);
+          let projects = stageEntry.projects.slice(0, 6);
           return `<div class="digest-stage-card">
               <div class="digest-card-head">
                   <div>
                       <div class="digest-section-label" style="margin:0 0 6px 0; color:${meta.accent};">${esc(meta.label)}</div>
-                      <div style="font-size:24px; font-weight:900; color:var(--text-main);" class="digest-mono">${stageEntry.logs.length}</div>
+                      <div style="font-size:24px; font-weight:900; color:var(--text-main);" class="digest-mono">${stageEntry.projects.length}</div>
                   </div>
-                  <span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:4px 8px;">${stageEntry.projects.length} projects</span>
+                  <span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:4px 8px;">${stageEntry.logs.length} recent moves</span>
               </div>
-              <div class="digest-card-body">
+              <div class="digest-stage-body">
                   <div class="digest-stage-list">
                       ${projects.length ? projects.map(function(entry) {
                           let item = entry.item;
-                          let ageDays = entry.ageDays || 0;
-                          let bg = getDigestAgeHeatBackground(ageDays);
-                          return `<div class="digest-stage-project" style="background:${bg};" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(item.fdh)}')">
+                          return `<div class="digest-stage-project" style="background:${getDigestProjectCardStyle(stageKey, entry.ageDays || 0)};" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(item.fdh)}')">
                               <div class="digest-stage-project-head">
                                   <div>
                                       <div class="digest-stage-project-fdh">${esc(item.fdh)}</div>
@@ -5536,7 +5668,7 @@
                               </div>
                               <div class="digest-stage-project-foot">
                                   <span>${esc(entry.lastMoveLabel || 'No recent move')}</span>
-                                  <span>${ageDays}d sitting</span>
+                                  <span>${entry.ageDays || 0}d sitting</span>
                               </div>
                           </div>`;
                       }).join('') : '<div class="digest-panel-empty">No projects in this column.</div>'}
@@ -5564,94 +5696,54 @@
               <div style="text-align:right;">
                   <div class="digest-blocker-age digest-mono">${entry.ageDays}</div>
                   <div style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase;">Days Sitting</div>
+                  <button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="margin-top:10px; background:var(--bg); color:var(--text-main); border-color:var(--border);">Open</button>
               </div>
-              <div class="digest-blocker-cta"><button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open</button></div>
           </div>`;
       }
 
-      function renderDigestWorkspace() {
-          const ws = getEl('digest-workspace');
-          if (!ws) return;
-
+      function buildDigestCommandCenterData() {
           let now = new Date();
           let lookbackHours = 48;
           if (now.getDay() === 1 && now.getHours() < 11) lookbackHours = 80;
           let cutoff = new Date(now.getTime() - (lookbackHours * 60 * 60 * 1000));
-          let isRailOpen = !!document.querySelector('.reading-pane.admin-open');
-          let compactMode = isRailOpen && window.innerWidth >= 1100;
           let itemMap = {};
           (allActionItems || []).forEach(function(item) { itemMap[String(item.fdh || '')] = item; });
-
-          let prodByVendor = {};
-          (allActionItems || []).forEach(function(item) {
-              let vendor = String(item.vendor || '').trim();
-              if (!vendor || vendor === '-') return;
-              if (!prodByVendor[vendor]) prodByVendor[vendor] = { vendor: vendor, ug: 0, ae: 0, fib: 0, nap: 0, total: 0, projectCount: 0 };
-              prodByVendor[vendor].ug += Number((item.vel && item.vel.ug && item.vel.ug.daily) || 0);
-              prodByVendor[vendor].ae += Number((item.vel && item.vel.ae && item.vel.ae.daily) || 0);
-              prodByVendor[vendor].fib += Number((item.vel && item.vel.fib && item.vel.fib.daily) || 0);
-              prodByVendor[vendor].nap += Number((item.vel && item.vel.nap && item.vel.nap.daily) || 0);
-              prodByVendor[vendor].projectCount++;
+          let vendorEntries = buildDigestVendorMetrics();
+          if (currentDigestVendorFilter !== 'ALL' && !vendorEntries.some(function(entry) { return entry.vendor === currentDigestVendorFilter; })) currentDigestVendorFilter = 'ALL';
+          let filteredItems = (allActionItems || []).filter(function(item) { return currentDigestVendorFilter === 'ALL' || item.vendor === currentDigestVendorFilter; });
+          let recentLogs = (allGlobalLogs || []).filter(function(log) {
+              return Number(log.timestampObj || 0) >= cutoff.getTime() && !!itemMap[log.fdh];
           });
-
-          let vendorEntries = Object.keys(prodByVendor).map(function(vendor) {
-              let entry = prodByVendor[vendor];
-              entry.total = entry.ug + entry.ae + entry.fib;
-              return entry;
-          }).sort(function(a, b) {
-              return b.total - a.total;
-          });
-          if (currentDigestVendorFilter !== 'ALL' && !vendorEntries.some(function(entry) { return entry.vendor === currentDigestVendorFilter; })) {
-              currentDigestVendorFilter = 'ALL';
-          }
-
-          let recentLogs = allGlobalLogs.filter(function(log) {
-              return Number(log.timestampObj || 0) >= cutoff.getTime();
-          });
-
-          let filteredLogs = currentDigestVendorFilter === 'ALL'
-              ? recentLogs.slice()
-              : recentLogs.filter(function(log) {
-                  let item = itemMap[log.fdh];
-                  return item && item.vendor === currentDigestVendorFilter;
-              });
-
-          let stageData = {};
-          DIGEST_STAGE_ORDER.forEach(function(key) {
-              stageData[key] = { logs: [], byUser: {}, projectMap: {}, projects: [] };
-          });
-
+          let filteredLogs = recentLogs.filter(function(log) {
+              let item = itemMap[log.fdh];
+              return currentDigestVendorFilter === 'ALL' || (item && item.vendor === currentDigestVendorFilter);
+          }).sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
           let latestByProject = {};
+          filteredLogs.forEach(function(log) { latestByProject[log.fdh] = Math.max(latestByProject[log.fdh] || 0, Number(log.timestampObj || 0)); });
+          let stageData = {};
+          DIGEST_STAGE_ORDER.forEach(function(key) { stageData[key] = { logs: [], projects: [] }; });
           filteredLogs.forEach(function(log) {
               let item = itemMap[log.fdh];
-              if (!item) return;
               let stageKey = getDigestStageKeyForLog(log, item);
-              if (!stageData[stageKey]) return;
-              stageData[stageKey].logs.push(log);
-              let user = String(log.user || '-').trim() || '-';
-              stageData[stageKey].byUser[user] = (stageData[stageKey].byUser[user] || 0) + 1;
-              if (!stageData[stageKey].projectMap[log.fdh]) stageData[stageKey].projectMap[log.fdh] = { item: item, latestTs: 0 };
-              stageData[stageKey].projectMap[log.fdh].latestTs = Math.max(stageData[stageKey].projectMap[log.fdh].latestTs, Number(log.timestampObj || 0));
-              latestByProject[log.fdh] = Math.max(latestByProject[log.fdh] || 0, Number(log.timestampObj || 0));
+              if (stageData[stageKey]) stageData[stageKey].logs.push(log);
           });
-
-          DIGEST_STAGE_ORDER.forEach(function(key) {
-              stageData[key].logs.sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
-              stageData[key].projects = Object.keys(stageData[key].projectMap).map(function(fdh) {
-                  let entry = stageData[key].projectMap[fdh];
-                  let latestTs = entry.latestTs || latestByProject[fdh] || 0;
-                  return {
-                      item: entry.item,
-                      latestTs: latestTs,
-                      ageDays: getDigestAgeDays(entry.item, latestTs),
-                      lastMoveLabel: latestTs ? formatDate(new Date(latestTs), true) : 'No recent move'
-                  };
-              }).sort(function(a, b) {
-                  if (b.ageDays !== a.ageDays) return b.ageDays - a.ageDays;
-                  return b.latestTs - a.latestTs;
+          filteredItems.forEach(function(item) {
+              let stageKey = getDigestStageKeyForItem(item);
+              if (!stageData[stageKey]) return;
+              let latestTs = latestByProject[item.fdh] || 0;
+              stageData[stageKey].projects.push({
+                  item: item,
+                  latestTs: latestTs,
+                  ageDays: getDigestAgeDays(item, latestTs),
+                  lastMoveLabel: latestTs ? formatDate(new Date(latestTs), true) : 'No recent move'
               });
           });
-
+          DIGEST_STAGE_ORDER.forEach(function(key) {
+              stageData[key].projects.sort(function(a, b) {
+                  if ((b.ageDays || 0) !== (a.ageDays || 0)) return (b.ageDays || 0) - (a.ageDays || 0);
+                  return Number(b.latestTs || 0) - Number(a.latestTs || 0);
+              });
+          });
           let editorMap = {};
           filteredLogs.forEach(function(log) {
               let item = itemMap[log.fdh];
@@ -5670,30 +5762,22 @@
               }).join(' | ') || 'Field edits';
               return entry;
           }).sort(function(a, b) { return b.total - a.total; });
-
           let severityRank = { crit: 3, warn: 2, ghost: 1, info: 0 };
-          let blockerList = (allActionItems || []).filter(function(item) {
-              return currentDigestVendorFilter === 'ALL' || item.vendor === currentDigestVendorFilter;
-          }).map(function(item) {
+          let blockerList = filteredItems.map(function(item) {
               let stageKey = getDigestStageKeyForItem(item);
               if (['permitApproved', 'construction', 'completed'].indexOf(stageKey) === -1) return null;
-              let lastTs = latestByProject[item.fdh] || 0;
-              let ageDays = getDigestAgeDays(item, lastTs);
-              let sev = getSeverity(item.flags || '');
-              let impactFootage = getDigestFootageTotal(item);
+              let impactFootage = getDigestFootagePotential(item);
               if (impactFootage <= 0) impactFootage = getDigestRemainingFootage(item);
-              let reason = stageKey === 'permitApproved'
-                  ? 'Approved permits are waiting on the next field move.'
-                  : stageKey === 'construction'
-                      ? 'Construction work is active but losing daily momentum.'
-                      : 'Work appears complete but has not converted to OFS.';
+              let reason = stageKey === 'permitApproved' ? 'Approved permits are waiting on the field handoff.' :
+                  stageKey === 'construction' ? 'Construction has active scope but output is stalled.' :
+                  'Completed work has not converted to OFS yet.';
               if ((item.flags || '').trim()) reason += ' ' + getCriticalType(item) + '.';
               return {
                   item: item,
                   stageKey: stageKey,
-                  ageDays: ageDays,
+                  ageDays: getDigestAgeDays(item, latestByProject[item.fdh] || 0),
                   impactFootage: impactFootage,
-                  severityRank: severityRank[sev] || 0,
+                  severityRank: severityRank[getSeverity(item.flags || '')] || 0,
                   reason: reason
               };
           }).filter(Boolean).sort(function(a, b) {
@@ -5701,177 +5785,128 @@
               if (b.ageDays !== a.ageDays) return b.ageDays - a.ageDays;
               return b.severityRank - a.severityRank;
           }).slice(0, 8);
-
-          window._digestFeedData = {
-              permitApproved: stageData.permitApproved.logs.slice(),
-              construction: stageData.construction.logs.slice(),
-              completed: stageData.completed.logs.slice(),
-              ofs: stageData.ofs.logs.slice(),
-              other: []
+          return {
+              now: now,
+              itemMap: itemMap,
+              vendorEntries: vendorEntries,
+              filteredLogs: filteredLogs,
+              stageData: stageData,
+              editorList: editorList,
+              blockerList: blockerList,
+              totalActual: vendorEntries.reduce(function(sum, entry) { return sum + (entry.totalDaily || 0); }, 0),
+              totalGoal: vendorEntries.reduce(function(sum, entry) { return sum + (entry.goal || 0); }, 0)
           };
-          if (!window._digestFeedData[currentDigestFilter]) currentDigestFilter = 'permitApproved';
+      }
 
-          let heroHtml = vendorEntries.length
-              ? vendorEntries.map(function(entry) { return renderDigestVendorCard(entry, now); }).join('')
-              : '<div class="digest-panel-empty">No vendor production tracked for today.</div>';
-          let pulseHtml = renderDigestPulseFeed(filteredLogs.slice().sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); }).slice(0, 30), itemMap);
-          let leaderboardHtml = renderDigestLeaderboard(editorList.slice(0, 8));
-          let stageHtml = DIGEST_STAGE_ORDER.map(function(stageKey) { return renderDigestStageCard(stageKey, stageData[stageKey]); }).join('');
-          let blockersHtml = blockerList.length ? blockerList.map(renderDigestBlockerRow).join('') : '<div class="digest-panel-empty">No aging blockers detected right now.</div>';
-          let dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-
+      function renderDigestWorkspace() {
+          let ws = getEl('digest-workspace');
+          if (!ws) return;
+          clearDigestPulseAutoScroll();
+          let data = buildDigestCommandCenterData();
+          let dateStr = data.now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+          let totalPct = data.totalGoal > 0 ? Math.round((data.totalActual / data.totalGoal) * 100) : 0;
           ws.innerHTML = `
-              <div class="digest-shell ${compactMode ? 'compact' : ''}">
+              <div class="digest-shell">
                   <div class="digest-doc-header">
                       <div>
                           <div class="digest-ws-header">Dailies Command Center</div>
-                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; Production First Dashboard &nbsp;&middot;&nbsp; ${currentDigestVendorFilter === 'ALL' ? 'All Vendors' : esc(currentDigestVendorFilter)}</div>
+                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; Map-First Operations Dashboard &nbsp;&middot;&nbsp; ${currentDigestVendorFilter === 'ALL' ? 'All Vendors' : esc(currentDigestVendorFilter)}</div>
                       </div>
                   </div>
-
-                  <div class="digest-hero">
-                      <div class="digest-hero-head">
+                  <div class="digest-card digest-map-card">
+                      <div class="digest-card-head">
                           <div>
-                              <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor Production Heatmap</div>
-                              <div style="font-size:12px; font-weight:700; color:var(--text-muted);">Target vs actual footage by vendor using today’s production totals.</div>
+                              <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor Production Map</div>
+                              <div style="font-size:12px; font-weight:700; color:var(--text-muted);">City dots size against active construction footage output and open a native velocity HUD on hover.</div>
                           </div>
-                          <button class="btn" onclick="setDigestVendorFilter('ALL')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">All Vendors</button>
                       </div>
-                      <div class="digest-hero-grid">${heroHtml}</div>
-                  </div>
-
-                  <div class="digest-main-grid">
-                      <div class="digest-column">
-                          <div class="digest-section-block">
-                              <div class="digest-section-label">Pulse Feed</div>
-                              <div class="digest-pulse-card">
-                                  <div class="digest-card-head">
-                                      <div>
-                                          <div class="digest-section-label" style="margin:0 0 6px 0;">Recent Moves</div>
-                                          <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Chronological status changes with user accountability.</div>
-                                      </div>
-                                      <span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${filteredLogs.length} moves</span>
-                                  </div>
-                                  <div class="digest-card-body">${pulseHtml}</div>
+                      <div class="digest-map-shell">
+                          <div class="digest-map-wrap"><div id="digest-vendor-map"></div></div>
+                          <div class="digest-map-sidecar">
+                              <div class="digest-filter-chip-row">
+                                  <button class="digest-filter-chip ${currentDigestVendorFilter === 'ALL' ? 'active' : ''}" onclick="setDigestVendorFilter('ALL')">All Vendors</button>
+                                  ${data.vendorEntries.slice(0, 5).map(function(entry) { return `<button class="digest-filter-chip ${currentDigestVendorFilter === entry.vendor ? 'active' : ''}" onclick="setDigestVendorFilter('${escJs(entry.vendor)}')">${esc(entry.vendor)}</button>`; }).join('')}
                               </div>
-                          </div>
-                      </div>
-                      <div class="digest-column">
-                          <div class="digest-section-block">
-                              <div class="digest-section-label">Leaderboard</div>
-                              <div class="digest-rank-card">
-                                  <div class="digest-card-head">
-                                      <div>
-                                          <div class="digest-section-label" style="margin:0 0 6px 0;">Top Movers</div>
-                                          <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Ranked by meaningful edits in the current activity window.</div>
-                                      </div>
-                                  </div>
-                                  <div class="digest-card-body">${leaderboardHtml}</div>
+                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Actual Today</div><div class="digest-map-kpi-value digest-mono">${data.totalActual.toLocaleString()}</div><div class="digest-map-kpi-sub">${data.vendorEntries.length} active construction vendors</div></div>
+                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Target vs Actual</div><div class="digest-map-kpi-value digest-mono">${data.totalGoal > 0 ? totalPct + '%' : '--'}</div><div class="digest-map-kpi-sub">${data.totalGoal > 0 ? data.totalGoal.toLocaleString() + ' ft goal' : 'No target data set'}</div></div>
+                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Scope in Motion</div><div class="digest-map-kpi-value digest-mono">${data.stageData.construction.projects.length}</div><div class="digest-map-kpi-sub">construction projects in current view</div></div>
+                              <div class="digest-map-legend">
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot red"></span><span>Below 50% of daily goal</span></div>
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot yellow"></span><span>50% to 89% of daily goal</span></div>
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot neutral"></span><span>90% to 99% of daily goal</span></div>
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot green"></span><span>100%+ of daily goal</span></div>
                               </div>
                           </div>
                       </div>
                   </div>
-
                   <div class="digest-section-block">
-                      <div class="digest-section-label">Pipeline Progression</div>
-                      <div class="digest-kanban-grid">${stageHtml}</div>
-                  </div>
-
-                  <div class="digest-section-block">
-                      <div class="digest-section-label">Aging Blockers</div>
-                      <div class="digest-blocker-card">
+                      <div class="digest-section-label">Pulse Feed</div>
+                      <div class="digest-card">
                           <div class="digest-card-head">
                               <div>
-                                  <div class="digest-section-label" style="margin:0 0 6px 0;">Highest Impact Blockers</div>
-                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Sorted by footage at risk first, then days sitting and diagnostic severity.</div>
+                                  <div class="digest-section-label" style="margin:0 0 6px 0;">Recent Moves</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Horizontal live lane of the latest project movement with user accountability.</div>
                               </div>
+                              <span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${data.filteredLogs.length} moves</span>
                           </div>
-                          <div class="digest-card-body"><div class="digest-blocker-list">${blockersHtml}</div></div>
+                          <div class="digest-card-body">${renderDigestPulseFeed(data.filteredLogs.slice(0, 36), data.itemMap)}</div>
                       </div>
+                  </div>
+                  <div class="digest-section-block">
+                      <div class="digest-section-label">Pipeline Progression</div>
+                      <div class="digest-kanban-grid">${DIGEST_STAGE_ORDER.map(function(stageKey) { return renderDigestStageCard(stageKey, data.stageData[stageKey]); }).join('')}</div>
                   </div>
               </div>
           `;
-          renderDigestSidePanel();
+          renderDigestSidePanel(data);
+          setTimeout(function() {
+              initializeDigestVendorMap(data.vendorEntries);
+              setupDigestPulseAutoScroll();
+          }, 0);
       }
 
-      function renderDigestSidePanel() {
+      function renderDigestSidePanel(data) {
           let panel = getEl('digest-action-panel');
           if (!panel) return;
-          let data = window._digestFeedData || { permitApproved: [], construction: [], completed: [], ofs: [], other: [] };
-          let total = DIGEST_STAGE_ORDER.reduce(function(sum, key) { return sum + ((data[key] || []).length); }, 0);
+          let movers = (data && data.editorList ? data.editorList : []).slice(0, 8);
+          let blockers = (data && data.blockerList ? data.blockerList : []);
           panel.innerHTML = `
-              <div class="digest-panel-shell">
+              <div class="digest-rail-shell">
                   <div class="digest-panel-head">
                       <div class="digest-panel-title">
                           <div>
                               <div class="digest-panel-kicker">Dailies Command Center</div>
-                              <div class="digest-panel-count">Project Changes</div>
-                              <div class="digest-panel-sub">${currentDigestVendorFilter === 'ALL' ? 'Stage-ordered movement across all vendors.' : 'Filtered to ' + esc(currentDigestVendorFilter) + '.'}</div>
+                              <div class="digest-panel-count">Operations Rail</div>
+                              <div class="digest-panel-sub">${currentDigestVendorFilter === 'ALL' ? 'Top movers and blockers across all vendors.' : 'Scoped to ' + esc(currentDigestVendorFilter) + '.'}</div>
                           </div>
                           <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
-                              <span class="ob-tab-badge ob-tab-badge-purple" style="position:static; min-width:28px; height:28px; border-radius:14px; border:1px solid var(--border); box-shadow:none;">${total}</span>
+                              <span class="ob-tab-badge ob-tab-badge-purple" style="position:static; min-width:28px; height:28px; border-radius:14px; border:1px solid var(--border); box-shadow:none;">${movers.length + blockers.length}</span>
                               <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel" style="flex-shrink:0;">✕</button>
                           </div>
                       </div>
-                      <div class="digest-filter-tabs">
-                          ${DIGEST_STAGE_ORDER.map(function(stageKey) {
-                              let meta = getDigestStageMeta(stageKey);
-                              return `<button class="digest-filter-btn ${currentDigestFilter === stageKey ? 'active' : ''}" data-filter="${stageKey}" onclick="filterDigestFeed('${stageKey}')"><span class="digest-filter-btn-label">${esc(meta.label)}</span><span class="digest-filter-btn-count">${(data[stageKey] || []).length}</span></button>`;
-                          }).join('')}
+                  </div>
+                  <div class="digest-panel-body">
+                      <div class="digest-rail-card">
+                          <div class="digest-card-head">
+                              <div>
+                                  <div class="digest-section-label" style="margin:0 0 6px 0;">Top Movers</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Ranked by meaningful edits in the current activity window.</div>
+                              </div>
+                          </div>
+                          <div class="digest-card-body">${renderDigestLeaderboard(movers)}</div>
+                      </div>
+                      <div class="digest-rail-card">
+                          <div class="digest-card-head">
+                              <div>
+                                  <div class="digest-section-label" style="margin:0 0 6px 0;">Aging Blockers</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Sorted by highest footage impact first, then days sitting and severity.</div>
+                              </div>
+                          </div>
+                          <div class="digest-card-body"><div class="digest-blocker-list">${blockers.length ? blockers.map(renderDigestBlockerRow).join('') : '<div class="digest-panel-empty">No aging blockers detected right now.</div>'}</div></div>
                       </div>
                   </div>
-                  <div class="digest-panel-body" id="digest-feed-list">${renderDigestFeedItems(data, currentDigestFilter || 'permitApproved')}</div>
               </div>
           `;
-      }
-
-      function filterDigestFeed(type) {
-          currentDigestFilter = type;
-          document.querySelectorAll('.digest-filter-btn').forEach(function(b) {
-              b.classList.toggle('active', b.dataset.filter === type);
-          });
-          let feedList = getEl('digest-feed-list');
-          if (!feedList || !window._digestFeedData) return;
-          feedList.innerHTML = renderDigestFeedItems(window._digestFeedData, type);
-      }
-
-      function renderDigestFeedItems(data, filter) {
-          let allLogs = [];
-          if (filter && filter !== 'all') {
-              (data[filter] || []).forEach(function(log) { allLogs.push(Object.assign({}, log, { _cat: filter })); });
-          } else {
-              DIGEST_STAGE_ORDER.forEach(function(stageKey) {
-                  (data[stageKey] || []).forEach(function(log) { allLogs.push(Object.assign({}, log, { _cat: stageKey })); });
-              });
-          }
-          allLogs.sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
-          if (!allLogs.length) return '<div class="digest-panel-empty">No changes in this category.</div>';
-          return allLogs.map(function(log) {
-              let item = (allActionItems || []).find(function(i) { return i.fdh === log.fdh; });
-              let cfg = getDigestStageMeta(log._cat);
-              let dateStr = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
-              let cleanVal = String(log.val || '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
-              let vendor = item ? item.vendor : '';
-              let statusPill = item ? '<span class="glass-pill ' + getQBStatusClass(item.stage, item.status, false) + '" style="font-size:9px; padding:4px 8px;">' + esc((item.stage || '-') + ' | ' + (item.status || '-')) + '</span>' : '';
-              return '<div class="log-card" style="cursor:pointer;" onclick="switchWorkspaceView(\'detail\'); selectItemForNav(\'' + escJs(log.fdh) + '\')">' +
-                  '<div class="log-header">' +
-                      '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
-                          '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
-                              '<div style="font-size:13px; font-weight:900; color:var(--text-main);">' + esc(log.fdh) + '</div>' +
-                              (vendor ? '<span style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">' + esc(vendor) + '</span>' : '') +
-                              '<span class="glass-pill ' + cfg.pillClass + '" style="font-size:9px; padding:3px 8px;">' + esc(cfg.label) + '</span>' +
-                          '</div>' +
-                          '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' + statusPill + '</div>' +
-                      '</div>' +
-                      '<div style="font-size:9px; font-weight:800; color:var(--text-muted); white-space:nowrap;">' + esc(dateStr) + '</div>' +
-                  '</div>' +
-                  '<div style="font-size:11px; color:var(--text-main); font-weight:700; padding:8px 10px; background:var(--bg); border-radius:8px; border:1px solid var(--border); line-height:1.45;">&#8594; ' + esc(cleanVal) + '</div>' +
-                  '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">' +
-                      '<span style="font-size:9px; font-weight:800; color:var(--text-muted);">By <span style="color:var(--text-main);">' + esc(log.user || '\u2014') + '</span></span>' +
-                      '<span class="btn" style="padding:4px 10px; background:var(--bg); color:var(--text-main); border-color:var(--border);">Open Project</span>' +
-                  '</div>' +
-              '</div>';
-          }).join('');
       }
 
       function parseMiniSldFdh(value) {
@@ -6481,6 +6516,7 @@
             }
             allActionItems = data.actionItems; globalHeaders = data.headers;
             digestVendorGoals = (data && data.vendorGoals) ? data.vendorGoals : {};
+            digestVendorCities = (data && data.vendorCities) ? data.vendorCities : {};
             globalRefDataDate = data.refDataDate || "";
             reconcileStagedReviewItems();
             let activeQueueItems = getActiveQueueItems();

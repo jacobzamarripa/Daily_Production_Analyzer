@@ -19,6 +19,17 @@ const DEFAULT_VENDOR_DAILY_GOALS = {
   "Prince": 22000,
   "Quanta": 22000
 };
+const DEFAULT_VENDOR_CITY_COORDS = {
+  "Bucyrus":      { city: "Abilene",         lat: 32.4487, lng: -99.7331 },
+  "Dycom":        { city: "Dallas",          lat: 32.7767, lng: -96.7970 },
+  "Ervin":        { city: "Fort Worth",      lat: 32.7555, lng: -97.3308 },
+  "Locating Inc": { city: "Temple",          lat: 31.0982, lng: -97.3428 },
+  "MasTec":       { city: "Austin",          lat: 30.2672, lng: -97.7431 },
+  "MCI":          { city: "San Antonio",     lat: 29.4241, lng: -98.4936 },
+  "Orbital":      { city: "Waco",            lat: 31.5493, lng: -97.1467 },
+  "Prince":       { city: "Houston",         lat: 29.7604, lng: -95.3698 },
+  "Quanta":       { city: "Corpus Christi",  lat: 27.8006, lng: -97.3964 }
+};
 
 const QB_UPLOAD_SHEET    = "1-QuickBase_Upload";
 const HISTORY_SHEET      = "2-Master_Archive";
