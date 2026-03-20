@@ -720,18 +720,6 @@
           color: #1d4ed8;
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       }
-      body.gantt-fullscreen #view-btn-gantt {
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #1d4ed8 !important;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-      }
-      body.gantt-fullscreen #view-btn-detail,
-      body.gantt-fullscreen #view-btn-grid,
-      body.gantt-fullscreen #view-btn-digest {
-          background: transparent !important;
-          color: var(--text-muted) !important;
-          box-shadow: none !important;
-      }
       .filter-strip input[type="text"],
       .filter-strip select {
           border-radius: 20px !important;
@@ -1860,9 +1848,6 @@
       .admin-fab-icon { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; font-size: 24px; line-height: 1; }
       .admin-fab-label { display: none; }
       .admin-fab-badge { position: absolute; top: -6px; left: -8px; min-width: 22px; height: 22px; border-radius: 11px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 900; padding: 0 6px; display: none; align-items: center; justify-content: center; line-height: 1; box-sizing: border-box; box-shadow: 0 8px 18px rgba(239, 68, 68, 0.28); }
-      /* Hide admin toggle during Gantt fullscreen */
-      body.gantt-fullscreen .admin-fab-anchor { display: none !important; }
-
       /* Mobile hamburger menu panel */
       .mobile-menu-panel { display: flex; flex-direction: column; position: fixed; top: 58px; right: 0; left: 0; background: var(--card-bg); border-bottom: 1px solid var(--border); z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 0; overflow: hidden; transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1), background 0.3s, border-color 0.3s; }
       .mobile-menu-panel.open { max-height: 400px; }
@@ -2139,13 +2124,9 @@
       /* 🧠 THEATER MODE GANTT STYLING (REBUILT FOR PERFECT LAYERING) */
       .timeline-wrapper { flex-grow: 1; min-height: 0; background: var(--card-bg); position: relative; display: flex; flex-direction: column; transition: background 0.3s, border-color 0.3s; }
 
-      .gantt-panel { position: relative; z-index: 600; display: flex; flex-direction: column; background: var(--card-bg); transition: background 0.3s, border-color 0.3s, height 0.15s cubic-bezier(0.4, 0, 0.2, 1); height: var(--gantt-panel-height, 34vh); min-height: 55px; border-top: 1px solid var(--border) !important; flex-shrink: 0 !important; margin-top: 0 !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.03) !important; }
-      .gantt-panel.minimized { height: 55px !important; min-height: 55px; overflow: hidden; }
-      .gantt-panel.fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; }
+      .gantt-panel { position: relative; z-index: 600; display: flex; flex-direction: column; background: var(--card-bg); transition: background 0.3s, border-color 0.3s; min-height: 0; border-top: 1px solid var(--border) !important; flex: 1 1 auto; margin-top: 0 !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.03) !important; }
       .gantt-controls { position: absolute; top: 10px; left: 12px; right: 12px; z-index: 1000; pointer-events: none; display: flex; justify-content: space-between; padding: 0 !important; min-height: 34px; background: transparent !important; border: none !important; align-items: center; transition: background 0.3s, border-color 0.3s; }
       .gantt-pill { pointer-events: auto; padding: 6px 14px; border-radius: 18px; background: color-mix(in srgb, var(--card-bg) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12); display: flex; align-items: center; gap: 8px; }
-      /* Absorb upper-right Gantt buttons into the Island during Fullscreen */
-      body.gantt-fullscreen .gantt-controls > .gantt-pill:last-child { display: none !important; }
       /* Gantt Quick Peek Panel */
       .gantt-quick-peek {
           position: absolute;
@@ -2174,11 +2155,6 @@
           box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
       }
       .gantt-quick-peek .chat-bubble { min-height: 120px !important; }
-      .gantt-mini-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0 10px !important; min-height: 26px; font-size: 9px !important; border-radius: 12px; margin-right: 6px !important; letter-spacing: 0.05em; background: color-mix(in srgb, var(--card-bg) 84%, transparent) !important; border: 1px solid var(--border) !important; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06); }
-      .gantt-resize-grip { position: absolute; top: -4px; left: 0; right: 0; width: 88px; height: 12px; border-radius: 999px; background: transparent; margin: 0 auto; cursor: ns-resize; flex-shrink: 0; z-index: 1001; touch-action: none; }
-      .gantt-resize-grip::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 46px; height: 4px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 26%, transparent); }
-      .gantt-resize-grip:hover::before { background: color-mix(in srgb, var(--accent) 34%, transparent); }
-      .gantt-panel.minimized .timeline-wrapper { display: none !important; }
       .raw-data-strip { height: 52px; min-height: 52px; background: var(--bg); overflow-x: auto; overflow-y: hidden; display: flex; align-items: center; padding: 0 12px; flex-shrink: 0; transition: background 0.3s; margin-top: 0 !important; border-bottom: 1px solid var(--border); }
       .admin-list-card {
           padding: 14px 16px 12px !important;
@@ -2245,6 +2221,65 @@
       .gantt-bar-text { color: #ffffff; font-size: 10px; font-weight: bold; padding: 0 10px; white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,0.6);}
       
       .gantt-bead { position: absolute; top: 8px; width: 18px; height: 18px; background: var(--card-bg); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); border: 2px solid; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; z-index: 8; pointer-events: auto; cursor: pointer; font-size: 8px; font-weight: 900; box-sizing: border-box;}
+      body:not(.gantt-view-active) #gantt-panel { display: none !important; }
+      body.gantt-view-active #gantt-panel {
+          display: flex !important;
+          position: relative;
+          flex: 1 1 auto;
+          min-height: 0;
+          height: auto !important;
+          border-top: none !important;
+          box-shadow: none !important;
+          margin-top: 0 !important;
+          z-index: 1;
+      }
+      body.gantt-view-active #gantt-panel .gantt-controls {
+          position: sticky;
+          top: 0;
+          padding: 12px 16px !important;
+          min-height: 0;
+          background: linear-gradient(to bottom, color-mix(in srgb, var(--card-bg) 96%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent));
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+      }
+      body.gantt-view-active #gantt-panel .timeline-wrapper { display: flex !important; }
+      body.gantt-view-active #grid-content,
+      body.gantt-view-active #digest-workspace,
+      body.gantt-view-active #pane-content,
+      body.gantt-view-active #deck-stage,
+      body.gantt-view-active #welcome-screen { display: none !important; }
+      .schedule-today-indicator {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 0;
+          z-index: 0;
+          pointer-events: none;
+      }
+      .schedule-today-line {
+          position: absolute;
+          top: -2px;
+          bottom: -2px;
+          width: 2px;
+          background: rgba(239,68,68,0.8);
+          border-left: 1px dashed #ef4444;
+          transform: translateX(-50%);
+      }
+      .schedule-today-label {
+          position: absolute;
+          top: -28px;
+          transform: translateX(-50%);
+          font-size: 10px;
+          font-weight: 900;
+          color: #ffffff;
+          background: #ef4444;
+          padding: 4px 8px;
+          border-radius: 6px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          white-space: nowrap;
+      }
+      .schedule-today-indicator.is-muted { opacity: 0.45; }
 
       .g-color-blue { background-color: #3b82f6; } .g-color-purple { background-color: #a855f7; } .g-color-green { background-color: #22c55e; } .g-color-gray { background-color: #94a3b8; } .g-color-red { background-color: #ef4444; } .g-color-yellow { background-color: #facc15; }
       .empty-msg { display: flex; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); font-weight: 800; font-size: 14px; width: 100%; height: 100%; margin: 0 !important; min-height: 150px; }
@@ -2422,8 +2457,6 @@
 
       .outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 119; backdrop-filter: none; -webkit-backdrop-filter: none; }
 
-      body.gantt-fullscreen .outbox-pane { display: none !important; }
-
       /* 📖 HELP PANEL */
       .help-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 99997; display: none; }
       .help-overlay.open { display: block; }
@@ -2459,7 +2492,7 @@
           padding-top: 80px !important;
       }
 
-      /* CSS-only fullscreen dock reposition and clipping fix */
+      /* Dock positioning */
       .detail-main {
           min-width: 0 !important;
           position: relative !important;
@@ -2484,28 +2517,6 @@
       #grid-content, #welcome-screen {
           padding-top: 80px !important;
       }
-      body.gantt-fullscreen .filter-strip {
-          position: fixed !important;
-          top: auto !important;
-          bottom: 30px !important;
-          left: 50vw !important;
-          right: auto !important;
-          transform: translateX(-50%) !important;
-          margin: 0 !important;
-          z-index: 10005 !important;
-      }
-      body.gantt-fullscreen #welcome-screen,
-      body.gantt-fullscreen #grid-content,
-      body.gantt-fullscreen #digest-workspace,
-      body.gantt-fullscreen #pane-content,
-      body.gantt-fullscreen #deck-stage {
-          display: none !important;
-      }
-      body.gantt-fullscreen #workspace-view-switch,
-      body.gantt-fullscreen #grid-pivot-select {
-          display: none !important;
-      }
-
     /* iOS STYLE UTILITY WIDGETS */
     .tool-widget {
         position: absolute; width: 300px;
@@ -2727,7 +2738,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
           </button>
           <div style="width: 1px; height: 14px; background: var(--border); margin: 0 4px;"></div>
-          <button class="view-segment-btn" id="view-btn-gantt" onclick="toggleFullscreen()" title="Fullscreen Gantt">
+          <button class="view-segment-btn" id="view-btn-gantt" onclick="openGanttView()" title="Gantt View">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="15" y2="12"></line><line x1="3" y1="18" x2="18" y2="18"></line></svg>
           </button>
       </div>
@@ -2877,7 +2888,7 @@
             <div class="dock-zone collapsed" id="dock-gantt-actions-zone">
                 <div class="dock-divider"></div>
                 <button class="btn collapsed hover-trigger" id="dock-btn-exit-theater" onclick="exitTheaterMode()" style="background:#a855f7; color:#fff; border-color:#9333ea; padding: 0 14px;">Exit Focus</button>
-                <button class="btn collapsed hover-trigger" id="dock-btn-exit-fs" onclick="toggleFullscreen()" style="background:var(--text-main); color:var(--bg); border-color:var(--text-main); padding: 0 14px;">Exit Fullscreen</button>
+                <button class="btn collapsed hover-trigger" id="dock-btn-exit-fs" onclick="switchWorkspaceView('detail')" style="background:var(--text-main); color:var(--bg); border-color:var(--text-main); padding: 0 14px;">Exit Gantt</button>
             </div>
 
             <div class="dock-zone collapsed" id="dock-clear-zone">
@@ -2922,12 +2933,16 @@
                        <span id="p-cx-start" onmouseenter="hl('CX Start')" onmouseleave="hl('')" style="cursor:pointer;">CX START: <span style="color:var(--text-main);">TBD</span></span>
                        <span id="p-cx-end" onmouseenter="hl('CX Complete')" onmouseleave="hl('')" style="cursor:pointer;">CX COMPLETE: <span style="color:var(--text-main);">TBD</span></span>
                    </div>
-                   <div class="qb-time-bar">
+                   <div class="qb-time-bar" onclick="openGanttForCurrentProject()" style="cursor:pointer;">
+                       <div class="schedule-today-indicator" id="p-today-indicator" style="display:none;">
+                           <div class="schedule-today-line" id="p-today-line"></div>
+                           <div class="schedule-today-label" id="p-today-label">TODAY</div>
+                       </div>
                        <div class="qb-time-fill" id="p-time-fill" style="width:0%;"></div>
                        <div id="p-time-stars"></div>
                        <div class="qb-time-bead" id="p-time-bead" style="display:none; left:0%;"></div>
                    </div>
-                   <div id="p-target-wrap" class="qb-target-wrap hover-trigger" onmouseenter="hl('Target Completion Date')" onmouseleave="hl('')">
+                   <div id="p-target-wrap" class="qb-target-wrap hover-trigger" onmouseenter="hl('Target Completion Date')" onmouseleave="hl('')" onclick="openGanttForCurrentProject()" style="cursor:pointer;">
                        <div class="qb-target-inner" id="p-target-inner">
                            <div class="qb-target-label">Target Date</div>
                            <div class="qb-target-date" id="p-target">TBD</div>
@@ -3188,17 +3203,13 @@
       </div>
     </div>
 
-    <div class="gantt-panel minimized" id="gantt-panel">
-        <div class="gantt-resize-grip" id="gantt-resize-grip" title="Drag to resize timeline"></div>
+    <div class="gantt-panel" id="gantt-panel">
         <div class="gantt-controls" id="gantt-controls">
-            <div class="gantt-pill" onclick="toggleMinimize()" style="cursor: pointer;">
-                <span id="gantt-expand-icon" style="font-size:10px; color:var(--text-muted);">▶</span>
+            <div class="gantt-pill">
                 <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--text-muted);">Global Construction Timeline</div>
             </div>
             <div class="gantt-pill">
-                <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; margin-right:6px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); exitTheaterMode()">Exit Focus</button>
-                <button class="btn btn-nav gantt-mini-btn" id="btn-minimize" onclick="event.stopPropagation(); toggleMinimize()">Expand</button>
-                <button class="btn btn-nav gantt-mini-btn" id="btn-fullscreen" style="margin-right:0 !important;" onclick="event.stopPropagation(); toggleFullscreen()">Fullscreen</button>
+                <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; margin-right:6px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); clearGanttFocus()">Exit Focus</button>
             </div>
         </div>
         <div class="raw-data-strip" id="raw-data-strip"></div>
@@ -3272,11 +3283,18 @@
       const CHANGELOG_PULSE_SESSION_KEY = 'changelogPulseSeen';
       const STAGED_REVIEW_SESSION_KEY = 'dpa.stagedReviewItems.v1';
       const STAGED_REVIEW_COLLAPSED_SESSION_KEY = 'dpa.stagedReviewCollapsed.v1';
+      const GANTT_VIEW_SCROLL_SESSION_KEY = 'dpa.ganttScroll.v1';
+      const GANTT_VIEW_FOCUS_SESSION_KEY = 'dpa.ganttFocus.v1';
       let showDigestAfterNextDataLoad = false;
       let showDigestAfterStartupSelection = false;
       let pendingFaceAnimation = null;
       let preferredPresentationCardTheme = null;
       let isStagedReviewCollapsed = false;
+      let ganttHasMounted = false;
+      let ganttNeedsRender = true;
+      let ganttFocusedFdh = null;
+      let ganttScrollState = { top: 0, left: 0 };
+      let ganttHasVisited = false;
 
       function isSlideFaceActive() {
           return currentWorkspaceView === 'detail' && currentDetailFace === 'slide';
@@ -3286,32 +3304,34 @@
           isGridMode = (currentWorkspaceView === 'grid');
           isDeckMode = isSlideFaceActive();
 
-          document.body.classList.remove('grid-mode-active', 'deck-mode-active');
+          document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active');
           if (isGridMode || currentWorkspaceView === 'digest') document.body.classList.add('grid-mode-active');
           if (isDeckMode) document.body.classList.add('deck-mode-active');
+          if (currentWorkspaceView === 'gantt') document.body.classList.add('gantt-view-active');
       }
 
       function syncWorkspaceChrome() {
-          ['detail', 'grid', 'digest'].forEach(v => {
+          ['detail', 'grid', 'digest', 'gantt'].forEach(v => {
               const btn = getEl(`view-btn-${v}`);
               if (btn) btn.classList.toggle('active', v === currentWorkspaceView);
           });
 
           const isDetailMode = currentWorkspaceView === 'detail';
           const isGridModeView = currentWorkspaceView === 'grid';
+          const isGanttView = currentWorkspaceView === 'gantt';
           const pivotZone = getEl('dock-pivot-zone');
           const filtersZone = getEl('dock-filters-zone');
           const focusZone = getEl('dock-focus-zone');
           const clearZone = getEl('dock-clear-zone');
           const faceBtn = getEl('dock-btn-face-toggle');
           const slideDeck = getEl('slide-action-deck');
-          const showSlideDeck = isSlideFaceActive() && !document.body.classList.contains('gantt-fullscreen');
+          const showSlideDeck = isSlideFaceActive() && !isGanttView;
 
           if (filtersZone) filtersZone.classList.remove('collapsed');
           if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridModeView);
           if (focusZone) focusZone.classList.toggle('collapsed', !isDetailMode);
           if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
-          if (slideDeck) slideDeck.classList.toggle('visible', showSlideDeck);
+          if (slideDeck) slideDeck.classList.toggle('visible', showSlideDeck && !isGanttView);
 
           if (faceBtn) {
               faceBtn.style.display = isDetailMode ? 'inline-flex' : 'none';
@@ -3321,7 +3341,7 @@
           }
 
           const sortQueue = getEl('sort-queue');
-          if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' ? 'none' : '';
+          if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' || isGanttView ? 'none' : '';
           const sidebarPivot = getEl('sidebar-pivot-select');
           if (sidebarPivot) sidebarPivot.style.display = currentViewMode === 'grid' ? 'inline-block' : 'none';
           syncSlideActionDeck();
@@ -3455,7 +3475,7 @@
       function syncSlideActionDeck() {
           const deck = getEl('slide-action-deck');
           if (!deck) return;
-          const isFs = document.body.classList.contains('gantt-fullscreen');
+          const isFs = currentWorkspaceView === 'gantt';
           const showDeck = isSlideFaceActive() && !isFs;
           deck.classList.toggle('visible', showDeck);
           deck.classList.toggle('theater-active', showDeck && isPresentationMode);
@@ -3653,6 +3673,51 @@
           return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       }
 
+      function persistGanttViewSession() {
+          try {
+              sessionStorage.setItem(GANTT_VIEW_SCROLL_SESSION_KEY, JSON.stringify(ganttScrollState || { top: 0, left: 0 }));
+              if (ganttFocusedFdh) sessionStorage.setItem(GANTT_VIEW_FOCUS_SESSION_KEY, ganttFocusedFdh);
+              else sessionStorage.removeItem(GANTT_VIEW_FOCUS_SESSION_KEY);
+          } catch (e) {}
+      }
+
+      function restoreGanttViewSession() {
+          try {
+              let rawScroll = sessionStorage.getItem(GANTT_VIEW_SCROLL_SESSION_KEY);
+              if (rawScroll) {
+                  let parsed = JSON.parse(rawScroll);
+                  ganttScrollState = {
+                      top: Number(parsed && parsed.top) || 0,
+                      left: Number(parsed && parsed.left) || 0
+                  };
+              }
+              ganttFocusedFdh = sessionStorage.getItem(GANTT_VIEW_FOCUS_SESSION_KEY) || null;
+              ganttHasVisited = !!(ganttFocusedFdh || ganttScrollState.top || ganttScrollState.left);
+          } catch (e) {}
+      }
+
+      function captureGanttScrollState() {
+          let scroll = getEl('gantt-scroll');
+          if (!scroll) return;
+          ganttScrollState = { top: scroll.scrollTop || 0, left: scroll.scrollLeft || 0 };
+          ganttHasVisited = true;
+          persistGanttViewSession();
+      }
+
+      function getTimelineTodayIndicator(start, end, referenceDate) {
+          let s = safeDate(start);
+          let e = safeDate(end);
+          let today = safeDate(referenceDate) || new Date();
+          if (!s || !e || isNaN(s.getTime()) || isNaN(e.getTime()) || e <= s) return null;
+          today.setHours(0, 0, 0, 0);
+          let rawPct = ((today - s) / (e - s)) * 100;
+          return {
+              pct: rawPct,
+              clampedPct: Math.max(0, Math.min(100, rawPct)),
+              isOutOfRange: rawPct < 0 || rawPct > 100
+          };
+      }
+
       function toggleFilterValue(category, value) {
           if (activeFilters[category].includes(value)) {
               activeFilters[category] = activeFilters[category].filter(v => v !== value);
@@ -3812,8 +3877,111 @@
           updateFloatingPillsPosition();
       }
 
+      function restoreGanttViewport() {
+          let scroll = getEl('gantt-scroll');
+          if (!scroll) return;
+          scroll.scrollTo({
+              top: Math.max(0, ganttScrollState.top || 0),
+              left: Math.max(0, ganttScrollState.left || 0),
+              behavior: 'auto'
+          });
+      }
+
+      function applyGanttFocusState(behavior) {
+          let ganttArea = getEl('gantt-area-main');
+          if (!ganttArea) return;
+          document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
+          closeQuickPeek();
+          if (!ganttFocusedFdh) {
+              ganttArea.classList.remove('has-focus');
+              syncGanttIslandState();
+              return;
+          }
+
+          ganttArea.classList.add('has-focus');
+          let row = getEl(`gantt-row-${ganttFocusedFdh}`);
+          let scroll = getEl('gantt-scroll');
+          if (row) {
+              row.classList.add('is-active');
+              if (scroll) {
+                  let topTarget = row.offsetTop - (scroll.clientHeight / 2) + (row.clientHeight / 2);
+                  let grid = ganttArea.querySelector('.gantt-grid-container');
+                  let chartWidth = grid ? grid.offsetWidth : 0;
+                  let leftTarget = scroll.scrollLeft;
+                  if (chartWidth) {
+                      let bar = row.querySelector('.gantt-bar-fill');
+                      if (bar) leftTarget = Math.max(0, bar.offsetLeft + (bar.offsetWidth / 2) - (scroll.clientWidth / 2));
+                  }
+                  scroll.scrollTo({ top: Math.max(0, topTarget), left: Math.max(0, leftTarget), behavior: behavior || 'smooth' });
+              }
+          }
+          syncGanttIslandState();
+          persistGanttViewSession();
+      }
+
+      function ensureGanttRendered(options) {
+          let opts = options || {};
+          let focusFdh = Object.prototype.hasOwnProperty.call(opts, 'focusFdh') ? opts.focusFdh : ganttFocusedFdh;
+          if (typeof focusFdh !== 'undefined') ganttFocusedFdh = focusFdh;
+          if (ganttFocusedFdh && !(filteredItems || []).some(item => String(item.fdh || '') === String(ganttFocusedFdh || ''))) {
+              ganttFocusedFdh = null;
+          }
+
+          let container = getEl('gantt-container');
+          if (!container) return;
+          if (!ganttHasMounted) {
+              container.innerHTML = `<div class="empty-msg" style="margin-top:20px;">Loading Timeline...</div>`;
+              ganttHasMounted = true;
+          }
+
+          let finish = function() {
+              if (ganttNeedsRender) {
+                  renderGantt(filteredItems || []);
+                  ganttNeedsRender = false;
+              }
+              let scroll = getEl('gantt-scroll');
+              if (scroll && !scroll.dataset.boundScrollState) {
+                  scroll.addEventListener('scroll', captureGanttScrollState, { passive: true });
+                  scroll.dataset.boundScrollState = '1';
+              }
+              if (ganttFocusedFdh) applyGanttFocusState(ganttHasVisited ? 'smooth' : 'auto');
+              else if (ganttHasVisited) restoreGanttViewport();
+              else scrollGanttToToday();
+              ganttHasVisited = true;
+              persistGanttViewSession();
+          };
+
+          if (opts.defer !== false && !opts.immediate) {
+              requestAnimationFrame(() => setTimeout(finish, ganttNeedsRender ? 80 : 0));
+          } else {
+              finish();
+          }
+      }
+
+      function openGanttView(fdh) {
+          ganttFocusedFdh = fdh || null;
+          persistGanttViewSession();
+          switchWorkspaceView('gantt');
+      }
+
+      function openGanttForCurrentProject() {
+          if (!currentActiveItem || !currentActiveItem.fdh) return;
+          openGanttView(currentActiveItem.fdh);
+      }
+
+      function clearGanttFocus() {
+          ganttFocusedFdh = null;
+          persistGanttViewSession();
+          let ganttArea = getEl('gantt-area-main');
+          if (ganttArea) ganttArea.classList.remove('has-focus');
+          document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
+          closeQuickPeek();
+          if (ganttHasVisited) restoreGanttViewport();
+          syncGanttIslandState();
+      }
+
       function syncGanttIslandState() {
-          const isFs = document.body.classList.contains('gantt-fullscreen');
+          const isFs = currentWorkspaceView === 'gantt';
           const hasFocus = getEl('gantt-area-main')?.classList.contains('has-focus');
 
           const btnFs       = getEl('dock-btn-exit-fs');
@@ -3829,7 +3997,7 @@
           const showFocusZone = isDetail;
           const slideDeck   = getEl('slide-action-deck');
 
-          if (btnFs) btnFs.classList.toggle('collapsed', !isFs);
+          if (btnFs) btnFs.classList.add('collapsed');
           if (btnFocus) btnFocus.classList.toggle('collapsed', !(isFs && hasFocus));
           if (ganttZone) ganttZone.classList.toggle('collapsed', !(isFs || hasFocus));
           // Floating pill Exit button: show when focused but NOT fullscreen
@@ -3865,15 +4033,14 @@
 
       // ── Gantt Quick-Peek Slide-Over ──────────────────────────────────────────
       function handleGanttClick(fdh) {
-          const isFs = document.body.classList.contains('gantt-fullscreen');
-          if (!isFs) {
-              const c = document.getElementById('card-' + fdh);
-              if (c) c.click();
+          if (currentWorkspaceView !== 'gantt') {
+              openGanttView(fdh);
               return;
           }
-          // Fullscreen mode: open Quick Peek panel
           const item = allActionItems.find(i => i.fdh === fdh);
           if (!item) return;
+          ganttFocusedFdh = fdh;
+          persistGanttViewSession();
 
           // Highlight active row
           document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
@@ -4138,65 +4305,6 @@
           if ([...el.options].some(o => o.value === current)) el.value = current;
       }
 
-      function getOptimalGanttHeight() {
-          let vh = window.innerHeight;
-          let nav = document.querySelector('.top-nav');
-          let navH = nav ? nav.offsetHeight : 58;
-          let cardsH = 0;
-
-          if (typeof isDeckMode !== 'undefined' && isDeckMode) {
-              let stageCard = document.getElementById('deck-stage-card');
-              if (stageCard) cardsH = 20 + stageCard.offsetHeight + 40;
-          } else if (typeof isGridMode !== 'undefined' && isGridMode) {
-              return Math.floor(vh * 0.35);
-          } else if (currentWorkspaceView === 'digest') {
-              return 0;
-          } else {
-              let pane = document.getElementById('pane-content');
-              if (pane && pane.style.display !== 'none') {
-                  let children = Array.from(pane.children).filter(c => c.style.display !== 'none' && !c.classList.contains('hidden'));
-                  if (children.length > 0) {
-                      let lastChild = children[children.length - 1];
-                      cardsH = lastChild.offsetTop + lastChild.offsetHeight;
-                  }
-              }
-          }
-
-          return Math.floor(vh - navH - cardsH - 30);
-      }
-
-      function applySmartGanttDocking({ resetManualHeight = false } = {}) {
-          const panel = getEl('gantt-panel');
-          if (!panel || window.innerWidth <= 768 || panel.classList.contains('fullscreen')) return;
-
-          if (resetManualHeight) {
-              ganttManualHeight = null;
-              panel.classList.remove('minimized');
-          }
-          if (ganttManualHeight && !resetManualHeight) return;
-
-          const rawOptimal = getOptimalGanttHeight();
-          const icon = getEl('gantt-expand-icon');
-          const minBtn = getEl('btn-minimize');
-          const expandedHeight = Math.max(rawOptimal, 55);
-
-          panel.style.top = '';
-          document.documentElement.style.setProperty('--gantt-panel-height', `${expandedHeight}px`);
-
-          if (rawOptimal < 80) {
-              panel.style.height = '55px';
-              panel.classList.add('minimized');
-              if (icon) icon.textContent = '▶';
-              if (minBtn) minBtn.innerText = 'Expand';
-              return;
-          }
-
-          panel.classList.remove('minimized');
-          panel.style.height = `${rawOptimal}px`;
-          if (icon) icon.textContent = '▲';
-          if (minBtn) minBtn.innerText = 'Minimize';
-      }
-
       function showStartupSelector() {
           const overlay = getEl('startup-overlay');
           const countEl = getEl('startup-countdown');
@@ -4236,67 +4344,8 @@
               }, 600);
           }
 
-          setTimeout(() => {
-              let panel = getEl('gantt-panel');
-              if (panel && panel.classList.contains('minimized')) {
-                  toggleMinimize();
-
-                  setTimeout(() => {
-                      if (panel && !panel.classList.contains('fullscreen') && !panel.classList.contains('minimized')) {
-                          toggleMinimize();
-                      }
-                  }, 1800);
-              }
-          }, 600);
       }
 
-      function toggleFullscreen() {
-          let panel = getEl('gantt-panel'); if(!panel) return;
-          if (panel.classList.contains('minimized')) {
-              panel.classList.remove('minimized');
-              let icon = getEl('gantt-expand-icon'); if (icon) icon.textContent = '▲';
-          }
-
-          panel.classList.toggle('fullscreen');
-          let isFs = panel.classList.contains('fullscreen');
-          if (isFs) {
-              let navH = (document.querySelector('.top-nav') || {offsetHeight: 0}).offsetHeight;
-              let totalTopOffset = navH;
-              panel.style.top = totalTopOffset + 'px';
-              panel.style.height = `calc(100vh - ${totalTopOffset}px)`;
-              document.documentElement.style.setProperty('--gantt-panel-height', `calc(100vh - ${totalTopOffset}px)`);
-          } else {
-              panel.style.top = '';
-              let restoredHeight = Math.max(ganttManualHeight || getOptimalGanttHeight(), 55);
-              panel.style.height = `${restoredHeight}px`;
-              document.documentElement.style.setProperty('--gantt-panel-height', `${restoredHeight}px`);
-          }
-          document.body.classList.toggle('gantt-fullscreen', isFs); // This class hides other UI elements
-          let fsBtn = getEl('btn-fullscreen'); if(fsBtn) fsBtn.innerText = isFs ? 'Exit Fullscreen' : 'Fullscreen';
-          let minBtn = getEl('btn-minimize');
-          if (minBtn) {
-              minBtn.style.display = isFs ? 'none' : 'inline-flex';
-              if (!isFs) minBtn.innerText = panel.classList.contains('minimized') ? 'Expand' : 'Minimize';
-          }
-          syncGanttIslandState();
-          if (!isFs) closeQuickPeek();
-      }
-      function toggleMinimize() {
-          let wrapper = getEl('gantt-panel');
-        if (!wrapper) return;
-
-          if (wrapper.classList.contains('fullscreen')) toggleFullscreen();
-
-          wrapper.classList.toggle('minimized');
-          let isMin = wrapper.classList.contains('minimized');
-          let restoredHeight = Math.max(ganttManualHeight || getOptimalGanttHeight(), 55);
-          if (!isMin) wrapper.style.height = `${restoredHeight}px`;
-          document.documentElement.style.setProperty('--gantt-panel-height', isMin ? '55px' : `${restoredHeight}px`);
-          let icon = getEl('gantt-expand-icon');
-          if (icon) icon.textContent = isMin ? '▶' : '▲';
-          let minBtn = getEl('btn-minimize');
-          if (minBtn) minBtn.innerText = isMin ? 'Expand' : 'Minimize';
-      }
       function toggleCriticalFilter() {
           openCriticalHub();
       }
@@ -5410,7 +5459,7 @@
       const REVIEWED_TRAY_STORAGE_KEY = 'dpa.reviewedTray.v1';
       let allActionItems = []; let committedItems = []; let currentActiveItem = null; let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
       let currentFilterStats = { bslByVendor: {}, bslByMonth: {}, bslMatrix: {}, lifecycle: { active: 0, pending: 0, overdue: 0 }, stageCounts: {}, pieCounts: {} };
-      let filteredItems = []; let currentQueueIndex = -1; let ganttManualHeight = null;
+      let filteredItems = []; let currentQueueIndex = -1;
       let globalRefDataDate = "";
       let globalAllFdhIds = [];
       let currentCriticalHubItems = [];
@@ -5545,148 +5594,6 @@
           }
           badge.style.display = 'inline';
       }
-      let ganttResizeControlsInitialized = false;
-      function initGanttResizeControls() {
-          const grip = getEl('gantt-resize-grip');
-          const panel = getEl('gantt-panel');
-          const controls = document.querySelector('.gantt-controls');
-          if (ganttResizeControlsInitialized || !grip || !panel) return;
-          ganttResizeControlsInitialized = true;
-
-          let dragging = false;
-          let dragged = false;
-          let startY = 0;
-          let startH = 0;
-          let dragRAF = null;
-
-          function startDrag(clientY) {
-              let isFs = panel.classList.contains('fullscreen');
-              let isMin = panel.classList.contains('minimized');
-              panel.dataset.wasFullscreen = isFs;
-              panel.dataset.wasMinimized = isMin;
-              startH = isFs ? panel.offsetHeight : (isMin ? 55 : panel.offsetHeight);
-              panel.style.transition = 'none';
-              dragging = true;
-              dragged = false;
-              startY = clientY;
-              document.body.style.cursor = 'ns-resize';
-              document.body.style.userSelect = 'none';
-          }
-
-          function moveDrag(clientY) {
-              let delta;
-              if (!dragging) return;
-              delta = startY - clientY;
-              if (!dragged && Math.abs(delta) > 3) {
-                  dragged = true;
-                  if (panel.dataset.wasMinimized === 'true') {
-                      panel.classList.remove('minimized');
-                      let icon = getEl('gantt-expand-icon');
-                      if (icon) icon.textContent = '▲';
-                      let minBtn = getEl('btn-minimize');
-                      if (minBtn) minBtn.innerText = 'Minimize';
-                  }
-                  if (panel.dataset.wasFullscreen === 'true' && delta < 0) {
-                      panel.classList.remove('fullscreen');
-                      document.body.classList.remove('gantt-fullscreen');
-                      let fsBtn = getEl('btn-fullscreen');
-                      if (fsBtn) fsBtn.innerText = 'Fullscreen';
-                      let minBtn = getEl('btn-minimize');
-                      if (minBtn) minBtn.style.display = 'inline-flex';
-                      syncGanttIslandState();
-                      let nav = document.querySelector('.top-nav');
-                      let navH = nav ? nav.offsetHeight : 0;
-                      panel.style.top = '';
-                      startH = window.innerHeight - navH;
-                      startY = clientY;
-                      delta = 0;
-                  }
-              }
-              if (!dragged) return;
-              if (dragRAF) cancelAnimationFrame(dragRAF);
-              dragRAF = requestAnimationFrame(function() {
-                  let nextHeight = Math.max(startH + delta, 55);
-                  ganttManualHeight = nextHeight;
-                  document.documentElement.style.setProperty('--gantt-panel-height', nextHeight + 'px');
-                  panel.style.height = nextHeight + 'px';
-                  panel.style.boxShadow = nextHeight > window.innerHeight * 0.70 ? '0 -10px 30px rgba(59, 130, 246, 0.15)' : 'none';
-                  dragRAF = null;
-              });
-          }
-
-          function endDrag() {
-              if (!dragging) return;
-              dragging = false;
-              panel.style.transition = '';
-              panel.style.boxShadow = 'none';
-              document.body.style.cursor = '';
-              document.body.style.userSelect = '';
-              if (!dragged) {
-                  if (panel.classList.contains('fullscreen')) toggleFullscreen();
-                  else toggleMinimize();
-              } else if (ganttManualHeight && ganttManualHeight < 80) {
-                  if (!panel.classList.contains('minimized')) toggleMinimize();
-                  ganttManualHeight = null;
-              } else if (ganttManualHeight > window.innerHeight * 0.85) {
-                  if (!panel.classList.contains('fullscreen')) {
-                      toggleFullscreen();
-                      ganttManualHeight = null;
-                  }
-              }
-              delete panel.dataset.wasMinimized;
-              delete panel.dataset.wasFullscreen;
-          }
-
-          grip.addEventListener('mousedown', function(e) {
-              e.stopPropagation();
-              startDrag(e.clientY);
-          });
-          document.addEventListener('mousemove', function(e) {
-              moveDrag(e.clientY);
-          });
-          document.addEventListener('mouseup', endDrag);
-          grip.addEventListener('touchstart', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              startDrag(e.touches[0].clientY);
-          }, { passive: false });
-          document.addEventListener('touchmove', function(e) {
-              if (!dragging) return;
-              e.preventDefault();
-              moveDrag(e.touches[0].clientY);
-          }, { passive: false });
-          document.addEventListener('touchend', endDrag);
-
-          if (controls) {
-              controls.addEventListener('mousedown', function(e) {
-                  if (e.target.closest('button')) return;
-                  startDrag(e.clientY);
-              });
-              controls.addEventListener('touchstart', function(e) {
-                  if (e.target.closest('button')) return;
-                  e.preventDefault();
-                  startDrag(e.touches[0].clientY);
-              }, { passive: false });
-              controls.addEventListener('click', function(e) {
-                  if (!dragged) return;
-                  e.preventDefault();
-                  e.stopPropagation();
-                  dragged = false;
-              }, true);
-          }
-
-          window.addEventListener('resize', function() {
-              if (panel.classList.contains('fullscreen') || panel.classList.contains('minimized')) return;
-              if (ganttManualHeight) {
-                  let capped = Math.min(Math.max(ganttManualHeight, 55), window.innerHeight);
-                  ganttManualHeight = capped;
-                  panel.style.height = capped + 'px';
-                  document.documentElement.style.setProperty('--gantt-panel-height', capped + 'px');
-              } else {
-                  applySmartGanttDocking();
-              }
-          });
-      }
       function checkViewportHandOff() {
           const currentUrl = new URL(window.location.href);
           const isPhoneWidth = window.innerWidth <= 430;
@@ -5734,7 +5641,6 @@
               })
               .getDashboardData();
           google.script.run.withSuccessHandler(updateGeminiBadge).getGeminiUsage();
-          initGanttResizeControls();
       };
 
       function updateCityDropdown() {
@@ -5755,6 +5661,7 @@
       function initDashboard(data) {
         safeExecute('initDashboard', () => {
             hideSplash();
+            restoreGanttViewSession();
             if (data && data.allFdhIds) {
                 globalAllFdhIds = data.allFdhIds;
                 let datalist = document.getElementById('fdh-list');
@@ -6081,14 +5988,16 @@
             let filtersBtn = getEl('btn-filters');
             if (filtersBtn) filtersBtn.classList.toggle('btn-filters-active', anyActive || !(getEl('filter-strip')?.classList.contains('hidden')));
             filteredItems = displayFiltered;
+            ganttNeedsRender = true;
+            if (currentWorkspaceView === 'gantt' && !ganttFocusedFdh) captureGanttScrollState();
             renderList(displayFiltered);
-            renderGantt(displayFiltered);
             renderAdminPane(activeQueueItems);
             if (currentWorkspaceView === 'grid') renderGrid();
             if (isDeckMode) {
                 renderGrid();
                 renderDeckStage();
             }
+            if (currentWorkspaceView === 'gantt') ensureGanttRendered({ focusFdh: ganttFocusedFdh, defer: false, immediate: true });
             renderActiveFilterPills();
             if (getEl('critical-hub-overlay')?.classList.contains('open')) renderCriticalHub();
         });
@@ -6175,7 +6084,7 @@
           let item = (currentCriticalHubItems || []).find(function(entry) { return String(entry.fdh || '') === String(fdh || ''); });
           if (!item) return;
           closeCriticalHub();
-          if (document.body.classList.contains('gantt-fullscreen')) {
+          if (currentWorkspaceView === 'gantt') {
               handleGanttClick(item.fdh);
               return;
           }
@@ -6351,7 +6260,7 @@
 
       // 🧠 GANTT CHART ENGINE (REBUILT FOR PERFECT LAYERING)
       function renderGantt(items) {
-          let container = getEl('gantt-container'); if(!container) return; if(items.length === 0) { container.innerHTML = ""; return; }
+          let container = getEl('gantt-container'); if(!container) return; if(items.length === 0) { container.innerHTML = `<div class="empty-msg">No projects in the current timeline.</div>`; return; }
 
           globalEndCounts = {}; globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 }; 
           let today = new Date(); today.setHours(0,0,0,0); let minDate = new Date("2099-01-01"), maxDate = new Date("2000-01-01"); let monthBsls = {}; 
@@ -6382,7 +6291,8 @@
 
           let totalTime = maxDate - minDate; let totalDays = Math.ceil(totalTime / 86400000); 
           let chartWidth = Math.max(1800, totalDays * 25); // Expanded width to ensure proper stretch
-          let todayPct = ((today - minDate) / totalTime) * 100;
+          let todayIndicator = getTimelineTodayIndicator(minDate, maxDate, today);
+          let todayPct = todayIndicator ? todayIndicator.clampedPct : 0;
 
           // 🧠 STRUCTURAL FIX: Decoupled Left Corner & Right Scrolling Area
           let dateHtml = `
@@ -6424,8 +6334,12 @@
              }
           }
           
-          dateHtml += `<div class="gantt-today-label" style="left:${todayPct}%;" onmouseenter="showTodayHUD(event)" onmousemove="moveHUD(event)" onmouseleave="hideHUD()" onclick="toggleHudLock(event)">TODAY</div></div></div>`;
-          gridLines += `<div class="gantt-today-line" style="left:${todayPct}%;"></div></div>`;
+          if (todayIndicator) {
+              dateHtml += `<div class="gantt-today-label" style="left:${todayPct}%;" onmouseenter="showTodayHUD(event)" onmousemove="moveHUD(event)" onmouseleave="hideHUD()" onclick="toggleHudLock(event)">TODAY</div>`;
+              gridLines += `<div class="gantt-today-line" style="left:${todayPct}%; opacity:${todayIndicator.isOutOfRange ? 0.35 : 1};"></div>`;
+          }
+          dateHtml += `</div></div>`;
+          gridLines += `</div>`;
 
           let html = `<div class="gantt-area" id="gantt-area-main" style="width:${chartWidth + 140}px; min-width:${chartWidth + 140}px;">${gridLines}${dateHtml}<div style="height: 15px;"></div>`;
           let rowsArray = [];
@@ -6483,10 +6397,6 @@
               </div>`);
           });
           html += rowsArray.join('') + `</div>`; container.innerHTML = html;
-
-          applySmartGanttDocking();
-
-          setTimeout(scrollGanttToToday, 150);
       }
 
       function scrollGanttToToday() {
@@ -6868,6 +6778,9 @@
               setHtml('p-cx-end', `CX COMPLETE: <span style="color:var(--text-main)">${hasEnd ? formatDate(item.cxEnd) : "TBD"}</span>`);
               
               let scheduleFill = getEl('p-time-fill'); let scheduleBead = getEl('p-time-bead');
+              let scheduleTodayIndicator = getEl('p-today-indicator');
+              let scheduleTodayLine = getEl('p-today-line');
+              let scheduleTodayLabel = getEl('p-today-label');
               let daysLeft = 0; let pStart = safeDate(item.cxStart); let pEnd = safeDate(item.cxEnd);
 
               if(hasStart && hasEnd && pStart && pEnd && scheduleFill && scheduleBead) {
@@ -6876,6 +6789,18 @@
                  scheduleFill.style.width = `${pct}%`; scheduleFill.style.background = statusColor;
                  if(pct > 0 && pct < 100) { scheduleBead.style.display = 'block'; scheduleBead.style.left = `calc(${pct}% - 7px)`; scheduleBead.style.borderColor = statusColor; } else { scheduleBead.style.display = 'none'; }
               } else if (scheduleFill && scheduleBead) { scheduleFill.style.width = "0%"; scheduleBead.style.display = "none"; }
+
+              let cardToday = getTimelineTodayIndicator(pStart, pEnd, new Date());
+              if (scheduleTodayIndicator && scheduleTodayLine && scheduleTodayLabel && cardToday) {
+                  scheduleTodayIndicator.style.display = 'block';
+                  scheduleTodayIndicator.style.left = `${cardToday.clampedPct}%`;
+                  scheduleTodayIndicator.classList.toggle('is-muted', cardToday.isOutOfRange || isMuted);
+                  scheduleTodayLine.style.opacity = cardToday.isOutOfRange ? '0.45' : '1';
+                  scheduleTodayLabel.style.opacity = cardToday.isOutOfRange ? '0.8' : '1';
+              } else if (scheduleTodayIndicator) {
+                  scheduleTodayIndicator.style.display = 'none';
+                  scheduleTodayIndicator.classList.remove('is-muted');
+              }
 
               const makeProjBead = (dateStr, icon, title, bgColor, borderColor, start, end) => {
                   let d = safeDate(dateStr); if(!d) return ""; let pct = ((d - start) / (end - start)) * 100;
@@ -7076,7 +7001,7 @@
                   pGeminiDate.innerText = item.geminiDate ? `Drafted: ${formatDate(item.geminiDate)}` : "";
               }
 
-              let ganttArea = getEl('gantt-area-main');
+              let ganttArea = currentWorkspaceView === 'gantt' ? getEl('gantt-area-main') : null;
               if (ganttArea) {
                   ganttArea.classList.add('has-focus'); document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
                   syncGanttIslandState();
@@ -7097,13 +7022,6 @@
                   }
                   let exitBtn = getEl('btn-exit-theater'); if(exitBtn) exitBtn.style.display = 'inline-flex';
               }
-
-              requestAnimationFrame(() => {
-                  if (!isGridMode) {
-                      let shouldReset = !isDeckMode;
-                      requestAnimationFrame(() => applySmartGanttDocking({ resetManualHeight: shouldReset }));
-                  }
-              });
 
               if (currentWorkspaceView === 'detail' && isDeckMode) {
                   renderDeckStage();
@@ -8040,7 +7958,7 @@
         const requestedMode = mode;
         const normalizedMode = (requestedMode === 'deck' || requestedMode === 'slide') ? 'detail' : requestedMode;
         if (isDeckMode && normalizedMode !== 'detail') saveCurrentCardState();
-        if (document.body.classList.contains('gantt-fullscreen')) toggleFullscreen();
+        if (currentWorkspaceView === 'gantt' && normalizedMode !== 'gantt') captureGanttScrollState();
 
         const prevWasSlide = isDeckMode;
         currentWorkspaceView = normalizedMode;
@@ -8072,6 +7990,7 @@
         const paneContent = getEl('pane-content');
         const digestWs = getEl('digest-workspace');
         const deckStage = getEl('deck-stage');
+        const ganttPanel = getEl('gantt-panel');
         if (digestWs) {
             digestWs.style.display = 'none';
             digestWs.style.flex = '';
@@ -8093,6 +8012,11 @@
             deckStage.style.width = '';
             deckStage.style.padding = '';
             deckStage.style.overflow = '';
+        }
+        if (ganttPanel) {
+            ganttPanel.style.display = 'none';
+            ganttPanel.style.flex = '';
+            ganttPanel.style.height = '';
         }
         if (grid) grid.classList.toggle('active', isGridMode);
 
@@ -8116,11 +8040,16 @@
                 if (deckStage) deckStage.style.display = 'none';
                 if (digestWs) digestWs.style.display = 'flex';
                 renderDigestWorkspace();
+            } else if (normalizedMode === 'gantt') {
+                setAdminPanelOpen(false);
+                if (welcome) welcome.style.display = 'none';
+                if (paneContent) paneContent.style.display = 'none';
+                if (deckStage) deckStage.style.display = 'none';
+                if (ganttPanel) ganttPanel.style.display = 'flex';
+                ensureGanttRendered({ focusFdh: ganttFocusedFdh, defer: true });
             }
 
-            // Fix Gantt memory + re-sync Island
             syncGanttIslandState();
-            applySmartGanttDocking({ resetManualHeight: true });
         }, 40);
       }
 

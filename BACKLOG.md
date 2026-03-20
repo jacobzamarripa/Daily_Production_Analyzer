@@ -26,6 +26,7 @@
 
 ## 🟡 NEXT (Core Workflow & Enhancements)
 *Focus: Queue management, Admin panels, and Core Data filtering.*
+**Status:** All `NEXT` backlog items are complete.
 
 - [x] **Task 8: Split Slide Dock / Bottom Action Deck / Theater Dock Simplification**
   - Keep filters/search/face toggle in the shared top dock
@@ -82,7 +83,55 @@
   - **Completed:** The Critical pill now opens a filterable Critical Hub with live count parity, derived critical-type breakdowns, market/vendor/type sorting and filters, navigate + local acknowledge actions, and a non-blank empty state.
 
 ## 🟢 LATER (New Features)
-*Focus: Drag-and-drop, Advanced Analytics, Data Source Indicators.*
+*Focus: Drag-and-drop, Advanced Analytics, Data Source Indicators, Architecture.*
+
+- [x] **Gantt refactor: Promote to first-class view + Today indicator on Project Schedule Card**
+  - **Summary:** Retire the Gantt bottom-drawer panel pattern. Promote Gantt to a full-screen, first-class view showing a master timeline of all projects. Extract the Today indicator from the Gantt and embed a faithful replica on every Project Schedule Card in the main view. Lazy-load Gantt graphics so they no longer impact initial app load or view-switching performance.
+  - **Motivation:**
+    - The bottom-drawer Gantt was appropriate before the Project Schedule Card existed, but the card now provides sufficient timeline context in the main view.
+    - Timeline context (today's position relative to project start/end) is valuable in the main view and shouldn't require opening a heavy panel to access.
+    - Gantt rendering (SVG bars, axis, scroll) is the most graphics-intensive part of the app. Deferring it to an explicit navigation event should yield a noticeable performance improvement across all other views.
+
+  - **Workstream 1 — Retire the Gantt drawer, promote to full-screen master timeline view**
+    - Remove the bottom-slide Gantt panel/drawer from the main view layout entirely.
+    - The existing view switcher Gantt picker becomes the canonical entry point; it now opens a true full-screen Gantt view (not a drawer overlay).
+    - The Gantt view displays a **master timeline of all projects** (not project-scoped).
+    - Clicking the timeline area on a Project Schedule Card navigates to the Gantt view in **focus mode**, scrolled and scoped to that specific project's timeline. Focus mode surfaces that project's row prominently within the master Gantt — it is not a separate view, but a contextual entry point into the shared Gantt with that project in focus.
+    - Remove all drawer-related Gantt code paths (open/close animation, bottom-slide container, panel z-index logic).
+    - **Acceptance:**
+      - Gantt view is reachable via the view switcher (opens master timeline) and via Project Schedule Card timeline click (opens master timeline focused on that project).
+      - Card-click focus correctly scrolls to and highlights the clicked project's row in the master Gantt.
+      - Navigating to the Gantt via view switcher (without a focus context) opens the master timeline at today or at the last scroll position.
+      - Gantt view renders all projects in a single master timeline.
+      - No drawer/panel remnant exists in the codebase or UI.
+      - View switcher correctly marks Gantt as the active view when selected.
+      - Navigating away from Gantt and back preserves scroll position (session persistence).
+
+  - **Workstream 2 — Today indicator on the Project Schedule Card**
+    - Extract the Today indicator from the Gantt component into a standalone, reusable visual primitive.
+    - Embed this primitive on every Project Schedule Card in the main view.
+    - **Visual spec (must match Gantt exactly):**
+      - A thin red vertical line spanning the full height of the card's timeline area, intersecting **behind** all project timeline bars.
+      - A floating "Today" pill sitting above the red line, matching the exact pill style used in the Gantt (font, padding, color, shadow).
+      - The pill and line are positioned by calculating today's date as a percentage offset between the project's start and end dates.
+    - If today falls outside the project's date range (before start or after end), the indicator is hidden or clamped to the nearest edge with a muted visual treatment.
+    - **Acceptance:**
+      - Every Project Schedule Card with a valid start and end date shows the Today indicator.
+      - Visual treatment matches the Gantt Today indicator exactly (pill style, line weight, color, layering).
+      - Indicator position is mathematically correct relative to the card's timeline span.
+      - Out-of-range dates handled gracefully — no overflow, no broken layout.
+      - Indicator updates correctly when the active date or filter changes.
+
+  - **Workstream 3 — Lazy-load Gantt rendering**
+    - Gantt component (SVG bars, date axis, row layout, scroll state) must **not** initialize or render until the user explicitly navigates to the Gantt view.
+    - On first navigation to Gantt view, render with a loading state (skeleton or spinner) while the component mounts.
+    - Subsequent navigations to Gantt within the same session use a cached/mounted instance — do not re-destroy on every view switch, just hide/show.
+    - **Acceptance:**
+      - App initial load triggers zero Gantt rendering logic.
+      - Switching between Deck/Theater/Detail/etc. causes no Gantt-related computation or DOM activity.
+      - First open of Gantt view shows a loading state, then renders completely.
+      - Re-opening Gantt within the same session renders immediately (cached instance).
+      - No measurable regression in Gantt render quality or interactivity after lazy-loading is applied.
 
 - [ ] **Daily digest: QuickBase edits by person**
   - **Expected:** Daily digest includes a section summarizing QB edits over the last 24h, grouped by person. Show a ranked list of top editors/top movers with edit counts and lightweight breakdown by edit type or impacted projects.
@@ -96,6 +145,7 @@
     - Clear empty state if no edits logged (no broken appearance).
     - Layout fits current morning briefing design and remains readable at typical screen sizes.
     - Metrics based on a documented definition so counts are consistent day to day.
+
 - [ ] **Filter dock: Add "Group by …" capability**
   - **Expected:** Filter dock includes a "Group by" selector (Vendor / City / Health / Stage / etc.). Selecting a grouping reorganizes the result set into collapsible/scrollable groups. Works across views (Deck/Theater/Detail) and respects existing filters/search.
   - **Acceptance:**
@@ -103,6 +153,7 @@
     - Groups render with clear headers and item counts.
     - Export/report output remains correct when grouped (exports grouped structure or flattened rows predictably).
     - Setting Group by to "None" returns to ungrouped list/grid without losing filters.
+
 - [ ] **Calculator: Make widget draggable**
   - **Expected:** Calculator can be clicked-and-dragged to reposition within the app workspace. Position persists at least for the current session (ideally per-user between sessions). Must continue to float above other UI layers.
   - **Acceptance:**
@@ -110,6 +161,7 @@
     - Snap-back or edge constraints prevent dragging fully off-screen.
     - Closing/reopening calculator returns it to last position (session persistence minimum).
     - No layout glitches in Deck/Theater/other views.
+
 - [ ] **Vendor tracker: DRG "Direct Vendor" pill**
   - **Background:** A Google Sheet flag already exists for Direct Vendor tracking (DRG), but the app has no visible indicator.
   - **Expected:** Projects flagged for Direct Vendor tracking display a "DRG Tracker" / "Direct Vendor" pill/badge in relevant surfaces (header, project card, detail view). Pill provides context on hover/click (tooltip or hub link explaining what it means, and optionally a link to the tracker sheet).
