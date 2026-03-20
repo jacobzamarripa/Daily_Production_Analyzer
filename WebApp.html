@@ -878,6 +878,9 @@
           pointer-events: none;
           transition: top 0.24s cubic-bezier(0.19, 1, 0.22, 1), bottom 0.24s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.24s ease;
       }
+      body.gantt-view-active #active-filter-pills {
+          z-index: 10021 !important;
+      }
       .filter-pill {
           pointer-events: auto;
           display: inline-flex; align-items: center; gap: 6px;
@@ -2430,6 +2433,18 @@
       .gantt-controls { position: absolute; top: 10px; left: 12px; right: 12px; z-index: 1000; pointer-events: none; display: flex; justify-content: space-between; padding: 0 !important; min-height: 34px; background: transparent !important; border: none !important; align-items: center; transition: background 0.3s, border-color 0.3s; gap: 10px; }
       .gantt-pill { pointer-events: auto; padding: 6px 14px; border-radius: 18px; background: color-mix(in srgb, var(--card-bg) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12); display: flex; align-items: center; gap: 8px; }
       .gantt-controls-actions { pointer-events: auto; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+      .gantt-sort-select {
+          pointer-events: auto;
+          height: 34px;
+          border-radius: 14px;
+          padding: 0 12px;
+          border: 1px solid var(--border);
+          background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+          color: var(--text-main);
+          font-size: 11px;
+          font-weight: 800;
+          box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      }
       /* Gantt Quick Peek Panel */
       .gantt-quick-peek {
           position: absolute;
@@ -3537,6 +3552,15 @@
                 <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--text-muted);">Global Construction Timeline</div>
             </div>
             <div class="gantt-controls-actions">
+                <select id="gantt-sort-select" class="gantt-sort-select" onchange="syncGanttSort(this.value)">
+                    <option value="end">CX Complete</option>
+                    <option value="start">CX Start</option>
+                    <option value="target">Target Date</option>
+                    <option value="ofs">OFS Date</option>
+                    <option value="report">Report Date</option>
+                    <option value="admin">Admin Check</option>
+                    <option value="default">Default</option>
+                </select>
                 <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); clearGanttFocus()">Exit Focus</button>
             </div>
         </div>
@@ -3667,6 +3691,7 @@
 
           const sortQueue = getEl('sort-queue');
           if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' ? 'none' : '';
+          syncSortControls();
           const sidebarPivot = getEl('sidebar-pivot-select');
           if (sidebarPivot) sidebarPivot.style.display = currentViewMode === 'grid' ? 'inline-block' : 'none';
           syncGanttViewportLayout();
@@ -4183,6 +4208,24 @@
               container.style.top = `${Math.max(8, rect.bottom + gap)}px`;
               container.style.bottom = 'auto';
           }
+      }
+
+      function getActiveSortValue() {
+          const queueSort = getEl('sort-queue')?.value || 'default';
+          if (currentWorkspaceView === 'gantt' && queueSort === 'default') return 'end';
+          return queueSort;
+      }
+
+      function syncGanttSort(value) {
+          const queueSort = getEl('sort-queue');
+          if (queueSort) queueSort.value = value || 'end';
+          applyFilters();
+      }
+
+      function syncSortControls() {
+          const effectiveSort = getActiveSortValue();
+          const ganttSort = getEl('gantt-sort-select');
+          if (ganttSort) ganttSort.value = effectiveSort;
       }
 
       // Dynamic Island State Memory
@@ -6985,7 +7028,7 @@
 
       function applyFilters() {
         safeExecute('applyFilters', () => {
-            const sortVal = getEl('sort-queue')?.value || 'default';
+            const sortVal = getActiveSortValue();
             const searchTerm = (getEl('search-input')?.value || '').toLowerCase();
             const activeQueueItems = getActiveQueueItems();
             let searchEl = getEl('search-input');
