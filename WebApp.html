@@ -4700,7 +4700,9 @@
 
       function getDiagnosticTagClass(flag) {
           let f = String(flag || '').toUpperCase();
+          if (f.includes('OFS') || f.includes('OPEN FOR SALE')) return 'chip-ofs';
           if (f.includes('COMPLETE')) return 'chip-complete';
+          if (f.includes('ON HOLD')) return 'chip-hold';
           if (f.includes('ADMIN: CHECK CROSSINGS') || f.includes('ADMIN: REFRESH REF DATA')) return 'chip-admin';
           if (f.includes('STATUS MISMATCH') || f.includes('MISSING QB STATUS')) return 'chip-warn';
           if (f.includes('⚠️') || f.includes('🖍️') || f.includes('🚧')) return 'chip-warn';
@@ -4711,7 +4713,7 @@
       }
 
       function cleanDiagnosticFlagText(flag) {
-          return String(flag || '').replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣]/g, '').trim();
+          return String(flag || '').replace(/[🚨🛑🚩⚠️🖍️🚧🪄🟣🔵🟢⚪]/g, '').trim();
       }
 
       function populateDropdown(id, values) {
