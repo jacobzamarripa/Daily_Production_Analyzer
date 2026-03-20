@@ -16,7 +16,7 @@
         --starGold: #fbbf24; --accent: #3b82f6; --gantt-panel-height: 34vh; --inbox-panel-width: 380px; --panel-gutter-x: 16px; --panel-gutter-y: 12px;
         /* Status Pill Colors */
         --pill-active-txt: #b45309;   --pill-active-bg: rgba(253,224,71,0.25);   --pill-active-bdr: #facc15;
-        --pill-ofs-txt: #1d4ed8;      --pill-ofs-bg: rgba(59,130,246,0.15);      --pill-ofs-bdr: #3b82f6;
+        --pill-ofs-txt: #0f766e;      --pill-ofs-bg: rgba(6,182,212,0.15);       --pill-ofs-bdr: #06b6d4;
         --pill-permit-txt: #7e22ce;   --pill-permit-bg: rgba(168,85,247,0.15);   --pill-permit-bdr: #a855f7;
         --pill-complete-txt: #15803d; --pill-complete-bg: rgba(34,197,94,0.15);  --pill-complete-bdr: #22c55e;
         --pill-hold-txt: #475569;     --pill-hold-bg: rgba(148,163,184,0.15);    --pill-hold-bdr: #94a3b8;
@@ -905,70 +905,15 @@
           background: rgba(30, 30, 36, 0.6);
       }
       /* --- Digest Workspace Layout --- */
-      .digest-shell { width: 100%; max-width: 1680px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-      .digest-shell.compact { gap: 16px; }
-      .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--border); padding:0 4px 14px; margin-bottom:0; gap:16px; }
+      .digest-shell { width:100%; max-width:1680px; margin:0 auto; display:flex; flex-direction:column; gap:22px; }
+      .digest-shell.compact { gap:18px; }
+      .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--border); padding:0 4px 14px; gap:16px; }
       .digest-ws-header { font-size:34px; line-height:1; font-weight:900; letter-spacing:-1.4px; color:var(--text-main); margin-bottom:8px; }
       .digest-doc-subheader { font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
-      .digest-main-grid { display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(320px, 0.92fr); gap:20px; align-items:start; }
-      .digest-column { display:flex; flex-direction:column; gap:20px; min-width:0; }
-      .digest-hero-grid { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(300px, 0.9fr); gap:18px; align-items:stretch; }
-      .digest-shell.compact .digest-hero-grid { grid-template-columns:minmax(0, 1.5fr) minmax(280px, 0.95fr); gap:14px; }
-      .digest-ws-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px; align-items:start; width:100%; }
-      .digest-ws-card { background:var(--card-bg); border:1px solid var(--border); border-radius:22px; box-shadow:0 14px 40px rgba(15,23,42,0.06); overflow:hidden; }
-      .digest-ws-card-hdr { padding:16px 22px; background:color-mix(in srgb, var(--bg) 82%, transparent); border-bottom:1px solid var(--border); font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.75px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; gap:12px; }
-      .digest-ws-list { display:flex; flex-direction:column; }
-      .digest-ws-item { padding:12px 18px; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background 0.15s; gap:12px; }
-      .digest-ws-item:last-child { border-bottom:none; }
-      .digest-ws-item:hover { background:rgba(59,130,246,0.05); }
-      .digest-ws-fdh { font-size:14px; font-weight:900; color:var(--text-main); }
-      .digest-ws-detail { font-size:11px; font-weight:600; color:var(--text-muted); margin-top:2px; }
-      /* KPI strip */
-      .digest-kpi-strip { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px; margin-bottom:0; }
-      .digest-kpi-pill { background:linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 96%, #ffffff 4%), var(--card-bg)); border:1px solid var(--border); border-radius:16px; padding:14px 16px; min-width:0; box-shadow:0 10px 24px rgba(15,23,42,0.05); display:flex; flex-direction:column; gap:6px; }
-      .digest-shell.compact .digest-kpi-pill { padding:12px 14px; }
-      .digest-kpi-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:0; }
-      .digest-kpi-num { font-size:28px; line-height:1; font-weight:900; color:var(--text-main); font-family:monospace; letter-spacing:-1.4px; }
-      .digest-kpi-sub { font-size:10px; font-weight:700; color:var(--text-muted); line-height:1.35; }
-      /* Section labels */
       .digest-section-block { display:flex; flex-direction:column; gap:10px; min-width:0; }
-      .digest-shell.compact .digest-section-block { gap:8px; }
       .digest-section-label { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin:0 0 0 2px; }
-      .digest-section-label-row { display:flex; justify-content:space-between; align-items:center; margin:0; flex-wrap:wrap; gap:12px; }
-      .digest-section-label-row > span { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); }
-      /* Leaderboard */
-      .digest-leaderboard { display:flex; flex-direction:column; padding:8px 0; }
-      .digest-leaderboard-row { display:flex; align-items:center; gap:16px; padding:14px 22px; border-bottom:1px dashed var(--border); }
-      .digest-leaderboard-row:last-child { border-bottom:none; }
-      .digest-leaderboard-rank { font-size:16px; width:34px; flex-shrink:0; text-align:center; font-weight:900; color:var(--text-muted); }
-      .digest-leaderboard-info { flex:1; min-width:0; }
-      .digest-leaderboard-name { font-size:15px; font-weight:900; color:var(--text-main); }
-      .digest-leaderboard-breakdown { font-size:11px; font-weight:700; color:var(--text-muted); margin:4px 0 8px 0; }
-      .digest-leaderboard-bar-track { height:6px; background:var(--border); border-radius:999px; overflow:hidden; }
-      .digest-leaderboard-bar-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#6366f1); border-radius:2px; transition:width 0.5s ease; }
-      .digest-leaderboard-count { font-size:22px; font-weight:900; font-family:monospace; color:var(--color-insight); min-width:44px; text-align:right; }
-      /* Filter buttons */
-      .digest-filter-tabs { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
-      .digest-filter-btn { background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:10px 12px; font-size:10px; font-weight:900; cursor:pointer; color:var(--text-muted); transition:all 0.15s; font-family:inherit; display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:left; box-shadow:0 4px 12px rgba(15,23,42,0.04); }
-      .digest-filter-btn:hover { background:var(--card-bg); color:var(--text-main); transform:translateY(-1px); }
-      .digest-filter-btn.active { background:var(--card-bg); color:var(--text-main); border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.14), 0 8px 20px rgba(59,130,246,0.08); }
-      .digest-filter-btn-label { font-size:10px; font-weight:900; letter-spacing:0.35px; text-transform:uppercase; }
-      .digest-filter-btn-count { font-size:16px; line-height:1; font-weight:900; font-family:monospace; color:var(--text-main); }
-      /* Activity feed */
-      .digest-feed-item { display:flex; align-items:flex-start; gap:14px; padding:18px 22px; border-bottom:1px dashed var(--border); cursor:pointer; transition:background 0.15s; }
-      .digest-feed-item:last-child { border-bottom:none; }
-      .digest-feed-item:hover { background:rgba(59,130,246,0.04); }
-      .digest-feed-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:7px; }
-      .digest-feed-body { flex:1; min-width:0; }
-      .digest-feed-row1 { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
-      .digest-feed-fdh { font-size:15px; font-weight:900; color:var(--text-main); }
-      .digest-feed-vendor { font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; }
-      .digest-feed-cat { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; }
-      .digest-feed-time { font-size:11px; font-weight:700; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
-      .digest-feed-row2 { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-      .digest-feed-change { font-size:13px; font-weight:700; color:var(--text-main); flex:1 1 360px; min-width:0; }
-      .digest-feed-user { font-size:11px; font-weight:700; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
-      .digest-feed-card { margin-bottom: 12px; }
+      .digest-main-grid { display:grid; grid-template-columns:minmax(0, 1.3fr) minmax(320px, 0.85fr); gap:18px; align-items:start; }
+      .digest-column { display:flex; flex-direction:column; gap:18px; min-width:0; }
       .digest-panel-shell { display:flex; flex-direction:column; flex-grow:1; min-height:0; }
       .digest-panel-head { padding:18px 20px 16px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:14px; background:color-mix(in srgb, var(--card-bg) 96%, transparent); }
       .digest-panel-title { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
@@ -977,58 +922,71 @@
       .digest-panel-sub { font-size:11px; font-weight:700; color:var(--text-muted); }
       .digest-panel-body { flex:1 1 auto; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
       .digest-panel-empty { padding:24px 18px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic; }
-      .cc-section-card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; box-shadow:0 12px 34px rgba(15,23,42,0.06); overflow:hidden; }
-      .cc-section-head { padding:14px 16px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
-      .cc-focus-grid { display:grid; grid-template-columns:minmax(0, 1.05fr) minmax(0, 0.95fr); gap:16px; align-items:stretch; }
-      .cc-focus-card { background:linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, white 5%), var(--card-bg)); border:1px solid var(--border); border-radius:20px; box-shadow:0 16px 38px rgba(15,23,42,0.08); overflow:hidden; }
-      .cc-focus-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-      .cc-focus-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
-      .cc-stage-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; align-items:start; }
-      .cc-stage-body { padding:14px 14px 16px; display:flex; flex-direction:column; gap:12px; }
-      .cc-stage-preview { display:flex; flex-direction:column; gap:12px; }
-      .cc-stage-metrics { display:flex; flex-wrap:wrap; gap:6px; }
-      .cc-stage-column { min-height:100%; }
-      .cc-stage-list { display:flex; flex-direction:column; gap:10px; }
-      .cc-stage-footer { padding-top:4px; border-top:1px dashed var(--border); display:flex; flex-direction:column; gap:8px; }
-      .cc-project-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
-      .cc-project-grid.compact { grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px; }
-      .cc-project-card { background:color-mix(in srgb, var(--bg) 68%, transparent); border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; }
-      .cc-project-card:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,0.08); }
-      .cc-timeline-list { display:flex; flex-direction:column; gap:8px; }
-      .cc-timeline-item { padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--bg) 72%, transparent); display:flex; flex-direction:column; gap:6px; }
-      .cc-timeline-list.compact .cc-timeline-item:nth-child(n+4) { display:none; }
-      .cc-movers-list { display:flex; flex-direction:column; gap:12px; }
-      .cc-mover-card { border:1px solid var(--border); border-radius:18px; background:color-mix(in srgb, var(--card-bg) 96%, transparent); overflow:hidden; }
-      .cc-mover-head { padding:14px 16px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-      .cc-mover-body { padding:0 16px 16px; display:flex; flex-direction:column; gap:12px; }
-      .cc-mover-inline { display:grid; grid-template-columns:minmax(0, 1.15fr) minmax(220px, 0.85fr); gap:12px; align-items:start; }
-      .cc-pill-row { display:flex; gap:6px; flex-wrap:wrap; }
-      .cc-blocker-list { display:flex; flex-direction:column; gap:10px; }
-      .cc-blocker-row { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:12px; align-items:center; padding:12px 14px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); }
-      .cc-blocker-meta { display:flex; flex-direction:column; gap:6px; min-width:0; }
-      .cc-production-card { height:100%; }
-      .cc-production-body { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
-      .cc-production-row { display:grid; grid-template-columns:minmax(0, 1fr); gap:8px; padding-bottom:10px; border-bottom:1px dashed var(--border); }
-      .cc-production-row:last-child { border-bottom:none; padding-bottom:0; }
-      .cc-production-vendor { font-size:11px; font-weight:900; color:var(--text-main); text-transform:uppercase; }
-      .cc-production-headline { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; }
-      .cc-production-total { font-size:16px; font-weight:900; font-family:monospace; color:var(--text-main); }
-      .cc-progress-track { width:100%; height:10px; border-radius:999px; background:color-mix(in srgb, var(--border) 78%, transparent); overflow:hidden; position:relative; }
-      .cc-progress-fill { height:100%; border-radius:999px; transition:width 0.35s ease; }
-      .cc-progress-stack { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; }
-      .cc-progress-mini { display:flex; flex-direction:column; gap:4px; }
-      .cc-progress-mini-label { font-size:9px; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.4px; }
-      .cc-progress-mini .cc-progress-track { height:6px; }
-      .cc-focus-stat { font-size:36px; line-height:1; font-weight:900; font-family:monospace; color:var(--text-main); }
-      .cc-focus-sub { font-size:11px; font-weight:700; color:var(--text-muted); line-height:1.45; }
-      .digest-shell.compact .cc-section-card { border-radius:18px; }
-      .digest-shell.compact .cc-section-head { padding:12px 14px 10px; }
-      .digest-shell.compact .cc-stage-body,
-      .digest-shell.compact .cc-production-body,
-      .digest-shell.compact .cc-mover-head,
-      .digest-shell.compact .cc-mover-body { padding-left:14px; padding-right:14px; }
-      .digest-shell.compact .cc-focus-body,
-      .digest-shell.compact .cc-focus-head { padding-left:14px; padding-right:14px; }
+      .digest-filter-tabs { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+      .digest-filter-btn { background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:10px 12px; font-size:10px; font-weight:900; cursor:pointer; color:var(--text-muted); transition:all 0.15s; font-family:inherit; display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:left; box-shadow:0 4px 12px rgba(15,23,42,0.04); }
+      .digest-filter-btn:hover { background:var(--card-bg); color:var(--text-main); transform:translateY(-1px); }
+      .digest-filter-btn.active { background:var(--card-bg); color:var(--text-main); border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.14), 0 8px 20px rgba(59,130,246,0.08); }
+      .digest-filter-btn-label { font-size:10px; font-weight:900; letter-spacing:0.35px; text-transform:uppercase; }
+      .digest-filter-btn-count { font-size:16px; line-height:1; font-weight:900; font-family:monospace; color:var(--text-main); }
+      .digest-hero { background:var(--card-bg); border:1px solid var(--border); border-radius:24px; box-shadow:0 14px 40px rgba(15,23,42,0.06); overflow:hidden; }
+      .digest-hero-head { padding:18px 22px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+      .digest-hero-grid { padding:18px 22px 22px; display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:16px; }
+      .digest-vendor-card { background:color-mix(in srgb, var(--bg) 78%, transparent); border:1px solid var(--border); border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:12px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
+      .digest-vendor-card:hover { transform:translateY(-1px); box-shadow:0 10px 22px rgba(15,23,42,0.08); }
+      .digest-vendor-card.active { border-color:#0f172a; box-shadow:0 0 0 2px rgba(15,23,42,0.1), 0 14px 24px rgba(15,23,42,0.08); }
+      .digest-vendor-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+      .digest-vendor-name { font-size:13px; font-weight:900; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px; }
+      .digest-mono { font-family:monospace; font-variant-numeric:tabular-nums; }
+      .digest-vendor-total { font-size:28px; line-height:1; font-weight:900; color:var(--text-main); }
+      .digest-vendor-target { font-size:11px; font-weight:700; color:var(--text-muted); }
+      .digest-goal-track { width:100%; height:12px; border-radius:999px; background:color-mix(in srgb, var(--border) 82%, transparent); overflow:hidden; }
+      .digest-goal-fill { height:100%; border-radius:999px; transition:width 0.35s ease; }
+      .digest-vendor-submetrics { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
+      .digest-vendor-subcard { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:8px 9px; display:flex; flex-direction:column; gap:5px; }
+      .digest-vendor-subcard-label { font-size:9px; font-weight:900; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+      .digest-vendor-subcard-val { font-size:14px; font-weight:900; color:var(--text-main); }
+      .digest-mini-track { width:100%; height:6px; border-radius:999px; background:color-mix(in srgb, var(--border) 82%, transparent); overflow:hidden; }
+      .digest-mini-fill { height:100%; border-radius:999px; }
+      .digest-pulse-card,
+      .digest-rank-card,
+      .digest-stage-card,
+      .digest-blocker-card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; box-shadow:0 12px 34px rgba(15,23,42,0.06); overflow:hidden; }
+      .digest-card-head { padding:16px 18px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+      .digest-card-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
+      .digest-pulse-list { display:flex; flex-direction:column; gap:10px; max-height:620px; overflow:auto; }
+      .digest-pulse-item { border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); padding:12px 14px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:background 0.15s, transform 0.15s; }
+      .digest-pulse-item:hover { background:rgba(59,130,246,0.04); transform:translateY(-1px); }
+      .digest-pulse-meta { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+      .digest-pulse-title { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+      .digest-pulse-fdh { font-size:13px; font-weight:900; color:var(--text-main); }
+      .digest-pulse-vendor { font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase; }
+      .digest-pulse-change { font-size:11px; font-weight:700; color:var(--text-main); line-height:1.45; }
+      .digest-pulse-foot { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:10px; font-weight:700; color:var(--text-muted); }
+      .digest-rank-list { display:flex; flex-direction:column; gap:10px; }
+      .digest-rank-row { display:grid; grid-template-columns:28px minmax(0, 1fr) auto; gap:12px; align-items:center; padding:10px 12px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); }
+      .digest-rank-place { font-size:14px; font-weight:900; color:var(--text-muted); text-align:center; }
+      .digest-rank-name { font-size:13px; font-weight:900; color:var(--text-main); }
+      .digest-rank-sub { font-size:10px; font-weight:700; color:var(--text-muted); margin-top:4px; }
+      .digest-rank-count { font-size:24px; font-weight:900; color:var(--color-insight); text-align:right; }
+      .digest-rank-track { margin-top:8px; width:100%; height:6px; border-radius:999px; background:var(--border); overflow:hidden; }
+      .digest-rank-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#3b82f6,#6366f1); }
+      .digest-kanban-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; }
+      .digest-stage-list { display:flex; flex-direction:column; gap:10px; }
+      .digest-stage-project { border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; }
+      .digest-stage-project:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,0.08); }
+      .digest-stage-project-head { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+      .digest-stage-project-fdh { font-size:13px; font-weight:900; color:var(--text-main); }
+      .digest-stage-project-meta { font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; }
+      .digest-stage-project-foot { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:9px; font-weight:700; color:var(--text-muted); }
+      .digest-blocker-list { display:flex; flex-direction:column; gap:10px; }
+      .digest-blocker-row { display:grid; grid-template-columns:minmax(0, 1fr) auto auto; gap:12px; align-items:center; padding:12px 14px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); }
+      .digest-blocker-main { display:flex; flex-direction:column; gap:6px; min-width:0; }
+      .digest-blocker-score { font-size:12px; font-weight:900; color:var(--text-main); }
+      .digest-blocker-age { font-size:26px; font-weight:900; color:var(--color-critical); }
+      .digest-blocker-cta { white-space:nowrap; }
+      .digest-pill-row { display:flex; gap:6px; flex-wrap:wrap; }
+      .log-card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; }
+      .log-header { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
       body.digest-mode-active .inbox-sidebar { display: none !important; }
       body.digest-mode-active #review-hub-main-header { display:none !important; }
       body.digest-mode-active #grid-content,
@@ -1054,30 +1012,23 @@
           }
       }
       @media screen and (max-width: 1440px) {
-          .digest-kpi-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-          .digest-hero-grid,
-          .cc-focus-grid,
           .digest-main-grid { grid-template-columns: minmax(0, 1fr); }
-          .cc-stage-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+          .digest-kanban-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       }
       @media screen and (max-width: 1080px) {
-          .digest-shell { gap: 24px; }
-          .digest-ws-header { font-size: 30px; }
-          .digest-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .digest-shell { gap:24px; }
+          .digest-ws-header { font-size:30px; }
           .digest-filter-tabs { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-          .cc-project-grid { grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); }
-          .cc-stage-grid,
-          .cc-progress-stack,
-          .cc-mover-inline { grid-template-columns:minmax(0, 1fr); }
+          .digest-vendor-submetrics { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+          .digest-blocker-row { grid-template-columns:minmax(0, 1fr) auto; }
       }
       @media screen and (max-width: 720px) {
-          .digest-doc-header { padding: 0 0 14px; }
-          .digest-ws-header { font-size: 26px; }
-          .digest-kpi-strip { grid-template-columns: minmax(0, 1fr); }
-          .digest-section-label-row { align-items:flex-start; }
+          .digest-doc-header { padding:0 0 14px; }
+          .digest-ws-header { font-size:26px; }
           .digest-filter-tabs { grid-template-columns:minmax(0, 1fr); }
-          .cc-project-grid { grid-template-columns:minmax(0, 1fr); }
-          .cc-blocker-row { grid-template-columns:minmax(0, 1fr); }
+          .digest-vendor-submetrics,
+          .digest-kanban-grid,
+          .digest-blocker-row { grid-template-columns:minmax(0, 1fr); }
           .digest-feed-time,
           .digest-feed-user { margin-left: 0; }
           body.digest-mode-active .outbox-pane {
@@ -1618,7 +1569,7 @@
       .chip-missing, .pill-missing { color: var(--pill-missing-txt); background: var(--pill-missing-bg); border-color: var(--pill-missing-bdr); }
       body.dark-mode {
           --pill-active-txt: #fde047;   --pill-active-bg: rgba(133,77,14,0.35);   --pill-active-bdr: #facc15;
-          --pill-ofs-txt: #93c5fd;      --pill-ofs-bg: rgba(30,64,175,0.35);      --pill-ofs-bdr: #60a5fa;
+          --pill-ofs-txt: #a5f3fc;      --pill-ofs-bg: rgba(8,145,178,0.35);      --pill-ofs-bdr: #22d3ee;
           --pill-permit-txt: #e9d5ff;   --pill-permit-bg: rgba(107,33,168,0.35);  --pill-permit-bdr: #c084fc;
           --pill-complete-txt: #86efac; --pill-complete-bg: rgba(21,128,61,0.35); --pill-complete-bdr: #4ade80;
           --pill-hold-txt: #e2e8f0;     --pill-hold-bg: rgba(71,85,105,0.35);     --pill-hold-bdr: #94a3b8;
@@ -3524,6 +3475,8 @@
       let ganttFocusedFdh = null;
       let ganttScrollState = { top: 0, left: 0 };
       let ganttHasVisited = false;
+      let digestVendorGoals = {};
+      let currentDigestVendorFilter = 'ALL';
 
       function isSlideFaceActive() {
           return currentWorkspaceView === 'detail' && currentDetailFace === 'slide';
@@ -5383,7 +5336,7 @@
           permitApproved: { label: 'Permitting Approved', shortLabel: 'Permits', pillClass: 'pill-permit', accent: '#a855f7' },
           construction:   { label: 'Construction', shortLabel: 'Construction', pillClass: 'pill-active', accent: '#f59e0b' },
           completed:      { label: 'Completed', shortLabel: 'Completed', pillClass: 'pill-complete', accent: '#22c55e' },
-          ofs:            { label: 'OFS', shortLabel: 'OFS', pillClass: 'pill-ofs', accent: '#3b82f6' },
+          ofs:            { label: 'OFS', shortLabel: 'OFS', pillClass: 'pill-ofs', accent: '#06b6d4' },
           other:          { label: 'Other', shortLabel: 'Other', pillClass: 'pill-default', accent: '#64748b' }
       };
 
@@ -5396,271 +5349,223 @@
           let stat = String(status || '').toUpperCase();
           let t = String(type || '').toUpperCase();
           let v = String(val || '').toUpperCase();
-          let referencesPermitApproved = (st.includes('PERMIT') && stat.includes('APPROV'))
-              || ((t.includes('STATUS') || t.includes('STAGE')) && v.includes('PERMIT') && v.includes('APPROV'));
-          let referencesOfs = st.includes('OFS')
-              || stat.includes('OFS')
-              || v.includes('OPEN FOR SALE')
-              || v.includes('OFS');
-          let referencesCompleted = (stat.includes('COMPLETE') && !st.includes('OFS'))
-              || (v.includes('COMPLETE') && !referencesOfs);
-          let referencesConstruction = st.includes('FIELD CX')
-              || st.includes('CONSTRUCTION')
-              || v.includes('FIELD CX')
-              || v.includes('CONSTRUCTION');
-          if (referencesPermitApproved) return 'permitApproved';
-          if (referencesOfs) return 'ofs';
-          if (referencesCompleted) return 'completed';
-          if (referencesConstruction) return 'construction';
+          if ((st.includes('PERMIT') && stat.includes('APPROV')) || ((t.includes('STATUS') || t.includes('STAGE')) && v.includes('PERMIT') && v.includes('APPROV'))) return 'permitApproved';
+          if (st.includes('OFS') || stat.includes('OFS') || v.includes('OPEN FOR SALE') || v.includes('OFS')) return 'ofs';
+          if ((stat.includes('COMPLETE') && !st.includes('OFS')) || v.includes('COMPLETE')) return 'completed';
+          if (st.includes('FIELD CX') || st.includes('CONSTRUCTION') || v.includes('FIELD CX') || v.includes('CONSTRUCTION')) return 'construction';
           return 'other';
       }
 
       function getDigestStageKeyForItem(item) {
-          if (!item) return 'other';
-          return getDigestStageKeyFromValues(item.stage, item.status, '', '');
+          return item ? getDigestStageKeyFromValues(item.stage, item.status, '', '') : 'other';
       }
 
       function getDigestStageKeyForLog(log, item) {
           return getDigestStageKeyFromValues(item && item.stage, item && item.status, log && log.type, log && log.val);
       }
 
-      function getDigestStageAnchorDate(item, stageKey, latestTs) {
-          let candidate = null;
-          if (stageKey === 'permitApproved') candidate = safeDate(item && item.qbRef && item.qbRef.permitAppr);
-          else if (stageKey === 'construction') candidate = safeDate(item && item.cxStart);
-          else if (stageKey === 'completed') candidate = safeDate(item && item.cxEnd);
-          else if (stageKey === 'ofs') candidate = safeDate(item && item.ofsDate);
-          if (!candidate) candidate = safeDate(item && item.targetDate);
-          if (!candidate && latestTs) candidate = new Date(latestTs);
-          if (!candidate) candidate = safeDate(item && item.reportDate);
-          return candidate;
-      }
-
-      function getDigestLatestTimestampForLogs(logs) {
-          let maxTs = 0;
-          (logs || []).forEach(function(log) {
-              let ts = Number(log.timestampObj || 0);
-              if (ts > maxTs) maxTs = ts;
+      function getDigestVendorGoal(vendor) {
+          let exact = Number((digestVendorGoals || {})[vendor] || 0);
+          if (exact > 0) return exact;
+          let match = Object.keys(digestVendorGoals || {}).find(function(key) {
+              return String(key || '').trim().toLowerCase() === String(vendor || '').trim().toLowerCase();
           });
-          return maxTs || 0;
+          return match ? Number(digestVendorGoals[match] || 0) : 0;
       }
 
-      function renderCommandCenterProjectCard(item, stageKey, subline, badgeText) {
-          let meta = getDigestStageMeta(stageKey);
-          let pillCls = getQBStatusClass(item.stage, item.status, false);
-          let combined = esc((item.stage || '-') + ' | ' + (item.status || '-'));
-          let badge = badgeText ? `<span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:3px 8px;">${esc(badgeText)}</span>` : '';
-          return `<div class="cc-project-card" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(item.fdh)}')">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+      function getDigestFootageTotal(item) {
+          if (!item || !item.vel) return 0;
+          return Number((item.vel.ug && item.vel.ug.daily) || 0) +
+              Number((item.vel.ae && item.vel.ae.daily) || 0) +
+              Number((item.vel.fib && item.vel.fib.daily) || 0);
+      }
+
+      function getDigestRemainingFootage(item) {
+          if (!item || !item.vel) return 0;
+          return Math.max(0, Number((item.vel.ug && item.vel.ug.bom) || 0) - Number((item.vel.ug && item.vel.ug.tot) || 0)) +
+              Math.max(0, Number((item.vel.ae && item.vel.ae.bom) || 0) - Number((item.vel.ae && item.vel.ae.tot) || 0)) +
+              Math.max(0, Number((item.vel.fib && item.vel.fib.bom) || 0) - Number((item.vel.fib && item.vel.fib.tot) || 0));
+      }
+
+      function getDigestVendorGaugeStyle(actual, goal, now) {
+          let pct = goal > 0 ? (actual / goal) * 100 : 0;
+          let isBeforeNoon = now.getHours() < 12;
+          let fill = '#94a3b8';
+          if (pct >= 100) fill = '#22c55e';
+          else if ((isBeforeNoon && pct < 50) || pct < 50) fill = '#dc2626';
+          else if (pct < 90) fill = '#f59e0b';
+          else fill = '#64748b';
+          return { pct: Math.max(0, Math.min(100, Math.round(pct))), fill: fill };
+      }
+
+      function getDigestStageAgeDate(item, latestTs) {
+          return safeDate(item && item.cxEnd) || safeDate(item && item.cxStart) || safeDate(item && item.ofsDate) || safeDate(item && item.targetDate) || (latestTs ? new Date(latestTs) : safeDate(item && item.reportDate));
+      }
+
+      function getDigestAgeDays(item, latestTs) {
+          let anchor = getDigestStageAgeDate(item, latestTs);
+          if (!anchor || isNaN(anchor.getTime())) return 0;
+          return Math.max(0, Math.floor((Date.now() - anchor.getTime()) / 86400000));
+      }
+
+      function getDigestAgeHeatBackground(ageDays) {
+          let alpha = Math.min(0.18, ageDays / 180);
+          return 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,68,68,' + alpha.toFixed(3) + '))';
+      }
+
+      function setDigestVendorFilter(vendor) {
+          currentDigestVendorFilter = vendor || 'ALL';
+          renderDigestWorkspace();
+      }
+
+      function renderDigestVendorCard(entry, now) {
+          let goal = getDigestVendorGoal(entry.vendor);
+          let actual = entry.total;
+          let gauge = getDigestVendorGaugeStyle(actual, goal, now);
+          let active = currentDigestVendorFilter === entry.vendor;
+          let denom = Math.max(actual, 1);
+          let ugPct = Math.round((entry.ug / denom) * 100);
+          let aePct = Math.round((entry.ae / denom) * 100);
+          let fibPct = Math.round((entry.fib / denom) * 100);
+          return `<div class="digest-vendor-card ${active ? 'active' : ''}" onclick="setDigestVendorFilter('${escJs(entry.vendor)}')">
+              <div class="digest-vendor-head">
                   <div>
-                      <div style="font-size:14px; font-weight:900; color:var(--text-main);">${esc(item.fdh)}</div>
-                      <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(item.vendor || 'Unknown Vendor')}</div>
+                      <div class="digest-vendor-name">${esc(entry.vendor)}</div>
+                      <div class="digest-vendor-target">Target ${goal > 0 ? goal.toLocaleString() + ' ft' : 'Not Set'}</div>
                   </div>
-                  ${badge}
+                  <span class="glass-pill ${actual >= goal && goal > 0 ? 'pill-complete' : actual > 0 ? 'pill-active' : 'pill-default'}" style="font-size:9px; padding:4px 8px;">${entry.projectCount} projects</span>
               </div>
-              <div class="cc-pill-row">
-                  <span class="glass-pill ${pillCls}" style="font-size:9px; padding:4px 8px;">${combined}</span>
+              <div class="digest-vendor-total digest-mono">${actual.toLocaleString()}</div>
+              <div style="display:flex; justify-content:space-between; gap:10px; font-size:10px; font-weight:800; color:var(--text-muted);">
+                  <span>Progress Today</span>
+                  <span class="digest-mono">${goal > 0 ? gauge.pct + '%' : '--'}</span>
               </div>
-              <div style="font-size:10px; line-height:1.45; color:var(--text-muted);">${subline || ''}</div>
+              <div class="digest-goal-track"><div class="digest-goal-fill" style="width:${goal > 0 ? Math.min(100, gauge.pct) : 0}%; background:${gauge.fill};"></div></div>
+              <div class="digest-vendor-submetrics">
+                  <div class="digest-vendor-subcard">
+                      <div class="digest-vendor-subcard-label">UG</div>
+                      <div class="digest-vendor-subcard-val digest-mono">${entry.ug.toLocaleString()}</div>
+                      <div class="digest-mini-track"><div class="digest-mini-fill" style="width:${ugPct}%; background:#f97316;"></div></div>
+                  </div>
+                  <div class="digest-vendor-subcard">
+                      <div class="digest-vendor-subcard-label">Strand</div>
+                      <div class="digest-vendor-subcard-val digest-mono">${entry.ae.toLocaleString()}</div>
+                      <div class="digest-mini-track"><div class="digest-mini-fill" style="width:${aePct}%; background:#64748b;"></div></div>
+                  </div>
+                  <div class="digest-vendor-subcard">
+                      <div class="digest-vendor-subcard-label">Fiber</div>
+                      <div class="digest-vendor-subcard-val digest-mono">${entry.fib.toLocaleString()}</div>
+                      <div class="digest-mini-track"><div class="digest-mini-fill" style="width:${fibPct}%; background:#ef4444;"></div></div>
+                  </div>
+              </div>
           </div>`;
       }
 
-      function renderCommandCenterTimeline(logs, itemMap, emptyMsg, showStageBadge, compact) {
-          if (!logs || logs.length === 0) return `<div class="digest-panel-empty">${esc(emptyMsg)}</div>`;
-          return `<div class="cc-timeline-list ${compact ? 'compact' : ''}">` + logs.map(function(log) {
+      function renderDigestPulseFeed(logs, itemMap) {
+          if (!logs.length) return '<div class="digest-panel-empty">No recent moves for this selection.</div>';
+          return `<div class="digest-pulse-list">` + logs.map(function(log) {
               let item = itemMap[log.fdh] || null;
               let stageKey = getDigestStageKeyForLog(log, item);
               let meta = getDigestStageMeta(stageKey);
               let cleanVal = String(log.val || '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
               let timeLabel = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
-              return `<div class="cc-timeline-item" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(log.fdh)}')" style="cursor:pointer;">
-                  <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
-                      <div style="display:flex; flex-direction:column; gap:5px; min-width:0;">
-                          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                              <div style="font-size:13px; font-weight:900; color:var(--text-main);">${esc(log.fdh)}</div>
-                              ${item ? `<span style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(item.vendor || '')}</span>` : ''}
-                              ${showStageBadge ? `<span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:3px 8px;">${esc(meta.label)}</span>` : ''}
-                          </div>
-                          <div style="font-size:11px; font-weight:700; color:var(--text-main); line-height:1.45;">&#8594; ${esc(cleanVal)}</div>
+              return `<div class="digest-pulse-item" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(log.fdh)}')">
+                  <div class="digest-pulse-meta">
+                      <div class="digest-pulse-title">
+                          <span class="digest-pulse-fdh">${esc(log.fdh)}</span>
+                          ${item ? `<span class="digest-pulse-vendor">${esc(item.vendor || '')}</span>` : ''}
+                          <span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:3px 8px;">${esc(meta.label)}</span>
                       </div>
-                      <div style="text-align:right; flex-shrink:0;">
-                          <div style="font-size:9px; font-weight:800; color:var(--text-muted); white-space:nowrap;">${esc(timeLabel)}</div>
-                          <div style="font-size:9px; font-weight:800; color:var(--text-muted); margin-top:4px;">by <span style="color:var(--text-main);">${esc(log.user || '-')}</span></div>
-                      </div>
+                      <div style="font-size:10px; font-weight:800; color:var(--text-muted); white-space:nowrap;">${esc(timeLabel)}</div>
+                  </div>
+                  <div class="digest-pulse-change">&#8594; ${esc(cleanVal)}</div>
+                  <div class="digest-pulse-foot">
+                      <span>By <span style="color:var(--text-main);">${esc(log.user || '-')}</span></span>
+                      ${item ? `<span class="glass-pill ${getQBStatusClass(item.stage, item.status, false)}" style="font-size:9px; padding:3px 8px;">${esc((item.stage || '-') + ' | ' + (item.status || '-'))}</span>` : ''}
                   </div>
               </div>`;
           }).join('') + `</div>`;
       }
 
-      function renderCommandCenterStageCard(stageKey, stageEntry, itemMap, opts) {
-          opts = opts || {};
+      function renderDigestLeaderboard(entries) {
+          if (!entries.length) return '<div class="digest-panel-empty">No movers in the current window.</div>';
+          let max = entries[0].total || 1;
+          return `<div class="digest-rank-list">` + entries.map(function(entry, idx) {
+              let width = Math.max(8, Math.round((entry.total / max) * 100));
+              return `<div class="digest-rank-row">
+                  <div class="digest-rank-place">${idx + 1}</div>
+                  <div>
+                      <div class="digest-rank-name">${esc(entry.user)}</div>
+                      <div class="digest-rank-sub">${esc(entry.summary)}</div>
+                      <div class="digest-pill-row" style="margin-top:8px;">
+                          ${DIGEST_STAGE_ORDER.filter(function(stageKey) { return (entry.stageCounts[stageKey] || 0) > 0; }).map(function(stageKey) {
+                              return `<span class="glass-pill ${getDigestStageMeta(stageKey).pillClass}" style="font-size:9px; padding:3px 8px;">${esc(getDigestStageMeta(stageKey).shortLabel)} ${entry.stageCounts[stageKey]}</span>`;
+                          }).join('')}
+                      </div>
+                      <div class="digest-rank-track"><div class="digest-rank-fill" style="width:${width}%;"></div></div>
+                  </div>
+                  <div class="digest-rank-count digest-mono">${entry.total}</div>
+              </div>`;
+          }).join('') + `</div>`;
+      }
+
+      function renderDigestStageCard(stageKey, stageEntry) {
           let meta = getDigestStageMeta(stageKey);
-          let timelineLimit = opts.compact ? 2 : 3;
-          let projectLimit = opts.compact ? 3 : 4;
-          let topEditors = Object.keys(stageEntry.byUser).sort(function(a, b) { return stageEntry.byUser[b] - stageEntry.byUser[a]; }).slice(0, 3);
-          let projectCards = stageEntry.projects.slice(0, projectLimit).map(function(entry) {
-              let latestLabel = entry.latestTs ? 'Latest move ' + formatDate(new Date(entry.latestTs), true) : 'Touched in current window';
-              return renderCommandCenterProjectCard(entry.item, stageKey, latestLabel, entry.count + ' edits');
-          }).join('');
-          let recentTimeline = renderCommandCenterTimeline(stageEntry.logs.slice(0, timelineLimit), itemMap, 'No timeline entries for this stage.', false, true);
-          return `<div class="cc-section-card cc-stage-column">
-              <div class="cc-section-head">
+          let projects = stageEntry.projects.slice(0, 5);
+          return `<div class="digest-stage-card">
+              <div class="digest-card-head">
                   <div>
                       <div class="digest-section-label" style="margin:0 0 6px 0; color:${meta.accent};">${esc(meta.label)}</div>
-                      <div style="font-size:24px; font-weight:900; letter-spacing:-0.8px; color:var(--text-main);">${stageEntry.logs.length}</div>
-                      <div style="font-size:11px; font-weight:700; color:var(--text-muted);">${stageEntry.projects.length} projects touched in this stage.</div>
+                      <div style="font-size:24px; font-weight:900; color:var(--text-main);" class="digest-mono">${stageEntry.logs.length}</div>
                   </div>
-                  <div class="cc-stage-metrics" style="justify-content:flex-end;">
-                      ${topEditors.length ? topEditors.map(function(user) {
-                          return `<span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:4px 8px;">${esc(user)} ${stageEntry.byUser[user]}</span>`;
-                      }).join('') : `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">No movers</span>`}
-                  </div>
+                  <span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:4px 8px;">${stageEntry.projects.length} projects</span>
               </div>
-              <div class="cc-stage-body">
-                  <div class="cc-stage-preview">
-                      ${projectCards ? `<div class="cc-stage-list">${projectCards}</div>` : `<div class="digest-panel-empty">No projects touched in this stage.</div>`}
-                  </div>
-                  <div class="cc-stage-footer">
-                      <div class="digest-section-label" style="margin:0;">Recent Moves</div>
-                      ${recentTimeline}
+              <div class="digest-card-body">
+                  <div class="digest-stage-list">
+                      ${projects.length ? projects.map(function(entry) {
+                          let item = entry.item;
+                          let ageDays = entry.ageDays || 0;
+                          let bg = getDigestAgeHeatBackground(ageDays);
+                          return `<div class="digest-stage-project" style="background:${bg};" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(item.fdh)}')">
+                              <div class="digest-stage-project-head">
+                                  <div>
+                                      <div class="digest-stage-project-fdh">${esc(item.fdh)}</div>
+                                      <div class="digest-stage-project-meta">${esc(item.vendor || 'Unknown Vendor')}</div>
+                                  </div>
+                                  <span class="glass-pill ${getQBStatusClass(item.stage, item.status, false)}" style="font-size:9px; padding:3px 8px;">${esc(item.status || '-')}</span>
+                              </div>
+                              <div class="digest-stage-project-foot">
+                                  <span>${esc(entry.lastMoveLabel || 'No recent move')}</span>
+                                  <span>${ageDays}d sitting</span>
+                              </div>
+                          </div>`;
+                      }).join('') : '<div class="digest-panel-empty">No projects in this column.</div>'}
                   </div>
               </div>
           </div>`;
       }
 
-      function renderCommandCenterMoverCard(editorEntry, itemMap, opts) {
-          opts = opts || {};
-          let compact = !!opts.compact;
-          let stageGroupsHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
-              let logs = editorEntry.logsByStage[stageKey] || [];
-              if (!logs.length) return '';
-              return `<div style="display:flex; flex-direction:column; gap:10px;">
-                  <div class="digest-section-label" style="margin:0; color:${getDigestStageMeta(stageKey).accent};">${esc(getDigestStageMeta(stageKey).label)}</div>
-                  ${renderCommandCenterTimeline(logs.slice(0, compact ? 2 : 3), itemMap, 'No items in this stage.', false, true)}
-              </div>`;
-          }).join('');
-          let projectsHtml = editorEntry.projects.slice(0, compact ? 3 : 4).map(function(projectEntry) {
-              let latestLabel = projectEntry.latestTs ? 'Last touch ' + formatDate(new Date(projectEntry.latestTs), true) : 'Touched in current window';
-              return renderCommandCenterProjectCard(projectEntry.item, projectEntry.stageKey, latestLabel, projectEntry.count + ' edits');
-          }).join('');
-          return `<details class="cc-mover-card" ${editorEntry.rank < 1 ? 'open' : ''}>
-              <summary class="cc-mover-head" style="cursor:pointer; list-style:none;">
-                  <div>
-                      <div style="font-size:15px; font-weight:900; color:var(--text-main);">${esc(editorEntry.user)}</div>
-                      <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-top:4px;">${esc(editorEntry.summary)}</div>
-                  </div>
-                  <div style="text-align:right; flex-shrink:0;">
-                      <div style="font-size:26px; font-weight:900; font-family:monospace; color:var(--color-insight);">${editorEntry.total}</div>
-                      <div style="font-size:9px; font-weight:900; color:var(--text-muted); text-transform:uppercase;">#${editorEntry.rank + 1} mover</div>
-                  </div>
-              </summary>
-              <div class="cc-mover-body">
-                  <div class="cc-pill-row">
-                      ${DIGEST_STAGE_ORDER.filter(function(stageKey) { return (editorEntry.stageCounts[stageKey] || 0) > 0; }).map(function(stageKey) {
-                          return `<span class="glass-pill ${getDigestStageMeta(stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(stageKey).shortLabel)} ${editorEntry.stageCounts[stageKey]}</span>`;
-                      }).join('')}
-                  </div>
-                  <div class="cc-mover-inline">
-                      <div>${stageGroupsHtml || '<div class="digest-panel-empty">No stage-ordered movement available.</div>'}</div>
-                      <div>
-                      <div class="digest-section-label" style="margin:0 0 10px 0;">Projects Touched</div>
-                      ${projectsHtml ? `<div class="cc-project-grid compact">${projectsHtml}</div>` : `<div class="digest-panel-empty">No touched projects to show.</div>`}
-                      </div>
-                  </div>
-              </div>
-          </details>`;
-      }
-
-      function renderCommandCenterBlockerCard(entry) {
-          let pillCls = getQBStatusClass(entry.item.stage, entry.item.status, false);
-          return `<div class="cc-blocker-row">
-              <div class="cc-blocker-meta">
+      function renderDigestBlockerRow(entry) {
+          return `<div class="digest-blocker-row">
+              <div class="digest-blocker-main">
                   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
                       <div>
-                          <div style="font-size:14px; font-weight:900; color:var(--text-main);">${esc(entry.item.fdh)}</div>
-                          <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(entry.item.vendor || 'Unknown Vendor')}</div>
+                          <div class="digest-stage-project-fdh">${esc(entry.item.fdh)}</div>
+                          <div class="digest-stage-project-meta">${esc(entry.item.vendor || 'Unknown Vendor')}</div>
                       </div>
-                      <span class="glass-pill ${getDigestStageMeta(entry.stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(entry.stageKey).label)}</span>
-                  </div>
-                  <div class="cc-pill-row">
-                      <span class="glass-pill ${pillCls}" style="font-size:9px; padding:4px 8px;">${esc((entry.item.stage || '-') + ' | ' + (entry.item.status || '-'))}</span>
-                      ${entry.severityLabel ? `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${esc(entry.severityLabel)}</span>` : ''}
+                      <div class="digest-pill-row">
+                          <span class="glass-pill ${getDigestStageMeta(entry.stageKey).pillClass}" style="font-size:9px; padding:3px 8px;">${esc(getDigestStageMeta(entry.stageKey).label)}</span>
+                          <span class="glass-pill ${getQBStatusClass(entry.item.stage, entry.item.status, false)}" style="font-size:9px; padding:3px 8px;">${esc((entry.item.stage || '-') + ' | ' + (entry.item.status || '-'))}</span>
+                      </div>
                   </div>
                   <div style="font-size:11px; line-height:1.45; color:var(--text-main);">${esc(entry.reason)}</div>
-                  <div style="font-size:10px; font-weight:700; color:var(--text-muted);">Last movement ${esc(entry.lastMoveLabel)}</div>
+                  <div class="digest-blocker-score digest-mono">${entry.impactFootage.toLocaleString()} ft at risk</div>
               </div>
-              <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
-                  <div style="font-size:24px; font-weight:900; font-family:monospace; color:var(--text-main);">${entry.ageDays}</div>
+              <div style="text-align:right;">
+                  <div class="digest-blocker-age digest-mono">${entry.ageDays}</div>
                   <div style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase;">Days Sitting</div>
-                  <button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open</button>
               </div>
-          </div>`;
-      }
-
-      function renderCommandCenterTopMoverSpotlight(editorEntry, itemMap, maxTotal) {
-          if (!editorEntry) {
-              return `<div class="cc-focus-card"><div class="cc-focus-body"><div class="digest-panel-empty">No editor movement in the current window.</div></div></div>`;
-          }
-          let widthPct = maxTotal > 0 ? Math.max(12, Math.round((editorEntry.total / maxTotal) * 100)) : 0;
-          let timelineHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
-              let logs = editorEntry.logsByStage[stageKey] || [];
-              if (!logs.length) return '';
-              return `<div style="display:flex; flex-direction:column; gap:8px;">
-                  <div class="digest-section-label" style="margin:0; color:${getDigestStageMeta(stageKey).accent};">${esc(getDigestStageMeta(stageKey).label)}</div>
-                  ${renderCommandCenterTimeline(logs.slice(0, 2), itemMap, 'No items in this stage.', false, true)}
-              </div>`;
-          }).join('');
-          return `<div class="cc-focus-card">
-              <div class="cc-focus-head">
-                  <div>
-                      <div class="digest-section-label" style="margin:0 0 6px 0; color:var(--color-insight);">Top Mover</div>
-                      <div style="font-size:24px; font-weight:900; color:var(--text-main);">${esc(editorEntry.user)}</div>
-                  </div>
-                  <div style="text-align:right;">
-                      <div class="cc-focus-stat" style="color:var(--color-insight);">${editorEntry.total}</div>
-                      <div class="cc-focus-sub">meaningful edits</div>
-                  </div>
-              </div>
-              <div class="cc-focus-body">
-                  <div class="cc-progress-track"><div class="cc-progress-fill" style="width:${widthPct}%; background:linear-gradient(90deg,#3b82f6,#6366f1);"></div></div>
-                  <div class="cc-pill-row">
-                      ${DIGEST_STAGE_ORDER.filter(function(stageKey) { return (editorEntry.stageCounts[stageKey] || 0) > 0; }).map(function(stageKey) {
-                          return `<span class="glass-pill ${getDigestStageMeta(stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(stageKey).shortLabel)} ${editorEntry.stageCounts[stageKey]}</span>`;
-                      }).join('')}
-                  </div>
-                  <div class="cc-focus-sub">${esc(editorEntry.summary)}</div>
-                  <div>${timelineHtml || '<div class="digest-panel-empty">No recent moves to show.</div>'}</div>
-              </div>
-          </div>`;
-      }
-
-      function renderCommandCenterBlockerSpotlight(entry) {
-          if (!entry) {
-              return `<div class="cc-focus-card"><div class="cc-focus-body"><div class="digest-panel-empty">No aging blockers detected right now.</div></div></div>`;
-          }
-          let pillCls = getQBStatusClass(entry.item.stage, entry.item.status, false);
-          return `<div class="cc-focus-card">
-              <div class="cc-focus-head">
-                  <div>
-                      <div class="digest-section-label" style="margin:0 0 6px 0; color:var(--color-critical);">Biggest Blocker</div>
-                      <div style="font-size:22px; font-weight:900; color:var(--text-main);">${esc(entry.item.fdh)}</div>
-                      <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(entry.item.vendor || 'Unknown Vendor')}</div>
-                  </div>
-                  <div style="text-align:right;">
-                      <div class="cc-focus-stat" style="color:var(--color-critical);">${entry.ageDays}</div>
-                      <div class="cc-focus-sub">days sitting</div>
-                  </div>
-              </div>
-              <div class="cc-focus-body">
-                  <div class="cc-pill-row">
-                      <span class="glass-pill ${getDigestStageMeta(entry.stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(entry.stageKey).label)}</span>
-                      <span class="glass-pill ${pillCls}" style="font-size:9px; padding:4px 8px;">${esc((entry.item.stage || '-') + ' | ' + (entry.item.status || '-'))}</span>
-                      ${entry.severityLabel ? `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${esc(entry.severityLabel)}</span>` : ''}
-                  </div>
-                  <div class="cc-focus-sub">${esc(entry.reason)}</div>
-                  <div class="cc-focus-sub">Last movement ${esc(entry.lastMoveLabel)}</div>
-                  <div><button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open Project</button></div>
-              </div>
+              <div class="digest-blocker-cta"><button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open</button></div>
           </div>`;
       }
 
@@ -5672,151 +5577,130 @@
           let lookbackHours = 48;
           if (now.getDay() === 1 && now.getHours() < 11) lookbackHours = 80;
           let cutoff = new Date(now.getTime() - (lookbackHours * 60 * 60 * 1000));
+          let isRailOpen = !!document.querySelector('.reading-pane.admin-open');
+          let compactMode = isRailOpen && window.innerWidth >= 1100;
           let itemMap = {};
           (allActionItems || []).forEach(function(item) { itemMap[String(item.fdh || '')] = item; });
+
+          let prodByVendor = {};
+          (allActionItems || []).forEach(function(item) {
+              let vendor = String(item.vendor || '').trim();
+              if (!vendor || vendor === '-') return;
+              if (!prodByVendor[vendor]) prodByVendor[vendor] = { vendor: vendor, ug: 0, ae: 0, fib: 0, nap: 0, total: 0, projectCount: 0 };
+              prodByVendor[vendor].ug += Number((item.vel && item.vel.ug && item.vel.ug.daily) || 0);
+              prodByVendor[vendor].ae += Number((item.vel && item.vel.ae && item.vel.ae.daily) || 0);
+              prodByVendor[vendor].fib += Number((item.vel && item.vel.fib && item.vel.fib.daily) || 0);
+              prodByVendor[vendor].nap += Number((item.vel && item.vel.nap && item.vel.nap.daily) || 0);
+              prodByVendor[vendor].projectCount++;
+          });
+
+          let vendorEntries = Object.keys(prodByVendor).map(function(vendor) {
+              let entry = prodByVendor[vendor];
+              entry.total = entry.ug + entry.ae + entry.fib;
+              return entry;
+          }).sort(function(a, b) {
+              return b.total - a.total;
+          });
+          if (currentDigestVendorFilter !== 'ALL' && !vendorEntries.some(function(entry) { return entry.vendor === currentDigestVendorFilter; })) {
+              currentDigestVendorFilter = 'ALL';
+          }
 
           let recentLogs = allGlobalLogs.filter(function(log) {
               return Number(log.timestampObj || 0) >= cutoff.getTime();
           });
+
+          let filteredLogs = currentDigestVendorFilter === 'ALL'
+              ? recentLogs.slice()
+              : recentLogs.filter(function(log) {
+                  let item = itemMap[log.fdh];
+                  return item && item.vendor === currentDigestVendorFilter;
+              });
 
           let stageData = {};
           DIGEST_STAGE_ORDER.forEach(function(key) {
               stageData[key] = { logs: [], byUser: {}, projectMap: {}, projects: [] };
           });
 
-          let editorMap = {};
           let latestByProject = {};
-          let prodByVendor = {};
-          let isRailOpen = !!document.querySelector('.reading-pane.admin-open');
-          let compactMode = isRailOpen && window.innerWidth >= 1100;
-
-          (allActionItems || []).forEach(function(item) {
-              let vendor = item.vendor || 'Unknown';
-              if (vendor !== '-' && vendor !== '') {
-                  if (!prodByVendor[vendor]) prodByVendor[vendor] = { ug: 0, ae: 0, fib: 0, nap: 0 };
-                  if (item.vel) {
-                      prodByVendor[vendor].ug += Number((item.vel.ug && item.vel.ug.daily) || 0);
-                      prodByVendor[vendor].ae += Number((item.vel.ae && item.vel.ae.daily) || 0);
-                      prodByVendor[vendor].fib += Number((item.vel.fib && item.vel.fib.daily) || 0);
-                      prodByVendor[vendor].nap += Number((item.vel.nap && item.vel.nap.daily) || 0);
-                  }
-              }
-          });
-
-          recentLogs.forEach(function(log) {
+          filteredLogs.forEach(function(log) {
               let item = itemMap[log.fdh];
               if (!item) return;
               let stageKey = getDigestStageKeyForLog(log, item);
-              if (stageData[stageKey]) {
-                  stageData[stageKey].logs.push(log);
-                  let user = String(log.user || '-').trim() || '-';
-                  stageData[stageKey].byUser[user] = (stageData[stageKey].byUser[user] || 0) + 1;
-                  if (!stageData[stageKey].projectMap[log.fdh]) {
-                      stageData[stageKey].projectMap[log.fdh] = { item: item, count: 0, latestTs: 0 };
-                  }
-                  stageData[stageKey].projectMap[log.fdh].count++;
-                  stageData[stageKey].projectMap[log.fdh].latestTs = Math.max(stageData[stageKey].projectMap[log.fdh].latestTs, Number(log.timestampObj || 0));
-              }
-
-              let userKey = String(log.user || '').trim();
-              if (userKey && userKey !== '-') {
-                  if (!editorMap[userKey]) {
-                      editorMap[userKey] = { user: userKey, total: 0, stageCounts: {}, logsByStage: {}, projectMap: {} };
-                      DIGEST_STAGE_ORDER.forEach(function(key) { editorMap[userKey].logsByStage[key] = []; });
-                  }
-                  editorMap[userKey].total++;
-                  editorMap[userKey].stageCounts[stageKey] = (editorMap[userKey].stageCounts[stageKey] || 0) + 1;
-                  if (editorMap[userKey].logsByStage[stageKey]) editorMap[userKey].logsByStage[stageKey].push(log);
-                  if (!editorMap[userKey].projectMap[log.fdh]) {
-                      editorMap[userKey].projectMap[log.fdh] = { item: item, count: 0, latestTs: 0, stageKey: stageKey };
-                  }
-                  editorMap[userKey].projectMap[log.fdh].count++;
-                  editorMap[userKey].projectMap[log.fdh].latestTs = Math.max(editorMap[userKey].projectMap[log.fdh].latestTs, Number(log.timestampObj || 0));
-                  editorMap[userKey].projectMap[log.fdh].stageKey = stageKey !== 'other' ? stageKey : editorMap[userKey].projectMap[log.fdh].stageKey;
-              }
-
+              if (!stageData[stageKey]) return;
+              stageData[stageKey].logs.push(log);
+              let user = String(log.user || '-').trim() || '-';
+              stageData[stageKey].byUser[user] = (stageData[stageKey].byUser[user] || 0) + 1;
+              if (!stageData[stageKey].projectMap[log.fdh]) stageData[stageKey].projectMap[log.fdh] = { item: item, latestTs: 0 };
+              stageData[stageKey].projectMap[log.fdh].latestTs = Math.max(stageData[stageKey].projectMap[log.fdh].latestTs, Number(log.timestampObj || 0));
               latestByProject[log.fdh] = Math.max(latestByProject[log.fdh] || 0, Number(log.timestampObj || 0));
           });
 
           DIGEST_STAGE_ORDER.forEach(function(key) {
               stageData[key].logs.sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
               stageData[key].projects = Object.keys(stageData[key].projectMap).map(function(fdh) {
-                  return stageData[key].projectMap[fdh];
-              }).sort(function(a, b) { return b.latestTs - a.latestTs; });
+                  let entry = stageData[key].projectMap[fdh];
+                  let latestTs = entry.latestTs || latestByProject[fdh] || 0;
+                  return {
+                      item: entry.item,
+                      latestTs: latestTs,
+                      ageDays: getDigestAgeDays(entry.item, latestTs),
+                      lastMoveLabel: latestTs ? formatDate(new Date(latestTs), true) : 'No recent move'
+                  };
+              }).sort(function(a, b) {
+                  if (b.ageDays !== a.ageDays) return b.ageDays - a.ageDays;
+                  return b.latestTs - a.latestTs;
+              });
           });
 
+          let editorMap = {};
+          filteredLogs.forEach(function(log) {
+              let item = itemMap[log.fdh];
+              if (!item) return;
+              let userKey = String(log.user || '').trim();
+              if (!userKey || userKey === '-') return;
+              let stageKey = getDigestStageKeyForLog(log, item);
+              if (!editorMap[userKey]) editorMap[userKey] = { user: userKey, total: 0, stageCounts: {} };
+              editorMap[userKey].total++;
+              editorMap[userKey].stageCounts[stageKey] = (editorMap[userKey].stageCounts[stageKey] || 0) + 1;
+          });
           let editorList = Object.keys(editorMap).map(function(user) {
               let entry = editorMap[user];
-              entry.projects = Object.keys(entry.projectMap).map(function(fdh) { return entry.projectMap[fdh]; }).sort(function(a, b) { return b.latestTs - a.latestTs; });
               entry.summary = DIGEST_STAGE_ORDER.filter(function(stageKey) { return (entry.stageCounts[stageKey] || 0) > 0; }).map(function(stageKey) {
                   return (entry.stageCounts[stageKey] || 0) + ' ' + getDigestStageMeta(stageKey).shortLabel;
               }).join(' | ') || 'Field edits';
               return entry;
-          }).sort(function(a, b) { return b.total - a.total; }).slice(0, 8);
-          editorList.forEach(function(entry, idx) { entry.rank = idx; });
+          }).sort(function(a, b) { return b.total - a.total; });
 
-          let blockerList = (allActionItems || []).map(function(item) {
+          let severityRank = { crit: 3, warn: 2, ghost: 1, info: 0 };
+          let blockerList = (allActionItems || []).filter(function(item) {
+              return currentDigestVendorFilter === 'ALL' || item.vendor === currentDigestVendorFilter;
+          }).map(function(item) {
               let stageKey = getDigestStageKeyForItem(item);
               if (['permitApproved', 'construction', 'completed'].indexOf(stageKey) === -1) return null;
               let lastTs = latestByProject[item.fdh] || 0;
-              let anchorDate = getDigestStageAnchorDate(item, stageKey, lastTs);
-              if (!anchorDate || isNaN(anchorDate.getTime())) return null;
-              let ageDays = Math.max(0, Math.floor((now - anchorDate) / 86400000));
-              let severityLabel = getSeverity(item.flags || '');
+              let ageDays = getDigestAgeDays(item, lastTs);
+              let sev = getSeverity(item.flags || '');
+              let impactFootage = getDigestFootageTotal(item);
+              if (impactFootage <= 0) impactFootage = getDigestRemainingFootage(item);
               let reason = stageKey === 'permitApproved'
-                  ? 'Permits are approved, but the project has not progressed out of permitting.'
+                  ? 'Approved permits are waiting on the next field move.'
                   : stageKey === 'construction'
-                      ? 'Construction has started, but movement has slowed and needs attention.'
-                      : 'Field work appears complete, but the project has not reached OFS yet.';
-              if ((item.flags || '').trim()) reason += ' Diagnostics suggest: ' + getCriticalType(item).toLowerCase() + '.';
+                      ? 'Construction work is active but losing daily momentum.'
+                      : 'Work appears complete but has not converted to OFS.';
+              if ((item.flags || '').trim()) reason += ' ' + getCriticalType(item) + '.';
               return {
                   item: item,
                   stageKey: stageKey,
                   ageDays: ageDays,
-                  severityLabel: severityLabel === 'info' ? '' : severityLabel.toUpperCase(),
-                  reason: reason,
-                  lastMoveLabel: lastTs ? formatDate(new Date(lastTs), true) : (anchorDate ? formatDate(anchorDate) : 'unknown')
+                  impactFootage: impactFootage,
+                  severityRank: severityRank[sev] || 0,
+                  reason: reason
               };
           }).filter(Boolean).sort(function(a, b) {
+              if (b.impactFootage !== a.impactFootage) return b.impactFootage - a.impactFootage;
               if (b.ageDays !== a.ageDays) return b.ageDays - a.ageDays;
-              return String(a.item.fdh || '').localeCompare(String(b.item.fdh || ''));
-          }).slice(0, 6);
-
-          let prodRanked = Object.keys(prodByVendor).filter(function(v) {
-              let d = prodByVendor[v];
-              return d.ug > 0 || d.ae > 0 || d.fib > 0 || d.nap > 0;
-          }).map(function(v) {
-              let d = prodByVendor[v];
-              let total = d.ug + d.ae + d.fib + (d.nap * 100);
-              return { vendor: v, data: d, total: total };
-          }).sort(function(a, b) {
-              return b.total - a.total;
-          }).slice(0, compactMode ? 4 : 5);
-
-          let prodRows = prodRanked.map(function(entry) {
-              let v = entry.vendor;
-              let d = entry.data;
-              let total = entry.total;
-              let maxTotal = prodRanked.length ? prodRanked[0].total : total;
-              let totalPct = maxTotal > 0 ? Math.max(12, Math.round((total / maxTotal) * 100)) : 0;
-              let maxUnit = Math.max(d.ug || 0, d.ae || 0, d.fib || 0, d.nap || 0, 1);
-              let stats = [];
-              if (d.ug > 0) stats.push('<span style="color:#f97316; font-weight:800;">+' + d.ug.toLocaleString() + 'ft UG</span>');
-              if (d.ae > 0) stats.push('<span style="color:#64748b; font-weight:800;">+' + d.ae.toLocaleString() + 'ft Strand</span>');
-              if (d.fib > 0) stats.push('<span style="color:#ef4444; font-weight:800;">+' + d.fib.toLocaleString() + 'ft Fiber</span>');
-              if (d.nap > 0) stats.push('<span style="color:#6366f1; font-weight:800;">+' + d.nap.toLocaleString() + ' NAPs</span>');
-              return '<div class="cc-production-row">' +
-                  '<div class="cc-production-headline"><div class="cc-production-vendor">' + esc(v) + '</div><div class="cc-production-total">' + total.toLocaleString() + '</div></div>' +
-                  '<div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + totalPct + '%; background:linear-gradient(90deg,#0f766e,#22c55e);"></div></div>' +
-                  '<div class="cc-progress-stack">' +
-                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">UG</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.ug || 0) / maxUnit) * 100) + '%; background:#f97316;"></div></div></div>' +
-                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">Strand</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.ae || 0) / maxUnit) * 100) + '%; background:#64748b;"></div></div></div>' +
-                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">Fiber</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.fib || 0) / maxUnit) * 100) + '%; background:#ef4444;"></div></div></div>' +
-                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">NAPs</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.nap || 0) / maxUnit) * 100) + '%; background:#6366f1;"></div></div></div>' +
-                  '</div>' +
-                  '<div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; font-size:11px;">' + stats.join('') + '</div>' +
-              '</div>';
-          }).join('') || '<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No production reported today.</div>';
+              return b.severityRank - a.severityRank;
+          }).slice(0, 8);
 
           window._digestFeedData = {
               permitApproved: stageData.permitApproved.logs.slice(),
@@ -5825,71 +5709,84 @@
               ofs: stageData.ofs.logs.slice(),
               other: []
           };
-          currentDigestFilter = 'permitApproved';
+          if (!window._digestFeedData[currentDigestFilter]) currentDigestFilter = 'permitApproved';
 
+          let heroHtml = vendorEntries.length
+              ? vendorEntries.map(function(entry) { return renderDigestVendorCard(entry, now); }).join('')
+              : '<div class="digest-panel-empty">No vendor production tracked for today.</div>';
+          let pulseHtml = renderDigestPulseFeed(filteredLogs.slice().sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); }).slice(0, 30), itemMap);
+          let leaderboardHtml = renderDigestLeaderboard(editorList.slice(0, 8));
+          let stageHtml = DIGEST_STAGE_ORDER.map(function(stageKey) { return renderDigestStageCard(stageKey, stageData[stageKey]); }).join('');
+          let blockersHtml = blockerList.length ? blockerList.map(renderDigestBlockerRow).join('') : '<div class="digest-panel-empty">No aging blockers detected right now.</div>';
           let dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-          let stageCardsHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
-              return renderCommandCenterStageCard(stageKey, stageData[stageKey], itemMap, { compact: compactMode });
-          }).join('');
-          let topMoverSpotlight = renderCommandCenterTopMoverSpotlight(editorList[0], itemMap, editorList[0] ? editorList[0].total : 0);
-          let blockerSpotlight = renderCommandCenterBlockerSpotlight(blockerList[0]);
-          let moversHtml = editorList.length
-              ? `<div class="cc-movers-list">${editorList.slice(1, compactMode ? 4 : 5).map(function(entry) { return renderCommandCenterMoverCard(entry, itemMap, { compact: compactMode }); }).join('')}</div>`
-              : '<div class="digest-panel-empty">No top movers found in this window.</div>';
-          let blockersHtml = blockerList.length
-              ? `<div class="cc-blocker-list">${blockerList.slice(1).map(renderCommandCenterBlockerCard).join('')}</div>`
-              : '<div class="digest-panel-empty">No aging blockers detected right now.</div>';
 
           ws.innerHTML = `
               <div class="digest-shell ${compactMode ? 'compact' : ''}">
                   <div class="digest-doc-header">
                       <div>
-                          <div class="digest-ws-header">Pipeline Command Center</div>
-                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; Lookback: ${lookbackHours}h &nbsp;&middot;&nbsp; Narrative Flow: Permitting Approved to OFS</div>
+                          <div class="digest-ws-header">Dailies Command Center</div>
+                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; Production First Dashboard &nbsp;&middot;&nbsp; ${currentDigestVendorFilter === 'ALL' ? 'All Vendors' : esc(currentDigestVendorFilter)}</div>
                       </div>
                   </div>
 
-                  <div class="digest-hero-grid">
-                      <div class="digest-kpi-strip">
-                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Permitting Approved</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.permitApproved.accent};">${stageData.permitApproved.logs.length}</div><div class="digest-kpi-sub">${stageData.permitApproved.projects.length} projects ready for the next move.</div></div>
-                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Construction</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.construction.accent};">${stageData.construction.logs.length}</div><div class="digest-kpi-sub">${stageData.construction.projects.length} active project touches.</div></div>
-                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Completed</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.completed.accent};">${stageData.completed.logs.length}</div><div class="digest-kpi-sub">${stageData.completed.projects.length} projects nearing sale readiness.</div></div>
-                          <div class="digest-kpi-pill"><div class="digest-kpi-label">OFS</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.ofs.accent};">${stageData.ofs.logs.length}</div><div class="digest-kpi-sub">${stageData.ofs.projects.length} projects reached open-for-sale.</div></div>
-                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Top Movers Active</div><div class="digest-kpi-num" style="color:var(--color-insight);">${editorList.length}</div><div class="digest-kpi-sub">${editorList[0] ? esc(editorList[0].user) + ' leads this window.' : 'No editor movement this window.'}</div></div>
-                      </div>
-                      <div class="cc-section-card cc-production-card">
-                          <div class="cc-section-head">
-                              <div>
-                                  <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor Production Today</div>
-                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Top reported field output across active vendors.</div>
-                              </div>
+                  <div class="digest-hero">
+                      <div class="digest-hero-head">
+                          <div>
+                              <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor Production Heatmap</div>
+                              <div style="font-size:12px; font-weight:700; color:var(--text-muted);">Target vs actual footage by vendor using today’s production totals.</div>
                           </div>
-                          <div class="cc-production-body">${prodRows}</div>
+                          <button class="btn" onclick="setDigestVendorFilter('ALL')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">All Vendors</button>
                       </div>
-                  </div>
-
-                  <div class="cc-focus-grid">
-                      ${topMoverSpotlight}
-                      ${blockerSpotlight}
-                  </div>
-
-                  <div class="digest-section-block">
-                      <div class="digest-section-label">Pipeline Progression</div>
-                      <div class="cc-stage-grid">${stageCardsHtml}</div>
+                      <div class="digest-hero-grid">${heroHtml}</div>
                   </div>
 
                   <div class="digest-main-grid">
                       <div class="digest-column">
                           <div class="digest-section-block">
-                              <div class="digest-section-label">Top Movers</div>
-                              ${moversHtml}
+                              <div class="digest-section-label">Pulse Feed</div>
+                              <div class="digest-pulse-card">
+                                  <div class="digest-card-head">
+                                      <div>
+                                          <div class="digest-section-label" style="margin:0 0 6px 0;">Recent Moves</div>
+                                          <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Chronological status changes with user accountability.</div>
+                                      </div>
+                                      <span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${filteredLogs.length} moves</span>
+                                  </div>
+                                  <div class="digest-card-body">${pulseHtml}</div>
+                              </div>
                           </div>
                       </div>
                       <div class="digest-column">
                           <div class="digest-section-block">
-                              <div class="digest-section-label">Aging Blockers</div>
-                              ${blockersHtml}
+                              <div class="digest-section-label">Leaderboard</div>
+                              <div class="digest-rank-card">
+                                  <div class="digest-card-head">
+                                      <div>
+                                          <div class="digest-section-label" style="margin:0 0 6px 0;">Top Movers</div>
+                                          <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Ranked by meaningful edits in the current activity window.</div>
+                                      </div>
+                                  </div>
+                                  <div class="digest-card-body">${leaderboardHtml}</div>
+                              </div>
                           </div>
+                      </div>
+                  </div>
+
+                  <div class="digest-section-block">
+                      <div class="digest-section-label">Pipeline Progression</div>
+                      <div class="digest-kanban-grid">${stageHtml}</div>
+                  </div>
+
+                  <div class="digest-section-block">
+                      <div class="digest-section-label">Aging Blockers</div>
+                      <div class="digest-blocker-card">
+                          <div class="digest-card-head">
+                              <div>
+                                  <div class="digest-section-label" style="margin:0 0 6px 0;">Highest Impact Blockers</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Sorted by footage at risk first, then days sitting and diagnostic severity.</div>
+                              </div>
+                          </div>
+                          <div class="digest-card-body"><div class="digest-blocker-list">${blockersHtml}</div></div>
                       </div>
                   </div>
               </div>
@@ -5907,9 +5804,9 @@
                   <div class="digest-panel-head">
                       <div class="digest-panel-title">
                           <div>
-                              <div class="digest-panel-kicker">Pipeline Command Center</div>
+                              <div class="digest-panel-kicker">Dailies Command Center</div>
                               <div class="digest-panel-count">Project Changes</div>
-                              <div class="digest-panel-sub">Stage-ordered movement from permitting approved through OFS.</div>
+                              <div class="digest-panel-sub">${currentDigestVendorFilter === 'ALL' ? 'Stage-ordered movement across all vendors.' : 'Filtered to ' + esc(currentDigestVendorFilter) + '.'}</div>
                           </div>
                           <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
                               <span class="ob-tab-badge ob-tab-badge-purple" style="position:static; min-width:28px; height:28px; border-radius:14px; border:1px solid var(--border); box-shadow:none;">${total}</span>
@@ -5947,40 +5844,24 @@
                   (data[stageKey] || []).forEach(function(log) { allLogs.push(Object.assign({}, log, { _cat: stageKey })); });
               });
           }
-          allLogs.sort(function(a, b) {
-              let aIdx = DIGEST_STAGE_ORDER.indexOf(a._cat);
-              let bIdx = DIGEST_STAGE_ORDER.indexOf(b._cat);
-              if (aIdx !== bIdx) return aIdx - bIdx;
-              return Number(b.timestampObj || 0) - Number(a.timestampObj || 0);
-          });
-
-          if (allLogs.length === 0) {
-              return '<div class="digest-panel-empty">No changes in this category.</div>';
-          }
-
+          allLogs.sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
+          if (!allLogs.length) return '<div class="digest-panel-empty">No changes in this category.</div>';
           return allLogs.map(function(log) {
               let item = (allActionItems || []).find(function(i) { return i.fdh === log.fdh; });
               let cfg = getDigestStageMeta(log._cat);
               let dateStr = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
               let cleanVal = String(log.val || '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
               let vendor = item ? item.vendor : '';
-              let statusPill = '';
-              if (item) {
-                  let combinedPill = esc((item.stage || '-') + ' | ' + (item.status || '-'));
-                  let pillCls = getQBStatusClass(item.stage, item.status, false);
-                  statusPill = '<span class="glass-pill ' + pillCls + '" style="font-size:9px; padding:4px 8px;">' + combinedPill + '</span>';
-              }
-              return '<div class="log-card" style="cursor:pointer; gap:8px;" onclick="switchWorkspaceView(\'detail\'); selectItemForNav(\'' + escJs(log.fdh) + '\')">' +
+              let statusPill = item ? '<span class="glass-pill ' + getQBStatusClass(item.stage, item.status, false) + '" style="font-size:9px; padding:4px 8px;">' + esc((item.stage || '-') + ' | ' + (item.status || '-')) + '</span>' : '';
+              return '<div class="log-card" style="cursor:pointer;" onclick="switchWorkspaceView(\'detail\'); selectItemForNav(\'' + escJs(log.fdh) + '\')">' +
                   '<div class="log-header">' +
                       '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
                           '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
                               '<div style="font-size:13px; font-weight:900; color:var(--text-main);">' + esc(log.fdh) + '</div>' +
                               (vendor ? '<span style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">' + esc(vendor) + '</span>' : '') +
-                          '</div>' +
-                          '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
                               '<span class="glass-pill ' + cfg.pillClass + '" style="font-size:9px; padding:3px 8px;">' + esc(cfg.label) + '</span>' +
-                              statusPill +
                           '</div>' +
+                          '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' + statusPill + '</div>' +
                       '</div>' +
                       '<div style="font-size:9px; font-weight:800; color:var(--text-muted); white-space:nowrap;">' + esc(dateStr) + '</div>' +
                   '</div>' +
@@ -6599,6 +6480,7 @@
                 return;
             }
             allActionItems = data.actionItems; globalHeaders = data.headers;
+            digestVendorGoals = (data && data.vendorGoals) ? data.vendorGoals : {};
             globalRefDataDate = data.refDataDate || "";
             reconcileStagedReviewItems();
             let activeQueueItems = getActiveQueueItems();

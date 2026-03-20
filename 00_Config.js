@@ -8,6 +8,17 @@ const INCOMING_FOLDER_ID  = "1KBFJ5SWrTgRnU5zWUmcDOZtOiTNLonRk";
 const COMPILED_FOLDER_ID  = "1Wd9yx8VCgnAY76EIuo_dkFO4mF7yy7vN"; 
 const REFERENCE_FOLDER_ID = "14_pVws2NJ7i5GCiqxTpx2RN6HHDCNjOm"; 
 const VENDOR_TRACKER_ID   = "1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0"; 
+const DEFAULT_VENDOR_DAILY_GOALS = {
+  "Bucyrus": 18000,
+  "Dycom": 22000,
+  "Ervin": 20000,
+  "Locating Inc": 15000,
+  "MasTec": 24000,
+  "MCI": 18000,
+  "Orbital": 20000,
+  "Prince": 22000,
+  "Quanta": 22000
+};
 
 const QB_UPLOAD_SHEET    = "1-QuickBase_Upload";
 const HISTORY_SHEET      = "2-Master_Archive";

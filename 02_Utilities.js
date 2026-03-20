@@ -118,7 +118,7 @@ function exportInboxReviewsCSV() {
 }
 
 function getDashboardData() {
-  const CACHE_KEY = 'dashboard_data_cache_v6'; // 🧠 CHANGE THIS TO v6
+  const CACHE_KEY = 'dashboard_data_cache_v7';
   const cache = CacheService.getScriptCache();
   const cached = cache.get(CACHE_KEY);
   if (cached) { try { return JSON.parse(cached); } catch(e) {} }
@@ -127,6 +127,7 @@ function getDashboardData() {
   const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
   if (!mirrorSheet || mirrorSheet.getLastRow() < 2) return { actionItems: [], totalRows: 0, headers: [] };
   const refDict = getReferenceDictionary();
+  const vendorGoals = getVendorDailyGoals();
 
   const data = mirrorSheet.getDataRange().getValues();
   const headers = data[0].map(String); // Force strings
@@ -278,6 +279,7 @@ function getDashboardData() {
     actionItems: actionItems,
     hasRecentChanges: hasRecentGlobalChange,
     globalLogs: globalLogs,
+    vendorGoals: vendorGoals,
     totalRows: data.length - 1,
     headers: headers,
     refDataDate: refDataDate,
@@ -285,6 +287,50 @@ function getDashboardData() {
   };
   try { cache.put(CACHE_KEY, JSON.stringify(payload), 1800); } catch(e) {}
   return payload;
+}
+
+function getVendorDailyGoals() {
+  let goalDict = Object.assign({}, DEFAULT_VENDOR_DAILY_GOALS || {});
+  let sources = [];
+  try {
+    sources.push(SpreadsheetApp.getActiveSpreadsheet());
+  } catch (e) {}
+  try {
+    sources.push(SpreadsheetApp.openById(VENDOR_TRACKER_ID));
+  } catch (e) {}
+
+  const parseGoalSheet = function(sheet) {
+    if (!sheet || sheet.getLastRow() < 2) return;
+    let values = sheet.getDataRange().getValues();
+    let headers = values[0].map(function(h) { return String(h || '').trim(); });
+    let upper = headers.map(function(h) { return h.toUpperCase(); });
+    let vendorIdx = upper.findIndex(function(h) {
+      return h === "VENDOR" || h === "CONTRACTOR" || h.includes("VENDOR NAME");
+    });
+    let goalIdx = upper.findIndex(function(h) {
+      return h.includes("DAILY GOAL") || h.includes("GOAL FT") || h.includes("TARGET FT") || h.includes("TARGET FOOTAGE") || h.includes("DAILY TARGET");
+    });
+    if (vendorIdx === -1 || goalIdx === -1) return;
+    for (let i = 1; i < values.length; i++) {
+      let vendor = String(values[i][vendorIdx] || '').trim();
+      let raw = values[i][goalIdx];
+      if (!vendor || raw === '' || raw == null) continue;
+      let num = Number(String(raw).replace(/[^0-9.\-]/g, ''));
+      if (!isNaN(num) && num > 0) goalDict[vendor] = num;
+    }
+  };
+
+  sources.forEach(function(ss) {
+    try {
+      let sheets = ss.getSheets();
+      sheets.forEach(function(sheet) {
+        let name = String(sheet.getName() || '').toUpperCase();
+        if (name.includes('GOAL') || name.includes('TARGET')) parseGoalSheet(sheet);
+      });
+    } catch (e) {}
+  });
+
+  return goalDict;
 }
 
 function promptLoadSpecificDateToQB() { 
