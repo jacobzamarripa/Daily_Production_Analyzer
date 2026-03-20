@@ -6582,15 +6582,28 @@
                       </div>`;
               } else if (pivot === 'velocity') {
                   let v = item.vel;
+                  let ofsMonthStr = "TBD";
+                  let isOFSMonth = false;
+                  let ofsDate = safeDate(item.ofsDate) || safeDate(item.targetDate);
+                  if (ofsDate && !isNaN(ofsDate.getTime())) {
+                      ofsMonthStr = ofsDate.toLocaleString('default', { month: 'short', timeZone: 'UTC' }).toUpperCase();
+                      if (ofsDate.getUTCMonth() === today.getMonth() && ofsDate.getUTCFullYear() === today.getFullYear()) isOFSMonth = true;
+                  }
+                  let ofsPillStyle = isOFSMonth ? 'color:#2563eb; background:rgba(239, 246, 255, 0.7); border-color:#2563eb;' : 'color:var(--text-main); background:var(--bg); border-color:var(--border);';
                   if (v) {
                       bodyHtml = `
-                          <div class="velocity-grid" style="gap:6px; margin-bottom:8px;">
+                          <div class="velocity-grid" style="align-content:flex-start; gap:8px; margin-bottom:8px; flex-grow:0;">
                               ${buildVelocityBar('UG', v.ug.daily, v.ug.tot, v.ug.bom, 'UG', daysLeft)}
+                              ${buildVelocityBar('Aerial', v.ae.daily, v.ae.tot, v.ae.bom, 'AE', daysLeft)}
                               ${buildVelocityBar('Fiber', v.fib.daily, v.fib.tot, v.fib.bom, 'FIB', daysLeft)}
+                              ${buildVelocityBar('Splicing', v.nap.daily, v.nap.tot, v.nap.bom, 'NAP', daysLeft)}
                           </div>
-                          <div class="qb-vel-footer" style="padding-top:6px;">
-                              <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeft < 0 ? `OVERDUE: ${Math.abs(daysLeft)}d` : `DAYS LEFT: ${daysLeft}`}</div>
-                              <div class="vel-footer-pill" style="font-size:8px;">BSLS: ${item.bsls}</div>
+                          <div class="qb-vel-footer" style="margin-top:auto; border-top:1px solid var(--border); padding-top:8px;">
+                              <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`}</div>
+                              <div style="display:flex; gap:6px;">
+                                  <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px;">BSLS: ${item.bsls}</div>
+                                  <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px; ${ofsPillStyle}">OFS: ${ofsMonthStr}</div>
+                              </div>
                           </div>`;
                   } else {
                       bodyHtml = `<div style="font-style:italic; color:var(--text-muted); font-size:10px;">No velocity data</div>`;
@@ -6600,7 +6613,8 @@
               let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'is-selected' : '';
               let card = document.createElement('div');
               card.className = `grid-card ${isSelected}`;
-              card.id = `card-${item.fdh}`;
+              card.setAttribute('data-fdh', item.fdh);
+              card.id = `queue-grid-card-${item.fdh}`;
               card.onclick = () => { openPane(item, card); };
               card.innerHTML = `
                   <div class="grid-card-header" style="padding-bottom:6px;">
@@ -6775,8 +6789,7 @@
               document.querySelectorAll('.email-card').forEach(c => c.classList.remove('selected'));
               if(cardEl) cardEl.classList.add('selected');
               document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('is-selected'));
-              let gCard = getEl(`grid-card-${item.fdh}`);
-              if (gCard) gCard.classList.add('is-selected');
+              document.querySelectorAll(`.grid-card[data-fdh="${CSS.escape(String(item.fdh || ''))}"]`).forEach(c => c.classList.add('is-selected'));
 
               setStyle('welcome-screen', 'display', 'none');
               setStyle('detail-layout', 'display', 'flex');
@@ -7554,7 +7567,7 @@
               }
 
               return `
-                  <div id="grid-card-${item.fdh}" class="grid-card ${glowCls}" onclick="openPaneFromGrid('${item.fdh}')">
+                  <div id="grid-card-${item.fdh}" data-fdh="${esc(item.fdh)}" class="grid-card ${glowCls}" onclick="openPaneFromGrid('${item.fdh}')">
                       <div class="grid-card-header">
                           <div>
                               <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
@@ -7580,7 +7593,9 @@
           currentActiveItem = item;
 
           document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('is-selected'));
-          let gCard = getEl(`grid-card-${item.fdh}`);
+          let matchingCards = Array.from(document.querySelectorAll(`.grid-card[data-fdh="${CSS.escape(String(item.fdh || ''))}"]`));
+          let gCard = matchingCards[0] || getEl(`grid-card-${item.fdh}`);
+          matchingCards.forEach(c => c.classList.add('is-selected'));
           if (gCard) {
               gCard.classList.add('is-selected');
               if (currentWorkspaceView === 'grid') {
