@@ -905,12 +905,15 @@
           background: rgba(30, 30, 36, 0.6);
       }
       /* --- Digest Workspace Layout --- */
-      .digest-shell { width: 100%; max-width: 1680px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
-      .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--border); padding:0 4px 18px; margin-bottom:0; gap:20px; }
+      .digest-shell { width: 100%; max-width: 1680px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+      .digest-shell.compact { gap: 16px; }
+      .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--border); padding:0 4px 14px; margin-bottom:0; gap:16px; }
       .digest-ws-header { font-size:34px; line-height:1; font-weight:900; letter-spacing:-1.4px; color:var(--text-main); margin-bottom:8px; }
       .digest-doc-subheader { font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
-      .digest-main-grid { display:grid; grid-template-columns:minmax(0, 1.35fr) minmax(360px, 0.95fr); gap:28px; align-items:start; }
-      .digest-column { display:flex; flex-direction:column; gap:28px; min-width:0; }
+      .digest-main-grid { display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(320px, 0.92fr); gap:20px; align-items:start; }
+      .digest-column { display:flex; flex-direction:column; gap:20px; min-width:0; }
+      .digest-hero-grid { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(300px, 0.9fr); gap:18px; align-items:stretch; }
+      .digest-shell.compact .digest-hero-grid { grid-template-columns:minmax(0, 1.5fr) minmax(280px, 0.95fr); gap:14px; }
       .digest-ws-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px; align-items:start; width:100%; }
       .digest-ws-card { background:var(--card-bg); border:1px solid var(--border); border-radius:22px; box-shadow:0 14px 40px rgba(15,23,42,0.06); overflow:hidden; }
       .digest-ws-card-hdr { padding:16px 22px; background:color-mix(in srgb, var(--bg) 82%, transparent); border-bottom:1px solid var(--border); font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.75px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; gap:12px; }
@@ -921,17 +924,18 @@
       .digest-ws-fdh { font-size:14px; font-weight:900; color:var(--text-main); }
       .digest-ws-detail { font-size:11px; font-weight:600; color:var(--text-muted); margin-top:2px; }
       /* KPI strip */
-      .digest-kpi-strip { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:16px; margin-bottom:0; }
-      .digest-kpi-pill { background:linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 96%, #ffffff 4%), var(--card-bg)); border:1px solid var(--border); border-radius:18px; padding:18px 20px; min-width:0; box-shadow:0 10px 28px rgba(15,23,42,0.05); }
-      .digest-kpi-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:8px; }
-      .digest-kpi-num { font-size:30px; line-height:1; font-weight:900; color:var(--text-main); font-family:monospace; letter-spacing:-1.6px; }
+      .digest-kpi-strip { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px; margin-bottom:0; }
+      .digest-kpi-pill { background:linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 96%, #ffffff 4%), var(--card-bg)); border:1px solid var(--border); border-radius:16px; padding:14px 16px; min-width:0; box-shadow:0 10px 24px rgba(15,23,42,0.05); display:flex; flex-direction:column; gap:6px; }
+      .digest-shell.compact .digest-kpi-pill { padding:12px 14px; }
+      .digest-kpi-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:0; }
+      .digest-kpi-num { font-size:28px; line-height:1; font-weight:900; color:var(--text-main); font-family:monospace; letter-spacing:-1.4px; }
+      .digest-kpi-sub { font-size:10px; font-weight:700; color:var(--text-muted); line-height:1.35; }
       /* Section labels */
-      .digest-section-block { display:flex; flex-direction:column; gap:14px; min-width:0; }
+      .digest-section-block { display:flex; flex-direction:column; gap:10px; min-width:0; }
+      .digest-shell.compact .digest-section-block { gap:8px; }
       .digest-section-label { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin:0 0 0 2px; }
       .digest-section-label-row { display:flex; justify-content:space-between; align-items:center; margin:0; flex-wrap:wrap; gap:12px; }
       .digest-section-label-row > span { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); }
-      /* Morning brief 2-col */
-      .digest-brief-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20px; }
       /* Leaderboard */
       .digest-leaderboard { display:flex; flex-direction:column; padding:8px 0; }
       .digest-leaderboard-row { display:flex; align-items:center; gap:16px; padding:14px 22px; border-bottom:1px dashed var(--border); }
@@ -972,22 +976,59 @@
       .digest-panel-count { font-size:24px; line-height:1; font-weight:900; color:var(--text-main); letter-spacing:-0.8px; }
       .digest-panel-sub { font-size:11px; font-weight:700; color:var(--text-muted); }
       .digest-panel-body { flex:1 1 auto; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
-      .digest-panel-empty { padding:32px 24px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic; }
-      .cc-section-card { background:var(--card-bg); border:1px solid var(--border); border-radius:22px; box-shadow:0 14px 40px rgba(15,23,42,0.06); overflow:hidden; }
-      .cc-section-head { padding:18px 22px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; }
-      .cc-stage-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20px; }
-      .cc-stage-stack { display:flex; flex-direction:column; gap:16px; }
+      .digest-panel-empty { padding:24px 18px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic; }
+      .cc-section-card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; box-shadow:0 12px 34px rgba(15,23,42,0.06); overflow:hidden; }
+      .cc-section-head { padding:14px 16px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+      .cc-focus-grid { display:grid; grid-template-columns:minmax(0, 1.05fr) minmax(0, 0.95fr); gap:16px; align-items:stretch; }
+      .cc-focus-card { background:linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, white 5%), var(--card-bg)); border:1px solid var(--border); border-radius:20px; box-shadow:0 16px 38px rgba(15,23,42,0.08); overflow:hidden; }
+      .cc-focus-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+      .cc-focus-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
+      .cc-stage-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; align-items:start; }
+      .cc-stage-body { padding:14px 14px 16px; display:flex; flex-direction:column; gap:12px; }
+      .cc-stage-preview { display:flex; flex-direction:column; gap:12px; }
+      .cc-stage-metrics { display:flex; flex-wrap:wrap; gap:6px; }
+      .cc-stage-column { min-height:100%; }
+      .cc-stage-list { display:flex; flex-direction:column; gap:10px; }
+      .cc-stage-footer { padding-top:4px; border-top:1px dashed var(--border); display:flex; flex-direction:column; gap:8px; }
       .cc-project-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
-      .cc-project-card { background:color-mix(in srgb, var(--bg) 68%, transparent); border:1px solid var(--border); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; }
+      .cc-project-grid.compact { grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:10px; }
+      .cc-project-card { background:color-mix(in srgb, var(--bg) 68%, transparent); border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; }
       .cc-project-card:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,0.08); }
-      .cc-timeline-list { display:flex; flex-direction:column; gap:10px; }
-      .cc-timeline-item { padding:12px 14px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); display:flex; flex-direction:column; gap:8px; }
-      .cc-movers-list { display:flex; flex-direction:column; gap:16px; }
+      .cc-timeline-list { display:flex; flex-direction:column; gap:8px; }
+      .cc-timeline-item { padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--bg) 72%, transparent); display:flex; flex-direction:column; gap:6px; }
+      .cc-timeline-list.compact .cc-timeline-item:nth-child(n+4) { display:none; }
+      .cc-movers-list { display:flex; flex-direction:column; gap:12px; }
       .cc-mover-card { border:1px solid var(--border); border-radius:18px; background:color-mix(in srgb, var(--card-bg) 96%, transparent); overflow:hidden; }
-      .cc-mover-head { padding:16px 18px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
-      .cc-mover-body { padding:0 18px 18px; display:flex; flex-direction:column; gap:14px; }
+      .cc-mover-head { padding:14px 16px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+      .cc-mover-body { padding:0 16px 16px; display:flex; flex-direction:column; gap:12px; }
+      .cc-mover-inline { display:grid; grid-template-columns:minmax(0, 1.15fr) minmax(220px, 0.85fr); gap:12px; align-items:start; }
       .cc-pill-row { display:flex; gap:6px; flex-wrap:wrap; }
-      .cc-blocker-list { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+      .cc-blocker-list { display:flex; flex-direction:column; gap:10px; }
+      .cc-blocker-row { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:12px; align-items:center; padding:12px 14px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); }
+      .cc-blocker-meta { display:flex; flex-direction:column; gap:6px; min-width:0; }
+      .cc-production-card { height:100%; }
+      .cc-production-body { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+      .cc-production-row { display:grid; grid-template-columns:minmax(0, 1fr); gap:8px; padding-bottom:10px; border-bottom:1px dashed var(--border); }
+      .cc-production-row:last-child { border-bottom:none; padding-bottom:0; }
+      .cc-production-vendor { font-size:11px; font-weight:900; color:var(--text-main); text-transform:uppercase; }
+      .cc-production-headline { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; }
+      .cc-production-total { font-size:16px; font-weight:900; font-family:monospace; color:var(--text-main); }
+      .cc-progress-track { width:100%; height:10px; border-radius:999px; background:color-mix(in srgb, var(--border) 78%, transparent); overflow:hidden; position:relative; }
+      .cc-progress-fill { height:100%; border-radius:999px; transition:width 0.35s ease; }
+      .cc-progress-stack { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; }
+      .cc-progress-mini { display:flex; flex-direction:column; gap:4px; }
+      .cc-progress-mini-label { font-size:9px; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.4px; }
+      .cc-progress-mini .cc-progress-track { height:6px; }
+      .cc-focus-stat { font-size:36px; line-height:1; font-weight:900; font-family:monospace; color:var(--text-main); }
+      .cc-focus-sub { font-size:11px; font-weight:700; color:var(--text-muted); line-height:1.45; }
+      .digest-shell.compact .cc-section-card { border-radius:18px; }
+      .digest-shell.compact .cc-section-head { padding:12px 14px 10px; }
+      .digest-shell.compact .cc-stage-body,
+      .digest-shell.compact .cc-production-body,
+      .digest-shell.compact .cc-mover-head,
+      .digest-shell.compact .cc-mover-body { padding-left:14px; padding-right:14px; }
+      .digest-shell.compact .cc-focus-body,
+      .digest-shell.compact .cc-focus-head { padding-left:14px; padding-right:14px; }
       body.digest-mode-active .inbox-sidebar { display: none !important; }
       body.digest-mode-active #review-hub-main-header { display:none !important; }
       body.digest-mode-active #grid-content,
@@ -1014,17 +1055,20 @@
       }
       @media screen and (max-width: 1440px) {
           .digest-kpi-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          .digest-hero-grid,
+          .cc-focus-grid,
           .digest-main-grid { grid-template-columns: minmax(0, 1fr); }
-          .cc-stage-grid,
-          .cc-blocker-list { grid-template-columns:minmax(0, 1fr); }
+          .cc-stage-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       }
       @media screen and (max-width: 1080px) {
           .digest-shell { gap: 24px; }
           .digest-ws-header { font-size: 30px; }
           .digest-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          .digest-brief-grid { grid-template-columns: minmax(0, 1fr); }
           .digest-filter-tabs { grid-template-columns:repeat(2, minmax(0, 1fr)); }
           .cc-project-grid { grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); }
+          .cc-stage-grid,
+          .cc-progress-stack,
+          .cc-mover-inline { grid-template-columns:minmax(0, 1fr); }
       }
       @media screen and (max-width: 720px) {
           .digest-doc-header { padding: 0 0 14px; }
@@ -1032,8 +1076,8 @@
           .digest-kpi-strip { grid-template-columns: minmax(0, 1fr); }
           .digest-section-label-row { align-items:flex-start; }
           .digest-filter-tabs { grid-template-columns:minmax(0, 1fr); }
-          .cc-project-grid,
-          .cc-blocker-list { grid-template-columns:minmax(0, 1fr); }
+          .cc-project-grid { grid-template-columns:minmax(0, 1fr); }
+          .cc-blocker-row { grid-template-columns:minmax(0, 1fr); }
           .digest-feed-time,
           .digest-feed-user { margin-left: 0; }
           body.digest-mode-active .outbox-pane {
@@ -5421,9 +5465,9 @@
           </div>`;
       }
 
-      function renderCommandCenterTimeline(logs, itemMap, emptyMsg, showStageBadge) {
+      function renderCommandCenterTimeline(logs, itemMap, emptyMsg, showStageBadge, compact) {
           if (!logs || logs.length === 0) return `<div class="digest-panel-empty">${esc(emptyMsg)}</div>`;
-          return `<div class="cc-timeline-list">` + logs.map(function(log) {
+          return `<div class="cc-timeline-list ${compact ? 'compact' : ''}">` + logs.map(function(log) {
               let item = itemMap[log.fdh] || null;
               let stageKey = getDigestStageKeyForLog(log, item);
               let meta = getDigestStageMeta(stageKey);
@@ -5448,53 +5492,58 @@
           }).join('') + `</div>`;
       }
 
-      function renderCommandCenterStageCard(stageKey, stageEntry, itemMap) {
+      function renderCommandCenterStageCard(stageKey, stageEntry, itemMap, opts) {
+          opts = opts || {};
           let meta = getDigestStageMeta(stageKey);
+          let timelineLimit = opts.compact ? 2 : 3;
+          let projectLimit = opts.compact ? 3 : 4;
           let topEditors = Object.keys(stageEntry.byUser).sort(function(a, b) { return stageEntry.byUser[b] - stageEntry.byUser[a]; }).slice(0, 3);
-          let projectCards = stageEntry.projects.slice(0, 6).map(function(entry) {
+          let projectCards = stageEntry.projects.slice(0, projectLimit).map(function(entry) {
               let latestLabel = entry.latestTs ? 'Latest move ' + formatDate(new Date(entry.latestTs), true) : 'Touched in current window';
               return renderCommandCenterProjectCard(entry.item, stageKey, latestLabel, entry.count + ' edits');
           }).join('');
-          return `<div class="cc-section-card">
+          let recentTimeline = renderCommandCenterTimeline(stageEntry.logs.slice(0, timelineLimit), itemMap, 'No timeline entries for this stage.', false, true);
+          return `<div class="cc-section-card cc-stage-column">
               <div class="cc-section-head">
                   <div>
                       <div class="digest-section-label" style="margin:0 0 6px 0; color:${meta.accent};">${esc(meta.label)}</div>
                       <div style="font-size:24px; font-weight:900; letter-spacing:-0.8px; color:var(--text-main);">${stageEntry.logs.length}</div>
-                      <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Changes in this stage during the current lookback window.</div>
+                      <div style="font-size:11px; font-weight:700; color:var(--text-muted);">${stageEntry.projects.length} projects touched in this stage.</div>
                   </div>
-                  <div class="cc-pill-row" style="justify-content:flex-end;">
+                  <div class="cc-stage-metrics" style="justify-content:flex-end;">
                       ${topEditors.length ? topEditors.map(function(user) {
                           return `<span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:4px 8px;">${esc(user)} ${stageEntry.byUser[user]}</span>`;
                       }).join('') : `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">No movers</span>`}
                   </div>
               </div>
-              <div style="padding:18px 22px; display:flex; flex-direction:column; gap:16px;">
-                  <div>
-                      <div class="digest-section-label" style="margin:0 0 10px 0;">Timeline</div>
-                      ${renderCommandCenterTimeline(stageEntry.logs.slice(0, 6), itemMap, 'No timeline entries for this stage.', false)}
+              <div class="cc-stage-body">
+                  <div class="cc-stage-preview">
+                      ${projectCards ? `<div class="cc-stage-list">${projectCards}</div>` : `<div class="digest-panel-empty">No projects touched in this stage.</div>`}
                   </div>
-                  <div>
-                      <div class="digest-section-label" style="margin:0 0 10px 0;">Touched Projects</div>
-                      ${projectCards ? `<div class="cc-project-grid">${projectCards}</div>` : `<div class="digest-panel-empty">No projects touched in this stage.</div>`}
+                  <div class="cc-stage-footer">
+                      <div class="digest-section-label" style="margin:0;">Recent Moves</div>
+                      ${recentTimeline}
                   </div>
               </div>
           </div>`;
       }
 
-      function renderCommandCenterMoverCard(editorEntry, itemMap) {
+      function renderCommandCenterMoverCard(editorEntry, itemMap, opts) {
+          opts = opts || {};
+          let compact = !!opts.compact;
           let stageGroupsHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
               let logs = editorEntry.logsByStage[stageKey] || [];
               if (!logs.length) return '';
               return `<div style="display:flex; flex-direction:column; gap:10px;">
                   <div class="digest-section-label" style="margin:0; color:${getDigestStageMeta(stageKey).accent};">${esc(getDigestStageMeta(stageKey).label)}</div>
-                  ${renderCommandCenterTimeline(logs.slice(0, 4), itemMap, 'No items in this stage.', false)}
+                  ${renderCommandCenterTimeline(logs.slice(0, compact ? 2 : 3), itemMap, 'No items in this stage.', false, true)}
               </div>`;
           }).join('');
-          let projectsHtml = editorEntry.projects.map(function(projectEntry) {
+          let projectsHtml = editorEntry.projects.slice(0, compact ? 3 : 4).map(function(projectEntry) {
               let latestLabel = projectEntry.latestTs ? 'Last touch ' + formatDate(new Date(projectEntry.latestTs), true) : 'Touched in current window';
               return renderCommandCenterProjectCard(projectEntry.item, projectEntry.stageKey, latestLabel, projectEntry.count + ' edits');
           }).join('');
-          return `<details class="cc-mover-card" ${editorEntry.rank < 3 ? 'open' : ''}>
+          return `<details class="cc-mover-card" ${editorEntry.rank < 1 ? 'open' : ''}>
               <summary class="cc-mover-head" style="cursor:pointer; list-style:none;">
                   <div>
                       <div style="font-size:15px; font-weight:900; color:var(--text-main);">${esc(editorEntry.user)}</div>
@@ -5511,10 +5560,12 @@
                           return `<span class="glass-pill ${getDigestStageMeta(stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(stageKey).shortLabel)} ${editorEntry.stageCounts[stageKey]}</span>`;
                       }).join('')}
                   </div>
-                  <div>${stageGroupsHtml || '<div class="digest-panel-empty">No stage-ordered movement available.</div>'}</div>
-                  <div>
+                  <div class="cc-mover-inline">
+                      <div>${stageGroupsHtml || '<div class="digest-panel-empty">No stage-ordered movement available.</div>'}</div>
+                      <div>
                       <div class="digest-section-label" style="margin:0 0 10px 0;">Projects Touched</div>
-                      ${projectsHtml ? `<div class="cc-project-grid">${projectsHtml}</div>` : `<div class="digest-panel-empty">No touched projects to show.</div>`}
+                      ${projectsHtml ? `<div class="cc-project-grid compact">${projectsHtml}</div>` : `<div class="digest-panel-empty">No touched projects to show.</div>`}
+                      </div>
                   </div>
               </div>
           </details>`;
@@ -5522,9 +5573,9 @@
 
       function renderCommandCenterBlockerCard(entry) {
           let pillCls = getQBStatusClass(entry.item.stage, entry.item.status, false);
-          return `<div class="cc-section-card">
-              <div style="padding:18px 20px; display:flex; flex-direction:column; gap:12px;">
-                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+          return `<div class="cc-blocker-row">
+              <div class="cc-blocker-meta">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
                       <div>
                           <div style="font-size:14px; font-weight:900; color:var(--text-main);">${esc(entry.item.fdh)}</div>
                           <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(entry.item.vendor || 'Unknown Vendor')}</div>
@@ -5535,22 +5586,80 @@
                       <span class="glass-pill ${pillCls}" style="font-size:9px; padding:4px 8px;">${esc((entry.item.stage || '-') + ' | ' + (entry.item.status || '-'))}</span>
                       ${entry.severityLabel ? `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${esc(entry.severityLabel)}</span>` : ''}
                   </div>
-                  <div style="font-size:26px; font-weight:900; font-family:monospace; color:var(--text-main);">${entry.ageDays}</div>
-                  <div style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase;">Days Sitting</div>
-                  <div style="font-size:11px; line-height:1.5; color:var(--text-main);">${esc(entry.reason)}</div>
+                  <div style="font-size:11px; line-height:1.45; color:var(--text-main);">${esc(entry.reason)}</div>
                   <div style="font-size:10px; font-weight:700; color:var(--text-muted);">Last movement ${esc(entry.lastMoveLabel)}</div>
-                  <div><button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open Project</button></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+                  <div style="font-size:24px; font-weight:900; font-family:monospace; color:var(--text-main);">${entry.ageDays}</div>
+                  <div style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase;">Days Sitting</div>
+                  <button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open</button>
               </div>
           </div>`;
       }
 
-      function renderCommandCenterSummaryCard(title, value, subline, pillClass, accentColor) {
-          return `<div class="cc-section-card">
-              <div style="padding:18px 20px; display:flex; flex-direction:column; gap:10px;">
-                  <div class="digest-section-label" style="margin:0; color:${accentColor || 'var(--text-muted)'};">${esc(title)}</div>
-                  <div style="font-size:30px; line-height:1; font-weight:900; color:var(--text-main);">${value}</div>
-                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">${esc(subline)}</div>
-                  <div><span class="glass-pill ${pillClass}" style="font-size:9px; padding:4px 8px;">${esc(title)}</span></div>
+      function renderCommandCenterTopMoverSpotlight(editorEntry, itemMap, maxTotal) {
+          if (!editorEntry) {
+              return `<div class="cc-focus-card"><div class="cc-focus-body"><div class="digest-panel-empty">No editor movement in the current window.</div></div></div>`;
+          }
+          let widthPct = maxTotal > 0 ? Math.max(12, Math.round((editorEntry.total / maxTotal) * 100)) : 0;
+          let timelineHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
+              let logs = editorEntry.logsByStage[stageKey] || [];
+              if (!logs.length) return '';
+              return `<div style="display:flex; flex-direction:column; gap:8px;">
+                  <div class="digest-section-label" style="margin:0; color:${getDigestStageMeta(stageKey).accent};">${esc(getDigestStageMeta(stageKey).label)}</div>
+                  ${renderCommandCenterTimeline(logs.slice(0, 2), itemMap, 'No items in this stage.', false, true)}
+              </div>`;
+          }).join('');
+          return `<div class="cc-focus-card">
+              <div class="cc-focus-head">
+                  <div>
+                      <div class="digest-section-label" style="margin:0 0 6px 0; color:var(--color-insight);">Top Mover</div>
+                      <div style="font-size:24px; font-weight:900; color:var(--text-main);">${esc(editorEntry.user)}</div>
+                  </div>
+                  <div style="text-align:right;">
+                      <div class="cc-focus-stat" style="color:var(--color-insight);">${editorEntry.total}</div>
+                      <div class="cc-focus-sub">meaningful edits</div>
+                  </div>
+              </div>
+              <div class="cc-focus-body">
+                  <div class="cc-progress-track"><div class="cc-progress-fill" style="width:${widthPct}%; background:linear-gradient(90deg,#3b82f6,#6366f1);"></div></div>
+                  <div class="cc-pill-row">
+                      ${DIGEST_STAGE_ORDER.filter(function(stageKey) { return (editorEntry.stageCounts[stageKey] || 0) > 0; }).map(function(stageKey) {
+                          return `<span class="glass-pill ${getDigestStageMeta(stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(stageKey).shortLabel)} ${editorEntry.stageCounts[stageKey]}</span>`;
+                      }).join('')}
+                  </div>
+                  <div class="cc-focus-sub">${esc(editorEntry.summary)}</div>
+                  <div>${timelineHtml || '<div class="digest-panel-empty">No recent moves to show.</div>'}</div>
+              </div>
+          </div>`;
+      }
+
+      function renderCommandCenterBlockerSpotlight(entry) {
+          if (!entry) {
+              return `<div class="cc-focus-card"><div class="cc-focus-body"><div class="digest-panel-empty">No aging blockers detected right now.</div></div></div>`;
+          }
+          let pillCls = getQBStatusClass(entry.item.stage, entry.item.status, false);
+          return `<div class="cc-focus-card">
+              <div class="cc-focus-head">
+                  <div>
+                      <div class="digest-section-label" style="margin:0 0 6px 0; color:var(--color-critical);">Biggest Blocker</div>
+                      <div style="font-size:22px; font-weight:900; color:var(--text-main);">${esc(entry.item.fdh)}</div>
+                      <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(entry.item.vendor || 'Unknown Vendor')}</div>
+                  </div>
+                  <div style="text-align:right;">
+                      <div class="cc-focus-stat" style="color:var(--color-critical);">${entry.ageDays}</div>
+                      <div class="cc-focus-sub">days sitting</div>
+                  </div>
+              </div>
+              <div class="cc-focus-body">
+                  <div class="cc-pill-row">
+                      <span class="glass-pill ${getDigestStageMeta(entry.stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(entry.stageKey).label)}</span>
+                      <span class="glass-pill ${pillCls}" style="font-size:9px; padding:4px 8px;">${esc((entry.item.stage || '-') + ' | ' + (entry.item.status || '-'))}</span>
+                      ${entry.severityLabel ? `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${esc(entry.severityLabel)}</span>` : ''}
+                  </div>
+                  <div class="cc-focus-sub">${esc(entry.reason)}</div>
+                  <div class="cc-focus-sub">Last movement ${esc(entry.lastMoveLabel)}</div>
+                  <div><button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open Project</button></div>
               </div>
           </div>`;
       }
@@ -5578,7 +5687,8 @@
           let editorMap = {};
           let latestByProject = {};
           let prodByVendor = {};
-          let summaryCounts = { permitApproved: 0, construction: 0, completed: 0, ofs: 0 };
+          let isRailOpen = !!document.querySelector('.reading-pane.admin-open');
+          let compactMode = isRailOpen && window.innerWidth >= 1100;
 
           (allActionItems || []).forEach(function(item) {
               let vendor = item.vendor || 'Unknown';
@@ -5591,8 +5701,6 @@
                       prodByVendor[vendor].nap += Number((item.vel.nap && item.vel.nap.daily) || 0);
                   }
               }
-              let itemStageKey = getDigestStageKeyForItem(item);
-              if (summaryCounts[itemStageKey] != null) summaryCounts[itemStageKey]++;
           });
 
           recentLogs.forEach(function(log) {
@@ -5660,7 +5768,7 @@
                   : stageKey === 'construction'
                       ? 'Construction has started, but movement has slowed and needs attention.'
                       : 'Field work appears complete, but the project has not reached OFS yet.';
-              if ((item.flags || '').trim()) reason += ' Diagnostics suggest: ' + getCriticalHubCategory(item).toLowerCase() + '.';
+              if ((item.flags || '').trim()) reason += ' Diagnostics suggest: ' + getCriticalType(item).toLowerCase() + '.';
               return {
                   item: item,
                   stageKey: stageKey,
@@ -5674,17 +5782,40 @@
               return String(a.item.fdh || '').localeCompare(String(b.item.fdh || ''));
           }).slice(0, 6);
 
-          let prodRows = Object.keys(prodByVendor).sort().filter(function(v) {
+          let prodRanked = Object.keys(prodByVendor).filter(function(v) {
               let d = prodByVendor[v];
               return d.ug > 0 || d.ae > 0 || d.fib > 0 || d.nap > 0;
           }).map(function(v) {
               let d = prodByVendor[v];
+              let total = d.ug + d.ae + d.fib + (d.nap * 100);
+              return { vendor: v, data: d, total: total };
+          }).sort(function(a, b) {
+              return b.total - a.total;
+          }).slice(0, compactMode ? 4 : 5);
+
+          let prodRows = prodRanked.map(function(entry) {
+              let v = entry.vendor;
+              let d = entry.data;
+              let total = entry.total;
+              let maxTotal = prodRanked.length ? prodRanked[0].total : total;
+              let totalPct = maxTotal > 0 ? Math.max(12, Math.round((total / maxTotal) * 100)) : 0;
+              let maxUnit = Math.max(d.ug || 0, d.ae || 0, d.fib || 0, d.nap || 0, 1);
               let stats = [];
               if (d.ug > 0) stats.push('<span style="color:#f97316; font-weight:800;">+' + d.ug.toLocaleString() + 'ft UG</span>');
               if (d.ae > 0) stats.push('<span style="color:#64748b; font-weight:800;">+' + d.ae.toLocaleString() + 'ft Strand</span>');
               if (d.fib > 0) stats.push('<span style="color:#ef4444; font-weight:800;">+' + d.fib.toLocaleString() + 'ft Fiber</span>');
               if (d.nap > 0) stats.push('<span style="color:#6366f1; font-weight:800;">+' + d.nap.toLocaleString() + ' NAPs</span>');
-              return '<div class="digest-stat-row"><span style="font-weight:800; font-size:11px;">' + esc(v) + '</span><div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; font-size:11px;">' + stats.join('') + '</div></div>';
+              return '<div class="cc-production-row">' +
+                  '<div class="cc-production-headline"><div class="cc-production-vendor">' + esc(v) + '</div><div class="cc-production-total">' + total.toLocaleString() + '</div></div>' +
+                  '<div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + totalPct + '%; background:linear-gradient(90deg,#0f766e,#22c55e);"></div></div>' +
+                  '<div class="cc-progress-stack">' +
+                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">UG</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.ug || 0) / maxUnit) * 100) + '%; background:#f97316;"></div></div></div>' +
+                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">Strand</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.ae || 0) / maxUnit) * 100) + '%; background:#64748b;"></div></div></div>' +
+                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">Fiber</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.fib || 0) / maxUnit) * 100) + '%; background:#ef4444;"></div></div></div>' +
+                      '<div class="cc-progress-mini"><div class="cc-progress-mini-label">NAPs</div><div class="cc-progress-track"><div class="cc-progress-fill" style="width:' + Math.round(((d.nap || 0) / maxUnit) * 100) + '%; background:#6366f1;"></div></div></div>' +
+                  '</div>' +
+                  '<div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; font-size:11px;">' + stats.join('') + '</div>' +
+              '</div>';
           }).join('') || '<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No production reported today.</div>';
 
           window._digestFeedData = {
@@ -5698,17 +5829,19 @@
 
           let dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
           let stageCardsHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
-              return renderCommandCenterStageCard(stageKey, stageData[stageKey], itemMap);
+              return renderCommandCenterStageCard(stageKey, stageData[stageKey], itemMap, { compact: compactMode });
           }).join('');
+          let topMoverSpotlight = renderCommandCenterTopMoverSpotlight(editorList[0], itemMap, editorList[0] ? editorList[0].total : 0);
+          let blockerSpotlight = renderCommandCenterBlockerSpotlight(blockerList[0]);
           let moversHtml = editorList.length
-              ? `<div class="cc-movers-list">${editorList.map(function(entry) { return renderCommandCenterMoverCard(entry, itemMap); }).join('')}</div>`
+              ? `<div class="cc-movers-list">${editorList.slice(1, compactMode ? 4 : 5).map(function(entry) { return renderCommandCenterMoverCard(entry, itemMap, { compact: compactMode }); }).join('')}</div>`
               : '<div class="digest-panel-empty">No top movers found in this window.</div>';
           let blockersHtml = blockerList.length
-              ? `<div class="cc-blocker-list">${blockerList.map(renderCommandCenterBlockerCard).join('')}</div>`
+              ? `<div class="cc-blocker-list">${blockerList.slice(1).map(renderCommandCenterBlockerCard).join('')}</div>`
               : '<div class="digest-panel-empty">No aging blockers detected right now.</div>';
 
           ws.innerHTML = `
-              <div class="digest-shell">
+              <div class="digest-shell ${compactMode ? 'compact' : ''}">
                   <div class="digest-doc-header">
                       <div>
                           <div class="digest-ws-header">Pipeline Command Center</div>
@@ -5716,35 +5849,28 @@
                       </div>
                   </div>
 
-                  <div class="digest-kpi-strip">
-                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Permitting Approved</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.permitApproved.accent};">${stageData.permitApproved.logs.length}</div></div>
-                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Construction</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.construction.accent};">${stageData.construction.logs.length}</div></div>
-                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Completed</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.completed.accent};">${stageData.completed.logs.length}</div></div>
-                      <div class="digest-kpi-pill"><div class="digest-kpi-label">OFS</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.ofs.accent};">${stageData.ofs.logs.length}</div></div>
-                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Top Movers Active</div><div class="digest-kpi-num" style="color:var(--color-insight);">${editorList.length}</div></div>
-                  </div>
-
-                  <div class="digest-section-block">
-                      <div class="digest-section-label">Executive Summary</div>
-                      <div class="digest-brief-grid">
-                          ${renderCommandCenterSummaryCard('Permitting Approved', stageData.permitApproved.projects.length, 'Projects that cleared permitting and need the next move.', DIGEST_STAGE_META.permitApproved.pillClass, DIGEST_STAGE_META.permitApproved.accent)}
-                          ${renderCommandCenterSummaryCard('Construction', stageData.construction.projects.length, 'Projects touched in construction during this window.', DIGEST_STAGE_META.construction.pillClass, DIGEST_STAGE_META.construction.accent)}
-                          ${renderCommandCenterSummaryCard('Completed', stageData.completed.projects.length, 'Projects marked complete but not necessarily in OFS yet.', DIGEST_STAGE_META.completed.pillClass, DIGEST_STAGE_META.completed.accent)}
-                          ${renderCommandCenterSummaryCard('OFS', stageData.ofs.projects.length, 'Projects that reached Open for Sale in this window.', DIGEST_STAGE_META.ofs.pillClass, DIGEST_STAGE_META.ofs.accent)}
+                  <div class="digest-hero-grid">
+                      <div class="digest-kpi-strip">
+                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Permitting Approved</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.permitApproved.accent};">${stageData.permitApproved.logs.length}</div><div class="digest-kpi-sub">${stageData.permitApproved.projects.length} projects ready for the next move.</div></div>
+                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Construction</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.construction.accent};">${stageData.construction.logs.length}</div><div class="digest-kpi-sub">${stageData.construction.projects.length} active project touches.</div></div>
+                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Completed</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.completed.accent};">${stageData.completed.logs.length}</div><div class="digest-kpi-sub">${stageData.completed.projects.length} projects nearing sale readiness.</div></div>
+                          <div class="digest-kpi-pill"><div class="digest-kpi-label">OFS</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.ofs.accent};">${stageData.ofs.logs.length}</div><div class="digest-kpi-sub">${stageData.ofs.projects.length} projects reached open-for-sale.</div></div>
+                          <div class="digest-kpi-pill"><div class="digest-kpi-label">Top Movers Active</div><div class="digest-kpi-num" style="color:var(--color-insight);">${editorList.length}</div><div class="digest-kpi-sub">${editorList[0] ? esc(editorList[0].user) + ' leads this window.' : 'No editor movement this window.'}</div></div>
                       </div>
-                  </div>
-
-                  <div class="digest-section-block">
-                      <div class="digest-section-label">Production Snapshot</div>
-                      <div class="cc-section-card">
+                      <div class="cc-section-card cc-production-card">
                           <div class="cc-section-head">
                               <div>
                                   <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor Production Today</div>
-                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Reported field output across active vendors.</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Top reported field output across active vendors.</div>
                               </div>
                           </div>
-                          <div style="padding:18px 22px;">${prodRows}</div>
+                          <div class="cc-production-body">${prodRows}</div>
                       </div>
+                  </div>
+
+                  <div class="cc-focus-grid">
+                      ${topMoverSpotlight}
+                      ${blockerSpotlight}
                   </div>
 
                   <div class="digest-section-block">
