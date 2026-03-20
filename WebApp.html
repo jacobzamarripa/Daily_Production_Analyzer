@@ -385,9 +385,9 @@
       .gantt-hud ::-webkit-scrollbar { width: 6px; } .gantt-hud ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 6px; }
 
       .top-nav { background: transparent; height: auto; box-sizing: border-box; padding: 10px 18px 6px; display: flex; align-items: center; z-index: 10000; position: relative; flex-shrink: 0; transition: background 0.3s, border-color 0.3s; gap: 12px; border-bottom: none; flex-wrap: wrap; }
-      .top-nav-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+      .top-nav-left { display: flex; align-items: center; gap: 12px; flex: 1 1 560px; min-width: 0; flex-wrap: wrap; }
       .nav-brand { font-size: 16px; font-weight: 900; letter-spacing: -0.5px; display: flex; align-items: center; flex-shrink: 0; padding: 10px 14px; border-radius: 18px; background: color-mix(in srgb, var(--card-bg) 88%, transparent); border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08); }
-      .nav-actions { display: flex; align-items: center; gap: 6px; flex: 1; justify-content: flex-end; min-width: 0; }
+      .nav-actions { display: flex; align-items: center; gap: 6px; flex: 1 1 320px; justify-content: flex-end; min-width: 0; flex-wrap: wrap; }
       .btn-icon { background: color-mix(in srgb, var(--card-bg) 84%, transparent); border: 1px solid var(--border); border-radius: 14px; padding: 5px 11px; cursor: pointer; color: var(--text-main); font-size: 15px; line-height: 1; display: flex; align-items: center; transition: all 0.2s; height: 34px; box-sizing: border-box; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06); }
       .btn-icon:hover { background: var(--card-bg); transform: translateY(-1px); }
       /* 2. Smart Context-Aware Filter Dock */
@@ -991,46 +991,52 @@
       }
 
       /* 🧠 UNIFIED METRICS HUD */
-      .kpi-nav-container { display: flex; align-items: center; gap: 12px; flex-shrink: 1; margin-left: 0; overflow: visible; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .kpi-nav-container { display: flex; align-items: center; gap: 12px; flex: 1 1 360px; margin-left: 0; overflow: visible; flex-wrap: wrap; min-width: 0; }
       .kpi-nav-container::-webkit-scrollbar { display: none; }
       
       .kpi-hud-group {
           display: flex;
           align-items: center;
+          flex-wrap: nowrap;
           background: color-mix(in srgb, var(--card-bg) 88%, transparent);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid var(--border);
-          border-radius: 16px;
-          padding: 4px;
+          border-radius: 18px;
+          padding: 5px;
           box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-          gap: 4px;
+          gap: 5px;
+          min-width: 0;
       }
 
       .kpi-hud-label {
-          font-size: 10px;
+          font-size: 9px;
           font-weight: 900;
           color: var(--text-muted);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          padding: 0 10px 0 8px;
+          letter-spacing: 0.9px;
+          padding: 0 12px 0 10px;
           border-right: 1px solid var(--border);
+          white-space: nowrap;
       }
 
       .kpi-nav-box {
           display: flex;
           align-items: center;
-          padding: 5px 12px;
-          border-radius: 12px;
+          padding: 6px 12px;
+          border-radius: 13px;
           transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
           border: 1px solid transparent;
+          min-width: 0;
       }
       .kpi-base {
           display: flex;
           align-items: baseline;
-          gap: 5px;
+          gap: 6px;
           flex-shrink: 0;
       }
+      .kpi-val { line-height: 1; }
+      .kpi-label { line-height: 1; white-space: nowrap; }
       .kpi-expand-wrap {
           max-width: 0;
           opacity: 0;
@@ -1074,17 +1080,222 @@
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(16px);
           border: 1px solid #333338;
-          border-radius: 12px;
-          padding: 16px 20px;
+          border-radius: 16px;
+          padding: 18px 20px;
           color: #fafafa;
           box-shadow: 0 20px 40px rgba(0,0,0,0.5);
           display: none;
           flex-direction: column;
           min-width: 320px;
+          width: min(560px, calc(100vw - 24px));
+          max-width: calc(100vw - 24px);
           opacity: 0;
           transform: translateY(10px);
           transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
           pointer-events: none;
+      }
+      .projects-hud.is-interactive { pointer-events: auto; }
+      .projects-hud-header {
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:12px;
+          border-bottom:1px solid #333338;
+          padding-bottom:10px;
+          margin-bottom:14px;
+      }
+      .projects-hud-title {
+          font-size:11px;
+          font-weight:900;
+          text-transform:uppercase;
+          letter-spacing:0.7px;
+          color:#fde68a;
+      }
+      .projects-hud-subtitle {
+          margin-top:4px;
+          font-size:11px;
+          line-height:1.45;
+          color:#d4d4d8;
+      }
+      .projects-hud-actions {
+          display:flex;
+          align-items:center;
+          gap:8px;
+          flex-wrap:wrap;
+          justify-content:flex-end;
+      }
+      .projects-hud-textbtn {
+          background:transparent;
+          border:none;
+          color:#fca5a5;
+          font-size:9px;
+          font-weight:900;
+          cursor:pointer;
+          text-transform:uppercase;
+          letter-spacing:0.5px;
+          padding:0;
+      }
+      .projects-hud-textbtn.neutral { color:#cbd5e1; }
+      .projects-hud-section {
+          display:flex;
+          flex-direction:column;
+          gap:8px;
+          margin-bottom:14px;
+      }
+      .projects-hud-section:last-child { margin-bottom:0; }
+      .projects-hud-label {
+          font-size:9px;
+          font-weight:900;
+          text-transform:uppercase;
+          letter-spacing:0.8px;
+          color:#a1a1aa;
+      }
+      .projects-hud-helper {
+          font-size:10px;
+          line-height:1.5;
+          color:#d4d4d8;
+      }
+      .projects-hud-chip-row {
+          display:flex;
+          flex-wrap:wrap;
+          gap:6px;
+      }
+      .projects-hud-chip {
+          display:inline-flex;
+          align-items:center;
+          gap:6px;
+          max-width:100%;
+          padding:5px 10px;
+          border-radius:999px;
+          background:rgba(255,255,255,0.08);
+          border:1px solid rgba(255,255,255,0.14);
+          font-size:10px;
+          font-weight:800;
+          color:#fafafa;
+      }
+      .projects-hud-chip-label {
+          font-size:8px;
+          font-weight:900;
+          text-transform:uppercase;
+          letter-spacing:0.6px;
+          color:#a1a1aa;
+      }
+      .projects-hud-chip-remove {
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          width:14px;
+          height:14px;
+          border-radius:999px;
+          background:rgba(255,255,255,0.08);
+          color:#e4e4e7;
+          cursor:pointer;
+          font-size:8px;
+          line-height:1;
+      }
+      .projects-hud-main {
+          display:flex;
+          gap:20px;
+          align-items:flex-start;
+      }
+      .projects-hud-pie {
+          width:130px;
+          height:130px;
+          border-radius:50%;
+          flex:0 0 130px;
+          box-shadow:0 8px 16px rgba(0,0,0,0.5);
+      }
+      .projects-hud-legend {
+          flex:1 1 auto;
+          display:flex;
+          flex-direction:column;
+          max-height:220px;
+          overflow-y:auto;
+          padding-right:4px;
+          gap:4px;
+      }
+      .projects-hud-legend-row {
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:12px;
+          cursor:pointer;
+          padding:6px 8px;
+          border-radius:10px;
+          border:1px solid transparent;
+          transition:all 0.2s;
+      }
+      .projects-hud-legend-main {
+          display:flex;
+          align-items:center;
+          gap:8px;
+          min-width:0;
+      }
+      .projects-hud-legend-swatch {
+          display:inline-block;
+          width:10px;
+          height:10px;
+          border-radius:50%;
+          flex:0 0 auto;
+      }
+      .projects-hud-legend-name {
+          color:#fafafa;
+          font-size:12px;
+          font-weight:800;
+          min-width:0;
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+      }
+      .projects-hud-legend-count {
+          color:#a1a1aa;
+          font-weight:900;
+          font-family:monospace;
+          font-size:13px;
+          flex:0 0 auto;
+      }
+      @media (max-width: 1280px) {
+          .top-nav-left { flex: 1 1 100%; }
+          .nav-actions { flex: 1 1 100%; justify-content: flex-start; }
+          .kpi-nav-container { flex: 1 1 100%; }
+      }
+      @media (max-width: 1100px) {
+          .top-nav { gap: 10px; }
+          .kpi-nav-container { gap: 8px; }
+          .kpi-hud-group { width: 100%; justify-content: space-between; }
+          .view-segment-group { order: 3; }
+          .nav-actions { order: 4; }
+      }
+      @media (max-width: 900px) {
+          .top-nav { padding: 8px 12px 6px; }
+          .top-nav-left { gap: 10px; }
+          .kpi-hud-group {
+              flex-wrap: wrap;
+              align-items: stretch;
+              gap: 6px;
+          }
+          .kpi-hud-label {
+              width: 100%;
+              border-right: none;
+              border-bottom: 1px solid var(--border);
+              padding: 2px 4px 8px;
+          }
+          .kpi-nav-box {
+              flex: 1 1 132px;
+              justify-content: center;
+          }
+          .projects-hud {
+              width: min(520px, calc(100vw - 20px));
+              max-width: calc(100vw - 20px);
+              padding: 16px;
+          }
+          .projects-hud-main {
+              flex-direction: column;
+              align-items: stretch;
+          }
+          .projects-hud-pie {
+              margin: 0 auto;
+          }
       }
       .projects-hud.visible {
           opacity: 1;
@@ -3034,23 +3245,75 @@
           applyFilters();
       }
 
+      function getFilterCategoryLabel(category) {
+          return ({ sev: 'Health', vendor: 'Vendor', city: 'City', ofs: 'OFS' }[category]) || category;
+      }
+
+      function getFilterValueLabel(category, value) {
+          if (category === 'sev') return ({ crit: 'Critical', warn: 'Warnings', info: 'Clear' }[value]) || value;
+          if (category === 'ofs') {
+              if (value === '60_DAYS') return '< 60 Days';
+              if (value === '90_DAYS') return '< 90 Days';
+          }
+          return value;
+      }
+
+      function getFilterSummaryText(category, selected, optionLabelMap, defaultLabel) {
+          if (selected.length === 0) return defaultLabel;
+          if (selected.length === 1) return optionLabelMap[selected[0]] || selected[0];
+          let pluralLabel = ({ sev: 'Health Filters', vendor: 'Vendors', city: 'Cities', ofs: 'OFS Filters' }[category]) || `${getFilterCategoryLabel(category)}s`;
+          return `${selected.length} ${pluralLabel}`;
+      }
+
+      function getProjectsHudFilterEntries() {
+          let entries = [];
+          ['sev', 'vendor', 'city', 'ofs'].forEach(function(category) {
+              (activeFilters[category] || []).forEach(function(value) {
+                  entries.push({
+                      category: category,
+                      categoryLabel: getFilterCategoryLabel(category),
+                      value: value,
+                      label: getFilterValueLabel(category, value)
+                  });
+              });
+          });
+          if (activePieStageFilter) {
+              entries.push({
+                  category: 'stage',
+                  categoryLabel: 'Stage',
+                  value: activePieStageFilter,
+                  label: activePieStageFilter,
+                  color: getStageColor(activePieStageFilter)
+              });
+          }
+          return entries;
+      }
+
+      function clearFilterCategory(category) {
+          if (!activeFilters[category]) return;
+          activeFilters[category] = [];
+          applyFilters();
+      }
+
       function renderMultiSelect(id, category, defaultLabel, optionsArr) {
           let wrap = getEl(id);
           if (!wrap) return;
           let selected = activeFilters[category];
           let optionLabelMap = {};
           optionsArr.forEach(opt => { optionLabelMap[opt.val] = opt.label; });
-          let displayText = selected.length === 0
-              ? defaultLabel
-              : (selected.length === 1 ? (optionLabelMap[selected[0]] || selected[0]) : `${selected.length} Selected`);
+          let displayText = getFilterSummaryText(category, selected, optionLabelMap, defaultLabel);
           let isActive = selected.length > 0;
-          let displayHtml = `<div class="ms-display ${isActive ? 'is-active' : ''}" onclick="toggleDropdown('${id}', event)"><span>${esc(displayText)}</span><span style="font-size:8px;">▼</span></div>`;
+          let semanticsText = `${getFilterCategoryLabel(category)} uses OR within this category and AND across categories.`;
+          let displayHtml = `<div class="ms-display ${isActive ? 'is-active' : ''}" onclick="toggleDropdown('${id}', event)" title="${esc(semanticsText)}"><span>${esc(displayText)}</span><span style="font-size:8px;">▼</span></div>`;
           let optionsHtml = `<div class="ms-dropdown" onclick="event.stopPropagation()">`;
           optionsArr.forEach(opt => {
               let isSel = selected.includes(opt.val);
               let style = isSel ? 'background:rgba(59,130,246,0.1);color:#2563eb;font-weight:900;' : '';
               optionsHtml += `<div class="ms-opt" style="${style}" onclick="toggleFilterValue('${category}','${escJs(opt.val)}')">${esc(opt.label)}${isSel ? '<span style="margin-left:auto;">✓</span>' : ''}</div>`;
           });
+          if (selected.length > 0) {
+              optionsHtml += `<div class="ms-opt" style="margin-top:4px; border-top:1px solid var(--border); color:#ef4444; font-weight:900;" onclick="clearFilterCategory('${category}')">Clear ${esc(getFilterCategoryLabel(category))}</div>`;
+          }
           optionsHtml += `</div>`;
           wrap.innerHTML = displayHtml + optionsHtml;
           wrap.classList.toggle('open', openDropdownId === id);
@@ -5464,6 +5727,7 @@
           }
           applyFilters();
           hidePieHUD('projects');
+          hidePieHUD('bsls');
           let clearBtn = getEl('btn-clear-filters');
           let clearZone = getEl('dock-clear-zone');
           if (clearBtn) clearBtn.classList.add('collapsed');
@@ -6844,6 +7108,7 @@
           let conicStr = [];
           let legendHtml = '';
           let currentPct = 0;
+          let activeFilterEntries = getProjectsHudFilterEntries();
 
           slices.forEach(s => {
               let pct = (s.count / total) * 100;
@@ -6852,34 +7117,61 @@
               let isActive = activePieStageFilter === s.label;
               let escapedLabel = s.label.replace(/'/g, "\\'");
               legendHtml += `
-              <div onclick="togglePieStageFilter('${escapedLabel}')" class="hover-trigger" style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:4px; cursor:pointer; padding:4px 8px; border-radius:8px; border: 1px solid ${isActive ? s.color : 'transparent'}; background:${isActive ? 'rgba(255,255,255,0.1)' : 'transparent'}; transition: all 0.2s;">
-                  <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${s.color};"></span>
-                      <span style="color:#fafafa; font-weight:800;">${s.label}</span>
+              <div onclick="togglePieStageFilter('${escapedLabel}')" class="projects-hud-legend-row hover-trigger" style="border-color:${isActive ? s.color : 'transparent'}; background:${isActive ? 'rgba(255,255,255,0.1)' : 'transparent'};">
+                  <div class="projects-hud-legend-main">
+                      <span class="projects-hud-legend-swatch" style="background:${s.color};"></span>
+                      <span class="projects-hud-legend-name">${s.label}</span>
                   </div>
-                  <span style="color:#a1a1aa; font-weight:900; font-family:monospace; font-size:14px;">${s.count.toLocaleString()}</span>
+                  <span class="projects-hud-legend-count">${s.count.toLocaleString()}</span>
               </div>`;
           });
 
-          let pieStyle = `background: conic-gradient(${conicStr.join(', ')}); border-radius: 50%; width: 130px; height: 130px; box-shadow: 0 8px 16px rgba(0,0,0,0.5);`;
-          let clearFilterBtn = activePieStageFilter ? `<button onclick="togglePieStageFilter(null)" style="background:transparent; border:none; color:#ef4444; font-size:9px; font-weight:900; cursor:pointer; text-transform:uppercase;">Clear Filter</button>` : '';
+          let pieStyle = `background: conic-gradient(${conicStr.join(', ')});`;
+          let clearStageBtn = activePieStageFilter ? `<button onclick="togglePieStageFilter(null)" class="projects-hud-textbtn">Clear Stage</button>` : '';
+          let clearAllBtn = activeFilterEntries.length > 0 ? `<button onclick="clearAllFilters()" class="projects-hud-textbtn neutral">Clear All</button>` : '';
+          let filterSummaryHtml = activeFilterEntries.length > 0
+              ? `<div class="projects-hud-chip-row">` + activeFilterEntries.map(function(entry) {
+                    let removeAction = entry.category === 'stage'
+                        ? `togglePieStageFilter(null)`
+                        : `toggleFilterValue('${entry.category}','${escJs(entry.value)}')`;
+                    let chipStyle = entry.color ? ` style="border-color:${entry.color}; box-shadow: inset 3px 0 0 ${entry.color};"` : '';
+                    return `<span class="projects-hud-chip"${chipStyle}><span class="projects-hud-chip-label">${esc(entry.categoryLabel)}</span><span>${esc(entry.label)}</span><span class="projects-hud-chip-remove" onclick="${removeAction}">✕</span></span>`;
+                }).join('') + `</div>`
+              : `<div class="projects-hud-helper">No category filters active. Use the dock selectors for multi-select, then click a stage row here to layer on a stage-specific view.</div>`;
+          let semanticsText = activeFilterEntries.length > 0
+              ? `OR within each filter category. AND across categories. Stage filtering from this HUD applies on top of the active set.`
+              : `Multi-select semantics are consistent across the app: OR within a category, AND across categories.`;
 
           hud.innerHTML = `
-              <div style="font-size:11px; font-weight:900; text-transform:uppercase; color:#fde68a; letter-spacing:0.5px; border-bottom:1px solid #333338; padding-bottom:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
-                  <span>Projects by Stage</span>
-                  ${clearFilterBtn}
+              <div class="projects-hud-header">
+                  <div>
+                      <div class="projects-hud-title">Projects by Stage</div>
+                      <div class="projects-hud-subtitle">${semanticsText}</div>
+                  </div>
+                  <div class="projects-hud-actions">
+                      ${clearStageBtn}
+                      ${clearAllBtn}
+                  </div>
               </div>
-              <div style="display:flex; gap:24px; align-items:center;">
-                  <div style="${pieStyle} flex-shrink:0;"></div>
-                  <div style="flex-grow:1; display:flex; flex-direction:column; max-height:180px; overflow-y:auto; padding-right:8px; gap:2px;">
+              <div class="projects-hud-section">
+                  <div class="projects-hud-label">Active Filters</div>
+                  ${filterSummaryHtml}
+              </div>
+              <div class="projects-hud-section">
+                  <div class="projects-hud-label">Stage Breakdown</div>
+                  <div class="projects-hud-main">
+                  <div class="projects-hud-pie" style="${pieStyle}"></div>
+                  <div class="projects-hud-legend">
                       ${legendHtml}
+                  </div>
                   </div>
               </div>
           `;
 
           let rect = pill.getBoundingClientRect();
-          let left = rect.left;
+          let left = Math.max(12, Math.min(rect.left, window.innerWidth - hud.offsetWidth - 12));
           let top = rect.bottom + 12;
+          hud.classList.add('is-interactive');
           hud.style.display = 'flex';
           hud.style.top = top + 'px';
           hud.style.left = left + 'px';
