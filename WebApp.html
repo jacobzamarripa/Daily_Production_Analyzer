@@ -384,10 +384,11 @@
       }
       .gantt-hud ::-webkit-scrollbar { width: 6px; } .gantt-hud ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 6px; }
 
-      .top-nav { background: transparent; height: auto; box-sizing: border-box; padding: 10px 18px 6px; display: flex; align-items: center; z-index: 10000; position: relative; flex-shrink: 0; transition: background 0.3s, border-color 0.3s; gap: 12px; border-bottom: none; flex-wrap: wrap; }
-      .top-nav-left { display: flex; align-items: center; gap: 12px; flex: 1 1 560px; min-width: 0; flex-wrap: wrap; }
+      .top-nav { background: transparent; height: auto; box-sizing: border-box; padding: 10px 18px 6px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; z-index: 10000; position: relative; flex-shrink: 0; transition: background 0.3s, border-color 0.3s; gap: 12px; border-bottom: none; }
+      .top-nav-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; justify-self: start; }
+      .top-nav-center { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; justify-self: center; }
       .nav-brand { font-size: 16px; font-weight: 900; letter-spacing: -0.5px; display: flex; align-items: center; flex-shrink: 0; padding: 10px 14px; border-radius: 18px; background: color-mix(in srgb, var(--card-bg) 88%, transparent); border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08); }
-      .nav-actions { display: flex; align-items: center; gap: 6px; flex: 1 1 320px; justify-content: flex-end; min-width: 0; flex-wrap: wrap; }
+      .nav-actions { display: flex; align-items: center; gap: 6px; justify-content: flex-end; min-width: 0; flex-wrap: wrap; justify-self: end; }
       .btn-icon { background: color-mix(in srgb, var(--card-bg) 84%, transparent); border: 1px solid var(--border); border-radius: 14px; padding: 5px 11px; cursor: pointer; color: var(--text-main); font-size: 15px; line-height: 1; display: flex; align-items: center; transition: all 0.2s; height: 34px; box-sizing: border-box; box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06); }
       .btn-icon:hover { background: var(--card-bg); transform: translateY(-1px); }
       /* 2. Smart Context-Aware Filter Dock */
@@ -708,6 +709,12 @@
           padding: 2px;
           box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
       }
+      .view-segment-group.view-picker {
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08), inset 0 1px 3px rgba(0,0,0,0.04);
+      }
+      .view-segment-group.view-tools {
+          background: color-mix(in srgb, var(--card-bg) 90%, transparent);
+      }
       .view-segment-btn {
           display: inline-flex;
           align-items: center;
@@ -905,7 +912,7 @@
           background: rgba(30, 30, 36, 0.6);
       }
       /* --- Digest Workspace Layout --- */
-      .digest-shell { width:100%; max-width:1720px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+      .digest-shell { width:100%; max-width:1700px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
       .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--border); padding:0 4px 14px; gap:16px; }
       .digest-ws-header { font-size:34px; line-height:1; font-weight:900; letter-spacing:-1.4px; color:var(--text-main); margin-bottom:8px; }
       .digest-doc-subheader { font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
@@ -917,10 +924,9 @@
       .digest-card-head { padding:16px 18px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
       .digest-card-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; }
       .digest-map-card { min-height:420px; }
-      .digest-map-shell { display:grid; grid-template-columns:minmax(0, 1fr) 260px; min-height:420px; }
-      .digest-map-wrap { position:relative; min-height:420px; background:linear-gradient(180deg, rgba(59,130,246,0.04), rgba(255,255,255,0)); }
-      #digest-vendor-map { width:100%; height:100%; min-height:420px; }
-      .digest-static-map {
+      .digest-map-grid { display:grid; grid-template-columns:minmax(0, 1fr) 260px; min-height:420px; }
+      #digest-vendor-map { width:100%; height:100%; min-height:420px; background:linear-gradient(180deg, rgba(59,130,246,0.04), rgba(255,255,255,0)); }
+      .digest-geo-map {
           position:relative;
           width:100%;
           height:100%;
@@ -932,29 +938,45 @@
               radial-gradient(circle at 82% 74%, rgba(168,85,247,0.10), transparent 18%),
               linear-gradient(180deg, rgba(255,255,255,0.92), rgba(241,245,249,0.98));
       }
-      .digest-static-map::before {
+      .digest-geo-map::before {
           content:"";
           position:absolute;
-          inset:24px 32px;
+          inset:24px 26px;
           border-radius:28px;
           background:
               linear-gradient(135deg, rgba(148,163,184,0.12), rgba(148,163,184,0.02)),
               linear-gradient(0deg, transparent 48%, rgba(148,163,184,0.08) 49%, transparent 50%),
               linear-gradient(90deg, transparent 48%, rgba(148,163,184,0.08) 49%, transparent 50%);
-          background-size:auto, 100% 96px, 96px 100%;
+          background-size:auto, 100% 88px, 88px 100%;
           border:1px solid rgba(148,163,184,0.12);
           box-shadow: inset 0 0 0 1px rgba(255,255,255,0.55);
       }
-      .digest-static-map-label {
+      .digest-map-region {
+          position:absolute;
+          border-radius:18px;
+          border:1px dashed rgba(148,163,184,0.28);
+          background:linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.06));
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+          z-index:1;
+      }
+      .digest-map-region-label,
+      .digest-map-city-label {
           position:absolute;
           font-size:10px;
           font-weight:900;
           letter-spacing:0.08em;
           text-transform:uppercase;
           color:var(--text-muted);
-          z-index:1;
+          z-index:2;
       }
-      .digest-static-dot {
+      .digest-map-region-label {
+          padding:4px 8px;
+          border-radius:999px;
+          background:rgba(255,255,255,0.82);
+          border:1px solid rgba(148,163,184,0.2);
+          box-shadow:0 4px 12px rgba(15,23,42,0.06);
+      }
+      .digest-map-dot {
           position:absolute;
           transform:translate(-50%, -50%);
           border-radius:999px;
@@ -962,17 +984,17 @@
           box-shadow:0 10px 24px rgba(15,23,42,0.20);
           cursor:pointer;
           transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-          z-index:2;
+          z-index:3;
       }
-      .digest-static-dot:hover {
+      .digest-map-dot:hover {
           transform:translate(-50%, -50%) scale(1.08);
           box-shadow:0 16px 30px rgba(15,23,42,0.24);
       }
-      .digest-static-dot.active {
+      .digest-map-dot.active {
           border-color:#0f172a;
           box-shadow:0 0 0 3px rgba(15,23,42,0.12), 0 16px 30px rgba(15,23,42,0.22);
       }
-      .digest-static-popup {
+      .digest-map-popup {
           position:absolute;
           min-width:280px;
           max-width:320px;
@@ -985,9 +1007,9 @@
           display:flex;
           flex-direction:column;
           gap:10px;
-          z-index:5;
+          z-index:6;
       }
-      .digest-static-popup::after {
+      .digest-map-popup::after {
           content:"";
           position:absolute;
           left:50%;
@@ -999,7 +1021,7 @@
           border-bottom:1px solid var(--border);
           transform:translateX(-50%) rotate(45deg);
       }
-      .digest-static-popup.hidden { display:none; }
+      .digest-map-popup.hidden { display:none; }
       .digest-map-sidecar { border-left:1px solid var(--border); background:color-mix(in srgb, var(--card-bg) 92%, transparent); padding:18px; display:flex; flex-direction:column; gap:14px; }
       .digest-filter-chip-row { display:flex; flex-wrap:wrap; gap:8px; }
       .digest-filter-chip { background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-size:10px; font-weight:900; color:var(--text-muted); cursor:pointer; transition:all 0.15s; }
@@ -1075,8 +1097,10 @@
       .digest-tooltip-metric-value { font-size:18px; font-weight:900; color:var(--text-main); }
       .digest-tooltip-bars .qb-vel-item { min-width:0 !important; }
       body.dark-mode .digest-map-tooltip { background:rgba(24,24,27,0.96); border-color:rgba(255,255,255,0.08); color:#e5e7eb; }
-      body.dark-mode .digest-static-map::before { border-color:rgba(255,255,255,0.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
-      body.dark-mode .digest-static-popup { background:rgba(24,24,27,0.96); border-color:rgba(255,255,255,0.08); color:#e5e7eb; }
+      body.dark-mode .digest-geo-map::before,
+      body.dark-mode .digest-map-region { border-color:rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+      body.dark-mode .digest-map-region-label { background:rgba(24,24,27,0.88); border-color:rgba(255,255,255,0.08); }
+      body.dark-mode .digest-map-popup { background:rgba(24,24,27,0.96); border-color:rgba(255,255,255,0.08); color:#e5e7eb; }
       body.dark-mode .digest-map-sidecar,
       body.dark-mode .digest-map-kpi,
       body.dark-mode .digest-tooltip-metric,
@@ -1097,14 +1121,13 @@
           }
       }
       @media screen and (max-width: 1440px) {
-          .digest-map-shell,
+          .digest-map-grid,
           .digest-middle-grid { grid-template-columns:minmax(0, 1fr); }
           .digest-kanban-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       }
       @media screen and (max-width: 1080px) {
           .digest-ws-header { font-size:30px; }
-          .digest-map-shell { min-height:auto; }
-          .digest-map-wrap,
+          .digest-map-grid { min-height:auto; }
           #digest-vendor-map { min-height:360px; }
       }
       @media screen and (max-width: 720px) {
@@ -1451,16 +1474,18 @@
           flex:0 0 auto;
       }
       @media (max-width: 1280px) {
-          .top-nav-left { flex: 1 1 100%; }
-          .nav-actions { flex: 1 1 100%; justify-content: flex-start; }
+          .top-nav { grid-template-columns: 1fr; }
+          .top-nav-left,
+          .top-nav-center,
+          .nav-actions { justify-self: stretch; }
+          .top-nav-center { justify-content: center; flex-wrap: wrap; }
+          .nav-actions { justify-content: flex-start; }
           .kpi-nav-container { flex: 1 1 100%; }
       }
       @media (max-width: 1100px) {
           .top-nav { gap: 10px; }
           .kpi-nav-container { gap: 8px; }
           .kpi-hud-group { width: 100%; justify-content: space-between; }
-          .view-segment-group { order: 3; }
-          .nav-actions { order: 4; }
       }
       @media (max-width: 900px) {
           .top-nav { padding: 8px 12px 6px; }
@@ -2978,34 +3003,34 @@
             <div id="projects-pie-hud" class="projects-hud"></div>
         </div>
       </div>
+      <div class="top-nav-center">
+          <div class="view-segment-group view-picker">
+              <button class="view-segment-btn active" id="view-btn-detail" onclick="switchWorkspaceView('detail')" title="Detail View">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+              </button>
+              <button class="view-segment-btn" id="view-btn-grid" onclick="switchWorkspaceView('grid')" title="Grid View">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </button>
+              <button class="view-segment-btn" id="view-btn-digest" onclick="switchWorkspaceView('digest')" title="Pipeline Command Center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </button>
+              <div style="width: 1px; height: 14px; background: var(--border); margin: 0 4px;"></div>
+              <button class="view-segment-btn" id="view-btn-gantt" onclick="openGanttView()" title="Gantt View">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="15" y2="12"></line><line x1="3" y1="18" x2="18" y2="18"></line></svg>
+              </button>
+          </div>
+          <div class="view-segment-group view-tools">
+              <button class="view-segment-btn" onclick="toggleWidget('calc-widget', event)" title="Benny Calculator">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line></svg>
+              </button>
+              <button class="view-segment-btn" onclick="toggleWidget('cal-widget', event)" title="Project Calendar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </button>
+          </div>
+      </div>
       <div id="critical-hub-overlay" class="critical-hub-overlay" onclick="closeCriticalHub()">
           <div id="critical-hub-panel" class="critical-hub-panel" onclick="event.stopPropagation()"></div>
       </div>
-
-      <div class="view-segment-group">
-          <button class="view-segment-btn active" id="view-btn-detail" onclick="switchWorkspaceView('detail')" title="Detail View">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-          </button>
-          <button class="view-segment-btn" id="view-btn-grid" onclick="switchWorkspaceView('grid')" title="Grid View">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          </button>
-          <button class="view-segment-btn" id="view-btn-digest" onclick="switchWorkspaceView('digest')" title="Pipeline Command Center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          </button>
-          <div style="width: 1px; height: 14px; background: var(--border); margin: 0 4px;"></div>
-          <button class="view-segment-btn" id="view-btn-gantt" onclick="openGanttView()" title="Gantt View">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="15" y2="12"></line><line x1="3" y1="18" x2="18" y2="18"></line></svg>
-          </button>
-      </div>
-      <div class="view-segment-group" style="margin-left: 8px;">
-          <button class="view-segment-btn" onclick="toggleWidget('calc-widget', event)" title="Benny Calculator">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="12" y1="18" x2="12" y2="18"></line></svg>
-          </button>
-          <button class="view-segment-btn" onclick="toggleWidget('cal-widget', event)" title="Project Calendar">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          </button>
-      </div>
-
       <div class="nav-actions">
         <span id="nav-ref-age" class="ref-age-badge" style="display:none;"></span>
         <span class="gemini-badge ai-ok" id="gemini-badge" title="Gemini API calls used today" style="display:none"></span>
@@ -5418,6 +5443,13 @@
           ofs:            { label: 'OFS', shortLabel: 'OFS', pillClass: 'pill-ofs', accent: '#06b6d4' },
           other:          { label: 'Other', shortLabel: 'Other', pillClass: 'pill-default', accent: '#64748b' }
       };
+      const DIGEST_MAP_BOUNDS = { minLat: 24.5, maxLat: 48.8, minLng: -107.5, maxLng: -74.0 };
+      const DIGEST_STATE_BOUNDS = {
+          TX: { minLat: 25.8, maxLat: 36.6, minLng: -106.7, maxLng: -93.4, label: 'Texas' },
+          MI: { minLat: 41.7, maxLat: 48.4, minLng: -90.5, maxLng: -82.3, label: 'Michigan' },
+          OH: { minLat: 38.4, maxLat: 42.4, minLng: -84.9, maxLng: -80.4, label: 'Ohio' },
+          PA: { minLat: 39.7, maxLat: 42.5, minLng: -80.7, maxLng: -74.7, label: 'Pennsylvania' }
+      };
 
       function getDigestStageMeta(key) {
           return DIGEST_STAGE_META[key] || DIGEST_STAGE_META.other;
@@ -5445,6 +5477,7 @@
 
       function getDigestConfigValue(dict, key) {
           if (!dict || !key) return null;
+          if (Array.isArray(dict)) return null;
           if (dict[key]) return dict[key];
           let wanted = String(key || '').trim().toLowerCase();
           let match = Object.keys(dict).find(function(dictKey) {
@@ -5453,17 +5486,65 @@
           return match ? dict[match] : null;
       }
 
-      function getDigestVendorGoal(vendor) {
-          let match = Number(getDigestConfigValue(digestVendorGoals || {}, vendor) || 0);
-          return match > 0 ? match : 0;
+      function normalizeDigestCityKey(city) {
+          return String(city || '')
+              .toUpperCase()
+              .replace(/\s*,\s*[A-Z]{2}$/g, '')
+              .replace(/\./g, '')
+              .replace(/[^A-Z0-9 ]/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
       }
 
-      function getDigestVendorCityEntry(vendor, fallbackCity) {
-          let match = getDigestConfigValue(digestVendorCities || {}, vendor);
-          if (match && !isNaN(Number(match.lat)) && !isNaN(Number(match.lng))) {
-              return { city: String(match.city || fallbackCity || vendor || 'Unknown'), lat: Number(match.lat), lng: Number(match.lng) };
+      function getDigestScopeKey(vendor, city) {
+          return [String(vendor || '').trim(), normalizeDigestCityKey(city || '')].join('||');
+      }
+
+      function getDigestScopeLabel(scopeKey) {
+          if (!scopeKey || scopeKey === 'ALL') return 'All Vendor Cities';
+          let parts = String(scopeKey).split('||');
+          let city = String(parts[1] || '').toLowerCase().replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+          return parts[0] + ' · ' + city;
+      }
+
+      function getDigestVendorCityEntry(vendor, city) {
+          let wantedVendor = String(vendor || '').trim().toLowerCase();
+          let wantedCity = normalizeDigestCityKey(city);
+          let match = (digestVendorCities || []).find(function(entry) {
+              return String(entry.vendor || '').trim().toLowerCase() === wantedVendor &&
+                  normalizeDigestCityKey(entry.city || '') === wantedCity;
+          });
+          if (match) {
+              return {
+                  vendor: String(match.vendor || vendor || '').trim(),
+                  city: String(match.city || city || '').trim(),
+                  state: String(match.state || '').trim(),
+                  lat: Number(match.lat),
+                  lng: Number(match.lng)
+              };
           }
-          return { city: String(fallbackCity || vendor || 'Unknown'), lat: null, lng: null };
+          return { vendor: String(vendor || '').trim(), city: String(city || '').trim(), state: '', lat: null, lng: null };
+      }
+
+      function getDigestScopeMatches(item) {
+          if (currentDigestVendorFilter === 'ALL') return true;
+          return getDigestScopeKey(item && item.vendor, item && item.city) === currentDigestVendorFilter;
+      }
+
+      function projectDigestPoint(lat, lng) {
+          let x = ((lng - DIGEST_MAP_BOUNDS.minLng) / (DIGEST_MAP_BOUNDS.maxLng - DIGEST_MAP_BOUNDS.minLng)) * 100;
+          let y = (1 - ((lat - DIGEST_MAP_BOUNDS.minLat) / (DIGEST_MAP_BOUNDS.maxLat - DIGEST_MAP_BOUNDS.minLat))) * 100;
+          return { x: x, y: y };
+      }
+
+      function getDigestScopeTone(entries, entry) {
+          let sorted = entries.slice().sort(function(a, b) { return a.progressPct - b.progressPct; });
+          let idx = Math.max(0, sorted.findIndex(function(candidate) { return candidate.scopeKey === entry.scopeKey; }));
+          let ratio = sorted.length <= 1 ? 1 : (idx / (sorted.length - 1));
+          if (ratio >= 0.75) return { fill: '#22c55e', pill: 'pill-complete' };
+          if (ratio >= 0.5) return { fill: '#64748b', pill: 'pill-default' };
+          if (ratio >= 0.25) return { fill: '#f59e0b', pill: 'pill-active' };
+          return { fill: '#dc2626', pill: 'pill-missing' };
       }
 
       function getDigestFootageTotal(item) {
@@ -5568,12 +5649,16 @@
           (allActionItems || []).forEach(function(item) {
               if (!isDigestActiveConstructionItem(item)) return;
               let vendor = String(item.vendor || '').trim();
-              if (!vendor || vendor === '-') return;
-              let cityEntry = getDigestVendorCityEntry(vendor, item.city);
-              if (!vendorMap[vendor]) {
-                  vendorMap[vendor] = {
+              let city = String(item.city || '').trim();
+              if (!vendor || vendor === '-' || !city) return;
+              let cityEntry = getDigestVendorCityEntry(vendor, city);
+              let scopeKey = getDigestScopeKey(vendor, cityEntry.city || city);
+              if (!vendorMap[scopeKey]) {
+                  vendorMap[scopeKey] = {
+                      scopeKey: scopeKey,
                       vendor: vendor,
                       city: cityEntry.city,
+                      state: cityEntry.state,
                       lat: cityEntry.lat,
                       lng: cityEntry.lng,
                       projectCount: 0,
@@ -5581,10 +5666,11 @@
                       aeDaily: 0, aeTot: 0, aeBom: 0,
                       fibDaily: 0, fibTot: 0, fibBom: 0,
                       napDaily: 0, napTot: 0, napBom: 0,
+                      scopeTotal: 0,
                       daysLeftTotal: 0, daysLeftCount: 0
                   };
               }
-              let entry = vendorMap[vendor];
+              let entry = vendorMap[scopeKey];
               entry.projectCount++;
               entry.ugDaily += Number((item.vel && item.vel.ug && item.vel.ug.daily) || 0);
               entry.ugTot += Number((item.vel && item.vel.ug && item.vel.ug.tot) || 0);
@@ -5598,17 +5684,25 @@
               entry.napDaily += Number((item.vel && item.vel.nap && item.vel.nap.daily) || 0);
               entry.napTot += Number((item.vel && item.vel.nap && item.vel.nap.tot) || 0);
               entry.napBom += Number((item.vel && item.vel.nap && item.vel.nap.bom) || 0);
+              entry.scopeTotal += Number((item.vel && item.vel.ug && item.vel.ug.bom) || 0) +
+                  Number((item.vel && item.vel.ae && item.vel.ae.bom) || 0) +
+                  Number((item.vel && item.vel.fib && item.vel.fib.bom) || 0);
               entry.daysLeftTotal += getDigestItemDaysLeft(item);
               entry.daysLeftCount++;
           });
-          return Object.keys(vendorMap).map(function(vendor) {
-              let entry = vendorMap[vendor];
+          let rows = Object.keys(vendorMap).map(function(scopeKey) {
+              let entry = vendorMap[scopeKey];
               entry.totalDaily = entry.ugDaily + entry.aeDaily + entry.fibDaily;
-              entry.goal = getDigestVendorGoal(entry.vendor);
-              entry.gauge = getDigestVendorGaugeStyle(entry.totalDaily, entry.goal, new Date());
+              entry.goal = entry.scopeTotal;
+              entry.progressPct = entry.scopeTotal > 0 ? (entry.totalDaily / entry.scopeTotal) * 100 : 0;
               entry.avgDaysLeft = entry.daysLeftCount ? Math.max(1, Math.round(entry.daysLeftTotal / entry.daysLeftCount)) : 14;
               return entry;
           }).sort(function(a, b) { return b.totalDaily - a.totalDaily; });
+          rows.forEach(function(entry) {
+              let tone = getDigestScopeTone(rows, entry);
+              entry.gauge = { pct: Math.max(0, Math.round(entry.progressPct)), pctRaw: Math.max(0, entry.progressPct), fill: tone.fill, tone: tone.pill };
+          });
+          return rows;
       }
 
       function renderDigestVendorMapTooltip(entry) {
@@ -5616,14 +5710,14 @@
               <div class="digest-map-tooltip-head">
                   <div>
                       <div class="digest-map-tooltip-title">${esc(entry.vendor)}</div>
-                      <div class="digest-map-tooltip-city">${esc(entry.city || 'Unknown City')}</div>
+                      <div class="digest-map-tooltip-city">${esc(entry.city || 'Unknown City')}${entry.state ? ', ' + esc(entry.state) : ''}</div>
                   </div>
-                  <span class="glass-pill ${entry.gauge.tone === 'good' ? 'pill-complete' : entry.gauge.tone === 'critical' ? 'pill-missing' : entry.gauge.tone === 'watch' ? 'pill-active' : 'pill-default'}" style="font-size:9px; padding:4px 8px;">${entry.projectCount} active projects</span>
+                  <span class="glass-pill ${entry.gauge.tone}" style="font-size:9px; padding:4px 8px;">${entry.projectCount} active projects</span>
               </div>
               <div class="digest-tooltip-metrics">
                   <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Actual Today</div><div class="digest-tooltip-metric-value digest-mono">${entry.totalDaily.toLocaleString()}</div></div>
-                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Daily Goal</div><div class="digest-tooltip-metric-value digest-mono">${entry.goal > 0 ? entry.goal.toLocaleString() : '--'}</div></div>
-                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Progress Today</div><div class="digest-tooltip-metric-value digest-mono">${entry.goal > 0 ? entry.gauge.pct + '%' : '--'}</div></div>
+                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Active Scope</div><div class="digest-tooltip-metric-value digest-mono">${entry.goal > 0 ? entry.goal.toLocaleString() : '--'}</div></div>
+                  <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Progress Today</div><div class="digest-tooltip-metric-value digest-mono">${entry.goal > 0 ? entry.progressPct.toFixed(2) + '%' : '--'}</div></div>
                   <div class="digest-tooltip-metric"><div class="digest-tooltip-metric-label">Avg Days Left</div><div class="digest-tooltip-metric-value digest-mono">${entry.avgDaysLeft}</div></div>
               </div>
               <div class="digest-tooltip-bars">
@@ -5644,38 +5738,41 @@
               host.innerHTML = '<div class="digest-panel-empty">No vendor city coordinates available for the current view.</div>';
               return;
           }
-          let minLat = Math.min.apply(null, usableEntries.map(function(entry) { return entry.lat; }));
-          let maxLat = Math.max.apply(null, usableEntries.map(function(entry) { return entry.lat; }));
-          let minLng = Math.min.apply(null, usableEntries.map(function(entry) { return entry.lng; }));
-          let maxLng = Math.max.apply(null, usableEntries.map(function(entry) { return entry.lng; }));
           let maxDaily = usableEntries.reduce(function(max, entry) { return Math.max(max, entry.totalDaily || 0); }, 1);
+          let regionHtml = Object.keys(DIGEST_STATE_BOUNDS).map(function(stateKey) {
+              let state = DIGEST_STATE_BOUNDS[stateKey];
+              let tl = projectDigestPoint(state.maxLat, state.minLng);
+              let br = projectDigestPoint(state.minLat, state.maxLng);
+              return `<div class="digest-map-region" style="left:${tl.x}%; top:${tl.y}%; width:${Math.max(5, br.x - tl.x)}%; height:${Math.max(5, br.y - tl.y)}%;"></div>
+                  <div class="digest-map-region-label" style="left:${tl.x + 1.2}%; top:${Math.max(2, tl.y - 4)}%;">${esc(state.label)}</div>`;
+          }).join('');
           let popupHtml = usableEntries.map(function(entry, idx) {
-              let x = ((entry.lng - minLng) / Math.max(0.1, (maxLng - minLng))) * 76 + 12;
-              let y = (1 - ((entry.lat - minLat) / Math.max(0.1, (maxLat - minLat)))) * 62 + 18;
-              let radius = 16 + Math.round(((entry.totalDaily || 0) / maxDaily) * 20);
-              let active = currentDigestVendorFilter === entry.vendor;
+              let point = projectDigestPoint(entry.lat, entry.lng);
+              let x = Math.min(96, Math.max(4, point.x));
+              let y = Math.min(92, Math.max(8, point.y));
+              let radius = 14 + Math.round(((entry.totalDaily || 0) / maxDaily) * 18);
+              let active = currentDigestVendorFilter === entry.scopeKey;
               return `
                   <button
-                      class="digest-static-dot ${active ? 'active' : ''}"
+                      class="digest-map-dot ${active ? 'active' : ''}"
                       style="left:${x}%; top:${y}%; width:${radius}px; height:${radius}px; background:${entry.gauge.fill};"
                       onmouseenter="toggleDigestMapPopup(${idx}, true)"
                       onmouseleave="toggleDigestMapPopup(${idx}, false)"
-                      onclick="setDigestVendorFilter('${escJs(currentDigestVendorFilter === entry.vendor ? 'ALL' : entry.vendor)}')"
-                      title="${esc(entry.vendor)}">
+                      onclick="setDigestVendorFilter('${escJs(currentDigestVendorFilter === entry.scopeKey ? 'ALL' : entry.scopeKey)}')"
+                      title="${esc(entry.vendor + ' · ' + entry.city)}">
                   </button>
                   <div
-                      class="digest-static-popup hidden"
+                      class="digest-map-popup hidden"
                       id="digest-map-popup-${idx}"
                       style="left:${x}%; top:${y}%;">
                       ${renderDigestVendorMapTooltip(entry)}
                   </div>
-                  <div class="digest-static-map-label" style="left:${x}%; top:calc(${y}% + ${Math.max(18, radius / 2 + 10)}px); transform:translateX(-50%);">${esc(entry.city || entry.vendor)}</div>
+                  <div class="digest-map-city-label" style="left:${x}%; top:calc(${y}% + ${Math.max(18, radius / 2 + 10)}px); transform:translateX(-50%);">${esc(entry.city || entry.vendor)}</div>
               `;
           }).join('');
           host.innerHTML = `
-              <div class="digest-static-map">
-                  <div class="digest-static-map-label" style="left:14%; top:14%;">North</div>
-                  <div class="digest-static-map-label" style="right:10%; top:82%;">South</div>
+              <div class="digest-geo-map">
+                  ${regionHtml}
                   ${popupHtml}
               </div>
           `;
@@ -5801,14 +5898,14 @@
           let itemMap = {};
           (allActionItems || []).forEach(function(item) { itemMap[String(item.fdh || '')] = item; });
           let vendorEntries = buildDigestVendorMetrics();
-          if (currentDigestVendorFilter !== 'ALL' && !vendorEntries.some(function(entry) { return entry.vendor === currentDigestVendorFilter; })) currentDigestVendorFilter = 'ALL';
-          let filteredItems = (allActionItems || []).filter(function(item) { return currentDigestVendorFilter === 'ALL' || item.vendor === currentDigestVendorFilter; });
+          if (currentDigestVendorFilter !== 'ALL' && !vendorEntries.some(function(entry) { return entry.scopeKey === currentDigestVendorFilter; })) currentDigestVendorFilter = 'ALL';
+          let filteredItems = (allActionItems || []).filter(getDigestScopeMatches);
           let recentLogs = (allGlobalLogs || []).filter(function(log) {
               return Number(log.timestampObj || 0) >= cutoff.getTime() && !!itemMap[log.fdh];
           });
           let filteredLogs = recentLogs.filter(function(log) {
               let item = itemMap[log.fdh];
-              return currentDigestVendorFilter === 'ALL' || (item && item.vendor === currentDigestVendorFilter);
+              return item && getDigestScopeMatches(item);
           }).sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
           let latestByProject = {};
           filteredLogs.forEach(function(log) { latestByProject[log.fdh] = Math.max(latestByProject[log.fdh] || 0, Number(log.timestampObj || 0)); });
@@ -5886,7 +5983,8 @@
               editorList: editorList,
               blockerList: blockerList,
               totalActual: vendorEntries.reduce(function(sum, entry) { return sum + (entry.totalDaily || 0); }, 0),
-              totalGoal: vendorEntries.reduce(function(sum, entry) { return sum + (entry.goal || 0); }, 0)
+              totalGoal: vendorEntries.reduce(function(sum, entry) { return sum + (entry.goal || 0); }, 0),
+              dotCount: vendorEntries.length
           };
       }
 
@@ -5902,31 +6000,31 @@
                   <div class="digest-doc-header">
                       <div>
                           <div class="digest-ws-header">Dailies Command Center</div>
-                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; Map-First Operations Dashboard &nbsp;&middot;&nbsp; ${currentDigestVendorFilter === 'ALL' ? 'All Vendors' : esc(currentDigestVendorFilter)}</div>
+                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; Production Command Surface &nbsp;&middot;&nbsp; ${esc(getDigestScopeLabel(currentDigestVendorFilter))}</div>
                       </div>
                   </div>
                   <div class="digest-card digest-map-card">
                       <div class="digest-card-head">
                           <div>
-                              <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor Production Map</div>
-                              <div style="font-size:12px; font-weight:700; color:var(--text-muted);">City dots size against active construction footage output and open a native velocity HUD on hover.</div>
+                              <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor City Production Map</div>
+                              <div style="font-size:12px; font-weight:700; color:var(--text-muted);">One dot per vendor-city using today’s footage against active construction scope in OH, MI, PA, and TX.</div>
                           </div>
                       </div>
-                      <div class="digest-map-shell">
-                          <div class="digest-map-wrap"><div id="digest-vendor-map"></div></div>
+                      <div class="digest-map-grid">
+                          <div id="digest-vendor-map"></div>
                           <div class="digest-map-sidecar">
                               <div class="digest-filter-chip-row">
                                   <button class="digest-filter-chip ${currentDigestVendorFilter === 'ALL' ? 'active' : ''}" onclick="setDigestVendorFilter('ALL')">All Vendors</button>
-                                  ${data.vendorEntries.slice(0, 5).map(function(entry) { return `<button class="digest-filter-chip ${currentDigestVendorFilter === entry.vendor ? 'active' : ''}" onclick="setDigestVendorFilter('${escJs(entry.vendor)}')">${esc(entry.vendor)}</button>`; }).join('')}
+                                  ${data.vendorEntries.slice(0, 5).map(function(entry) { return `<button class="digest-filter-chip ${currentDigestVendorFilter === entry.scopeKey ? 'active' : ''}" onclick="setDigestVendorFilter('${escJs(entry.scopeKey)}')">${esc(entry.vendor)} · ${esc(entry.city)}</button>`; }).join('')}
                               </div>
-                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Actual Today</div><div class="digest-map-kpi-value digest-mono">${data.totalActual.toLocaleString()}</div><div class="digest-map-kpi-sub">${data.vendorEntries.length} active construction vendors</div></div>
-                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Target vs Actual</div><div class="digest-map-kpi-value digest-mono">${data.totalGoal > 0 ? totalPct + '%' : '--'}</div><div class="digest-map-kpi-sub">${data.totalGoal > 0 ? data.totalGoal.toLocaleString() + ' ft goal' : 'No target data set'}</div></div>
-                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Scope in Motion</div><div class="digest-map-kpi-value digest-mono">${data.stageData.construction.projects.length}</div><div class="digest-map-kpi-sub">construction projects in current view</div></div>
+                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Actual Today</div><div class="digest-map-kpi-value digest-mono">${data.totalActual.toLocaleString()}</div><div class="digest-map-kpi-sub">${data.dotCount} vendor-city dots in motion</div></div>
+                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Scope Progress</div><div class="digest-map-kpi-value digest-mono">${data.totalGoal > 0 ? totalPct + '%' : '--'}</div><div class="digest-map-kpi-sub">${data.totalGoal > 0 ? data.totalGoal.toLocaleString() + ' ft active scope' : 'No active scope data'}</div></div>
+                              <div class="digest-map-kpi"><div class="digest-map-kpi-label">Construction Projects</div><div class="digest-map-kpi-value digest-mono">${data.stageData.construction.projects.length}</div><div class="digest-map-kpi-sub">active construction projects in current view</div></div>
                               <div class="digest-map-legend">
-                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot red"></span><span>Below 50% of daily goal</span></div>
-                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot yellow"></span><span>50% to 89% of daily goal</span></div>
-                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot neutral"></span><span>90% to 99% of daily goal</span></div>
-                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot green"></span><span>100%+ of daily goal</span></div>
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot red"></span><span>Lowest city progress vs peer dots</span></div>
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot yellow"></span><span>Watching pace against peer dots</span></div>
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot neutral"></span><span>Steady city output</span></div>
+                                  <div class="digest-map-legend-row"><span class="digest-map-legend-dot green"></span><span>Highest city progress vs peer dots</span></div>
                               </div>
                           </div>
                       </div>
@@ -5969,7 +6067,7 @@
                           <div>
                               <div class="digest-panel-kicker">Dailies Command Center</div>
                               <div class="digest-panel-count">Operations Rail</div>
-                              <div class="digest-panel-sub">${currentDigestVendorFilter === 'ALL' ? 'Top movers and blockers across all vendors.' : 'Scoped to ' + esc(currentDigestVendorFilter) + '.'}</div>
+                              <div class="digest-panel-sub">${currentDigestVendorFilter === 'ALL' ? 'Top movers and blockers across all vendor-city scopes.' : 'Scoped to ' + esc(getDigestScopeLabel(currentDigestVendorFilter)) + '.'}</div>
                           </div>
                           <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
                               <span class="ob-tab-badge ob-tab-badge-purple" style="position:static; min-width:28px; height:28px; border-radius:14px; border:1px solid var(--border); box-shadow:none;">${movers.length + blockers.length}</span>

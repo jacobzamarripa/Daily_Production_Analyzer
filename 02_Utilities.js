@@ -118,7 +118,7 @@ function exportInboxReviewsCSV() {
 }
 
 function getDashboardData() {
-  const CACHE_KEY = 'dashboard_data_cache_v8';
+  const CACHE_KEY = 'dashboard_data_cache_v9';
   const cache = CacheService.getScriptCache();
   const cached = cache.get(CACHE_KEY);
   if (cached) { try { return JSON.parse(cached); } catch(e) {} }
@@ -128,7 +128,7 @@ function getDashboardData() {
   if (!mirrorSheet || mirrorSheet.getLastRow() < 2) return { actionItems: [], totalRows: 0, headers: [] };
   const refDict = getReferenceDictionary();
   const vendorGoals = getVendorDailyGoals();
-  const vendorCities = getVendorCityCoordinates();
+  const cityCoordinates = getCityCoordinates();
 
   const data = mirrorSheet.getDataRange().getValues();
   const headers = data[0].map(String); // Force strings
@@ -276,6 +276,8 @@ function getDashboardData() {
   }
 
   let refDataDate = String(PropertiesService.getScriptProperties().getProperty('refDataImportDate') || "");
+  let vendorCities = buildVendorCityCoordinateRecords(actionItems, cityCoordinates);
+
   let payload = {
     actionItems: actionItems,
     hasRecentChanges: hasRecentGlobalChange,
@@ -335,8 +337,8 @@ function getVendorDailyGoals() {
   return goalDict;
 }
 
-function getVendorCityCoordinates() {
-  let cityDict = Object.assign({}, DEFAULT_VENDOR_CITY_COORDS || {});
+function getCityCoordinates() {
+  let cityDict = Object.assign({}, DEFAULT_CITY_COORDS || {});
   let sources = [];
   try {
     sources.push(SpreadsheetApp.getActiveSpreadsheet());
@@ -350,21 +352,19 @@ function getVendorCityCoordinates() {
     let values = sheet.getDataRange().getValues();
     let headers = values[0].map(function(h) { return String(h || '').trim(); });
     let upper = headers.map(function(h) { return h.toUpperCase(); });
-    let vendorIdx = upper.findIndex(function(h) {
-      return h === "VENDOR" || h === "CONTRACTOR" || h.includes("VENDOR NAME");
-    });
     let cityIdx = upper.findIndex(function(h) { return h === "CITY" || h.includes("VENDOR CITY"); });
+    let stateIdx = upper.findIndex(function(h) { return h === "STATE" || h === "ST" || h.includes("STATE"); });
     let latIdx = upper.findIndex(function(h) { return h === "LAT" || h === "LATITUDE"; });
     let lngIdx = upper.findIndex(function(h) { return h === "LNG" || h === "LONG" || h === "LONGITUDE"; });
-    if (vendorIdx === -1 || cityIdx === -1 || latIdx === -1 || lngIdx === -1) return;
+    if (cityIdx === -1 || latIdx === -1 || lngIdx === -1) return;
 
     for (let i = 1; i < values.length; i++) {
-      let vendor = String(values[i][vendorIdx] || '').trim();
       let city = String(values[i][cityIdx] || '').trim();
+      let state = stateIdx > -1 ? String(values[i][stateIdx] || '').trim() : '';
       let lat = Number(values[i][latIdx]);
       let lng = Number(values[i][lngIdx]);
-      if (!vendor || !city || isNaN(lat) || isNaN(lng)) continue;
-      cityDict[vendor] = { city: city, lat: lat, lng: lng };
+      if (!city || isNaN(lat) || isNaN(lng)) continue;
+      cityDict[normalizeCityKey(city)] = { city: city, state: state, lat: lat, lng: lng };
     }
   };
 
@@ -379,6 +379,39 @@ function getVendorCityCoordinates() {
   });
 
   return cityDict;
+}
+
+function normalizeCityKey(city) {
+  return String(city || '')
+    .toUpperCase()
+    .replace(/\s*,\s*[A-Z]{2}$/g, '')
+    .replace(/\./g, '')
+    .replace(/[^A-Z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function buildVendorCityCoordinateRecords(actionItems, cityCoordinates) {
+  let rows = [];
+  let seen = {};
+  (actionItems || []).forEach(function(item) {
+    let vendor = String(item && item.vendor || '').trim();
+    let city = String(item && item.city || '').trim();
+    if (!vendor || !city) return;
+    let coord = cityCoordinates[normalizeCityKey(city)] || null;
+    if (!coord) return;
+    let key = [vendor.toUpperCase(), normalizeCityKey(city)].join('||');
+    if (seen[key]) return;
+    seen[key] = true;
+    rows.push({
+      vendor: vendor,
+      city: coord.city || city,
+      state: coord.state || '',
+      lat: Number(coord.lat),
+      lng: Number(coord.lng)
+    });
+  });
+  return rows;
 }
 
 function promptLoadSpecificDateToQB() { 
