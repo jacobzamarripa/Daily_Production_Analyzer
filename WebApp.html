@@ -4971,7 +4971,10 @@
 
       function selectItemForNav(fdh) {
           let item = (allActionItems || []).find(i => i.fdh === fdh);
-          if (item) openPane(item, null);
+          if (item) {
+              openPane(item, null);
+              centerQueueCardByFdh(item.fdh, 'smooth');
+          }
       }
 
       function renderDigestWorkspace() {
@@ -6527,6 +6530,7 @@
               let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
 
               let card = document.createElement('div'); card.className = `email-card ${highestSev}`; card.id = `card-${item.fdh}`;
+              card.setAttribute('data-fdh', item.fdh);
 
               card.onclick = () => { openPane(item, card); };
 
@@ -6790,6 +6794,7 @@
               if(cardEl) cardEl.classList.add('selected');
               document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('is-selected'));
               document.querySelectorAll(`.grid-card[data-fdh="${CSS.escape(String(item.fdh || ''))}"]`).forEach(c => c.classList.add('is-selected'));
+              centerQueueCardByFdh(item.fdh, 'smooth');
 
               setStyle('welcome-screen', 'display', 'none');
               setStyle('detail-layout', 'display', 'flex');
@@ -8002,6 +8007,15 @@
         return filteredItems || [];
       }
 
+      function centerQueueCardByFdh(fdh, behavior) {
+        const container = getEl('inbox-list');
+        if (!container || !fdh) return;
+        const target = container.querySelector(`[data-fdh="${CSS.escape(String(fdh || ''))}"]`) || getEl(`card-${fdh}`) || getEl(`queue-grid-card-${fdh}`);
+        if (!target) return;
+        const top = target.offsetTop - (container.clientHeight / 2) + (target.offsetHeight / 2);
+        container.scrollTo({ top: Math.max(0, top), behavior: behavior || 'smooth' });
+      }
+
       function ensureDeckIndex() {
         const items = getDeckItems();
         if (items.length === 0) {
@@ -8018,11 +8032,8 @@
         const active = items[deckIndex];
         document.querySelectorAll('.inbox-list .grid-card').forEach(card => card.classList.remove('is-selected'));
         if (!active) return;
-        const card = getEl(`card-${active.fdh}`);
-        if (card) {
-          card.classList.add('is-selected');
-          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        document.querySelectorAll(`.inbox-list [data-fdh="${CSS.escape(String(active.fdh || ''))}"]`).forEach(card => card.classList.add('is-selected'));
+        centerQueueCardByFdh(active.fdh, 'smooth');
       }
 
       function switchWorkspaceView(mode) {
