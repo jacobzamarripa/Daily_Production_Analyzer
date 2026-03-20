@@ -13,7 +13,7 @@
         --qb-fib-bg: linear-gradient(to bottom, #64748b 0%, #171717 25%, #171717 75%, #000000 100%);
         --qb-nap-bg: linear-gradient(90deg, #4338ca 0%, #6366f1 70%, #22d3ee 100%);
         --qb-fib-border: #ef4444; --qb-nap-border: #6366f1;
-        --starGold: #fbbf24; --accent: #3b82f6; --gantt-panel-height: 34vh; --inbox-panel-width: 380px;
+        --starGold: #fbbf24; --accent: #3b82f6; --gantt-panel-height: 34vh; --inbox-panel-width: 380px; --panel-gutter-x: 16px; --panel-gutter-y: 12px;
         /* Status Pill Colors */
         --pill-active-txt: #b45309;   --pill-active-bg: rgba(253,224,71,0.25);   --pill-active-bdr: #facc15;
         --pill-ofs-txt: #1d4ed8;      --pill-ofs-bg: rgba(59,130,246,0.15);      --pill-ofs-bdr: #3b82f6;
@@ -905,12 +905,15 @@
           background: rgba(30, 30, 36, 0.6);
       }
       /* --- Digest Workspace Layout --- */
-      .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--border); padding-bottom:14px; margin-bottom:20px; }
-      .digest-ws-header { font-size:24px; font-weight:900; letter-spacing:-1px; color:var(--text-main); margin-bottom:4px; }
-      .digest-doc-subheader { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+      .digest-shell { width: 100%; max-width: 1680px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+      .digest-doc-header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--border); padding:0 4px 18px; margin-bottom:0; gap:20px; }
+      .digest-ws-header { font-size:34px; line-height:1; font-weight:900; letter-spacing:-1.4px; color:var(--text-main); margin-bottom:8px; }
+      .digest-doc-subheader { font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+      .digest-main-grid { display:grid; grid-template-columns:minmax(0, 1.35fr) minmax(360px, 0.95fr); gap:28px; align-items:start; }
+      .digest-column { display:flex; flex-direction:column; gap:28px; min-width:0; }
       .digest-ws-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px; align-items:start; width:100%; }
-      .digest-ws-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; box-shadow:0 4px 20px rgba(15,23,42,0.04); overflow:hidden; }
-      .digest-ws-card-hdr { padding:12px 18px; background:var(--bg); border-bottom:1px solid var(--border); font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; }
+      .digest-ws-card { background:var(--card-bg); border:1px solid var(--border); border-radius:22px; box-shadow:0 14px 40px rgba(15,23,42,0.06); overflow:hidden; }
+      .digest-ws-card-hdr { padding:16px 22px; background:color-mix(in srgb, var(--bg) 82%, transparent); border-bottom:1px solid var(--border); font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:0.75px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; gap:12px; }
       .digest-ws-list { display:flex; flex-direction:column; }
       .digest-ws-item { padding:12px 18px; border-bottom:1px dashed var(--border); display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:background 0.15s; gap:12px; }
       .digest-ws-item:last-child { border-bottom:none; }
@@ -918,46 +921,128 @@
       .digest-ws-fdh { font-size:14px; font-weight:900; color:var(--text-main); }
       .digest-ws-detail { font-size:11px; font-weight:600; color:var(--text-muted); margin-top:2px; }
       /* KPI strip */
-      .digest-kpi-strip { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
-      .digest-kpi-pill { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px 18px; flex:1; min-width:90px; }
-      .digest-kpi-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:4px; }
-      .digest-kpi-num { font-size:22px; font-weight:900; color:var(--text-main); font-family:monospace; letter-spacing:-1px; }
+      .digest-kpi-strip { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:16px; margin-bottom:0; }
+      .digest-kpi-pill { background:linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 96%, #ffffff 4%), var(--card-bg)); border:1px solid var(--border); border-radius:18px; padding:18px 20px; min-width:0; box-shadow:0 10px 28px rgba(15,23,42,0.05); }
+      .digest-kpi-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:8px; }
+      .digest-kpi-num { font-size:30px; line-height:1; font-weight:900; color:var(--text-main); font-family:monospace; letter-spacing:-1.6px; }
       /* Section labels */
-      .digest-section-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin:20px 0 10px 2px; }
-      .digest-section-label-row { display:flex; justify-content:space-between; align-items:center; margin:20px 0 10px 0; flex-wrap:wrap; gap:8px; }
-      .digest-section-label-row > span { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+      .digest-section-block { display:flex; flex-direction:column; gap:14px; min-width:0; }
+      .digest-section-label { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin:0 0 0 2px; }
+      .digest-section-label-row { display:flex; justify-content:space-between; align-items:center; margin:0; flex-wrap:wrap; gap:12px; }
+      .digest-section-label-row > span { font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); }
       /* Morning brief 2-col */
-      .digest-brief-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; }
+      .digest-brief-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20px; }
       /* Leaderboard */
-      .digest-leaderboard { display:flex; flex-direction:column; padding:4px 0; }
-      .digest-leaderboard-row { display:flex; align-items:center; gap:14px; padding:10px 18px; border-bottom:1px dashed var(--border); }
+      .digest-leaderboard { display:flex; flex-direction:column; padding:8px 0; }
+      .digest-leaderboard-row { display:flex; align-items:center; gap:16px; padding:14px 22px; border-bottom:1px dashed var(--border); }
       .digest-leaderboard-row:last-child { border-bottom:none; }
-      .digest-leaderboard-rank { font-size:15px; width:30px; flex-shrink:0; text-align:center; font-weight:900; color:var(--text-muted); }
+      .digest-leaderboard-rank { font-size:16px; width:34px; flex-shrink:0; text-align:center; font-weight:900; color:var(--text-muted); }
       .digest-leaderboard-info { flex:1; min-width:0; }
-      .digest-leaderboard-name { font-size:13px; font-weight:900; color:var(--text-main); }
-      .digest-leaderboard-breakdown { font-size:10px; font-weight:600; color:var(--text-muted); margin:2px 0 5px 0; }
-      .digest-leaderboard-bar-track { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+      .digest-leaderboard-name { font-size:15px; font-weight:900; color:var(--text-main); }
+      .digest-leaderboard-breakdown { font-size:11px; font-weight:700; color:var(--text-muted); margin:4px 0 8px 0; }
+      .digest-leaderboard-bar-track { height:6px; background:var(--border); border-radius:999px; overflow:hidden; }
       .digest-leaderboard-bar-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#6366f1); border-radius:2px; transition:width 0.5s ease; }
-      .digest-leaderboard-count { font-size:18px; font-weight:900; font-family:monospace; color:var(--color-insight); min-width:36px; text-align:right; }
+      .digest-leaderboard-count { font-size:22px; font-weight:900; font-family:monospace; color:var(--color-insight); min-width:44px; text-align:right; }
       /* Filter buttons */
-      .digest-filter-strip { display:flex; gap:6px; flex-wrap:wrap; }
-      .digest-filter-btn { background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:10px; font-weight:800; cursor:pointer; color:var(--text-muted); transition:all 0.15s; font-family:inherit; }
-      .digest-filter-btn:hover { background:var(--card-bg); color:var(--text-main); }
-      .digest-filter-btn.active { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+      .digest-filter-tabs { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+      .digest-filter-btn { background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:10px 12px; font-size:10px; font-weight:900; cursor:pointer; color:var(--text-muted); transition:all 0.15s; font-family:inherit; display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:left; box-shadow:0 4px 12px rgba(15,23,42,0.04); }
+      .digest-filter-btn:hover { background:var(--card-bg); color:var(--text-main); transform:translateY(-1px); }
+      .digest-filter-btn.active { background:var(--card-bg); color:var(--text-main); border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.14), 0 8px 20px rgba(59,130,246,0.08); }
+      .digest-filter-btn-label { font-size:10px; font-weight:900; letter-spacing:0.35px; text-transform:uppercase; }
+      .digest-filter-btn-count { font-size:16px; line-height:1; font-weight:900; font-family:monospace; color:var(--text-main); }
       /* Activity feed */
-      .digest-feed-item { display:flex; align-items:flex-start; gap:12px; padding:12px 18px; border-bottom:1px dashed var(--border); cursor:pointer; transition:background 0.15s; }
+      .digest-feed-item { display:flex; align-items:flex-start; gap:14px; padding:18px 22px; border-bottom:1px dashed var(--border); cursor:pointer; transition:background 0.15s; }
       .digest-feed-item:last-child { border-bottom:none; }
       .digest-feed-item:hover { background:rgba(59,130,246,0.04); }
-      .digest-feed-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+      .digest-feed-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:7px; }
       .digest-feed-body { flex:1; min-width:0; }
-      .digest-feed-row1 { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px; }
-      .digest-feed-fdh { font-size:13px; font-weight:900; color:var(--text-main); }
-      .digest-feed-vendor { font-size:9px; font-weight:700; color:var(--text-muted); text-transform:uppercase; }
-      .digest-feed-cat { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.3px; }
-      .digest-feed-time { font-size:10px; font-weight:600; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
-      .digest-feed-row2 { display:flex; align-items:center; gap:8px; }
-      .digest-feed-change { font-size:12px; font-weight:700; color:var(--text-main); }
-      .digest-feed-user { font-size:10px; font-weight:700; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
+      .digest-feed-row1 { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+      .digest-feed-fdh { font-size:15px; font-weight:900; color:var(--text-main); }
+      .digest-feed-vendor { font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase; }
+      .digest-feed-cat { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; }
+      .digest-feed-time { font-size:11px; font-weight:700; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
+      .digest-feed-row2 { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+      .digest-feed-change { font-size:13px; font-weight:700; color:var(--text-main); flex:1 1 360px; min-width:0; }
+      .digest-feed-user { font-size:11px; font-weight:700; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
+      .digest-feed-card { margin-bottom: 12px; }
+      .digest-panel-shell { display:flex; flex-direction:column; flex-grow:1; min-height:0; }
+      .digest-panel-head { padding:18px 20px 16px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:14px; background:color-mix(in srgb, var(--card-bg) 96%, transparent); }
+      .digest-panel-title { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+      .digest-panel-kicker { font-size:10px; font-weight:900; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); }
+      .digest-panel-count { font-size:24px; line-height:1; font-weight:900; color:var(--text-main); letter-spacing:-0.8px; }
+      .digest-panel-sub { font-size:11px; font-weight:700; color:var(--text-muted); }
+      .digest-panel-body { flex:1 1 auto; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
+      .digest-panel-empty { padding:32px 24px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic; }
+      .cc-section-card { background:var(--card-bg); border:1px solid var(--border); border-radius:22px; box-shadow:0 14px 40px rgba(15,23,42,0.06); overflow:hidden; }
+      .cc-section-head { padding:18px 22px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; }
+      .cc-stage-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20px; }
+      .cc-stage-stack { display:flex; flex-direction:column; gap:16px; }
+      .cc-project-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; }
+      .cc-project-card { background:color-mix(in srgb, var(--bg) 68%, transparent); border:1px solid var(--border); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s; }
+      .cc-project-card:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,0.08); }
+      .cc-timeline-list { display:flex; flex-direction:column; gap:10px; }
+      .cc-timeline-item { padding:12px 14px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb, var(--bg) 72%, transparent); display:flex; flex-direction:column; gap:8px; }
+      .cc-movers-list { display:flex; flex-direction:column; gap:16px; }
+      .cc-mover-card { border:1px solid var(--border); border-radius:18px; background:color-mix(in srgb, var(--card-bg) 96%, transparent); overflow:hidden; }
+      .cc-mover-head { padding:16px 18px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+      .cc-mover-body { padding:0 18px 18px; display:flex; flex-direction:column; gap:14px; }
+      .cc-pill-row { display:flex; gap:6px; flex-wrap:wrap; }
+      .cc-blocker-list { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+      body.digest-mode-active .inbox-sidebar { display: none !important; }
+      body.digest-mode-active #review-hub-main-header { display:none !important; }
+      body.digest-mode-active #grid-content,
+      body.digest-mode-active #pane-content,
+      body.digest-mode-active #welcome-screen,
+      body.digest-mode-active #deck-stage { display: none !important; }
+      body.digest-mode-active #digest-workspace { transition:width 0.28s ease, max-width 0.28s ease, padding 0.28s ease; }
+      body.digest-mode-active .outbox-pane {
+          position: absolute !important;
+          right: var(--panel-gutter-x) !important;
+          top: var(--panel-gutter-y) !important;
+          bottom: var(--panel-gutter-y) !important;
+          height: auto !important;
+          z-index: 1005 !important;
+          box-shadow: -15px 0 40px rgba(0,0,0,0.2) !important;
+      }
+      @media screen and (min-width: 1100px) {
+          body.digest-mode-active .outbox-pane { width: 410px !important; min-width: 410px !important; }
+          body.digest-mode-active .reading-pane.admin-open #digest-workspace {
+              width: calc(100% - 438px) !important;
+              max-width: calc(100% - 438px) !important;
+              padding-right: 18px !important;
+          }
+      }
+      @media screen and (max-width: 1440px) {
+          .digest-kpi-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          .digest-main-grid { grid-template-columns: minmax(0, 1fr); }
+          .cc-stage-grid,
+          .cc-blocker-list { grid-template-columns:minmax(0, 1fr); }
+      }
+      @media screen and (max-width: 1080px) {
+          .digest-shell { gap: 24px; }
+          .digest-ws-header { font-size: 30px; }
+          .digest-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .digest-brief-grid { grid-template-columns: minmax(0, 1fr); }
+          .digest-filter-tabs { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+          .cc-project-grid { grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); }
+      }
+      @media screen and (max-width: 720px) {
+          .digest-doc-header { padding: 0 0 14px; }
+          .digest-ws-header { font-size: 26px; }
+          .digest-kpi-strip { grid-template-columns: minmax(0, 1fr); }
+          .digest-section-label-row { align-items:flex-start; }
+          .digest-filter-tabs { grid-template-columns:minmax(0, 1fr); }
+          .cc-project-grid,
+          .cc-blocker-list { grid-template-columns:minmax(0, 1fr); }
+          .digest-feed-time,
+          .digest-feed-user { margin-left: 0; }
+          body.digest-mode-active .outbox-pane {
+              right: 0 !important;
+              top: 0 !important;
+              bottom: 0 !important;
+              height: 100% !important;
+          }
+      }
       .ms-opt input { display: none !important; }
       .ms-wrap.open .ms-dropdown { display: flex; }
       .ms-opt {
@@ -1410,8 +1495,9 @@
           max-width: 380px !important;
           height: auto !important;
           max-height: none !important;
-          margin-left: 14px;
-          margin-bottom: 10px;
+          margin-left: var(--panel-gutter-x);
+          margin-top: var(--panel-gutter-y);
+          margin-bottom: var(--panel-gutter-y);
           display: flex;
           flex-direction: column;
           overflow: hidden !important;
@@ -1531,7 +1617,7 @@
           overflow-x: hidden !important;
       }
       #welcome-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; height: 100%; text-align: center; }
-      .admin-dock { position: absolute; top: 0; right: 14px; bottom: 10px; width: auto; display: flex; justify-content: flex-end; pointer-events: none; z-index: 8; }
+      .admin-dock { position: absolute; top: var(--panel-gutter-y); right: var(--panel-gutter-x); bottom: var(--panel-gutter-y); width: auto; display: flex; justify-content: flex-end; pointer-events: none; z-index: 8; }
       .reading-pane.admin-open .admin-dock { pointer-events: auto; }
       #grid-content {
           display: none;
@@ -2332,17 +2418,19 @@
           width: 100%;
           flex: 1 1 auto;
           overflow-y: auto;
-          padding: 80px 20px 20px;
+          padding: 88px 28px 36px;
           box-sizing: border-box;
-          max-width: 1200px;
-          margin: 0 auto;
+          max-width: none;
+          margin: 0;
           align-self: stretch;
+          min-width: 0;
       }
       body.digest-mode-active #digest-workspace {
           display: block !important;
-          max-width: min(1280px, calc(100vw - 40px));
-          margin: 0 auto;
-          padding-top: 92px;
+          width: 100%;
+          max-width: none;
+          margin: 0;
+          padding: 96px 32px 40px;
       }
       .schedule-today-indicator {
           position: absolute;
@@ -2738,8 +2826,8 @@
           </div>
           <div class="startup-card" onclick="completeStartup('digest')">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            <h3>Digest</h3>
-            <p>Pipeline Shifts</p>
+            <h3>Command Center</h3>
+            <p>Pipeline Intelligence</p>
           </div>
         </div>
       </div>
@@ -2830,7 +2918,7 @@
           <button class="view-segment-btn" id="view-btn-grid" onclick="switchWorkspaceView('grid')" title="Grid View">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
           </button>
-          <button class="view-segment-btn" id="view-btn-digest" onclick="switchWorkspaceView('digest')" title="Daily Digest">
+          <button class="view-segment-btn" id="view-btn-digest" onclick="switchWorkspaceView('digest')" title="Pipeline Command Center">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
           </button>
           <div style="width: 1px; height: 14px; background: var(--border); margin: 0 4px;"></div>
@@ -3134,7 +3222,7 @@
             </div>
                 <div class="outbox-pane" id="outbox-pane">
                    <div id="review-hub-main-header" class="inbox-header" style="padding-top:14px; padding-bottom:14px; gap:12px;">
-                      <div class="inbox-title inbox-title-stack" style="margin-right:4px;"><span>Review</span><span>Hub</span></div>
+                      <div class="inbox-title inbox-title-stack" id="review-hub-title" style="margin-right:4px;"><span>Review</span><span>Hub</span></div>
                       <div class="panel-tab-bar" style="flex-grow:1; border:none; padding:0; background:transparent; min-height:0;">
                         <button class="panel-tab active" id="panel-tab-admin" onclick="switchPanelTab('admin')">
                             Admin <span id="admin-badge" class="ob-tab-badge ob-tab-badge-crit" style="display:none;">0</span>
@@ -3150,6 +3238,7 @@
                    </div>
 
                    <div id="deck-action-panel" style="display:none; flex-direction:column; flex-grow:1; overflow-y:auto; padding:20px; gap:16px;"></div>
+                   <div id="digest-action-panel" style="display:none; flex-direction:column; flex-grow:1; min-height:0; overflow:hidden;"></div>
 
                    <div id="ob-panel-admin" style="display:flex; flex-grow:1; flex-direction:column; overflow:hidden;">
                       <div class="admin-strip" style="flex-shrink:0;">
@@ -3400,9 +3489,10 @@
           isGridMode = (currentWorkspaceView === 'grid');
           isDeckMode = isSlideFaceActive();
 
-          document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active');
-          if (isGridMode || currentWorkspaceView === 'digest') document.body.classList.add('grid-mode-active');
+          document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active', 'digest-mode-active');
+          if (isGridMode) document.body.classList.add('grid-mode-active');
           if (isDeckMode) document.body.classList.add('deck-mode-active');
+          if (currentWorkspaceView === 'digest') document.body.classList.add('digest-mode-active');
           if (currentWorkspaceView === 'gantt') document.body.classList.add('gantt-view-active');
       }
 
@@ -3444,6 +3534,7 @@
           syncDockPlacementState();
           syncRawDataStripState();
           syncSlideActionDeck();
+          syncOutboxPanelMode();
           syncDockLayoutSpacing();
           updateFloatingPillsPosition();
       }
@@ -4692,6 +4783,47 @@
       function getReviewedBadgeCount() {
           return getStagedReviewItems().length + (committedItems || []).length;
       }
+      function syncOutboxPanelMode() {
+          let title = getEl('review-hub-title');
+          let tabBar = document.querySelector('#review-hub-main-header .panel-tab-bar');
+          let deckPanel = getEl('deck-action-panel');
+          let digestPanel = getEl('digest-action-panel');
+          let adminPanel = getEl('ob-panel-admin');
+          let reviewedPanel = getEl('ob-panel-reviewed');
+          let changelogPanel = getEl('ob-panel-changelog');
+          let fab = getEl('admin-fab');
+          let isDigestView = currentWorkspaceView === 'digest';
+          let isDeckView = isSlideFaceActive();
+
+          if (title) {
+              title.innerHTML = isDigestView ? '<span>Project</span><span>Changes</span>' : '<span>Review</span><span>Hub</span>';
+          }
+          if (tabBar) tabBar.style.display = (isDigestView || isDeckView) ? 'none' : 'flex';
+          if (deckPanel) deckPanel.style.display = isDeckView ? 'flex' : 'none';
+          if (digestPanel) digestPanel.style.display = isDigestView ? 'flex' : 'none';
+          if (fab) {
+              fab.title = isDigestView ? 'Project Changes' : 'Admin / Reviewed';
+              fab.setAttribute('aria-label', isDigestView ? 'Open project changes panel' : 'Open admin panel');
+          }
+
+          if (isDigestView) {
+              if (adminPanel) adminPanel.style.display = 'none';
+              if (reviewedPanel) reviewedPanel.style.display = 'none';
+              if (changelogPanel) changelogPanel.style.display = 'none';
+              return;
+          }
+
+          if (isDeckView) {
+              if (adminPanel) adminPanel.style.display = 'none';
+              if (reviewedPanel) reviewedPanel.style.display = 'none';
+              if (changelogPanel) changelogPanel.style.display = 'none';
+              return;
+          }
+
+          if (adminPanel) adminPanel.style.display = (currentPanelTab === 'admin') ? 'flex' : 'none';
+          if (reviewedPanel) reviewedPanel.style.display = (currentPanelTab === 'reviewed') ? 'flex' : 'none';
+          if (changelogPanel) changelogPanel.style.display = (currentPanelTab === 'changelog') ? 'flex' : 'none';
+      }
       function switchPanelTab(tab) {
           currentPanelTab = tab;
           let adminPanel = getEl('ob-panel-admin'), reviewedPanel = getEl('ob-panel-reviewed'), changelogPanel = getEl('ob-panel-changelog');
@@ -4711,6 +4843,7 @@
               if (clBadge) clBadge.style.display = 'none';
               renderChangeLog();
           }
+          syncOutboxPanelMode();
       }
       function renderChangeLog() {
           let list = getEl('changelog-list');
@@ -4859,6 +4992,7 @@
           }
       }
       function syncAdminPanelForViewport() {
+          syncOutboxPanelMode();
           setAdminPanelOpen(shouldAutoOpenAdminPanel());
       }
       function toggleMobileMenu() {
@@ -4885,6 +5019,15 @@
           syncAdminPanelForViewport();
       }
       window.addEventListener('resize', () => {
+          if (currentWorkspaceView === 'digest') {
+              if (window.innerWidth <= 768) return;
+              if (shouldAutoOpenAdminPanel()) {
+                  setAdminPanelOpen(true);
+              } else if (isIPadLike()) {
+                  setAdminPanelOpen(false);
+              }
+              return;
+          }
           if (!currentActiveItem || window.innerWidth <= 768) return;
           if (shouldAutoOpenAdminPanel()) {
               setAdminPanelOpen(true);
@@ -5190,93 +5333,347 @@
           }
       }
 
-      let currentDigestFilter = 'all';
+      let currentDigestFilter = 'permitApproved';
+      const DIGEST_STAGE_ORDER = ['permitApproved', 'construction', 'completed', 'ofs'];
+      const DIGEST_STAGE_META = {
+          permitApproved: { label: 'Permitting Approved', shortLabel: 'Permits', pillClass: 'pill-permit', accent: '#a855f7' },
+          construction:   { label: 'Construction', shortLabel: 'Construction', pillClass: 'pill-active', accent: '#f59e0b' },
+          completed:      { label: 'Completed', shortLabel: 'Completed', pillClass: 'pill-complete', accent: '#22c55e' },
+          ofs:            { label: 'OFS', shortLabel: 'OFS', pillClass: 'pill-ofs', accent: '#3b82f6' },
+          other:          { label: 'Other', shortLabel: 'Other', pillClass: 'pill-default', accent: '#64748b' }
+      };
+
+      function getDigestStageMeta(key) {
+          return DIGEST_STAGE_META[key] || DIGEST_STAGE_META.other;
+      }
+
+      function getDigestStageKeyFromValues(stage, status, type, val) {
+          let st = String(stage || '').toUpperCase();
+          let stat = String(status || '').toUpperCase();
+          let t = String(type || '').toUpperCase();
+          let v = String(val || '').toUpperCase();
+          let referencesPermitApproved = (st.includes('PERMIT') && stat.includes('APPROV'))
+              || ((t.includes('STATUS') || t.includes('STAGE')) && v.includes('PERMIT') && v.includes('APPROV'));
+          let referencesOfs = st.includes('OFS')
+              || stat.includes('OFS')
+              || v.includes('OPEN FOR SALE')
+              || v.includes('OFS');
+          let referencesCompleted = (stat.includes('COMPLETE') && !st.includes('OFS'))
+              || (v.includes('COMPLETE') && !referencesOfs);
+          let referencesConstruction = st.includes('FIELD CX')
+              || st.includes('CONSTRUCTION')
+              || v.includes('FIELD CX')
+              || v.includes('CONSTRUCTION');
+          if (referencesPermitApproved) return 'permitApproved';
+          if (referencesOfs) return 'ofs';
+          if (referencesCompleted) return 'completed';
+          if (referencesConstruction) return 'construction';
+          return 'other';
+      }
+
+      function getDigestStageKeyForItem(item) {
+          if (!item) return 'other';
+          return getDigestStageKeyFromValues(item.stage, item.status, '', '');
+      }
+
+      function getDigestStageKeyForLog(log, item) {
+          return getDigestStageKeyFromValues(item && item.stage, item && item.status, log && log.type, log && log.val);
+      }
+
+      function getDigestStageAnchorDate(item, stageKey, latestTs) {
+          let candidate = null;
+          if (stageKey === 'permitApproved') candidate = safeDate(item && item.qbRef && item.qbRef.permitAppr);
+          else if (stageKey === 'construction') candidate = safeDate(item && item.cxStart);
+          else if (stageKey === 'completed') candidate = safeDate(item && item.cxEnd);
+          else if (stageKey === 'ofs') candidate = safeDate(item && item.ofsDate);
+          if (!candidate) candidate = safeDate(item && item.targetDate);
+          if (!candidate && latestTs) candidate = new Date(latestTs);
+          if (!candidate) candidate = safeDate(item && item.reportDate);
+          return candidate;
+      }
+
+      function getDigestLatestTimestampForLogs(logs) {
+          let maxTs = 0;
+          (logs || []).forEach(function(log) {
+              let ts = Number(log.timestampObj || 0);
+              if (ts > maxTs) maxTs = ts;
+          });
+          return maxTs || 0;
+      }
+
+      function renderCommandCenterProjectCard(item, stageKey, subline, badgeText) {
+          let meta = getDigestStageMeta(stageKey);
+          let pillCls = getQBStatusClass(item.stage, item.status, false);
+          let combined = esc((item.stage || '-') + ' | ' + (item.status || '-'));
+          let badge = badgeText ? `<span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:3px 8px;">${esc(badgeText)}</span>` : '';
+          return `<div class="cc-project-card" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(item.fdh)}')">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                  <div>
+                      <div style="font-size:14px; font-weight:900; color:var(--text-main);">${esc(item.fdh)}</div>
+                      <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(item.vendor || 'Unknown Vendor')}</div>
+                  </div>
+                  ${badge}
+              </div>
+              <div class="cc-pill-row">
+                  <span class="glass-pill ${pillCls}" style="font-size:9px; padding:4px 8px;">${combined}</span>
+              </div>
+              <div style="font-size:10px; line-height:1.45; color:var(--text-muted);">${subline || ''}</div>
+          </div>`;
+      }
+
+      function renderCommandCenterTimeline(logs, itemMap, emptyMsg, showStageBadge) {
+          if (!logs || logs.length === 0) return `<div class="digest-panel-empty">${esc(emptyMsg)}</div>`;
+          return `<div class="cc-timeline-list">` + logs.map(function(log) {
+              let item = itemMap[log.fdh] || null;
+              let stageKey = getDigestStageKeyForLog(log, item);
+              let meta = getDigestStageMeta(stageKey);
+              let cleanVal = String(log.val || '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
+              let timeLabel = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
+              return `<div class="cc-timeline-item" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(log.fdh)}')" style="cursor:pointer;">
+                  <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+                      <div style="display:flex; flex-direction:column; gap:5px; min-width:0;">
+                          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                              <div style="font-size:13px; font-weight:900; color:var(--text-main);">${esc(log.fdh)}</div>
+                              ${item ? `<span style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(item.vendor || '')}</span>` : ''}
+                              ${showStageBadge ? `<span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:3px 8px;">${esc(meta.label)}</span>` : ''}
+                          </div>
+                          <div style="font-size:11px; font-weight:700; color:var(--text-main); line-height:1.45;">&#8594; ${esc(cleanVal)}</div>
+                      </div>
+                      <div style="text-align:right; flex-shrink:0;">
+                          <div style="font-size:9px; font-weight:800; color:var(--text-muted); white-space:nowrap;">${esc(timeLabel)}</div>
+                          <div style="font-size:9px; font-weight:800; color:var(--text-muted); margin-top:4px;">by <span style="color:var(--text-main);">${esc(log.user || '-')}</span></div>
+                      </div>
+                  </div>
+              </div>`;
+          }).join('') + `</div>`;
+      }
+
+      function renderCommandCenterStageCard(stageKey, stageEntry, itemMap) {
+          let meta = getDigestStageMeta(stageKey);
+          let topEditors = Object.keys(stageEntry.byUser).sort(function(a, b) { return stageEntry.byUser[b] - stageEntry.byUser[a]; }).slice(0, 3);
+          let projectCards = stageEntry.projects.slice(0, 6).map(function(entry) {
+              let latestLabel = entry.latestTs ? 'Latest move ' + formatDate(new Date(entry.latestTs), true) : 'Touched in current window';
+              return renderCommandCenterProjectCard(entry.item, stageKey, latestLabel, entry.count + ' edits');
+          }).join('');
+          return `<div class="cc-section-card">
+              <div class="cc-section-head">
+                  <div>
+                      <div class="digest-section-label" style="margin:0 0 6px 0; color:${meta.accent};">${esc(meta.label)}</div>
+                      <div style="font-size:24px; font-weight:900; letter-spacing:-0.8px; color:var(--text-main);">${stageEntry.logs.length}</div>
+                      <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Changes in this stage during the current lookback window.</div>
+                  </div>
+                  <div class="cc-pill-row" style="justify-content:flex-end;">
+                      ${topEditors.length ? topEditors.map(function(user) {
+                          return `<span class="glass-pill ${meta.pillClass}" style="font-size:9px; padding:4px 8px;">${esc(user)} ${stageEntry.byUser[user]}</span>`;
+                      }).join('') : `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">No movers</span>`}
+                  </div>
+              </div>
+              <div style="padding:18px 22px; display:flex; flex-direction:column; gap:16px;">
+                  <div>
+                      <div class="digest-section-label" style="margin:0 0 10px 0;">Timeline</div>
+                      ${renderCommandCenterTimeline(stageEntry.logs.slice(0, 6), itemMap, 'No timeline entries for this stage.', false)}
+                  </div>
+                  <div>
+                      <div class="digest-section-label" style="margin:0 0 10px 0;">Touched Projects</div>
+                      ${projectCards ? `<div class="cc-project-grid">${projectCards}</div>` : `<div class="digest-panel-empty">No projects touched in this stage.</div>`}
+                  </div>
+              </div>
+          </div>`;
+      }
+
+      function renderCommandCenterMoverCard(editorEntry, itemMap) {
+          let stageGroupsHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
+              let logs = editorEntry.logsByStage[stageKey] || [];
+              if (!logs.length) return '';
+              return `<div style="display:flex; flex-direction:column; gap:10px;">
+                  <div class="digest-section-label" style="margin:0; color:${getDigestStageMeta(stageKey).accent};">${esc(getDigestStageMeta(stageKey).label)}</div>
+                  ${renderCommandCenterTimeline(logs.slice(0, 4), itemMap, 'No items in this stage.', false)}
+              </div>`;
+          }).join('');
+          let projectsHtml = editorEntry.projects.map(function(projectEntry) {
+              let latestLabel = projectEntry.latestTs ? 'Last touch ' + formatDate(new Date(projectEntry.latestTs), true) : 'Touched in current window';
+              return renderCommandCenterProjectCard(projectEntry.item, projectEntry.stageKey, latestLabel, projectEntry.count + ' edits');
+          }).join('');
+          return `<details class="cc-mover-card" ${editorEntry.rank < 3 ? 'open' : ''}>
+              <summary class="cc-mover-head" style="cursor:pointer; list-style:none;">
+                  <div>
+                      <div style="font-size:15px; font-weight:900; color:var(--text-main);">${esc(editorEntry.user)}</div>
+                      <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-top:4px;">${esc(editorEntry.summary)}</div>
+                  </div>
+                  <div style="text-align:right; flex-shrink:0;">
+                      <div style="font-size:26px; font-weight:900; font-family:monospace; color:var(--color-insight);">${editorEntry.total}</div>
+                      <div style="font-size:9px; font-weight:900; color:var(--text-muted); text-transform:uppercase;">#${editorEntry.rank + 1} mover</div>
+                  </div>
+              </summary>
+              <div class="cc-mover-body">
+                  <div class="cc-pill-row">
+                      ${DIGEST_STAGE_ORDER.filter(function(stageKey) { return (editorEntry.stageCounts[stageKey] || 0) > 0; }).map(function(stageKey) {
+                          return `<span class="glass-pill ${getDigestStageMeta(stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(stageKey).shortLabel)} ${editorEntry.stageCounts[stageKey]}</span>`;
+                      }).join('')}
+                  </div>
+                  <div>${stageGroupsHtml || '<div class="digest-panel-empty">No stage-ordered movement available.</div>'}</div>
+                  <div>
+                      <div class="digest-section-label" style="margin:0 0 10px 0;">Projects Touched</div>
+                      ${projectsHtml ? `<div class="cc-project-grid">${projectsHtml}</div>` : `<div class="digest-panel-empty">No touched projects to show.</div>`}
+                  </div>
+              </div>
+          </details>`;
+      }
+
+      function renderCommandCenterBlockerCard(entry) {
+          let pillCls = getQBStatusClass(entry.item.stage, entry.item.status, false);
+          return `<div class="cc-section-card">
+              <div style="padding:18px 20px; display:flex; flex-direction:column; gap:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                      <div>
+                          <div style="font-size:14px; font-weight:900; color:var(--text-main);">${esc(entry.item.fdh)}</div>
+                          <div style="font-size:10px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">${esc(entry.item.vendor || 'Unknown Vendor')}</div>
+                      </div>
+                      <span class="glass-pill ${getDigestStageMeta(entry.stageKey).pillClass}" style="font-size:9px; padding:4px 8px;">${esc(getDigestStageMeta(entry.stageKey).label)}</span>
+                  </div>
+                  <div class="cc-pill-row">
+                      <span class="glass-pill ${pillCls}" style="font-size:9px; padding:4px 8px;">${esc((entry.item.stage || '-') + ' | ' + (entry.item.status || '-'))}</span>
+                      ${entry.severityLabel ? `<span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${esc(entry.severityLabel)}</span>` : ''}
+                  </div>
+                  <div style="font-size:26px; font-weight:900; font-family:monospace; color:var(--text-main);">${entry.ageDays}</div>
+                  <div style="font-size:10px; font-weight:900; color:var(--text-muted); text-transform:uppercase;">Days Sitting</div>
+                  <div style="font-size:11px; line-height:1.5; color:var(--text-main);">${esc(entry.reason)}</div>
+                  <div style="font-size:10px; font-weight:700; color:var(--text-muted);">Last movement ${esc(entry.lastMoveLabel)}</div>
+                  <div><button class="btn" onclick="switchWorkspaceView('detail'); selectItemForNav('${escJs(entry.item.fdh)}')" style="background:var(--bg); color:var(--text-main); border-color:var(--border);">Open Project</button></div>
+              </div>
+          </div>`;
+      }
+
+      function renderCommandCenterSummaryCard(title, value, subline, pillClass, accentColor) {
+          return `<div class="cc-section-card">
+              <div style="padding:18px 20px; display:flex; flex-direction:column; gap:10px;">
+                  <div class="digest-section-label" style="margin:0; color:${accentColor || 'var(--text-muted)'};">${esc(title)}</div>
+                  <div style="font-size:30px; line-height:1; font-weight:900; color:var(--text-main);">${value}</div>
+                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">${esc(subline)}</div>
+                  <div><span class="glass-pill ${pillClass}" style="font-size:9px; padding:4px 8px;">${esc(title)}</span></div>
+              </div>
+          </div>`;
+      }
 
       function renderDigestWorkspace() {
           const ws = getEl('digest-workspace');
           if (!ws) return;
 
-          // --- 1. Lookback window ---
           let now = new Date();
           let lookbackHours = 48;
-          if (now.getDay() === 1 && now.getHours() < 11) { lookbackHours = 80; }
+          if (now.getDay() === 1 && now.getHours() < 11) lookbackHours = 80;
           let cutoff = new Date(now.getTime() - (lookbackHours * 60 * 60 * 1000));
-          let recentLogs = allGlobalLogs.filter(function(l) { return Number(l.timestampObj || 0) >= cutoff.getTime(); });
+          let itemMap = {};
+          (allActionItems || []).forEach(function(item) { itemMap[String(item.fdh || '')] = item; });
 
-          // --- 2. Pipeline shift counts ---
-          let shifts = { ofs: 0, cx: 0, permit: 0, totalChanges: recentLogs.length };
-          recentLogs.forEach(function(l) {
-              let type = String(l.type || '').toUpperCase();
-              let val = String(l.val || '').toUpperCase();
-              if (type.includes('STATUS') || type.includes('STAGE')) {
-                  if (val.includes('OPEN FOR SALE') || val.includes('OFS')) shifts.ofs++;
-                  if (val.includes('FIELD CX') || val.includes('CONSTRUCTION')) shifts.cx++;
-                  if (val.includes('PERMIT') && val.includes('APPROV')) shifts.permit++;
-              }
+          let recentLogs = allGlobalLogs.filter(function(log) {
+              return Number(log.timestampObj || 0) >= cutoff.getTime();
           });
 
-          // --- 3. Production by vendor ---
-          let prodByVendor = {};
-          (allActionItems || []).forEach(function(item) {
-              let v = item.vendor || 'Unknown';
-              if (v === '-' || v === '') return;
-              if (!prodByVendor[v]) prodByVendor[v] = { ug: 0, ae: 0, fib: 0, nap: 0 };
-              if (item.vel) {
-                  prodByVendor[v].ug += Number((item.vel.ug && item.vel.ug.daily) || 0);
-                  prodByVendor[v].ae += Number((item.vel.ae && item.vel.ae.daily) || 0);
-                  prodByVendor[v].fib += Number((item.vel.fib && item.vel.fib.daily) || 0);
-                  prodByVendor[v].nap += Number((item.vel.nap && item.vel.nap.daily) || 0);
-              }
+          let stageData = {};
+          DIGEST_STAGE_ORDER.forEach(function(key) {
+              stageData[key] = { logs: [], byUser: {}, projectMap: {}, projects: [] };
           });
 
-          // --- 4. Categorize actionable logs ---
-          let actionableLogs = recentLogs.filter(function(log) {
-              let item = allActionItems.find(function(i) { return i.fdh === log.fdh; });
-              if (!item) return false;
-              let stage = (item.stage || '').toUpperCase();
-              let status = (item.status || '').toUpperCase();
-              return (stage.includes('PERMITTING') && status.includes('APPROVED')) ||
-                     stage.includes('FIELD CX') || stage.includes('CONSTRUCTION') ||
-                     stage.includes('OFS');
-          });
-
-          let movedToOfs = [], movedToCx = [], permitAppr = [], otherChanges = [];
-          actionableLogs.forEach(function(l) {
-              let type = String(l.type || '').toUpperCase();
-              let val = String(l.val || '').toUpperCase();
-              if (type.includes('STATUS') || type.includes('STAGE')) {
-                  if (val.includes('OPEN FOR SALE') || val.includes('OFS')) movedToOfs.push(l);
-                  else if (val.includes('FIELD CX') || val.includes('CONSTRUCTION')) movedToCx.push(l);
-                  else if (val.includes('PERMIT') && val.includes('APPROV')) permitAppr.push(l);
-                  else otherChanges.push(l);
-              } else {
-                  otherChanges.push(l);
-              }
-          });
-
-          // --- 5. Editor leaderboard ---
           let editorMap = {};
-          recentLogs.forEach(function(l) {
-              let u = String(l.user || '').trim();
-              if (!u || u === '-') return;
-              if (!editorMap[u]) editorMap[u] = { total: 0, status: 0, stage: 0, other: 0 };
-              editorMap[u].total++;
-              let type = String(l.type || '').toUpperCase();
-              if (type.includes('STATUS')) editorMap[u].status++;
-              else if (type.includes('STAGE')) editorMap[u].stage++;
-              else editorMap[u].other++;
+          let latestByProject = {};
+          let prodByVendor = {};
+          let summaryCounts = { permitApproved: 0, construction: 0, completed: 0, ofs: 0 };
+
+          (allActionItems || []).forEach(function(item) {
+              let vendor = item.vendor || 'Unknown';
+              if (vendor !== '-' && vendor !== '') {
+                  if (!prodByVendor[vendor]) prodByVendor[vendor] = { ug: 0, ae: 0, fib: 0, nap: 0 };
+                  if (item.vel) {
+                      prodByVendor[vendor].ug += Number((item.vel.ug && item.vel.ug.daily) || 0);
+                      prodByVendor[vendor].ae += Number((item.vel.ae && item.vel.ae.daily) || 0);
+                      prodByVendor[vendor].fib += Number((item.vel.fib && item.vel.fib.daily) || 0);
+                      prodByVendor[vendor].nap += Number((item.vel.nap && item.vel.nap.daily) || 0);
+                  }
+              }
+              let itemStageKey = getDigestStageKeyForItem(item);
+              if (summaryCounts[itemStageKey] != null) summaryCounts[itemStageKey]++;
           });
-          let editorList = Object.keys(editorMap)
-              .map(function(u) { return Object.assign({ user: u }, editorMap[u]); })
-              .sort(function(a, b) { return b.total - a.total; })
-              .slice(0, 8);
-          let maxEdits = editorList.length > 0 ? editorList[0].total : 1;
 
-          // --- 6. Store feed data for interactive filter ---
-          window._digestFeedData = { movedToOfs: movedToOfs, movedToCx: movedToCx, permitAppr: permitAppr, otherChanges: otherChanges };
-          currentDigestFilter = 'all';
+          recentLogs.forEach(function(log) {
+              let item = itemMap[log.fdh];
+              if (!item) return;
+              let stageKey = getDigestStageKeyForLog(log, item);
+              if (stageData[stageKey]) {
+                  stageData[stageKey].logs.push(log);
+                  let user = String(log.user || '-').trim() || '-';
+                  stageData[stageKey].byUser[user] = (stageData[stageKey].byUser[user] || 0) + 1;
+                  if (!stageData[stageKey].projectMap[log.fdh]) {
+                      stageData[stageKey].projectMap[log.fdh] = { item: item, count: 0, latestTs: 0 };
+                  }
+                  stageData[stageKey].projectMap[log.fdh].count++;
+                  stageData[stageKey].projectMap[log.fdh].latestTs = Math.max(stageData[stageKey].projectMap[log.fdh].latestTs, Number(log.timestampObj || 0));
+              }
 
-          // --- 7. Build production rows HTML ---
+              let userKey = String(log.user || '').trim();
+              if (userKey && userKey !== '-') {
+                  if (!editorMap[userKey]) {
+                      editorMap[userKey] = { user: userKey, total: 0, stageCounts: {}, logsByStage: {}, projectMap: {} };
+                      DIGEST_STAGE_ORDER.forEach(function(key) { editorMap[userKey].logsByStage[key] = []; });
+                  }
+                  editorMap[userKey].total++;
+                  editorMap[userKey].stageCounts[stageKey] = (editorMap[userKey].stageCounts[stageKey] || 0) + 1;
+                  if (editorMap[userKey].logsByStage[stageKey]) editorMap[userKey].logsByStage[stageKey].push(log);
+                  if (!editorMap[userKey].projectMap[log.fdh]) {
+                      editorMap[userKey].projectMap[log.fdh] = { item: item, count: 0, latestTs: 0, stageKey: stageKey };
+                  }
+                  editorMap[userKey].projectMap[log.fdh].count++;
+                  editorMap[userKey].projectMap[log.fdh].latestTs = Math.max(editorMap[userKey].projectMap[log.fdh].latestTs, Number(log.timestampObj || 0));
+                  editorMap[userKey].projectMap[log.fdh].stageKey = stageKey !== 'other' ? stageKey : editorMap[userKey].projectMap[log.fdh].stageKey;
+              }
+
+              latestByProject[log.fdh] = Math.max(latestByProject[log.fdh] || 0, Number(log.timestampObj || 0));
+          });
+
+          DIGEST_STAGE_ORDER.forEach(function(key) {
+              stageData[key].logs.sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
+              stageData[key].projects = Object.keys(stageData[key].projectMap).map(function(fdh) {
+                  return stageData[key].projectMap[fdh];
+              }).sort(function(a, b) { return b.latestTs - a.latestTs; });
+          });
+
+          let editorList = Object.keys(editorMap).map(function(user) {
+              let entry = editorMap[user];
+              entry.projects = Object.keys(entry.projectMap).map(function(fdh) { return entry.projectMap[fdh]; }).sort(function(a, b) { return b.latestTs - a.latestTs; });
+              entry.summary = DIGEST_STAGE_ORDER.filter(function(stageKey) { return (entry.stageCounts[stageKey] || 0) > 0; }).map(function(stageKey) {
+                  return (entry.stageCounts[stageKey] || 0) + ' ' + getDigestStageMeta(stageKey).shortLabel;
+              }).join(' | ') || 'Field edits';
+              return entry;
+          }).sort(function(a, b) { return b.total - a.total; }).slice(0, 8);
+          editorList.forEach(function(entry, idx) { entry.rank = idx; });
+
+          let blockerList = (allActionItems || []).map(function(item) {
+              let stageKey = getDigestStageKeyForItem(item);
+              if (['permitApproved', 'construction', 'completed'].indexOf(stageKey) === -1) return null;
+              let lastTs = latestByProject[item.fdh] || 0;
+              let anchorDate = getDigestStageAnchorDate(item, stageKey, lastTs);
+              if (!anchorDate || isNaN(anchorDate.getTime())) return null;
+              let ageDays = Math.max(0, Math.floor((now - anchorDate) / 86400000));
+              let severityLabel = getSeverity(item.flags || '');
+              let reason = stageKey === 'permitApproved'
+                  ? 'Permits are approved, but the project has not progressed out of permitting.'
+                  : stageKey === 'construction'
+                      ? 'Construction has started, but movement has slowed and needs attention.'
+                      : 'Field work appears complete, but the project has not reached OFS yet.';
+              if ((item.flags || '').trim()) reason += ' Diagnostics suggest: ' + getCriticalHubCategory(item).toLowerCase() + '.';
+              return {
+                  item: item,
+                  stageKey: stageKey,
+                  ageDays: ageDays,
+                  severityLabel: severityLabel === 'info' ? '' : severityLabel.toUpperCase(),
+                  reason: reason,
+                  lastMoveLabel: lastTs ? formatDate(new Date(lastTs), true) : (anchorDate ? formatDate(anchorDate) : 'unknown')
+              };
+          }).filter(Boolean).sort(function(a, b) {
+              if (b.ageDays !== a.ageDays) return b.ageDays - a.ageDays;
+              return String(a.item.fdh || '').localeCompare(String(b.item.fdh || ''));
+          }).slice(0, 6);
+
           let prodRows = Object.keys(prodByVendor).sort().filter(function(v) {
               let d = prodByVendor[v];
               return d.ug > 0 || d.ae > 0 || d.fib > 0 || d.nap > 0;
@@ -5288,83 +5685,121 @@
               if (d.fib > 0) stats.push('<span style="color:#ef4444; font-weight:800;">+' + d.fib.toLocaleString() + 'ft Fiber</span>');
               if (d.nap > 0) stats.push('<span style="color:#6366f1; font-weight:800;">+' + d.nap.toLocaleString() + ' NAPs</span>');
               return '<div class="digest-stat-row"><span style="font-weight:800; font-size:11px;">' + esc(v) + '</span><div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; font-size:11px;">' + stats.join('') + '</div></div>';
-          }).join('');
-          if (!prodRows) prodRows = '<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No production reported today.</div>';
+          }).join('') || '<div style="padding:16px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No production reported today.</div>';
 
-          // --- 8. Build editor leaderboard HTML ---
-          let medalLabels = ['1st', '2nd', '3rd'];
-          let leaderHtml = editorList.length === 0
-              ? '<div style="padding:24px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No editor activity in this window.</div>'
-              : editorList.map(function(e, i) {
-                  let barPct = Math.round((e.total / maxEdits) * 100);
-                  let rankLabel = i < 3 ? medalLabels[i] : '#' + (i + 1);
-                  let breakdown = [];
-                  if (e.status > 0) breakdown.push(e.status + ' status');
-                  if (e.stage > 0) breakdown.push(e.stage + ' stage');
-                  if (e.other > 0) breakdown.push(e.other + ' other');
-                  return '<div class="digest-leaderboard-row">' +
-                      '<div class="digest-leaderboard-rank">' + rankLabel + '</div>' +
-                      '<div class="digest-leaderboard-info">' +
-                          '<div class="digest-leaderboard-name">' + esc(e.user) + '</div>' +
-                          '<div class="digest-leaderboard-breakdown">' + (breakdown.join(' &middot; ') || 'field edits') + '</div>' +
-                          '<div class="digest-leaderboard-bar-track"><div class="digest-leaderboard-bar-fill" style="width:' + barPct + '%;"></div></div>' +
-                      '</div>' +
-                      '<div class="digest-leaderboard-count">' + e.total + '</div>' +
-                  '</div>';
-              }).join('');
+          window._digestFeedData = {
+              permitApproved: stageData.permitApproved.logs.slice(),
+              construction: stageData.construction.logs.slice(),
+              completed: stageData.completed.logs.slice(),
+              ofs: stageData.ofs.logs.slice(),
+              other: []
+          };
+          currentDigestFilter = 'permitApproved';
 
-          // --- 9. Date string ---
           let dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+          let stageCardsHtml = DIGEST_STAGE_ORDER.map(function(stageKey) {
+              return renderCommandCenterStageCard(stageKey, stageData[stageKey], itemMap);
+          }).join('');
+          let moversHtml = editorList.length
+              ? `<div class="cc-movers-list">${editorList.map(function(entry) { return renderCommandCenterMoverCard(entry, itemMap); }).join('')}</div>`
+              : '<div class="digest-panel-empty">No top movers found in this window.</div>';
+          let blockersHtml = blockerList.length
+              ? `<div class="cc-blocker-list">${blockerList.map(renderCommandCenterBlockerCard).join('')}</div>`
+              : '<div class="digest-panel-empty">No aging blockers detected right now.</div>';
 
-          ws.innerHTML =
-              '<div class="digest-doc-header">' +
-                  '<div>' +
-                      '<div class="digest-ws-header">Daily Pipeline Digest</div>' +
-                      '<div class="digest-doc-subheader">' + esc(dateStr) + ' &nbsp;&middot;&nbsp; Lookback: ' + lookbackHours + 'h</div>' +
-                  '</div>' +
-              '</div>' +
+          ws.innerHTML = `
+              <div class="digest-shell">
+                  <div class="digest-doc-header">
+                      <div>
+                          <div class="digest-ws-header">Pipeline Command Center</div>
+                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; Lookback: ${lookbackHours}h &nbsp;&middot;&nbsp; Narrative Flow: Permitting Approved to OFS</div>
+                      </div>
+                  </div>
 
-              '<div class="digest-kpi-strip">' +
-                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">QB Edits</div><div class="digest-kpi-num">' + shifts.totalChanges + '</div></div>' +
-                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">Reached OFS</div><div class="digest-kpi-num" style="color:#22c55e;">' + shifts.ofs + '</div></div>' +
-                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">To Construction</div><div class="digest-kpi-num" style="color:#facc15;">' + shifts.cx + '</div></div>' +
-                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">Permits Approved</div><div class="digest-kpi-num" style="color:#a855f7;">' + shifts.permit + '</div></div>' +
-                  '<div class="digest-kpi-pill"><div class="digest-kpi-label">Editors Active</div><div class="digest-kpi-num" style="color:#3b82f6;">' + editorList.length + '</div></div>' +
-              '</div>' +
+                  <div class="digest-kpi-strip">
+                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Permitting Approved</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.permitApproved.accent};">${stageData.permitApproved.logs.length}</div></div>
+                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Construction</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.construction.accent};">${stageData.construction.logs.length}</div></div>
+                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Completed</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.completed.accent};">${stageData.completed.logs.length}</div></div>
+                      <div class="digest-kpi-pill"><div class="digest-kpi-label">OFS</div><div class="digest-kpi-num" style="color:${DIGEST_STAGE_META.ofs.accent};">${stageData.ofs.logs.length}</div></div>
+                      <div class="digest-kpi-pill"><div class="digest-kpi-label">Top Movers Active</div><div class="digest-kpi-num" style="color:var(--color-insight);">${editorList.length}</div></div>
+                  </div>
 
-              '<div class="digest-section-label">Morning Briefing</div>' +
-              '<div class="digest-brief-grid">' +
-                  '<div class="digest-ws-card">' +
-                      '<div class="digest-ws-card-hdr"><span>Pipeline Shifts</span><span style="color:var(--text-muted); font-weight:600;">Last ' + lookbackHours + 'h</span></div>' +
-                      '<div style="padding:14px 18px;">' +
-                          '<div class="digest-stat-row"><span>QB Edits Logged</span><span class="digest-num">' + shifts.totalChanges + '</span></div>' +
-                          '<div class="digest-stat-row"><span>Projects reaching OFS</span><span class="digest-num" style="color:#22c55e;">' + shifts.ofs + '</span></div>' +
-                          '<div class="digest-stat-row"><span>Moved to Construction</span><span class="digest-num" style="color:#facc15;">' + shifts.cx + '</span></div>' +
-                          '<div class="digest-stat-row"><span>Permits Approved</span><span class="digest-num" style="color:#a855f7;">' + shifts.permit + '</span></div>' +
-                      '</div>' +
-                  '</div>' +
-                  '<div class="digest-ws-card">' +
-                      '<div class="digest-ws-card-hdr"><span>Production Today</span></div>' +
-                      '<div style="padding:14px 18px;">' + prodRows + '</div>' +
-                  '</div>' +
-              '</div>' +
+                  <div class="digest-section-block">
+                      <div class="digest-section-label">Executive Summary</div>
+                      <div class="digest-brief-grid">
+                          ${renderCommandCenterSummaryCard('Permitting Approved', stageData.permitApproved.projects.length, 'Projects that cleared permitting and need the next move.', DIGEST_STAGE_META.permitApproved.pillClass, DIGEST_STAGE_META.permitApproved.accent)}
+                          ${renderCommandCenterSummaryCard('Construction', stageData.construction.projects.length, 'Projects touched in construction during this window.', DIGEST_STAGE_META.construction.pillClass, DIGEST_STAGE_META.construction.accent)}
+                          ${renderCommandCenterSummaryCard('Completed', stageData.completed.projects.length, 'Projects marked complete but not necessarily in OFS yet.', DIGEST_STAGE_META.completed.pillClass, DIGEST_STAGE_META.completed.accent)}
+                          ${renderCommandCenterSummaryCard('OFS', stageData.ofs.projects.length, 'Projects that reached Open for Sale in this window.', DIGEST_STAGE_META.ofs.pillClass, DIGEST_STAGE_META.ofs.accent)}
+                      </div>
+                  </div>
 
-              '<div class="digest-section-label">Editor Activity</div>' +
-              '<div class="digest-ws-card"><div class="digest-leaderboard">' + leaderHtml + '</div></div>' +
+                  <div class="digest-section-block">
+                      <div class="digest-section-label">Production Snapshot</div>
+                      <div class="cc-section-card">
+                          <div class="cc-section-head">
+                              <div>
+                                  <div class="digest-section-label" style="margin:0 0 6px 0;">Vendor Production Today</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Reported field output across active vendors.</div>
+                              </div>
+                          </div>
+                          <div style="padding:18px 22px;">${prodRows}</div>
+                      </div>
+                  </div>
 
-              '<div class="digest-section-label-row">' +
-                  '<span>Project Changes <span style="color:var(--text-muted); font-weight:600; font-size:9px; margin-left:4px;">' + actionableLogs.length + ' events</span></span>' +
-                  '<div class="digest-filter-strip">' +
-                      '<button class="digest-filter-btn active" data-filter="all" onclick="filterDigestFeed(\'all\')">All (' + actionableLogs.length + ')</button>' +
-                      '<button class="digest-filter-btn" data-filter="permit" onclick="filterDigestFeed(\'permit\')"><span style="color:#a855f7;">&#9679;</span> Permits (' + permitAppr.length + ')</button>' +
-                      '<button class="digest-filter-btn" data-filter="cx" onclick="filterDigestFeed(\'cx\')"><span style="color:#facc15;">&#9679;</span> Construction (' + movedToCx.length + ')</button>' +
-                      '<button class="digest-filter-btn" data-filter="ofs" onclick="filterDigestFeed(\'ofs\')"><span style="color:#22c55e;">&#9679;</span> OFS (' + movedToOfs.length + ')</button>' +
-                      '<button class="digest-filter-btn" data-filter="other" onclick="filterDigestFeed(\'other\')"><span style="color:#3b82f6;">&#9679;</span> Other (' + otherChanges.length + ')</button>' +
-                  '</div>' +
-              '</div>' +
-              '<div class="digest-ws-card" style="margin-bottom:40px;">' +
-                  '<div id="digest-feed-list">' + renderDigestFeedItems(window._digestFeedData, 'all') + '</div>' +
-              '</div>';
+                  <div class="digest-section-block">
+                      <div class="digest-section-label">Pipeline Progression</div>
+                      <div class="cc-stage-grid">${stageCardsHtml}</div>
+                  </div>
+
+                  <div class="digest-main-grid">
+                      <div class="digest-column">
+                          <div class="digest-section-block">
+                              <div class="digest-section-label">Top Movers</div>
+                              ${moversHtml}
+                          </div>
+                      </div>
+                      <div class="digest-column">
+                          <div class="digest-section-block">
+                              <div class="digest-section-label">Aging Blockers</div>
+                              ${blockersHtml}
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          `;
+          renderDigestSidePanel();
+      }
+
+      function renderDigestSidePanel() {
+          let panel = getEl('digest-action-panel');
+          if (!panel) return;
+          let data = window._digestFeedData || { permitApproved: [], construction: [], completed: [], ofs: [], other: [] };
+          let total = DIGEST_STAGE_ORDER.reduce(function(sum, key) { return sum + ((data[key] || []).length); }, 0);
+          panel.innerHTML = `
+              <div class="digest-panel-shell">
+                  <div class="digest-panel-head">
+                      <div class="digest-panel-title">
+                          <div>
+                              <div class="digest-panel-kicker">Pipeline Command Center</div>
+                              <div class="digest-panel-count">Project Changes</div>
+                              <div class="digest-panel-sub">Stage-ordered movement from permitting approved through OFS.</div>
+                          </div>
+                          <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+                              <span class="ob-tab-badge ob-tab-badge-purple" style="position:static; min-width:28px; height:28px; border-radius:14px; border:1px solid var(--border); box-shadow:none;">${total}</span>
+                              <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel" style="flex-shrink:0;">✕</button>
+                          </div>
+                      </div>
+                      <div class="digest-filter-tabs">
+                          ${DIGEST_STAGE_ORDER.map(function(stageKey) {
+                              let meta = getDigestStageMeta(stageKey);
+                              return `<button class="digest-filter-btn ${currentDigestFilter === stageKey ? 'active' : ''}" data-filter="${stageKey}" onclick="filterDigestFeed('${stageKey}')"><span class="digest-filter-btn-label">${esc(meta.label)}</span><span class="digest-filter-btn-count">${(data[stageKey] || []).length}</span></button>`;
+                          }).join('')}
+                      </div>
+                  </div>
+                  <div class="digest-panel-body" id="digest-feed-list">${renderDigestFeedItems(data, currentDigestFilter || 'permitApproved')}</div>
+              </div>
+          `;
       }
 
       function filterDigestFeed(type) {
@@ -5379,41 +5814,54 @@
 
       function renderDigestFeedItems(data, filter) {
           let allLogs = [];
-          let catConfig = {
-              ofs:    { label: 'Reached OFS',    color: '#22c55e' },
-              cx:     { label: 'Construction',    color: '#facc15' },
-              permit: { label: 'Permit Approved', color: '#a855f7' },
-              other:  { label: 'Status Shift',    color: '#3b82f6' }
-          };
-          if (filter === 'all' || filter === 'ofs')    data.movedToOfs.forEach(function(l)  { allLogs.push(Object.assign({}, l, { _cat: 'ofs' })); });
-          if (filter === 'all' || filter === 'cx')     data.movedToCx.forEach(function(l)   { allLogs.push(Object.assign({}, l, { _cat: 'cx' })); });
-          if (filter === 'all' || filter === 'permit') data.permitAppr.forEach(function(l)  { allLogs.push(Object.assign({}, l, { _cat: 'permit' })); });
-          if (filter === 'all' || filter === 'other')  data.otherChanges.forEach(function(l){ allLogs.push(Object.assign({}, l, { _cat: 'other' })); });
-          allLogs.sort(function(a, b) { return Number(b.timestampObj || 0) - Number(a.timestampObj || 0); });
+          if (filter && filter !== 'all') {
+              (data[filter] || []).forEach(function(log) { allLogs.push(Object.assign({}, log, { _cat: filter })); });
+          } else {
+              DIGEST_STAGE_ORDER.forEach(function(stageKey) {
+                  (data[stageKey] || []).forEach(function(log) { allLogs.push(Object.assign({}, log, { _cat: stageKey })); });
+              });
+          }
+          allLogs.sort(function(a, b) {
+              let aIdx = DIGEST_STAGE_ORDER.indexOf(a._cat);
+              let bIdx = DIGEST_STAGE_ORDER.indexOf(b._cat);
+              if (aIdx !== bIdx) return aIdx - bIdx;
+              return Number(b.timestampObj || 0) - Number(a.timestampObj || 0);
+          });
 
           if (allLogs.length === 0) {
-              return '<div style="padding:32px; text-align:center; color:var(--text-muted); font-size:11px; font-style:italic;">No changes in this category.</div>';
+              return '<div class="digest-panel-empty">No changes in this category.</div>';
           }
 
           return allLogs.map(function(log) {
-              let item = allActionItems.find(function(i) { return i.fdh === log.fdh; });
-              let cfg = catConfig[log._cat] || catConfig.other;
+              let item = (allActionItems || []).find(function(i) { return i.fdh === log.fdh; });
+              let cfg = getDigestStageMeta(log._cat);
               let dateStr = formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true);
               let cleanVal = String(log.val || '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
               let vendor = item ? item.vendor : '';
-              return '<div class="digest-feed-item" onclick="switchWorkspaceView(\'detail\'); selectItemForNav(\'' + escJs(log.fdh) + '\')">' +
-                  '<div class="digest-feed-dot" style="background:' + cfg.color + ';"></div>' +
-                  '<div class="digest-feed-body">' +
-                      '<div class="digest-feed-row1">' +
-                          '<span class="digest-feed-fdh">' + esc(log.fdh) + '</span>' +
-                          (vendor ? '<span class="digest-feed-vendor">' + esc(vendor) + '</span>' : '') +
-                          '<span class="digest-feed-cat" style="color:' + cfg.color + ';">' + cfg.label + '</span>' +
-                          '<span class="digest-feed-time">' + esc(dateStr) + '</span>' +
+              let statusPill = '';
+              if (item) {
+                  let combinedPill = esc((item.stage || '-') + ' | ' + (item.status || '-'));
+                  let pillCls = getQBStatusClass(item.stage, item.status, false);
+                  statusPill = '<span class="glass-pill ' + pillCls + '" style="font-size:9px; padding:4px 8px;">' + combinedPill + '</span>';
+              }
+              return '<div class="log-card" style="cursor:pointer; gap:8px;" onclick="switchWorkspaceView(\'detail\'); selectItemForNav(\'' + escJs(log.fdh) + '\')">' +
+                  '<div class="log-header">' +
+                      '<div style="display:flex; flex-direction:column; gap:4px; min-width:0;">' +
+                          '<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
+                              '<div style="font-size:13px; font-weight:900; color:var(--text-main);">' + esc(log.fdh) + '</div>' +
+                              (vendor ? '<span style="font-size:9px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">' + esc(vendor) + '</span>' : '') +
+                          '</div>' +
+                          '<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">' +
+                              '<span class="glass-pill ' + cfg.pillClass + '" style="font-size:9px; padding:3px 8px;">' + esc(cfg.label) + '</span>' +
+                              statusPill +
+                          '</div>' +
                       '</div>' +
-                      '<div class="digest-feed-row2">' +
-                          '<span class="digest-feed-change">&#8594; ' + esc(cleanVal) + '</span>' +
-                          '<span class="digest-feed-user">by ' + esc(log.user || '\u2014') + '</span>' +
-                      '</div>' +
+                      '<div style="font-size:9px; font-weight:800; color:var(--text-muted); white-space:nowrap;">' + esc(dateStr) + '</div>' +
+                  '</div>' +
+                  '<div style="font-size:11px; color:var(--text-main); font-weight:700; padding:8px 10px; background:var(--bg); border-radius:8px; border:1px solid var(--border); line-height:1.45;">&#8594; ' + esc(cleanVal) + '</div>' +
+                  '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">' +
+                      '<span style="font-size:9px; font-weight:800; color:var(--text-muted);">By <span style="color:var(--text-main);">' + esc(log.user || '\u2014') + '</span></span>' +
+                      '<span class="btn" style="padding:4px 10px; background:var(--bg); color:var(--text-main); border-color:var(--border);">Open Project</span>' +
                   '</div>' +
               '</div>';
           }).join('');
@@ -8336,12 +8784,12 @@
                 if (grid) grid.style.display = 'grid';
                 renderGrid();
             } else if (normalizedMode === 'digest') {
-                setAdminPanelOpen(false);
                 if (welcome) welcome.style.display = 'none';
                 if (paneContent) paneContent.style.display = 'none';
                 if (deckStage) deckStage.style.display = 'none';
                 if (digestWs) digestWs.style.display = 'flex';
                 renderDigestWorkspace();
+                syncAdminPanelForViewport();
             } else if (normalizedMode === 'gantt') {
                 setAdminPanelOpen(false);
                 if (welcome) welcome.style.display = 'none';
