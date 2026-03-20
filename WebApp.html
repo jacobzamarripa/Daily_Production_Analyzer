@@ -611,14 +611,16 @@
           transform: scale(0.85);
       }
       .slide-action-deck {
-          position: absolute;
-          left: 50%;
-          bottom: 30px;
-          transform: translateX(-50%) translateY(18px) scale(0.985);
+          position: relative;
+          left: auto;
+          bottom: auto;
+          transform: translateY(18px) scale(0.985);
           display: none;
           align-items: center;
           justify-content: center;
+          align-self: center;
           gap: 8px;
+          margin: 18px auto 0;
           padding: 9px 12px;
           border-radius: 34px;
           background: rgba(255, 255, 255, 0.72);
@@ -635,13 +637,13 @@
           display: inline-flex;
           opacity: 1;
           pointer-events: auto;
-          transform: translateX(-50%) translateY(0) scale(1);
+          transform: translateY(0) scale(1);
       }
       .slide-action-deck.dock-idle {
           opacity: 0.05;
           filter: blur(6px);
           pointer-events: none;
-          transform: translateX(-50%) translateY(20px);
+          transform: translateY(20px);
       }
       .slide-action-cluster {
           display: inline-flex;
@@ -2132,8 +2134,9 @@
       .timeline-wrapper { flex-grow: 1; min-height: 0; background: var(--card-bg); position: relative; display: flex; flex-direction: column; transition: background 0.3s, border-color 0.3s; }
 
       .gantt-panel { position: relative; z-index: 600; display: flex; flex-direction: column; background: var(--card-bg); transition: background 0.3s, border-color 0.3s; min-height: 0; border-top: 1px solid var(--border) !important; flex: 1 1 auto; margin-top: 0 !important; box-shadow: 0 -4px 12px rgba(0,0,0,0.03) !important; }
-      .gantt-controls { position: absolute; top: 10px; left: 12px; right: 12px; z-index: 1000; pointer-events: none; display: flex; justify-content: space-between; padding: 0 !important; min-height: 34px; background: transparent !important; border: none !important; align-items: center; transition: background 0.3s, border-color 0.3s; }
+      .gantt-controls { position: absolute; top: 10px; left: 12px; right: 12px; z-index: 1000; pointer-events: none; display: flex; justify-content: space-between; padding: 0 !important; min-height: 34px; background: transparent !important; border: none !important; align-items: center; transition: background 0.3s, border-color 0.3s; gap: 10px; }
       .gantt-pill { pointer-events: auto; padding: 6px 14px; border-radius: 18px; background: color-mix(in srgb, var(--card-bg) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12); display: flex; align-items: center; gap: 8px; }
+      .gantt-controls-actions { pointer-events: auto; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
       /* Gantt Quick Peek Panel */
       .gantt-quick-peek {
           position: absolute;
@@ -2248,7 +2251,7 @@
           top: var(--gantt-top-offset, 78px);
           left: 0;
           right: 0;
-          bottom: var(--gantt-bottom-offset, 0);
+          bottom: 0;
           flex: none;
           min-height: 0;
           height: auto !important;
@@ -2258,14 +2261,16 @@
           z-index: 9000;
       }
       body.gantt-view-active #gantt-panel .gantt-controls {
-          position: sticky;
-          top: 0;
-          padding: 12px 16px !important;
+          position: absolute;
+          top: 12px;
+          left: 16px;
+          right: 16px;
+          padding: 0 !important;
           min-height: 0;
-          background: linear-gradient(to bottom, color-mix(in srgb, var(--card-bg) 96%, transparent), color-mix(in srgb, var(--card-bg) 90%, transparent));
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+          background: transparent;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          border-bottom: none;
       }
       body.gantt-view-active #gantt-panel .timeline-wrapper { display: flex !important; }
       body.gantt-view-active #gantt-panel .timeline-container { flex: 1 1 auto; min-height: 0; }
@@ -2278,6 +2283,23 @@
       body.gantt-view-active .outbox-pane,
       body.gantt-view-active .admin-dock,
       body.gantt-view-active .inbox-sidebar { display: none !important; }
+      #digest-workspace {
+          display: none;
+          width: 100%;
+          flex: 1 1 auto;
+          overflow-y: auto;
+          padding: 80px 20px 20px;
+          box-sizing: border-box;
+          max-width: 1200px;
+          margin: 0 auto;
+          align-self: stretch;
+      }
+      body.digest-mode-active #digest-workspace {
+          display: block !important;
+          max-width: min(1280px, calc(100vw - 40px));
+          margin: 0 auto;
+          padding-top: 92px;
+      }
       .schedule-today-indicator {
           position: absolute;
           top: 0;
@@ -2925,25 +2947,10 @@
                 <button class="btn hover-trigger" id="btn-clear-filters" onclick="clearAllFilters()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border); padding:0 12px;">Clear</button>
             </div>
         </div>
-        <div class="slide-action-deck" id="slide-action-deck">
-            <div class="slide-action-cluster">
-                <button class="dock-arrow prev" id="dock-nav-prev" onclick="navDeck(-1)">&#8249;</button>
-                <button class="dock-arrow next" id="dock-nav-next" onclick="navDeck(1)">&#8250;</button>
-                <button class="btn hover-trigger" id="dock-btn-skip" onclick="navDeck(1)" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Skip (Next)</button>
-            </div>
-            <div class="slide-action-cluster slide-action-primary">
-                <button class="btn hover-trigger" id="dock-btn-stage" onclick="toggleStageCurrentDeckItem()" style="background:#a855f7; color:#fff; border-color:#9333ea;">Stage Project</button>
-                <button class="btn hover-trigger" onclick="exportDeckReport()" id="btn-export-deck" style="background:#16a34a; color:#fff; border-color:#15803d;">Copy Report</button>
-                <button class="btn collapsed hover-trigger" id="dock-btn-save" onclick="saveDeckToSheet(this)" style="background:#3b82f6; color:#fff; border-color:#2563eb;">Save to Sheet</button>
-            </div>
-            <div class="slide-action-cluster">
-                <button class="btn hover-trigger" id="dock-btn-slide-theme" onclick="toggleSlideSpecificTheme()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);"></button>
-            </div>
-        </div>
         <div id="active-filter-pills"></div>
                  <div id="welcome-screen" class="empty-msg"><div style="font-size:32px; margin-bottom:12px;">Select a Project</div></div>
                  <div id="grid-content" style="display:none; width:100%; flex:1; overflow-y:auto; padding:20px; align-content:flex-start; gap:16px; box-sizing:border-box;"></div>
-                 <div id="digest-workspace" class="pane-content" style="display:none; width:100%; flex:1; overflow-y:auto; padding:80px 20px 20px; box-sizing:border-box; max-width:1200px; margin:0 auto;"></div>
+                 <div id="digest-workspace"></div>
               <div class="pane-content" id="pane-content">
                  <div class="qb-grid" id="main-qb-grid">
                <div class="qb-top-row">
@@ -3062,6 +3069,21 @@
               </div>
                  <div id="deck-stage" style="display:none; flex:1; flex-direction:column; padding:40px; overflow-y:auto; align-items:center; justify-content:center; box-sizing:border-box;">
                 <div id="deck-stage-card" style="width:100%; max-width:1100px; max-height:calc(100vh - 150px); aspect-ratio:16/9; height:auto; flex-shrink:1; background:var(--card-bg); border-radius:20px; border:1px solid var(--border); box-shadow:0 30px 60px rgba(15,23,42,0.15); display:flex; flex-direction:column; overflow:hidden;"></div>
+                <div class="slide-action-deck" id="slide-action-deck">
+                    <div class="slide-action-cluster">
+                        <button class="dock-arrow prev" id="dock-nav-prev" onclick="navDeck(-1)">&#8249;</button>
+                        <button class="dock-arrow next" id="dock-nav-next" onclick="navDeck(1)">&#8250;</button>
+                        <button class="btn hover-trigger" id="dock-btn-skip" onclick="navDeck(1)" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Skip (Next)</button>
+                    </div>
+                    <div class="slide-action-cluster slide-action-primary">
+                        <button class="btn hover-trigger" id="dock-btn-stage" onclick="toggleStageCurrentDeckItem()" style="background:#a855f7; color:#fff; border-color:#9333ea;">Stage Project</button>
+                        <button class="btn hover-trigger" onclick="exportDeckReport()" id="btn-export-deck" style="background:#16a34a; color:#fff; border-color:#15803d;">Copy Report</button>
+                        <button class="btn collapsed hover-trigger" id="dock-btn-save" onclick="saveDeckToSheet(this)" style="background:#3b82f6; color:#fff; border-color:#2563eb;">Save to Sheet</button>
+                    </div>
+                    <div class="slide-action-cluster">
+                        <button class="btn hover-trigger" id="dock-btn-slide-theme" onclick="toggleSlideSpecificTheme()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);"></button>
+                    </div>
+                </div>
 
             </div>
             <div class="raw-data-strip" id="raw-data-strip"></div>
@@ -3238,8 +3260,8 @@
             <div class="gantt-pill">
                 <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: var(--text-muted);">Global Construction Timeline</div>
             </div>
-            <div class="gantt-pill">
-                <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; margin-right:6px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); clearGanttFocus()">Exit Focus</button>
+            <div class="gantt-controls-actions">
+                <button class="btn btn-nav" id="btn-exit-theater" style="display:none; padding: 4px 8px; font-size: 9px; background:var(--text-main); color:var(--bg);" onclick="event.stopPropagation(); clearGanttFocus()">Exit Focus</button>
             </div>
         </div>
         <div class="timeline-wrapper" id="gantt-wrapper">
@@ -3950,11 +3972,8 @@
           let nav = document.querySelector('.top-nav');
           let topOffset = nav ? Math.ceil(nav.getBoundingClientRect().bottom + 6) : 78;
           let dock = getEl('filter-strip');
-          let bottomOffset = 0;
           if (dock && getComputedStyle(dock).display !== 'none') {
-              if (currentWorkspaceView === 'gantt') {
-                  bottomOffset = Math.max(bottomOffset, Math.ceil(window.innerHeight - dock.getBoundingClientRect().top + 10));
-              } else {
+              if (currentWorkspaceView !== 'gantt') {
                   topOffset = Math.max(topOffset, Math.ceil(dock.getBoundingClientRect().bottom + 10));
               }
           }
@@ -3963,7 +3982,7 @@
               topOffset = Math.max(topOffset, Math.ceil(pills.getBoundingClientRect().bottom + 10));
           }
           document.documentElement.style.setProperty('--gantt-top-offset', `${Math.max(64, topOffset)}px`);
-          document.documentElement.style.setProperty('--gantt-bottom-offset', `${Math.max(0, bottomOffset)}px`);
+          document.documentElement.style.setProperty('--gantt-bottom-offset', '0px');
       }
 
       function applyGanttFocusState(behavior) {
@@ -4137,6 +4156,28 @@
           requestAnimationFrame(() => {
               getEl('gantt-quick-peek').classList.add('open');
           });
+      }
+
+      function handleGanttLabelClick(fdh) {
+          if (currentWorkspaceView !== 'gantt') {
+              openGanttView(fdh);
+              return;
+          }
+          const item = allActionItems.find(i => i.fdh === fdh);
+          if (!item) return;
+          ganttFocusedFdh = null;
+          persistGanttViewSession();
+          const ganttArea = getEl('gantt-area-main');
+          if (ganttArea) ganttArea.classList.remove('has-focus');
+          document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
+          const row = document.querySelector(`#gantt-row-${fdh}`);
+          if (row) row.classList.add('is-active');
+          if (typeof currentActiveItem !== 'undefined') currentActiveItem = item;
+          renderQuickPeek(item);
+          requestAnimationFrame(() => {
+              getEl('gantt-quick-peek').classList.add('open');
+          });
+          syncGanttIslandState();
       }
 
       function renderQuickPeek(item) {
@@ -6466,7 +6507,7 @@
               let barLeft = 140 + leftPx;
               rowsArray.push(`
               <div class="gantt-row" id="gantt-row-${item.fdh}" style="width:${chartWidth + 140}px;">
-                 <div class="gantt-label ${highestSev}" onclick="handleGanttClick('${item.fdh}')">
+                 <div class="gantt-label ${highestSev}" onclick="handleGanttLabelClick('${item.fdh}')">
                      <div class="gantt-label-fdh">${item.fdh}</div><div class="gantt-label-ven">${item.vendor || "UNKNOWN"}</div>
                  </div>
                  <div class="gantt-bar-fill ${ganttClass}" style="left:${barLeft}px; width:${widthPx}px; pointer-events:auto;" onclick="handleGanttClick('${item.fdh}')" onmouseenter="showHUD(event, '${item.fdh}')" onmousemove="moveHUD(event)" onmouseleave="hideHUD()">
@@ -9039,14 +9080,15 @@ ${item.comment || 'No notes provided.'}
         opacity: 0.05; filter: blur(6px); pointer-events: none; transform: translateX(-50%) translateY(20px);
       }
       body.presentation-active #slide-action-deck {
-        position: fixed !important;
-        bottom: 40px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: translateY(0) !important;
         z-index: 2000006 !important;
         background: rgba(24, 24, 27, 0.96) !important;
         color: #fff !important;
         border: 1px solid rgba(255,255,255,0.1) !important;
+        margin: 18px auto 0 !important;
       }
       body.presentation-active:not(.deck-mode-active) #slide-action-deck {
         display: none !important;
