@@ -1146,6 +1146,25 @@
       body.dark-mode .digest-blocker-row,
       body.dark-mode .digest-stage-project,
       body.dark-mode .digest-pulse-item { background:rgba(30,30,36,0.65); }
+      .digest-brief-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; }
+      .digest-filter-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+      .digest-filter-strip { display:flex; gap:6px; flex-wrap:wrap; }
+      .digest-filter-btn { background:var(--bg); border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-size:10px; font-weight:800; cursor:pointer; color:var(--text-muted); transition:all 0.15s; font-family:inherit; }
+      .digest-filter-btn:hover { background:var(--card-bg); color:var(--text-main); }
+      .digest-filter-btn.active { background:var(--color-insight); color:#fff; border-color:var(--color-insight); }
+      .digest-feed-item { display:flex; align-items:flex-start; gap:12px; padding:12px 18px; border-bottom:1px dashed var(--border); cursor:pointer; transition:background 0.15s; }
+      .digest-feed-item:last-child { border-bottom:none; }
+      .digest-feed-item:hover { background:rgba(59,130,246,0.04); }
+      .digest-feed-item.selected { background:color-mix(in srgb, var(--bg) 72%, var(--card-bg)); box-shadow:inset 3px 0 0 var(--color-insight); }
+      .digest-feed-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+      .digest-feed-body { flex:1; min-width:0; }
+      .digest-feed-row1 { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px; }
+      .digest-feed-fdh { font-size:13px; font-weight:900; color:var(--text-main); }
+      .digest-feed-vendor { font-size:9px; font-weight:700; color:var(--text-muted); text-transform:uppercase; }
+      .digest-feed-time { font-size:10px; font-weight:600; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
+      .digest-feed-row2 { display:flex; align-items:center; gap:8px; margin-top:2px; }
+      .digest-feed-change { font-size:11px; font-weight:700; color:var(--text-main); }
+      .digest-feed-user { font-size:10px; font-weight:700; color:var(--text-muted); margin-left:auto; white-space:nowrap; }
       body.digest-mode-active .inbox-sidebar { display: none !important; }
       body.digest-mode-active #review-hub-main-header { display:none !important; }
       body.digest-mode-active #grid-content,
@@ -1160,7 +1179,8 @@
       }
       @media screen and (max-width: 1440px) {
           .digest-summary-grid,
-          .digest-stage-summary-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+          .digest-stage-summary-grid,
+          .digest-brief-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
       }
       @media screen and (max-width: 1080px) {
           .digest-ws-header { font-size:30px; }
@@ -3617,6 +3637,7 @@
       let digestVendorCities = {};
       let currentDigestVendorFilter = 'ALL';
       let currentDigestSelection = { type: 'mover', key: '' };
+      let currentDigestFilter = 'all';
       let digestLeafletMap = null;
       let digestLeafletLayer = null;
       let digestPulseAutoScrollTimer = null;
@@ -6223,40 +6244,109 @@
           let data = buildDigestCommandCenterData();
           let dateStr = data.now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
           let deltaTone = data.summary.deltaChanges > 0 ? 'pill-complete' : (data.summary.deltaChanges < 0 ? 'pill-missing' : 'pill-default');
-          let lookbackLabel = data.lookbackHours > 48 ? '48 Working Hours · Weekend Carry' : '48 Working Hours';
-          let deltaLabel = data.summary.deltaChanges === 0 ? 'Flat vs previous window' : ((data.summary.deltaChanges > 0 ? '+' : '') + data.summary.deltaChanges + ' vs previous window');
+          let deltaSign = data.summary.deltaChanges > 0 ? '+' : '';
+          let lookbackLabel = data.lookbackHours > 48 ? 'Weekend Carry · 80h Window' : '48h Working Hours';
+
+          // Production by vendor (daily velocity)
+          let prodByVendor = {};
+          (allActionItems || []).forEach(function(item) {
+              let v = String(item.vendor || '').trim();
+              if (!v || v === '-') return;
+              if (!prodByVendor[v]) prodByVendor[v] = { ug: 0, ae: 0, fib: 0, nap: 0 };
+              if (item.vel) {
+                  prodByVendor[v].ug += Number((item.vel.ug && item.vel.ug.daily) || 0);
+                  prodByVendor[v].ae += Number((item.vel.ae && item.vel.ae.daily) || 0);
+                  prodByVendor[v].fib += Number((item.vel.fib && item.vel.fib.daily) || 0);
+                  prodByVendor[v].nap += Number((item.vel.nap && item.vel.nap.daily) || 0);
+              }
+          });
+          let prodRows = Object.keys(prodByVendor).sort().filter(function(v) {
+              let d = prodByVendor[v]; return d.ug > 0 || d.ae > 0 || d.fib > 0 || d.nap > 0;
+          }).map(function(v) {
+              let d = prodByVendor[v], stats = [];
+              if (d.ug > 0)  stats.push('<span style="color:#f97316;font-weight:800;">+' + d.ug.toLocaleString() + 'ft UG</span>');
+              if (d.ae > 0)  stats.push('<span style="color:#64748b;font-weight:800;">+' + d.ae.toLocaleString() + 'ft Strand</span>');
+              if (d.fib > 0) stats.push('<span style="color:#ef4444;font-weight:800;">+' + d.fib.toLocaleString() + 'ft Fiber</span>');
+              if (d.nap > 0) stats.push('<span style="color:#6366f1;font-weight:800;">+' + d.nap.toLocaleString() + ' NAPs</span>');
+              return '<div class="digest-stat-row"><span style="font-weight:800;font-size:11px;">' + esc(v) + '</span><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-size:11px;">' + stats.join('') + '</div></div>';
+          }).join('');
+          if (!prodRows) prodRows = '<div class="digest-panel-empty">No production velocity data in this window.</div>';
+
+          // Categorize feed by stage key
+          let feedByCat = { all: data.todayLogs };
+          DIGEST_STAGE_ORDER.forEach(function(k) { feedByCat[k] = []; });
+          data.todayLogs.forEach(function(log) {
+              let item = data.itemMap[String(log.fdh || '')] || null;
+              let stageKey = getDigestStageKeyForLog(log, item);
+              if (feedByCat[stageKey]) feedByCat[stageKey].push(log);
+          });
+          window._digestFeedData3 = { cats: feedByCat, itemMap: data.itemMap };
+          currentDigestFilter = currentDigestFilter || 'all';
+
+          // Filter buttons
+          let filterBtns = '<button class="digest-filter-btn' + (currentDigestFilter === 'all' ? ' active' : '') + '" data-filter="all" onclick="filterDigestFeed3(\'all\')">All (' + data.todayLogs.length + ')</button>';
+          DIGEST_STAGE_ORDER.forEach(function(stageKey) {
+              let meta = getDigestStageMeta(stageKey);
+              let count = (feedByCat[stageKey] || []).length;
+              if (count > 0) {
+                  filterBtns += '<button class="digest-filter-btn' + (currentDigestFilter === stageKey ? ' active' : '') + '" data-filter="' + stageKey + '" onclick="filterDigestFeed3(\'' + stageKey + '\')">' +
+                      '<span style="color:' + meta.accent + '; margin-right:4px;">&#9679;</span>' + esc(meta.shortLabel) + ' (' + count + ')</button>';
+              }
+          });
+
           ws.innerHTML = `
               <div class="digest-shell">
                   <div class="digest-doc-header">
                       <div>
-                          <div class="digest-ws-header">Pipeline Command Center</div>
-                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; ${esc(lookbackLabel)} &nbsp;&middot;&nbsp; Database Activity</div>
+                          <div class="digest-ws-header">Daily Pipeline Digest</div>
+                          <div class="digest-doc-subheader">${esc(dateStr)} &nbsp;&middot;&nbsp; ${esc(lookbackLabel)}</div>
                       </div>
+                      <span class="glass-pill ${deltaTone}" style="font-size:11px; padding:6px 14px; flex-shrink:0;">${deltaSign}${data.summary.deltaChanges} vs prev window</span>
                   </div>
                   <div class="digest-summary-grid">
-                      ${renderDigestSummaryStat('Changes In Window', data.summary.totalChanges, 'All logged database activity in the current lookback')}
-                      ${renderDigestSummaryStat('Change Delta', (data.summary.deltaChanges > 0 ? '+' : '') + data.summary.deltaChanges, deltaLabel, deltaTone)}
-                      ${renderDigestSummaryStat('Projects Touched', data.summary.projectsTouched, 'Distinct projects updated in the current lookback')}
-                      ${renderDigestSummaryStat('Users Active', data.summary.usersActive, 'Editors with logged changes in the current lookback')}
+                      ${renderDigestSummaryStat('Changes In Window', data.summary.totalChanges, 'All logged database activity')}
+                      ${renderDigestSummaryStat('Projects Touched', data.summary.projectsTouched, 'Distinct projects updated')}
+                      ${renderDigestSummaryStat('Editors Active', data.summary.usersActive, 'Users with logged changes')}
+                      ${renderDigestSummaryStat('Change Delta', deltaSign + data.summary.deltaChanges, 'vs previous same-length window', deltaTone)}
                   </div>
+                  <div class="digest-section-label" style="margin-top:4px;">Morning Briefing</div>
+                  <div class="digest-brief-grid">
+                      <div class="digest-card">
+                          <div class="digest-card-head">
+                              <div>
+                                  <div class="digest-section-label" style="margin:0 0 4px 0;">Stage Shifts</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Current window vs previous window</div>
+                              </div>
+                          </div>
+                          <div class="digest-card-body" style="padding:12px 14px;">${renderDigestStageSummary(data)}</div>
+                      </div>
+                      <div class="digest-card">
+                          <div class="digest-card-head">
+                              <div>
+                                  <div class="digest-section-label" style="margin:0 0 4px 0;">Production Today</div>
+                                  <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Daily velocity by vendor</div>
+                              </div>
+                          </div>
+                          <div class="digest-card-body" style="padding:0 14px 4px;">${prodRows}</div>
+                      </div>
+                  </div>
+                  <div class="digest-section-label" style="margin-top:4px;">Editor Leaderboard</div>
                   <div class="digest-card">
                       <div class="digest-card-head">
                           <div>
-                              <div class="digest-section-label" style="margin:0 0 6px 0;">Stage Shift Summary</div>
-                              <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Current lookback compared against the previous window using the same stage language as the rest of the app.</div>
+                              <div class="digest-section-label" style="margin:0 0 4px 0;">Top Movers</div>
+                              <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Ranked by edits in the current lookback window. Click a row to inspect.</div>
                           </div>
+                          <span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${data.movers.length} editors</span>
                       </div>
-                      <div class="digest-card-body">${renderDigestStageSummary(data)}</div>
+                      <div class="digest-card-body">${renderDigestLeaderboard(data.movers.slice(0, 8))}</div>
                   </div>
-                  <div class="digest-card">
-                      <div class="digest-card-head">
-                          <div>
-                              <div class="digest-section-label" style="margin:0 0 6px 0;">Recent DB Moves</div>
-                              <div style="font-size:11px; font-weight:700; color:var(--text-muted);">Reverse-chronological change feed for the current lookback. Click a row to inspect the project in the rail, or jump straight into Detail view.</div>
-                          </div>
-                          <span class="glass-pill pill-default" style="font-size:9px; padding:4px 8px;">${data.todayLogs.length} in window</span>
-                      </div>
-                      ${renderDigestActivityFeed(data.todayLogs, data.itemMap)}
+                  <div class="digest-filter-row" style="margin-top:4px;">
+                      <span class="digest-section-label" style="margin:0;">Project Changes <span style="color:var(--text-muted); font-weight:600; font-size:9px; margin-left:4px;">${data.todayLogs.length} events</span></span>
+                      <div class="digest-filter-strip">${filterBtns}</div>
+                  </div>
+                  <div class="digest-card" style="margin-bottom:40px;">
+                      <div id="digest-feed-list3">${renderDigestFeedItems3(window._digestFeedData3, currentDigestFilter)}</div>
                   </div>
               </div>
           `;
@@ -6305,6 +6395,46 @@
                   </div>
               </div>
           `;
+      }
+
+      function filterDigestFeed3(stageKey) {
+          currentDigestFilter = stageKey;
+          document.querySelectorAll('.digest-filter-btn').forEach(function(b) {
+              b.classList.toggle('active', b.dataset.filter === stageKey);
+          });
+          let feedList = getEl('digest-feed-list3');
+          if (!feedList || !window._digestFeedData3) return;
+          feedList.innerHTML = renderDigestFeedItems3(window._digestFeedData3, stageKey);
+      }
+
+      function renderDigestFeedItems3(feedData, filter) {
+          if (!feedData) return '';
+          let logs = (filter === 'all') ? feedData.cats.all : (feedData.cats[filter] || []);
+          if (!logs.length) return '<div class="digest-panel-empty" style="padding:32px; text-align:center;">No changes in this category.</div>';
+          let itemMap = feedData.itemMap || {};
+          return logs.map(function(log) {
+              let item = itemMap[String(log.fdh || '')] || null;
+              let stageKey = getDigestStageKeyForLog(log, item);
+              let meta = getDigestStageMeta(stageKey);
+              let ts = getDigestLogTimestamp(log);
+              let cleanVal = String(log.val || '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
+              let selected = currentDigestSelection.type === 'project' && currentDigestSelection.key === String(log.fdh || '');
+              return '<div class="digest-feed-item' + (selected ? ' selected' : '') + '" onclick="setDigestRailFocus(\'project\', \'' + escJs(String(log.fdh || '')) + '\')">' +
+                  '<div class="digest-feed-dot" style="background:' + meta.accent + ';"></div>' +
+                  '<div class="digest-feed-body">' +
+                      '<div class="digest-feed-row1">' +
+                          '<span class="digest-feed-fdh">' + esc(log.fdh || '-') + '</span>' +
+                          (item ? '<span class="digest-feed-vendor">' + esc(item.vendor || '') + '</span>' : '') +
+                          '<span class="glass-pill ' + meta.pillClass + '" style="font-size:9px; padding:3px 8px;">' + esc(meta.label) + '</span>' +
+                          '<span class="digest-feed-time">' + esc(formatDate(ts ? new Date(ts) : log.time, true)) + '</span>' +
+                      '</div>' +
+                      '<div class="digest-feed-row2">' +
+                          '<span class="digest-feed-change">&#8594; ' + esc(cleanVal || '-') + '</span>' +
+                          '<span class="digest-feed-user">by ' + esc(log.user || '-') + '</span>' +
+                      '</div>' +
+                  '</div>' +
+              '</div>';
+          }).join('');
       }
 
       function parseMiniSldFdh(value) {
