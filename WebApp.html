@@ -4515,7 +4515,7 @@
           let workspace = getEl('main-workspace');
           let pills = getEl('active-filter-pills');
 
-          if (dock && workspace && window.innerWidth > 768 && window.innerWidth <= 1800 && currentWorkspaceView !== 'gantt') {
+          if (dock && workspace && window.innerWidth > 768 && window.innerWidth <= 1800 && currentWorkspaceView !== 'gantt' && currentWorkspaceView !== 'deck') {
               let workspaceRect = workspace.getBoundingClientRect();
               let dockRect = dock.getBoundingClientRect();
               let clearBottom = dockRect.bottom;
