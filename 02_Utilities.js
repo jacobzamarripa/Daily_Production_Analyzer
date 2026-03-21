@@ -2,6 +2,10 @@
  * FILE: 02_Utilities.gs
  */
 
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
 function onOpen() {
   try {
     const ui = SpreadsheetApp.getUi();

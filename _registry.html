@@ -1,0 +1,82 @@
+<script>
+// ============================================================
+// FILE: _registry.html
+// ROLE: Declarative registry for data-layer boundaries, guarded integrations, and shared frontend state names.
+// DEPENDS ON: 00_Config.js, 05_CDAnalyzer.js, 06_QBSync.js
+// DEPENDED ON BY: WebApp.html and any future HtmlService partials that read app boundaries before touching data logic.
+// MOBILE NOTES: Declares GAS-only bridges and shared state names that will not work unchanged in a non-GAS mobile wrapper.
+// AGENT NOTES: Read this file first before editing data access, sheet permissions, integration guards, or shared frontend state contracts.
+// ============================================================
+window.APP_REGISTRY = Object.freeze({
+  dataLayers: Object.freeze({
+    quickBase: Object.freeze({
+      role: 'system_of_record',
+      frontendWritable: false,
+      notes: 'Never write to QuickBase directly from frontend code.'
+    }),
+    sheets: Object.freeze({
+      dailyReview: Object.freeze({
+        name: '3-Daily_Review',
+        permission: 'read_write',
+        notes: 'Working sandbox; only sheet layer the app writes to directly.'
+      }),
+      referenceData: Object.freeze({
+        name: '5-Reference_Data',
+        permission: 'read_only',
+        notes: 'QuickBase mirror; frontend must treat as read-only.'
+      }),
+      committedReviews: Object.freeze({
+        name: '6-Committed_Reviews',
+        permission: 'append_only_staging',
+        notes: 'Staged queue for manual QuickBase entry/export.'
+      }),
+      specialCrossings: Object.freeze({
+        name: '7-CD_Special_Xings',
+        permission: 'service_write',
+        notes: 'Written by CD analyzer/Gemini workflow.'
+      })
+    })
+  }),
+  quickBase: Object.freeze({
+    writebackGuard: Object.freeze({
+      enabled: false,
+      functionName: 'writebackQBDirect',
+      status: 'guarded_by_early_return'
+    }),
+    tokens: Object.freeze({
+      scriptProperty: 'QB_USER_TOKEN',
+      frontendExposed: false
+    })
+  }),
+  gemini: Object.freeze({
+    apiKeySource: 'Script Properties',
+    entryPoints: Object.freeze([
+      'runCDAnalysis',
+      'generateAndSaveFDHNarrative',
+      'processAudioDictation',
+      'askBennyQuery'
+    ])
+  }),
+  sharedFrontendState: Object.freeze({
+    globals: Object.freeze([
+      'allActionItems',
+      'filteredItems',
+      'currentActiveItem',
+      'pmSessionMemory',
+      'stagedDeckItems',
+      'committedItems',
+      'globalHeaders',
+      'globalRefDataDate',
+      'globalAllFdhIds',
+      'globalEndCounts',
+      'globalTodayData',
+      'activeAdminFilter'
+    ]),
+    notes: 'Names are structural contracts during refactor; do not rename without coordinated sweep.'
+  }),
+  gasBridge: Object.freeze({
+    transport: 'google.script.run',
+    callbackStyle: 'withSuccessHandler().withFailureHandler()'
+  })
+});
+</script>
