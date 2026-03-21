@@ -141,13 +141,14 @@
     - Export/report output remains correct when grouped (exports grouped structure or flattened rows predictably).
     - Setting Group by to "None" returns to ungrouped list/grid without losing filters.
 
-- [ ] **Calculator: Make widget draggable**
+- [x] **Calculator: Make widget draggable**
   - **Expected:** Calculator can be clicked-and-dragged to reposition within the app workspace. Position persists at least for the current session (ideally per-user between sessions). Must continue to float above other UI layers.
   - **Acceptance:**
     - User drags calculator via a clear handle region (header bar) without accidentally clicking buttons.
     - Snap-back or edge constraints prevent dragging fully off-screen.
     - Closing/reopening calculator returns it to last position (session persistence minimum).
     - No layout glitches in Deck/Theater/other views.
+  - **Completed:** Calculator header now acts as a drag handle, position is clamped within the viewport, and the last position persists for the current browser session while keeping the existing floating layer behavior across views.
 
 - [x] **Vendor tracker: DRG "Direct Vendor" pill**
   - **Background:** A Google Sheet flag already exists for Direct Vendor tracking (DRG), but the app has no visible indicator.
