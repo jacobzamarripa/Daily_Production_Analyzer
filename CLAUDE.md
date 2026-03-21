@@ -19,6 +19,41 @@
 ## Error Handling & Logging
 * Use the custom `logMsg()` function in `00_Config.js` instead of `console.log()` for backend logic, as it writes directly to the `System_Logs` sheet.
 
+## Git Commit Convention
+Every workstream closes with a structured Git commit using
+this format:
+
+  type(scope): one line summary
+
+  - bullet per file created
+  - bullet per file modified
+  - smoke test result and date
+
+  [One line on what this commit unblocks or completes.]
+
+Valid type prefixes:
+- refactor(ws[N]) — workstream close
+- feat([module]) — new feature
+- fix([file]) — bug fix
+- docs — documentation only changes
+- chore — config, tooling, cleanup
+
+## Workstream Protocol
+When executing any workstream in this project:
+1. Read CLAUDE.md and WORKSTREAM_0_NOTES.md in full first
+2. Read _registry.html before touching any data logic
+3. Produce an inventory or audit and pause for approval
+   before extracting anything
+4. One phase at a time — pause after each phase for user
+   smoke test before proceeding
+5. No logic changes during structural refactors — extraction only
+6. Add the standard file header to every new file created
+7. Update CLAUDE.md File Map and WORKSTREAM_0_NOTES.md after
+   every phase
+8. Close every workstream with a structured Git commit
+9. Never move initDashboard() or applyFilters() — bootstrap anchors
+10. Redeploy as a new version after every structural change
+
 ## Recent UI / Workflow Lessons
 1. **Tracker-linked projects:** The real frontend signal for vendor-tracker-linked projects is the engine output in `Field Production`, specifically `[📡 Tracker Linked]`. Do not assume DRG/Direct Vendor columns are the source of truth when the engine already computed tracker linkage.
 2. **Tracker override behavior:** Vendor tracker data is already triangulated in `01_Engine.js` and can override baseline database assumptions during Daily Review generation. When adding frontend indicators, follow the review output the engine writes, not a guessed sheet flag.
