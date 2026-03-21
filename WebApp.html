@@ -13,7 +13,7 @@
         --qb-fib-bg: linear-gradient(to bottom, #64748b 0%, #171717 25%, #171717 75%, #000000 100%);
         --qb-nap-bg: linear-gradient(90deg, #4338ca 0%, #6366f1 70%, #22d3ee 100%);
         --qb-fib-border: #ef4444; --qb-nap-border: #6366f1;
-        --starGold: #fbbf24; --accent: #3b82f6; --gantt-panel-height: 34vh; --inbox-panel-width: 380px; --panel-gutter-x: 16px; --panel-gutter-y: 12px;
+        --starGold: #fbbf24; --accent: #3b82f6; --gantt-panel-height: 34vh; --inbox-panel-width: 380px; --panel-gutter-x: 16px; --panel-gutter-y: 12px; --dock-panel-offset: 0px;
         /* Status Pill Colors */
         --pill-active-txt: #b45309;   --pill-active-bg: rgba(253,224,71,0.25);   --pill-active-bdr: #facc15;
         --pill-ofs-txt: #0f766e;      --pill-ofs-bg: rgba(6,182,212,0.15);       --pill-ofs-bdr: #06b6d4;
@@ -540,6 +540,14 @@
       #grid-pivot-select:hover {
           background: #1e293b !important;
           transform: translateY(0) !important;
+      }
+      #group-by-select {
+          width: 150px !important;
+          min-width: 150px !important;
+          font-size: 10px !important;
+          text-transform: uppercase;
+          letter-spacing: 0.45px;
+          padding-right: 30px !important;
       }
       body.dark-mode #grid-pivot-select {
           background: #f8fafc !important;
@@ -1656,7 +1664,7 @@
           height: auto !important;
           max-height: none !important;
           margin-left: var(--panel-gutter-x);
-          margin-top: var(--panel-gutter-y);
+          margin-top: calc(var(--panel-gutter-y) + var(--dock-panel-offset));
           margin-bottom: var(--panel-gutter-y);
           display: flex;
           flex-direction: column;
@@ -1721,6 +1729,67 @@
       .email-card.crit { border-left-color: var(--color-critical); }
       .email-card.warn { border-left-color: var(--color-review); }
       .email-card.info { border-left-color: var(--color-insight); }
+      .queue-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+      }
+      .queue-group-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 10px 14px;
+          border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+          background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+          position: sticky;
+          top: 0;
+          z-index: 4;
+          cursor: pointer;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+      }
+      .queue-group-title {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 0;
+          color: var(--text-main);
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+      }
+      .queue-group-toggle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 14px;
+          color: var(--text-muted);
+          font-size: 11px;
+          flex-shrink: 0;
+      }
+      .queue-group-count {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 24px;
+          padding: 3px 8px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: color-mix(in srgb, var(--bg) 72%, transparent);
+          color: var(--text-main);
+          font-size: 10px;
+          font-weight: 900;
+          flex-shrink: 0;
+      }
+      .queue-group-body {
+          display: flex;
+          flex-direction: column;
+      }
+      .queue-group-body.collapsed {
+          display: none;
+      }
       .em-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;}
       .em-fdh { font-size: 12px; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em; line-height: 1;}
       .em-vendor { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; line-height: 1;}
@@ -1783,7 +1852,7 @@
           overflow-x: hidden !important;
       }
       #welcome-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; height: 100%; text-align: center; }
-      .admin-dock { position: absolute; inset: 0; padding: var(--panel-gutter-y) var(--panel-gutter-x); box-sizing: border-box; width: auto; display: flex; justify-content: flex-end; pointer-events: none; z-index: 8; }
+      .admin-dock { position: absolute; inset: 0; padding: calc(var(--panel-gutter-y) + var(--dock-panel-offset)) var(--panel-gutter-x) var(--panel-gutter-y); box-sizing: border-box; width: auto; display: flex; justify-content: flex-end; pointer-events: none; z-index: 8; }
       .reading-pane.admin-open .admin-dock { pointer-events: auto; }
       #grid-content {
           display: none;
@@ -2781,9 +2850,9 @@
           right: 0;
           width: 380px;
           flex-shrink: 0; 
-          height: calc(100% - (var(--panel-gutter-y) * 2)) !important;
+          height: calc(100% - (var(--panel-gutter-y) * 2) - var(--dock-panel-offset)) !important;
           max-height: none !important;
-          margin-top: var(--panel-gutter-y);
+          margin-top: calc(var(--panel-gutter-y) + var(--dock-panel-offset));
           margin-right: var(--panel-gutter-x);
           margin-bottom: var(--panel-gutter-y);
           background: color-mix(in srgb, var(--card-bg) 98%, transparent);
@@ -3225,6 +3294,18 @@
                 </select>
             </div>
 
+            <div class="dock-zone" id="dock-group-zone">
+                <div class="dock-divider"></div>
+                <select id="group-by-select" onchange="setGroupBy(this.value)">
+                    <option value="none">Group By: None</option>
+                    <option value="vendor">Group By: Vendor</option>
+                    <option value="city">Group By: City</option>
+                    <option value="health">Group By: Health</option>
+                    <option value="stage">Group By: Stage</option>
+                    <option value="status">Group By: Status</option>
+                </select>
+            </div>
+
             <div class="dock-zone collapsed" id="dock-pivot-zone">
                 <div class="dock-divider"></div>
                 <select id="grid-pivot-select" onchange="updateGridPivot()">
@@ -3650,6 +3731,9 @@
       const STAGED_REVIEW_COLLAPSED_SESSION_KEY = 'dpa.stagedReviewCollapsed.v1';
       const GANTT_VIEW_SCROLL_SESSION_KEY = 'dpa.ganttScroll.v1';
       const GANTT_VIEW_FOCUS_SESSION_KEY = 'dpa.ganttFocus.v1';
+      const GROUP_BY_SESSION_KEY = 'dpa.queueGroupBy.v1';
+      const GROUP_COLLAPSE_SESSION_KEY = 'dpa.queueGroupCollapse.v1';
+      const GROUP_BY_OPTIONS = ['none', 'vendor', 'city', 'health', 'stage', 'status'];
       let pendingFaceAnimation = null;
       let preferredPresentationCardTheme = null;
       let isStagedReviewCollapsed = false;
@@ -3659,8 +3743,107 @@
       let ganttFocusedFdh = null;
       let ganttScrollState = { top: 0, left: 0 };
       let ganttHasVisited = false;
+      let currentGroupBy = (function() {
+          try {
+              let stored = sessionStorage.getItem(GROUP_BY_SESSION_KEY) || 'none';
+              return GROUP_BY_OPTIONS.includes(stored) ? stored : 'none';
+          } catch (e) {
+              return 'none';
+          }
+      })();
+      let queueGroupCollapseState = (function() {
+          try {
+              let raw = sessionStorage.getItem(GROUP_COLLAPSE_SESSION_KEY);
+              let parsed = raw ? JSON.parse(raw) : {};
+              return parsed && typeof parsed === 'object' ? parsed : {};
+          } catch (e) {
+              return {};
+          }
+      })();
       function isSlideFaceActive() {
           return currentWorkspaceView === 'detail' && currentDetailFace === 'slide';
+      }
+
+      function persistQueueGroupingSession() {
+          try {
+              sessionStorage.setItem(GROUP_BY_SESSION_KEY, currentGroupBy || 'none');
+              sessionStorage.setItem(GROUP_COLLAPSE_SESSION_KEY, JSON.stringify(queueGroupCollapseState || {}));
+          } catch (e) {}
+      }
+
+      function setGroupBy(value) {
+          let nextValue = GROUP_BY_OPTIONS.includes(value) ? value : 'none';
+          currentGroupBy = nextValue;
+          persistQueueGroupingSession();
+          applyFilters();
+      }
+
+      function toggleQueueGroupSection(groupKey) {
+          if (currentGroupBy === 'none') return;
+          let modeState = queueGroupCollapseState[currentGroupBy] || {};
+          modeState[groupKey] = !modeState[groupKey];
+          queueGroupCollapseState[currentGroupBy] = modeState;
+          persistQueueGroupingSession();
+          renderList(filteredItems || []);
+      }
+
+      function isQueueGroupCollapsed(groupKey) {
+          return !!(queueGroupCollapseState[currentGroupBy] && queueGroupCollapseState[currentGroupBy][groupKey]);
+      }
+
+      function getGroupMetaForItem(item, groupBy) {
+          let mode = GROUP_BY_OPTIONS.includes(groupBy) ? groupBy : 'none';
+          if (mode === 'vendor') {
+              let label = String(item.vendor || 'Unknown Vendor').trim() || 'Unknown Vendor';
+              return { key: 'vendor:' + label.toLowerCase(), label: label, sortKey: label.toLowerCase() };
+          }
+          if (mode === 'city') {
+              let label = String(item.city || 'Unknown City').trim() || 'Unknown City';
+              return { key: 'city:' + label.toLowerCase(), label: label, sortKey: label.toLowerCase() };
+          }
+          if (mode === 'stage') {
+              let label = String(item.stage || 'Unknown Stage').trim() || 'Unknown Stage';
+              return { key: 'stage:' + label.toLowerCase(), label: label, sortKey: label.toLowerCase() };
+          }
+          if (mode === 'status') {
+              let label = String(item.status || 'Unknown Status').trim() || 'Unknown Status';
+              return { key: 'status:' + label.toLowerCase(), label: label, sortKey: label.toLowerCase() };
+          }
+          if (mode === 'health') {
+              let severity = getSeverity(item.flags);
+              let labels = { crit: 'Critical', warn: 'Warnings', info: 'Clear' };
+              let order = { crit: 0, warn: 1, info: 2 };
+              return {
+                  key: 'health:' + severity,
+                  label: labels[severity] || 'Clear',
+                  sortKey: String(order[severity] !== undefined ? order[severity] : 99)
+              };
+          }
+          return { key: 'all', label: 'All Projects', sortKey: '0' };
+      }
+
+      function getGroupedQueueSections(items) {
+          if (currentGroupBy === 'none') return [];
+          let groups = new Map();
+          (items || []).forEach(function(item) {
+              let meta = getGroupMetaForItem(item, currentGroupBy);
+              if (!groups.has(meta.key)) {
+                  groups.set(meta.key, { key: meta.key, label: meta.label, sortKey: meta.sortKey, items: [] });
+              }
+              groups.get(meta.key).items.push(item);
+          });
+          let sections = Array.from(groups.values());
+          sections.sort(function(a, b) {
+              if (currentGroupBy === 'health') return Number(a.sortKey) - Number(b.sortKey);
+              return String(a.sortKey || '').localeCompare(String(b.sortKey || ''));
+          });
+          return sections;
+      }
+
+      function flattenGroupedSections(sections) {
+          return (sections || []).reduce(function(acc, section) {
+              return acc.concat(section.items || []);
+          }, []);
       }
 
       function syncWorkspaceModeState() {
@@ -3683,18 +3866,25 @@
           const isGridModeView = currentWorkspaceView === 'grid';
           const isGanttView = currentWorkspaceView === 'gantt';
           const pivotZone = getEl('dock-pivot-zone');
+          const groupZone = getEl('dock-group-zone');
           const filtersZone = getEl('dock-filters-zone');
           const focusZone = getEl('dock-focus-zone');
           const clearZone = getEl('dock-clear-zone');
           const faceBtn = getEl('dock-btn-face-toggle');
           const slideDeck = getEl('slide-action-deck');
           const showSlideDeck = isSlideFaceActive() && !isGanttView;
+          const groupSelect = getEl('group-by-select');
 
           if (filtersZone) filtersZone.classList.remove('collapsed');
+          if (groupZone) groupZone.classList.remove('collapsed');
           if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridModeView);
           if (focusZone) focusZone.classList.toggle('collapsed', !isDetailMode);
           if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
           if (slideDeck) slideDeck.classList.toggle('visible', showSlideDeck && !isGanttView);
+          if (groupSelect) {
+              groupSelect.value = currentGroupBy;
+              groupSelect.classList.toggle('is-active', currentGroupBy !== 'none');
+          }
 
           if (faceBtn) {
               faceBtn.style.display = isDetailMode ? 'inline-flex' : 'none';
@@ -3715,6 +3905,7 @@
           syncOutboxPanelMode();
           syncDockLayoutSpacing();
           updateFloatingPillsPosition();
+          syncDockClearanceState();
       }
 
       function renderDetailWorkspaceFace() {
@@ -4224,6 +4415,41 @@
           }
       }
 
+      function syncDockClearanceState() {
+          let offset = 0;
+          let shouldShift = false;
+          let dock = getEl('filter-strip');
+          let workspace = getEl('main-workspace');
+          let pills = getEl('active-filter-pills');
+
+          if (dock && workspace && window.innerWidth > 768 && window.innerWidth <= 1500 && currentWorkspaceView !== 'gantt') {
+              let dockWidth = dock.getBoundingClientRect().width || 0;
+              let pillsWidth = (pills && pills.childElementCount > 0) ? pills.getBoundingClientRect().width : 0;
+              let leftRail = getEl('main-workspace')?.querySelector('.inbox-sidebar');
+              let outboxPane = getEl('outbox-pane');
+              let fabAnchor = document.querySelector('.admin-fab-anchor');
+              let leftWidth = leftRail && getComputedStyle(leftRail).display !== 'none' ? leftRail.getBoundingClientRect().width + 28 : 0;
+              let rightWidth = 0;
+
+              if (outboxPane && outboxPane.classList.contains('open') && getComputedStyle(outboxPane).display !== 'none') {
+                  rightWidth = outboxPane.getBoundingClientRect().width + 28;
+              } else if (fabAnchor && currentWorkspaceView === 'detail') {
+                  rightWidth = Math.max(76, fabAnchor.getBoundingClientRect().width + 24);
+              }
+
+              let availableCenterWidth = Math.max(0, window.innerWidth - leftWidth - rightWidth - 48);
+              shouldShift = availableCenterWidth > 0 && (dockWidth >= availableCenterWidth || (pillsWidth > 0 && pillsWidth >= Math.max(availableCenterWidth - 32, availableCenterWidth * 0.84)));
+              if (shouldShift) {
+                  let dockHeight = dock.getBoundingClientRect().height || 44;
+                  let pillsHeight = (pills && pills.childElementCount > 0) ? (pills.getBoundingClientRect().height || 0) : 0;
+                  offset = Math.min(96, Math.max(40, Math.ceil(dockHeight + (pillsHeight ? pillsHeight + 14 : 16))));
+              }
+          }
+
+          document.documentElement.style.setProperty('--dock-panel-offset', `${offset}px`);
+          document.body.classList.toggle('dock-clearance-active', shouldShift);
+      }
+
       function getActiveSortValue() {
           const queueSort = getEl('sort-queue')?.value || 'default';
           if (currentWorkspaceView === 'gantt' && queueSort === 'default') return 'end';
@@ -4396,6 +4622,10 @@
 
       function openGanttView(fdh) {
           ganttFocusedFdh = fdh || null;
+          if (!fdh) {
+              ganttScrollState = { top: 0, left: 0 };
+              ganttHasVisited = false;
+          }
           persistGanttViewSession();
           switchWorkspaceView('gantt');
       }
@@ -4424,6 +4654,7 @@
           const btnFocus    = getEl('dock-btn-exit-theater');
           const ganttZone   = getEl('dock-gantt-actions-zone');
           const filtersZone = getEl('dock-filters-zone');
+          const groupZone   = getEl('dock-group-zone');
           const pivotZone   = getEl('dock-pivot-zone');
           const focusZone   = getEl('dock-focus-zone');
           const clearZone   = getEl('dock-clear-zone');
@@ -4442,12 +4673,14 @@
 
           if (isFs) {
               if (filtersZone) filtersZone.classList.remove('collapsed');
+              if (groupZone) groupZone.classList.remove('collapsed');
               if (pivotZone) pivotZone.classList.add('collapsed');
               if (focusZone) focusZone.classList.add('collapsed');
               if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
               if (slideDeck) slideDeck.classList.remove('visible');
           } else if (isPresentationMode) {
               if (filtersZone) filtersZone.classList.toggle('collapsed', isDeck);
+              if (groupZone) groupZone.classList.toggle('collapsed', isDeck);
               if (pivotZone) pivotZone.classList.add('collapsed');
               if (focusZone) focusZone.classList.toggle('collapsed', !showFocusZone);
               if (clearZone) clearZone.classList.add('collapsed');
@@ -4456,6 +4689,7 @@
               if (slideDeck) slideDeck.classList.toggle('visible', isDeck);
           } else {
               if (filtersZone) filtersZone.classList.remove('collapsed');
+              if (groupZone) groupZone.classList.remove('collapsed');
               if (pivotZone) pivotZone.classList.toggle('collapsed', !isGrid);
               if (focusZone) focusZone.classList.toggle('collapsed', !showFocusZone);
               if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
@@ -4465,6 +4699,7 @@
           }
           syncDockLayoutSpacing();
           updateFloatingPillsPosition();
+          syncDockClearanceState();
       }
 
       // ── Gantt Quick-Peek Slide-Over ──────────────────────────────────────────
@@ -5144,6 +5379,7 @@
               setAdminPanelOpen(false);
           }
       });
+      window.addEventListener('resize', syncDockClearanceState);
 
       let hudLocked = false;
       function toggleHudLock(e) {
@@ -6951,6 +7187,8 @@
                 }
                 logUserFilter.style.display = (currentGridPivot === 'changelog' || currentGridPivot === 'global-log') ? 'inline-flex' : 'none';
             }
+            let groupSelect = getEl('group-by-select');
+            if (groupSelect) groupSelect.value = currentGroupBy;
             renderChangeLog();
             let recentActivityCount = 0;
             let yesterdayTime = Date.now() - (24 * 60 * 60 * 1000);
@@ -7238,6 +7476,10 @@
                     return valA - valB;
                 });
             } else { displayFiltered.sort((a, b) => a.rowNum - b.rowNum); }
+
+            if (currentGroupBy !== 'none') {
+                displayFiltered = flattenGroupedSections(getGroupedQueueSections(displayFiltered));
+            }
             
             let anyActive = activeFilters.sev.length > 0 || activeFilters.vendor.length > 0 || activeFilters.city.length > 0 || activeFilters.ofs.length > 0 || activeFilters.status.length > 0 || searchTerm !== '' || activeAdminFilter !== null || activePieStageFilter !== null;
             let clearBtn = getEl('btn-clear-filters');
@@ -7246,9 +7488,14 @@
             if (clearZone) clearZone.classList.toggle('collapsed', !anyActive);
             let filtersBtn = getEl('btn-filters');
             if (filtersBtn) filtersBtn.classList.toggle('btn-filters-active', anyActive || !(getEl('filter-strip')?.classList.contains('hidden')));
+            let groupSelect = getEl('group-by-select');
+            if (groupSelect) {
+                groupSelect.value = currentGroupBy;
+                groupSelect.classList.toggle('is-active', currentGroupBy !== 'none');
+            }
             filteredItems = displayFiltered;
             ganttNeedsRender = true;
-            if (currentWorkspaceView === 'gantt' && !ganttFocusedFdh) captureGanttScrollState();
+            if (currentWorkspaceView === 'gantt' && !ganttFocusedFdh && ganttHasVisited) captureGanttScrollState();
             renderList(displayFiltered);
             renderAdminPane(activeQueueItems);
             if (currentWorkspaceView === 'grid') renderGrid();
@@ -7678,135 +7925,163 @@
 
       function renderList(items) {
         let list = getEl('inbox-list'); if(!list) return; setTxt('inbox-count', items.length); list.innerHTML = '';
+        let groupedSections = currentGroupBy !== 'none' ? getGroupedQueueSections(items) : [];
 
-        if (currentViewMode !== 'grid') {
-          items.forEach((item) => {
-              let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== ""); let highestSev = "info", tagsHtml = '';
+        function appendListCard(item, targetEl) {
+            let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== ""); let highestSev = "info", tagsHtml = '';
 
-              rawFlags.slice(0, 3).forEach(f => {
-                  let cleanText = cleanDiagnosticFlagText(f);
-                  let tagCls = getDiagnosticTagClass(f);
-                  if (tagCls === 'chip-admin' || tagCls === 'chip-warn') highestSev = "warn";
-                  else if (tagCls === 'tag-red') highestSev = "crit";
-                  else if (tagCls === 'chip-ghost' && highestSev !== "crit" && highestSev !== "warn") highestSev = "ghost";
-                  tagsHtml += `<span class="tag ${tagCls}">${cleanText}</span>`;
-              });
-              if(rawFlags.length > 3) tagsHtml += `<span class="tag chip-muted">+${rawFlags.length-3}</span>`;
+            rawFlags.slice(0, 3).forEach(f => {
+                let cleanText = cleanDiagnosticFlagText(f);
+                let tagCls = getDiagnosticTagClass(f);
+                if (tagCls === 'chip-admin' || tagCls === 'chip-warn') highestSev = "warn";
+                else if (tagCls === 'tag-red') highestSev = "crit";
+                else if (tagCls === 'chip-ghost' && highestSev !== "crit" && highestSev !== "warn") highestSev = "ghost";
+                tagsHtml += `<span class="tag ${tagCls}">${cleanText}</span>`;
+            });
+            if(rawFlags.length > 3) tagsHtml += `<span class="tag chip-muted">+${rawFlags.length-3}</span>`;
 
-              let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
-              let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
-              if(item.flags.includes("MISSING QB STATUS") && !item.flags.includes("NOT IN QB REFERENCE")) combinedPill = "MISSING QB STATUS";
+            let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
+            let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
+            if(item.flags.includes("MISSING QB STATUS") && !item.flags.includes("NOT IN QB REFERENCE")) combinedPill = "MISSING QB STATUS";
 
-              let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+            let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
 
-              let card = document.createElement('div'); card.className = `email-card ${highestSev}`; card.id = `card-${item.fdh}`;
-              card.setAttribute('data-fdh', item.fdh);
+            let card = document.createElement('div'); card.className = `email-card ${highestSev}`; card.id = `card-${item.fdh}`;
+            card.setAttribute('data-fdh', item.fdh);
+            card.onclick = () => { openPane(item, card); };
+            card.innerHTML = `
+               <div class="em-header">
+                  <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
+                      <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div><div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
+                  </div>
+                  <div class="em-pill-stack">
+                      <span class="glass-pill ${pillCls}" style="flex-shrink: 0;">${combinedPill}</span>
+                      ${renderTrackerPill(item, { inline: true, stopPropagation: 'event.stopPropagation()' })}
+                  </div>
+               </div><div class="em-tags">${tagsHtml}</div>`;
+            targetEl.appendChild(card);
+        }
 
-              card.onclick = () => { openPane(item, card); };
+        function appendGridCard(item, targetEl) {
+            let pivot = getEl('sidebar-pivot-select')?.value || 'schedule';
+            let today = new Date(); today.setHours(0,0,0,0);
+            let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
+            let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
+            let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
 
-              card.innerHTML = `
-                 <div class="em-header">
-                    <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
-                        <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div><div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
+            let pEnd = safeDate(item.cxEnd);
+            let daysLeft = pEnd ? Math.ceil((pEnd - new Date()) / 86400000) : 0;
+            let isComplete = (item.stage || "").toLowerCase().includes('ofs') || (item.status || "").toLowerCase().includes('complete');
+            let isPermit = (item.stage || "").toLowerCase().includes('permit');
+            let isOnHold = (item.status || "").toLowerCase().includes('hold');
+            let isOverdue = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
+
+            let bodyHtml = '';
+            if (pivot === 'schedule') {
+                let sColor = "#facc15";
+                if (isComplete) sColor = "#22c55e"; else if (isPermit) sColor = "#a855f7"; else if (isOnHold) sColor = "#94a3b8"; else if (isOverdue) sColor = "#ef4444";
+                let pStart = safeDate(item.cxStart);
+                let pct = 0;
+                if (pStart && pEnd && pEnd - pStart > 0) { pct = Math.max(0, Math.min(100, ((new Date() - pStart) / (pEnd - pStart)) * 100)); }
+                let xingBadge = item.isXing ? `<div style="position:absolute; bottom:4px; right:4px; background:#171717; color:#facc15; padding:1px 6px; border-radius:4px; font-size:8px; font-weight:900; border:1px solid #facc15;">X-ING</div>` : '';
+                bodyHtml = `
+                    <div class="qb-time-labels" style="margin-top:0; margin-bottom:4px;">
+                        <span>START: <span style="color:var(--text-main);">${item.cxStart ? formatDate(item.cxStart) : 'TBD'}</span></span>
+                        <span>END: <span style="color:var(--text-main);">${item.cxEnd ? formatDate(item.cxEnd) : 'TBD'}</span></span>
                     </div>
-                    <div class="em-pill-stack">
-                        <span class="glass-pill ${pillCls}" style="flex-shrink: 0;">${combinedPill}</span>
+                    <div class="qb-time-bar" style="margin-bottom:12px;">
+                        <div class="qb-time-fill" style="width:${pct}%; background:${sColor};"></div>
+                        ${pct > 0 && pct < 100 ? `<div class="qb-time-bead" style="left:calc(${pct}% - 7px); border-color:${sColor}; display:block;"></div>` : ''}
+                    </div>
+                    <div class="qb-target-wrap ${item.isXing ? 'xing' : ''}" style="margin-top:auto;">
+                        <div class="qb-target-inner" style="border-radius:${item.isXing ? '9px 9px 0 0' : '12px 12px 0 0'}; padding:8px 6px; position:relative;">
+                            <div class="qb-target-label" style="font-size:9px;">Target Date</div>
+                            <div class="qb-target-date" style="color:${sColor}; font-size:14px;">${item.targetDate ? formatDate(item.targetDate) : 'TBD'}</div>
+                            ${xingBadge}
+                        </div>
+                    </div>`;
+            } else if (pivot === 'velocity') {
+                let v = item.vel;
+                let ofsMonthStr = "TBD";
+                let isOFSMonth = false;
+                let ofsDate = safeDate(item.ofsDate) || safeDate(item.targetDate);
+                if (ofsDate && !isNaN(ofsDate.getTime())) {
+                    ofsMonthStr = ofsDate.toLocaleString('default', { month: 'short', timeZone: 'UTC' }).toUpperCase();
+                    if (ofsDate.getUTCMonth() === today.getMonth() && ofsDate.getUTCFullYear() === today.getFullYear()) isOFSMonth = true;
+                }
+                let ofsPillStyle = isOFSMonth ? 'color:#2563eb; background:rgba(239, 246, 255, 0.7); border-color:#2563eb;' : 'color:var(--text-main); background:var(--bg); border-color:var(--border);';
+                if (v) {
+                    bodyHtml = `
+                        <div class="velocity-grid" style="align-content:flex-start; gap:8px; margin-bottom:8px; flex-grow:0;">
+                            ${buildVelocityBar('UG', v.ug.daily, v.ug.tot, v.ug.bom, 'UG', daysLeft)}
+                            ${buildVelocityBar('Aerial', v.ae.daily, v.ae.tot, v.ae.bom, 'AE', daysLeft)}
+                            ${buildVelocityBar('Fiber', v.fib.daily, v.fib.tot, v.fib.bom, 'FIB', daysLeft)}
+                            ${buildVelocityBar('Splicing', v.nap.daily, v.nap.tot, v.nap.bom, 'NAP', daysLeft)}
+                        </div>
+                        <div class="qb-vel-footer" style="margin-top:auto; border-top:1px solid var(--border); padding-top:8px;">
+                            <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`}</div>
+                            <div style="display:flex; gap:6px;">
+                                <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px;">BSLS: ${item.bsls}</div>
+                                <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px; ${ofsPillStyle}">OFS: ${ofsMonthStr}</div>
+                            </div>
+                        </div>`;
+                } else {
+                    bodyHtml = `<div style="font-style:italic; color:var(--text-muted); font-size:10px;">No velocity data</div>`;
+                }
+            }
+
+            let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'is-selected' : '';
+            let card = document.createElement('div');
+            card.className = `grid-card ${isSelected}`;
+            card.setAttribute('data-fdh', item.fdh);
+            card.id = `queue-grid-card-${item.fdh}`;
+            card.onclick = () => { openPane(item, card); };
+            card.innerHTML = `
+                <div class="grid-card-header" style="padding-bottom:6px;">
+                    <div>
+                        <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
+                        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item.vendor}</div>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px;">
+                        <span class="glass-pill ${pillCls}" style="font-size:8px; padding:2px 6px;">${combinedPill}</span>
                         ${renderTrackerPill(item, { inline: true, stopPropagation: 'event.stopPropagation()' })}
                     </div>
-                 </div><div class="em-tags">${tagsHtml}</div>`;
-              list.appendChild(card);
-          });
+                </div>
+                <div class="grid-card-body" style="gap:4px;">${bodyHtml}</div>`;
+            targetEl.appendChild(card);
+        }
+
+        function renderInto(targetEl, sectionItems) {
+            if (currentViewMode !== 'grid') {
+                sectionItems.forEach(function(item) { appendListCard(item, targetEl); });
+            } else {
+                sectionItems.forEach(function(item) { appendGridCard(item, targetEl); });
+            }
+        }
+
+        if (groupedSections.length > 0) {
+            groupedSections.forEach(function(section) {
+                let groupWrap = document.createElement('div');
+                groupWrap.className = 'queue-group';
+                let header = document.createElement('div');
+                header.className = 'queue-group-header';
+                header.onclick = function() { toggleQueueGroupSection(section.key); };
+                let collapsed = isQueueGroupCollapsed(section.key);
+                header.innerHTML = `
+                    <div class="queue-group-title">
+                        <span class="queue-group-toggle">${collapsed ? '&#9656;' : '&#9662;'}</span>
+                        <span>${esc(section.label)}</span>
+                    </div>
+                    <span class="queue-group-count">${section.items.length}</span>`;
+                let body = document.createElement('div');
+                body.className = `queue-group-body${collapsed ? ' collapsed' : ''}`;
+                renderInto(body, section.items);
+                groupWrap.appendChild(header);
+                groupWrap.appendChild(body);
+                list.appendChild(groupWrap);
+            });
         } else {
-          // GRID MODE: render as compact project cards in both Detail and Slide
-          let pivot = getEl('sidebar-pivot-select')?.value || 'schedule';
-          let today = new Date(); today.setHours(0,0,0,0);
-
-          items.forEach((item) => {
-              let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
-              let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
-              let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
-
-              let pEnd = safeDate(item.cxEnd);
-              let daysLeft = pEnd ? Math.ceil((pEnd - new Date()) / 86400000) : 0;
-              let isComplete = (item.stage || "").toLowerCase().includes('ofs') || (item.status || "").toLowerCase().includes('complete');
-              let isPermit = (item.stage || "").toLowerCase().includes('permit');
-              let isOnHold = (item.status || "").toLowerCase().includes('hold');
-              let isOverdue = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
-
-              let bodyHtml = '';
-              if (pivot === 'schedule') {
-                  let sColor = "#facc15";
-                  if (isComplete) sColor = "#22c55e"; else if (isPermit) sColor = "#a855f7"; else if (isOnHold) sColor = "#94a3b8"; else if (isOverdue) sColor = "#ef4444";
-                  let pStart = safeDate(item.cxStart);
-                  let pct = 0;
-                  if (pStart && pEnd && pEnd - pStart > 0) { pct = Math.max(0, Math.min(100, ((new Date() - pStart) / (pEnd - pStart)) * 100)); }
-                  let xingBadge = item.isXing ? `<div style="position:absolute; bottom:4px; right:4px; background:#171717; color:#facc15; padding:1px 6px; border-radius:4px; font-size:8px; font-weight:900; border:1px solid #facc15;">X-ING</div>` : '';
-                  bodyHtml = `
-                      <div class="qb-time-labels" style="margin-top:0; margin-bottom:4px;">
-                          <span>START: <span style="color:var(--text-main);">${item.cxStart ? formatDate(item.cxStart) : 'TBD'}</span></span>
-                          <span>END: <span style="color:var(--text-main);">${item.cxEnd ? formatDate(item.cxEnd) : 'TBD'}</span></span>
-                      </div>
-                      <div class="qb-time-bar" style="margin-bottom:12px;">
-                          <div class="qb-time-fill" style="width:${pct}%; background:${sColor};"></div>
-                          ${pct > 0 && pct < 100 ? `<div class="qb-time-bead" style="left:calc(${pct}% - 7px); border-color:${sColor}; display:block;"></div>` : ''}
-                      </div>
-                      <div class="qb-target-wrap ${item.isXing ? 'xing' : ''}" style="margin-top:auto;">
-                          <div class="qb-target-inner" style="border-radius:${item.isXing ? '9px 9px 0 0' : '12px 12px 0 0'}; padding:8px 6px; position:relative;">
-                              <div class="qb-target-label" style="font-size:9px;">Target Date</div>
-                              <div class="qb-target-date" style="color:${sColor}; font-size:14px;">${item.targetDate ? formatDate(item.targetDate) : 'TBD'}</div>
-                              ${xingBadge}
-                          </div>
-                      </div>`;
-              } else if (pivot === 'velocity') {
-                  let v = item.vel;
-                  let ofsMonthStr = "TBD";
-                  let isOFSMonth = false;
-                  let ofsDate = safeDate(item.ofsDate) || safeDate(item.targetDate);
-                  if (ofsDate && !isNaN(ofsDate.getTime())) {
-                      ofsMonthStr = ofsDate.toLocaleString('default', { month: 'short', timeZone: 'UTC' }).toUpperCase();
-                      if (ofsDate.getUTCMonth() === today.getMonth() && ofsDate.getUTCFullYear() === today.getFullYear()) isOFSMonth = true;
-                  }
-                  let ofsPillStyle = isOFSMonth ? 'color:#2563eb; background:rgba(239, 246, 255, 0.7); border-color:#2563eb;' : 'color:var(--text-main); background:var(--bg); border-color:var(--border);';
-                  if (v) {
-                      bodyHtml = `
-                          <div class="velocity-grid" style="align-content:flex-start; gap:8px; margin-bottom:8px; flex-grow:0;">
-                              ${buildVelocityBar('UG', v.ug.daily, v.ug.tot, v.ug.bom, 'UG', daysLeft)}
-                              ${buildVelocityBar('Aerial', v.ae.daily, v.ae.tot, v.ae.bom, 'AE', daysLeft)}
-                              ${buildVelocityBar('Fiber', v.fib.daily, v.fib.tot, v.fib.bom, 'FIB', daysLeft)}
-                              ${buildVelocityBar('Splicing', v.nap.daily, v.nap.tot, v.nap.bom, 'NAP', daysLeft)}
-                          </div>
-                          <div class="qb-vel-footer" style="margin-top:auto; border-top:1px solid var(--border); padding-top:8px;">
-                              <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`}</div>
-                              <div style="display:flex; gap:6px;">
-                                  <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px;">BSLS: ${item.bsls}</div>
-                                  <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px; ${ofsPillStyle}">OFS: ${ofsMonthStr}</div>
-                              </div>
-                          </div>`;
-                  } else {
-                      bodyHtml = `<div style="font-style:italic; color:var(--text-muted); font-size:10px;">No velocity data</div>`;
-                  }
-              }
-
-              let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'is-selected' : '';
-              let card = document.createElement('div');
-              card.className = `grid-card ${isSelected}`;
-              card.setAttribute('data-fdh', item.fdh);
-              card.id = `queue-grid-card-${item.fdh}`;
-              card.onclick = () => { openPane(item, card); };
-              card.innerHTML = `
-                  <div class="grid-card-header" style="padding-bottom:6px;">
-                      <div>
-                          <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
-                          <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item.vendor}</div>
-                      </div>
-                      <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px;">
-                          <span class="glass-pill ${pillCls}" style="font-size:8px; padding:2px 6px;">${combinedPill}</span>
-                          ${renderTrackerPill(item, { inline: true, stopPropagation: 'event.stopPropagation()' })}
-                      </div>
-                  </div>
-                  <div class="grid-card-body" style="gap:4px;">${bodyHtml}</div>`;
-              list.appendChild(card);
-          });
+            renderInto(list, items);
         }
 
         if(items.length > 0 && !currentActiveItem) openPane(items[0], getEl(`card-${items[0].fdh}`));

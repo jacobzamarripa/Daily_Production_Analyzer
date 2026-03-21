@@ -133,13 +133,14 @@
       - Re-opening Gantt within the same session renders immediately (cached instance).
       - No measurable regression in Gantt render quality or interactivity after lazy-loading is applied.
 
-- [ ] **Filter dock: Add "Group by …" capability**
+- [x] **Filter dock: Add "Group by …" capability**
   - **Expected:** Filter dock includes a "Group by" selector (Vendor / City / Health / Stage / etc.). Selecting a grouping reorganizes the result set into collapsible/scrollable groups. Works across views (Deck/Theater/Detail) and respects existing filters/search.
   - **Acceptance:**
     - User can choose `Group by: <field>` from a defined set of supported fields.
     - Groups render with clear headers and item counts.
     - Export/report output remains correct when grouped (exports grouped structure or flattened rows predictably).
     - Setting Group by to "None" returns to ungrouped list/grid without losing filters.
+  - **Completed:** Added a `Group by` dock selector with session-persisted collapsible queue sections, kept export/review flows flat, shifted both side panels down on smaller crowded dock states, and changed toolbar-opened Gantt to recenter on today by default.
 
 - [x] **Calculator: Make widget draggable**
   - **Expected:** Calculator can be clicked-and-dragged to reposition within the app workspace. Position persists at least for the current session (ideally per-user between sessions). Must continue to float above other UI layers.
