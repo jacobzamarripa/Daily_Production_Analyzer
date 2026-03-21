@@ -3466,7 +3466,6 @@
                        </div>
                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
                            <div class="glass-pill" id="p-status" onmouseenter="hl('Status')" onmouseleave="hl('')">Field CX | In Progress</div>
-                           <div id="p-drg-pill-wrap"></div>
                            <span id="p-edit-engine"></span>
                        </div>
                    </div>
@@ -8462,8 +8461,6 @@
                   if(item.flags.includes("MISSING QB STATUS") && !item.flags.includes("NOT IN QB REFERENCE")) combinedPill = "MISSING QB STATUS";
                   pill.innerText = combinedPill; pill.className = `glass-pill ${getQBStatusClass(item.stage, item.status, isNotInQb)}`;
               }
-              setHtml('p-drg-pill-wrap', renderTrackerPill(item));
-
               let st = (item.stage || "").toLowerCase(); let stat = (item.status || "").toLowerCase();
               let isOFS = st.includes('ofs'); let isPermit = st.includes('permit'); let isComplete = stat.includes('complete'); let isOnHold = stat.includes('hold') || stat.includes('assign');
 
