@@ -4422,27 +4422,53 @@
           let workspace = getEl('main-workspace');
           let pills = getEl('active-filter-pills');
 
-          if (dock && workspace && window.innerWidth > 768 && window.innerWidth <= 1500 && currentWorkspaceView !== 'gantt') {
-              let dockWidth = dock.getBoundingClientRect().width || 0;
-              let pillsWidth = (pills && pills.childElementCount > 0) ? pills.getBoundingClientRect().width : 0;
-              let leftRail = getEl('main-workspace')?.querySelector('.inbox-sidebar');
+          if (dock && workspace && window.innerWidth > 768 && window.innerWidth <= 1800 && currentWorkspaceView !== 'gantt') {
+              let workspaceRect = workspace.getBoundingClientRect();
+              let dockRect = dock.getBoundingClientRect();
+              let clearBottom = dockRect.bottom;
+              let leftRail = workspace.querySelector('.inbox-sidebar');
               let outboxPane = getEl('outbox-pane');
               let fabAnchor = document.querySelector('.admin-fab-anchor');
-              let leftWidth = leftRail && getComputedStyle(leftRail).display !== 'none' ? leftRail.getBoundingClientRect().width + 28 : 0;
-              let rightWidth = 0;
+              let topNavCenter = document.querySelector('.top-nav-center');
+              let leftRect = (leftRail && getComputedStyle(leftRail).display !== 'none') ? leftRail.getBoundingClientRect() : null;
+              let rightRect = null;
+              let navCenterRect = topNavCenter ? topNavCenter.getBoundingClientRect() : null;
 
-              if (outboxPane && outboxPane.classList.contains('open') && getComputedStyle(outboxPane).display !== 'none') {
-                  rightWidth = outboxPane.getBoundingClientRect().width + 28;
-              } else if (fabAnchor && currentWorkspaceView === 'detail') {
-                  rightWidth = Math.max(76, fabAnchor.getBoundingClientRect().width + 24);
+              if (pills && pills.childElementCount > 0) {
+                  let pillsRect = pills.getBoundingClientRect();
+                  clearBottom = Math.max(clearBottom, pillsRect.bottom);
               }
 
-              let availableCenterWidth = Math.max(0, window.innerWidth - leftWidth - rightWidth - 48);
-              shouldShift = availableCenterWidth > 0 && (dockWidth >= availableCenterWidth || (pillsWidth > 0 && pillsWidth >= Math.max(availableCenterWidth - 32, availableCenterWidth * 0.84)));
+              if (outboxPane && outboxPane.classList.contains('open') && getComputedStyle(outboxPane).display !== 'none') {
+                  rightRect = outboxPane.getBoundingClientRect();
+              } else if (fabAnchor && currentWorkspaceView === 'detail') {
+                  rightRect = fabAnchor.getBoundingClientRect();
+              }
+
+              let overlapX = function(a, b) {
+                  if (!a || !b) return 0;
+                  return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+              };
+
+              let dockBottomInWorkspace = Math.max(0, clearBottom - workspaceRect.top);
+              let leftOverlap = overlapX(dockRect, leftRect);
+              let rightOverlap = overlapX(dockRect, rightRect);
+              let centerCrowded = false;
+
+              if (navCenterRect) {
+                  centerCrowded = dockRect.width >= Math.max(0, navCenterRect.width - 12);
+              }
+
+              shouldShift = dockBottomInWorkspace > 0 && (
+                  leftOverlap > 0 ||
+                  rightOverlap > 0 ||
+                  centerCrowded ||
+                  dockRect.width >= Math.max(1100, window.innerWidth - 520)
+              );
+
               if (shouldShift) {
-                  let dockHeight = dock.getBoundingClientRect().height || 44;
-                  let pillsHeight = (pills && pills.childElementCount > 0) ? (pills.getBoundingClientRect().height || 0) : 0;
-                  offset = Math.min(96, Math.max(40, Math.ceil(dockHeight + (pillsHeight ? pillsHeight + 14 : 16))));
+                  let desiredTop = dockBottomInWorkspace + 14;
+                  offset = Math.max(44, Math.ceil(desiredTop - 12));
               }
           }
 
@@ -10799,7 +10825,7 @@ ${item.comment || 'No notes provided.'}
       }
       .slide-q-label {
         font-size: 11px; font-weight: 600; color: var(--text-main); line-height: 1.3; flex: 1;
-        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        display: -webkit-box; line-clamp: 2; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         white-space: normal !important; padding-right: 8px;
       }
       .slide-input-wrap {
