@@ -894,10 +894,45 @@ Started: March 21, 2026
   All google.script.run calls have withSuccessHandler + withFailureHandler
 
 ### Phases Remaining
-- Phase 5: Gantt timeline
+- Phase 5: Gantt timeline (plan approved — see below)
 - Phase 6: Admin tab
 - Phase 7: Digest tab
 - Design Polish Pass: after Phase 7
+
+---
+
+## Phase 5 Plan (Approved — Pending Build)
+
+Data fields: `item.cxStart` (bar start), `item.cxEnd`
+(bar end), `item.fdh` (row label), `item.vendor` (sub-label),
+`item.stage`/`status` (bar color via `getQBStatusClass()`),
+`item.flags` (severity tint), `item.bsls` (EOM BSL count).
+`bench`, `vel`, HUD fields deferred.
+
+Layout: single `overflow: auto` container. Row labels
+sticky left at 132px. Date header sticky top.
+Vertical scroll syncs label and bar rows together.
+
+Zoom: Month (22px/day) and Week (34px/day) toggle
+chip pinned below tab bar. Today line centered on
+render and zoom toggle.
+
+EOM markers: faint vertical line + BSL count label
+at each month boundary.
+
+Spike markers: tinted vertical band + label when
+5+ projects end same day. No HUD on mobile.
+
+Tap: fires `openQueueDetail(index)` → Detail tab
+with selected project. Same pattern as queue card.
+
+Orientation: landscape lock, hint auto-dismisses 3s.
+
+Out of scope for Phase 5: quick peek, bead markers,
+HUD, KPI HUD.
+
+Files: `MobileApp.html` + `_styles_mobile.html` only.
+No backend changes.
 
 ### Known Issues / Deferrals
 - Auto device detection routing deferred to WS8
