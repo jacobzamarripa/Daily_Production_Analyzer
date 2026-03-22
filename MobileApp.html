@@ -94,16 +94,10 @@
         </section>
 
         <section id="tab-detail" class="tab-panel" data-tab="detail" aria-labelledby="tab-btn-detail">
-          <div class="tab-panel__placeholder">
-            <div class="tab-panel__kicker">Phase 1 Shell</div>
-            <div id="detail-placeholder-title" class="tab-panel__title">Detail</div>
-            <div id="detail-placeholder-body" class="tab-panel__body">This tab will become the focused single-project view with notes, flags, diagnostics, and queue navigation.</div>
-            <div class="tab-panel__chips">
-              <div class="placeholder-chip">Project Detail</div>
-              <div class="placeholder-chip">PM Note</div>
-              <div class="placeholder-chip">Commit / Skip</div>
-            </div>
-          </div>
+          <!-- PHASE 3 COMPLETE — Detail tab -->
+          <!-- Network path dependency section deferred here on purpose. -->
+          <!-- TODO(ws7-phase3): Add dependency/network path section only when payload access is clean and stable. -->
+          <div id="detail-content" class="detail-shell" aria-live="polite"></div>
         </section>
 
         <section id="tab-gantt" class="tab-panel" data-tab="gantt" aria-labelledby="tab-btn-gantt">
@@ -295,12 +289,28 @@
           <div class="modal-header">
             <div>
               <div id="confirm-modal-title" class="modal-title">Confirm Action</div>
-              <div class="modal-subtitle">Reusable confirmation slot for commit, skip, and admin actions.</div>
+              <div id="confirm-modal-subtitle" class="modal-subtitle">Reusable confirmation slot for commit, skip, and admin actions.</div>
             </div>
             <button class="modal-close" type="button" data-close-modal="mobile-confirm-modal" aria-label="Close confirmation">×</button>
           </div>
-          <div class="modal-body">
+          <div id="confirm-modal-body" class="modal-body">
             <div class="tab-panel__body">Confirmation content will mount here in later phases.</div>
+          </div>
+          <div id="confirm-modal-actions" class="modal-actions"></div>
+        </div>
+      </div>
+
+      <div id="detail-gemini-modal" class="modal-overlay" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="detail-gemini-title">
+          <div class="modal-header">
+            <div>
+              <div id="detail-gemini-title" class="modal-title">Draft with Gemini</div>
+              <div class="modal-subtitle">Scaffold only in Phase 3.</div>
+            </div>
+            <button class="modal-close" type="button" data-close-modal="detail-gemini-modal" aria-label="Close Gemini scaffold">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="tab-panel__body">Gemini drafting stays local-only in Phase 3. The backend bridge lands in Phase 4.</div>
           </div>
         </div>
       </div>
@@ -375,6 +385,8 @@
       queueError: '',
       queueSearch: '',
       queueGroupBy: 'none',
+      detailNotes: {},
+      pendingConfirmAction: '',
       actionSheetOpen: false,
       loading: false,
       loadingMessage: '',
@@ -401,8 +413,7 @@
       dom.queueSummarySub = document.getElementById('queue-summary-sub');
       dom.queuePullIndicator = document.getElementById('queue-pull-indicator');
       dom.queueBadge = document.getElementById('tab-badge-queue');
-      dom.detailPlaceholderTitle = document.getElementById('detail-placeholder-title');
-      dom.detailPlaceholderBody = document.getElementById('detail-placeholder-body');
+      dom.detailContent = document.getElementById('detail-content');
       dom.actionSheet = document.getElementById('mobile-action-sheet');
       dom.actionSheetClose = document.getElementById('action-sheet-close');
       dom.fabButton = document.getElementById('header-fab-btn');
@@ -410,6 +421,11 @@
       dom.loadingOverlay = document.getElementById('mobile-global-loading');
       dom.loadingMessage = document.getElementById('mobile-global-loading-message');
       dom.toastStack = document.getElementById('mobile-toast-stack');
+      dom.confirmModal = document.getElementById('mobile-confirm-modal');
+      dom.confirmModalTitle = document.getElementById('confirm-modal-title');
+      dom.confirmModalSubtitle = document.getElementById('confirm-modal-subtitle');
+      dom.confirmModalBody = document.getElementById('confirm-modal-body');
+      dom.confirmModalActions = document.getElementById('confirm-modal-actions');
       dom.orientationPrompt = document.getElementById('mobile-orientation-prompt');
       dom.orientationPromptMessage = document.getElementById('orientation-prompt-message');
       dom.orientationPromptIcon = dom.orientationPrompt ? dom.orientationPrompt.querySelector('.orientation-hint__icon') : null;
@@ -726,18 +742,272 @@
         '</div>';
     }
 
-    function renderDetailPreview() {
-      if (!dom.detailPlaceholderTitle || !dom.detailPlaceholderBody) return;
+    function getCurrentActiveIndex() {
+      if (!mobileState.activeItem) return -1;
+      return mobileState.filtered.findIndex(function(item) {
+        return item && mobileState.activeItem && item.fdh === mobileState.activeItem.fdh;
+      });
+    }
+
+    function getNoteKey(item) {
+      return item && item.fdh ? String(item.fdh) : '';
+    }
+
+    function getDetailNote(item) {
+      const key = getNoteKey(item);
+      return key ? String(mobileState.detailNotes[key] || '') : '';
+    }
+
+    function getCountdownMeta(item) {
+      const target = safeDate(item && item.targetDate);
+      if (!target) return { label: 'No target', value: '—', overdue: false };
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+      if (diff < 0) return { label: 'Overdue by', value: String(Math.abs(diff)), overdue: true };
+      if (diff === 0) return { label: 'Due today', value: '0', overdue: false };
+      return { label: 'Days left', value: String(diff), overdue: false };
+    }
+
+    function isCommitted(item) {
+      return !!(item && mobileState.committed.some(function(entry) { return entry.fdh === item.fdh; }));
+    }
+
+    function closeConfirmModal() {
+      mobileState.pendingConfirmAction = '';
+      if (dom.confirmModal) dom.confirmModal.hidden = true;
+    }
+
+    function openConfirmModal(config) {
+      mobileState.pendingConfirmAction = config && config.action ? config.action : '';
+      if (dom.confirmModalTitle) dom.confirmModalTitle.textContent = config && config.title ? config.title : 'Confirm Action';
+      if (dom.confirmModalSubtitle) dom.confirmModalSubtitle.textContent = config && config.subtitle ? config.subtitle : 'Please confirm.';
+      if (dom.confirmModalBody) {
+        dom.confirmModalBody.innerHTML = '<div class="tab-panel__body">' + escapeHtml(config && config.body ? config.body : 'Are you sure?') + '</div>';
+      }
+      if (dom.confirmModalActions) {
+        dom.confirmModalActions.innerHTML =
+          '<button id="confirm-cancel-button" class="modal-action-btn modal-action-btn--ghost" type="button">Cancel</button>' +
+          '<button id="confirm-accept-button" class="modal-action-btn ' + escapeHtml(config && config.confirmClass ? config.confirmClass : 'modal-action-btn--commit') + '" type="button">' + escapeHtml(config && config.confirmLabel ? config.confirmLabel : 'Confirm') + '</button>';
+        const cancelButton = document.getElementById('confirm-cancel-button');
+        const acceptButton = document.getElementById('confirm-accept-button');
+        if (cancelButton) cancelButton.addEventListener('click', closeConfirmModal);
+        if (acceptButton) {
+          acceptButton.addEventListener('click', function() {
+            const action = mobileState.pendingConfirmAction;
+            closeConfirmModal();
+            if (action === 'commit-detail') commitActiveItemLocal();
+            if (action === 'skip-detail') skipActiveItemLocal();
+          });
+        }
+      }
+      if (dom.confirmModal) dom.confirmModal.hidden = false;
+    }
+
+    function renderReviewedList() {
+      if (!mobileState.committed.length) {
+        return '<div class="detail-body">No reviewed projects yet in this mobile session.</div>';
+      }
+      return '<div class="reviewed-list">' + mobileState.committed.map(function(item) {
+        return '' +
+          '<button class="reviewed-item" type="button" data-reviewed-open="' + escapeHtml(item.fdh || '') + '">' +
+            '<div>' +
+              '<div class="reviewed-item__title">' + escapeHtml(item.fdh || 'Unknown FDH') + '</div>' +
+              '<div class="reviewed-item__meta">' + escapeHtml(item.city || 'Unknown city') + ' • ' + escapeHtml(getVendorOrFallback(item)) + '</div>' +
+            '</div>' +
+            '<span class="detail-pill is-health-ok">Reviewed</span>' +
+          '</button>';
+      }).join('') + '</div>';
+    }
+
+    function renderDetailView() {
+      if (!dom.detailContent) return;
       if (!mobileState.activeItem) {
-        dom.detailPlaceholderTitle.textContent = 'Detail';
-        dom.detailPlaceholderBody.textContent = 'This tab will become the focused single-project view with notes, flags, diagnostics, and queue navigation.';
+        dom.detailContent.innerHTML =
+          '<div class="detail-empty">' +
+            '<div class="detail-title">No project selected</div>' +
+            '<div class="detail-body">Choose a project from the Queue tab to open its mobile detail view.</div>' +
+            '<button id="detail-empty-back" class="detail-back" type="button">Back to Queue</button>' +
+          '</div>';
+        const emptyBack = document.getElementById('detail-empty-back');
+        if (emptyBack) emptyBack.addEventListener('click', function() { setActiveTab('queue'); });
         return;
       }
-      dom.detailPlaceholderTitle.textContent = mobileState.activeItem.fdh || 'Detail';
-      dom.detailPlaceholderBody.textContent =
-        (mobileState.activeItem.city || 'Unknown city') + ' • ' +
-        getVendorOrFallback(mobileState.activeItem) + ' • ' +
-        (mobileState.activeItem.status || mobileState.activeItem.stage || 'Status pending');
+
+      const item = mobileState.activeItem;
+      const flags = getItemFlags(item);
+      const health = getHealthMeta(item);
+      const statusClass = getQBStatusClass(item.stage, item.status, false);
+      const countdown = getCountdownMeta(item);
+      const productionSummary = summarizeVelocity(item);
+      const noteValue = getDetailNote(item);
+      const currentIndex = getCurrentActiveIndex();
+      const prevDisabled = currentIndex <= 0;
+      const nextDisabled = currentIndex < 0 || currentIndex >= mobileState.filtered.length - 1;
+      const committedBadge = isCommitted(item) ? '<span class="detail-pill is-health-ok">Reviewed</span>' : '';
+
+      dom.detailContent.innerHTML =
+        '<section class="detail-header-card">' +
+          '<div class="detail-header-top">' +
+            '<button id="detail-back-button" class="detail-back" type="button">Back to Queue</button>' +
+            '<div class="detail-countdown">' +
+              '<div class="detail-countdown__label">' + escapeHtml(countdown.label) + '</div>' +
+              '<div class="detail-countdown__value ' + (countdown.overdue ? 'is-overdue' : '') + '">' + escapeHtml(countdown.value) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="detail-header-bottom">' +
+            '<div class="detail-header-left">' +
+              '<div class="detail-eyebrow">' + escapeHtml(item.city || 'Unknown city') + '</div>' +
+              '<div class="detail-title">' + escapeHtml(item.fdh || 'Unknown FDH') + '</div>' +
+              '<div class="detail-subtitle">' + escapeHtml(getVendorOrFallback(item)) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="detail-pill-row">' +
+            '<span class="detail-pill ' + escapeHtml(statusClass) + '">' + escapeHtml((item.stage || '-') + ' | ' + (item.status || '-')) + '</span>' +
+            '<span class="detail-pill is-health-' + escapeHtml(health.className.replace('is-', '')) + '">' + escapeHtml(health.label) + '</span>' +
+            (item.isTrackerLinked ? '<span class="detail-pill chip-ofs">Tracker Linked</span>' : '') +
+            committedBadge +
+          '</div>' +
+        '</section>' +
+        '<section class="detail-section">' +
+          '<div class="detail-section__title">Flags & Diagnostics</div>' +
+          (flags.length
+            ? '<div class="detail-flags">' + flags.map(function(flag) {
+                return '<span class="detail-flag ' + escapeHtml(getFlagTone(flag)) + '">' + escapeHtml(flag) + '</span>';
+              }).join('') + '</div>'
+            : '<div class="detail-body">No active diagnostic flags on this project.</div>') +
+          (item.gaps ? '<div class="detail-body">' + escapeHtml(item.gaps) + '</div>' : '') +
+        '</section>' +
+        '<section class="detail-section">' +
+          '<div class="detail-section__title">Milestones & Countdown</div>' +
+          '<div class="detail-section__row"><div class="detail-label">Target completion</div><div class="detail-value">' + escapeHtml(formatDateUTC(item.targetDate)) + '</div></div>' +
+          '<div class="detail-section__row"><div class="detail-label">Target OFS</div><div class="detail-value">' + escapeHtml(formatDateUTC(item.ofsDate)) + '</div></div>' +
+          '<div class="detail-section__row"><div class="detail-label">CX start</div><div class="detail-value">' + escapeHtml(formatDateUTC(item.cxStart)) + '</div></div>' +
+          '<div class="detail-section__row"><div class="detail-label">CX complete</div><div class="detail-value">' + escapeHtml(formatDateUTC(item.cxEnd)) + '</div></div>' +
+        '</section>' +
+        '<section class="detail-section">' +
+          '<div class="detail-section__title">Vendor Update</div>' +
+          '<div class="detail-body">' + escapeHtml(item.vendorComment || 'No vendor update provided.') + '</div>' +
+        '</section>' +
+        '<section class="detail-section">' +
+          '<div class="detail-section__title">Production</div>' +
+          '<div class="detail-kpi-grid">' +
+            '<div class="detail-kpi"><div class="detail-kpi__label">BSLs</div><div class="detail-kpi__value">' + escapeHtml(String(item.bsls || '0')) + '</div></div>' +
+            '<div class="detail-kpi"><div class="detail-kpi__label">Daily Velocity</div><div class="detail-kpi__value">' + escapeHtml(productionSummary || 'No daily run') + '</div></div>' +
+          '</div>' +
+          '<div class="detail-body">' + escapeHtml(item.fieldProduction || 'No field production summary available.') + '</div>' +
+        '</section>' +
+        '<section class="detail-section">' +
+          '<div class="detail-section__title">PM Note</div>' +
+          '<div class="detail-note-copy">Local draft only in Phase 3.</div>' +
+          '<textarea id="detail-note-input" class="detail-note" placeholder="Add a PM note for this project...">' + escapeHtml(noteValue) + '</textarea>' +
+          '<div class="detail-actions">' +
+            '<button id="detail-gemini-button" class="detail-action-btn detail-action-btn--draft" type="button">Draft with Gemini</button>' +
+            '<button id="detail-skip-button" class="detail-action-btn detail-action-btn--skip" type="button">Skip</button>' +
+            '<button id="detail-commit-button" class="detail-action-btn detail-action-btn--commit" type="button">Commit</button>' +
+          '</div>' +
+        '</section>' +
+        '<section class="detail-section">' +
+          '<div class="detail-section__title">Project Navigation</div>' +
+          '<div class="detail-actions">' +
+            '<button id="detail-prev-button" class="detail-action-btn detail-action-btn--ghost" type="button"' + (prevDisabled ? ' disabled' : '') + '>Previous</button>' +
+            '<button id="detail-next-button" class="detail-action-btn detail-action-btn--ghost" type="button"' + (nextDisabled ? ' disabled' : '') + '>Next</button>' +
+          '</div>' +
+          '<div class="detail-note-copy">Swipe left or right across this screen to move between queue projects.</div>' +
+        '</section>' +
+        '<section class="detail-section">' +
+          '<div class="detail-section__title">Reviewed</div>' +
+          renderReviewedList() +
+        '</section>';
+
+      const backButton = document.getElementById('detail-back-button');
+      const noteInput = document.getElementById('detail-note-input');
+      const geminiButton = document.getElementById('detail-gemini-button');
+      const skipButton = document.getElementById('detail-skip-button');
+      const commitButton = document.getElementById('detail-commit-button');
+      const prevButton = document.getElementById('detail-prev-button');
+      const nextButton = document.getElementById('detail-next-button');
+
+      if (backButton) backButton.addEventListener('click', function() { setActiveTab('queue'); });
+      if (noteInput) {
+        noteInput.addEventListener('input', function() {
+          const key = getNoteKey(item);
+          if (key) mobileState.detailNotes[key] = noteInput.value;
+        });
+      }
+      if (geminiButton) {
+        geminiButton.addEventListener('click', function() {
+          const modal = document.getElementById('detail-gemini-modal');
+          if (modal) modal.hidden = false;
+          showToast('Gemini draft scaffold only in Phase 3', 'info');
+        });
+      }
+      if (skipButton) {
+        skipButton.addEventListener('click', function() {
+          openConfirmModal({
+            action: 'skip-detail',
+            title: 'Skip Project',
+            subtitle: 'Advance to the next project locally',
+            body: 'Skip this project for now and move to the next item in the queue?',
+            confirmLabel: 'Skip',
+            confirmClass: 'modal-action-btn--skip'
+          });
+        });
+      }
+      if (commitButton) {
+        commitButton.addEventListener('click', function() {
+          openConfirmModal({
+            action: 'commit-detail',
+            title: 'Commit Project',
+            subtitle: 'Mark this project reviewed in local mobile state',
+            body: 'Add this project to the reviewed section and advance to the next project?',
+            confirmLabel: 'Commit',
+            confirmClass: 'modal-action-btn--commit'
+          });
+        });
+      }
+      if (prevButton && !prevDisabled) prevButton.addEventListener('click', function() { advanceActiveItem(-1); });
+      if (nextButton && !nextDisabled) nextButton.addEventListener('click', function() { advanceActiveItem(1); });
+      dom.detailContent.querySelectorAll('[data-reviewed-open]').forEach(function(button) {
+        button.addEventListener('click', function() {
+          const fdh = button.dataset.reviewedOpen;
+          const index = mobileState.filtered.findIndex(function(candidate) { return candidate.fdh === fdh; });
+          if (index > -1) openQueueDetail(index);
+        });
+      });
+    }
+
+    function renderDetailPreview() {
+      renderDetailView();
+    }
+
+    function advanceActiveItem(direction) {
+      const currentIndex = getCurrentActiveIndex();
+      const nextIndex = currentIndex + direction;
+      if (nextIndex < 0 || nextIndex >= mobileState.filtered.length) return;
+      openQueueDetail(nextIndex);
+    }
+
+    function commitActiveItemLocal() {
+      if (!mobileState.activeItem) return;
+      if (!isCommitted(mobileState.activeItem)) {
+        mobileState.committed.push(mobileState.activeItem);
+      }
+      showToast((mobileState.activeItem.fdh || 'Project') + ' reviewed', 'success');
+      renderDetailView();
+      const currentIndex = getCurrentActiveIndex();
+      if (currentIndex > -1 && currentIndex < mobileState.filtered.length - 1) {
+        advanceActiveItem(1);
+      }
+    }
+
+    function skipActiveItemLocal() {
+      if (!mobileState.activeItem) return;
+      showToast('Skipped to next project', 'info');
+      const currentIndex = getCurrentActiveIndex();
+      if (currentIndex > -1 && currentIndex < mobileState.filtered.length - 1) {
+        advanceActiveItem(1);
+      }
     }
 
     function getGroupedQueue(items) {
@@ -879,8 +1149,13 @@
       if (dom.queueSummarySub) dom.queueSummarySub.textContent = mobileState.queueGroupBy === 'none'
         ? 'Tap a card for detail'
         : 'Grouped by ' + mobileState.queueGroupBy;
+      if (mobileState.activeItem) {
+        const activeIndex = getCurrentActiveIndex();
+        if (activeIndex > -1) mobileState.activeIdx = activeIndex;
+      }
       updateQueueBadge('ready', mobileState.all.filter(isActionableProject).length);
       renderQueueContent();
+      renderDetailView();
     }
 
     function openQueueDetail(index) {
@@ -888,7 +1163,7 @@
       if (!item) return;
       mobileState.activeItem = item;
       mobileState.activeIdx = index;
-      renderDetailPreview();
+      renderDetailView();
       setActiveTab('detail');
     }
 
@@ -915,8 +1190,11 @@
           mobileState.all = data && data.actionItems ? data.actionItems : [];
           globalEndCounts = globalEndCounts || {};
           globalTodayData = globalTodayData || { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
+          if (!mobileState.activeItem && mobileState.all.length) {
+            mobileState.activeItem = mobileState.all[0];
+          }
           applyQueueFilters();
-          renderDetailPreview();
+          renderDetailView();
           showToast(mobileState.all.length + ' projects loaded', 'success');
           if (forceToast && dom.queuePullIndicator) {
             dom.queuePullIndicator.textContent = 'Queue refreshed';
@@ -944,6 +1222,8 @@
     function bindShellEvents() {
       let queuePullStartY = 0;
       let queuePullDelta = 0;
+      let detailSwipeStartX = 0;
+      let detailSwipeStartY = 0;
 
       dom.tabButtons.forEach(function(button) {
         button.addEventListener('click', function() {
@@ -995,6 +1275,27 @@
             dom.queuePullIndicator.classList.remove('is-visible', 'is-armed');
             dom.queuePullIndicator.textContent = 'Pull down to refresh';
           }
+        });
+      }
+
+      if (dom.detailContent) {
+        dom.detailContent.addEventListener('touchstart', function(event) {
+          if (mobileState.activeTab !== 'detail') return;
+          detailSwipeStartX = event.touches[0].clientX;
+          detailSwipeStartY = event.touches[0].clientY;
+        }, { passive: true });
+
+        dom.detailContent.addEventListener('touchend', function(event) {
+          if (mobileState.activeTab !== 'detail' || !detailSwipeStartX) return;
+          const endX = event.changedTouches[0].clientX;
+          const endY = event.changedTouches[0].clientY;
+          const diffX = endX - detailSwipeStartX;
+          const diffY = endY - detailSwipeStartY;
+          detailSwipeStartX = 0;
+          detailSwipeStartY = 0;
+          if (Math.abs(diffX) < 60 || Math.abs(diffY) > 40) return;
+          if (diffX < 0) advanceActiveItem(1);
+          else advanceActiveItem(-1);
         });
       }
 
@@ -1068,7 +1369,7 @@
         setActiveTab(mobileState.activeTab);
         checkOrientationForTab(mobileState.activeTab);
         hideLoading();
-        renderDetailPreview();
+        renderDetailView();
         loadQueueData(false);
       } catch (err) {
         document.body.innerHTML = '<div style="padding:40px;font-family:sans-serif;color:#ef4444;">' +
