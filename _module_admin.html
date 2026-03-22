@@ -156,20 +156,7 @@ function markQbUpdatedFromAdmin(fdhId, btn) {
     }).markStatusSyncComplete(fdhId);
 }
 
-function updateAdminBadge() {
-    if (!allActionItems) return;
-    let count = getActiveQueueItems().filter(i =>
-        i.flags.includes('ADMIN: CHECK CROSSINGS') ||
-        i.flags.includes('PLEASE INPUT BOM') ||
-        i.flags.includes('CHECK BOM (UG/AE)') ||
-        i.flags.includes('STATUS MISMATCH') ||
-        i.flags.includes('MISSING QB STATUS')
-    ).length;
-    let badge = getEl('admin-badge');
-    if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-flex' : 'none'; }
-    let fabBadge = getEl('admin-fab-badge');
-    if (fabBadge) { fabBadge.textContent = count; fabBadge.style.display = count > 0 ? 'inline-flex' : 'none'; }
-}
+// updateAdminBadge is owned by _module_tabs.html
 
 function persistReviewedTray() {
     try { localStorage.setItem(REVIEWED_TRAY_STORAGE_KEY, JSON.stringify(committedItems || [])); } catch (e) {}

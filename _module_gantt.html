@@ -80,22 +80,7 @@ function restoreGanttViewport() {
     });
 }
 
-function syncGanttViewportLayout() {
-    let nav = document.querySelector('.top-nav');
-    let topOffset = nav ? Math.ceil(nav.getBoundingClientRect().bottom) : 72;
-    let dock = getEl('filter-strip');
-    if (dock && getComputedStyle(dock).display !== 'none') {
-        if (currentWorkspaceView !== 'gantt') {
-            topOffset = Math.max(topOffset, Math.ceil(dock.getBoundingClientRect().bottom + 10));
-        }
-    }
-    let pills = getEl('active-filter-pills');
-    if (pills && pills.childElementCount > 0 && getComputedStyle(pills).display !== 'none') {
-        topOffset = Math.max(topOffset, Math.ceil(pills.getBoundingClientRect().bottom + 10));
-    }
-    document.documentElement.style.setProperty('--gantt-top-offset', `${Math.max(0, topOffset)}px`);
-    document.documentElement.style.setProperty('--gantt-bottom-offset', '0px');
-}
+// syncGanttViewportLayout is owned by _module_router.html
 
 function applyGanttFocusState(behavior) {
     let ganttArea = getEl('gantt-area-main');

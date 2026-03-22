@@ -1,0 +1,267 @@
+<script>
+// ============================================================
+// FILE: _module_router.html
+// ROLE: Workspace routing, dock sync, view switching, and
+//   panel tab orchestration
+// DEPENDS ON: _registry.html, _state_router.html,
+//   _state_queue.html
+// DEPENDED ON BY: _module_tabs.html, _module_gantt.html,
+//   WebApp.html main runtime
+// MOBILE NOTES: switchWorkspaceView() and syncDockPlacement
+//   State() drive dock inversion in Gantt — bottom dock opens
+//   dropdowns upward. Mobile routing will need separate
+//   treatment.
+// AGENT NOTES: Read _state_router.html before editing.
+//   Fullscreen and overlay orchestration is annotated inline.
+//   Do not change switchWorkspaceView() without checking
+//   Gantt scroll capture on exit.
+// ============================================================
+
+function syncWorkspaceModeState() {
+    isGridMode = (currentWorkspaceView === 'grid');
+    isDeckMode = isSlideFaceActive();
+
+    document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active', 'digest-mode-active');
+    if (isGridMode) document.body.classList.add('grid-mode-active');
+    if (isDeckMode) document.body.classList.add('deck-mode-active');
+    if (currentWorkspaceView === 'gantt') document.body.classList.add('gantt-view-active');
+}
+
+function syncWorkspaceChrome() {
+    ['detail', 'grid', 'gantt'].forEach(v => {
+        const btn = getEl(`view-btn-${v}`);
+        if (btn) btn.classList.toggle('active', v === currentWorkspaceView);
+    });
+
+    const isDetailMode = currentWorkspaceView === 'detail';
+    const isGridModeView = currentWorkspaceView === 'grid';
+    const isGanttView = currentWorkspaceView === 'gantt';
+    const pivotZone = getEl('dock-pivot-zone');
+    const groupZone = getEl('dock-group-zone');
+    const filtersZone = getEl('dock-filters-zone');
+    const focusZone = getEl('dock-focus-zone');
+    const clearZone = getEl('dock-clear-zone');
+    const faceBtn = getEl('dock-btn-face-toggle');
+    const slideDeck = getEl('slide-action-deck');
+    const showSlideDeck = isSlideFaceActive() && !isGanttView;
+    const groupSelect = getEl('group-by-select');
+
+    if (filtersZone) filtersZone.classList.remove('collapsed');
+    if (groupZone) groupZone.classList.remove('collapsed');
+    if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridModeView);
+    if (focusZone) focusZone.classList.toggle('collapsed', !isDetailMode);
+    if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
+    if (slideDeck) slideDeck.classList.toggle('visible', showSlideDeck && !isGanttView);
+    if (groupSelect) {
+        groupSelect.value = currentGroupBy;
+        groupSelect.classList.toggle('is-active', currentGroupBy !== 'none');
+    }
+
+    if (faceBtn) {
+        faceBtn.style.display = isDetailMode ? 'inline-flex' : 'none';
+        faceBtn.classList.toggle('is-slide-cta', !isDeckMode);
+        faceBtn.classList.toggle('is-detail-cta', isDeckMode);
+        faceBtn.innerHTML = `${_SLIDE_SVG}<span class="btn-label">${isDeckMode ? 'Detail View' : 'Slide View'}</span>`;
+    }
+
+    const sortQueue = getEl('sort-queue');
+    if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' ? 'none' : '';
+    syncSortControls();
+    const sidebarPivot = getEl('sidebar-pivot-select');
+    if (sidebarPivot) sidebarPivot.style.display = currentViewMode === 'grid' ? 'inline-block' : 'none';
+    // FULLSCREEN ORCHESTRATION: keeps Gantt viewport offsets aligned with nav, dock, and active filter pills
+    // Z-INDEX DEPENDENCY: top nav, smart dock, floating pills, and Gantt viewport shell
+    syncGanttViewportLayout();
+    // FULLSCREEN ORCHESTRATION: flips the smart dock between top and bottom placement when entering or leaving Gantt
+    // Z-INDEX DEPENDENCY: nav/dock layer, floating pills, and the Gantt workspace shell
+    syncDockPlacementState();
+    syncRawDataStripState();
+    syncSlideActionDeck();
+    // FULLSCREEN ORCHESTRATION: swaps Review Hub tab chrome for deck-mode action panel visibility
+    // Z-INDEX DEPENDENCY: outbox pane, deck action panel, panel tab bar, and admin FAB anchor
+    syncOutboxPanelMode();
+    syncDockLayoutSpacing();
+    updateFloatingPillsPosition();
+    syncDockClearanceState();
+}
+
+function syncDockPlacementState() {
+    const dock = getEl('filter-strip');
+    if (!dock) return;
+    const nextPlacement = currentWorkspaceView === 'gantt' ? 'bottom' : 'top';
+    if (currentDockPlacement === nextPlacement) return;
+    // FULLSCREEN ORCHESTRATION: animates dock inversion for Gantt entry/exit so bottom-dock behavior stays in sync
+    // Z-INDEX DEPENDENCY: top nav, smart dock, floating pills, and Gantt viewport shell
+    dock.classList.remove('dock-slide-down-enter', 'dock-rise-up-enter');
+    void dock.offsetWidth;
+    dock.classList.add(nextPlacement === 'bottom' ? 'dock-slide-down-enter' : 'dock-rise-up-enter');
+    currentDockPlacement = nextPlacement;
+    setTimeout(() => {
+        dock.classList.remove('dock-slide-down-enter', 'dock-rise-up-enter');
+    }, 460);
+}
+
+function syncGanttViewportLayout() {
+    let nav = document.querySelector('.top-nav');
+    let topOffset = nav ? Math.ceil(nav.getBoundingClientRect().bottom) : 72;
+    let dock = getEl('filter-strip');
+    if (dock && getComputedStyle(dock).display !== 'none') {
+        if (currentWorkspaceView !== 'gantt') {
+            topOffset = Math.max(topOffset, Math.ceil(dock.getBoundingClientRect().bottom + 10));
+        }
+    }
+    let pills = getEl('active-filter-pills');
+    if (pills && pills.childElementCount > 0 && getComputedStyle(pills).display !== 'none') {
+        topOffset = Math.max(topOffset, Math.ceil(pills.getBoundingClientRect().bottom + 10));
+    }
+    // FULLSCREEN ORCHESTRATION: maintains the Gantt viewport's top offset as chrome enters or exits the frame
+    // Z-INDEX DEPENDENCY: top nav, smart dock, floating pills, and Gantt timeline viewport
+    document.documentElement.style.setProperty('--gantt-top-offset', `${Math.max(0, topOffset)}px`);
+    document.documentElement.style.setProperty('--gantt-bottom-offset', '0px');
+}
+
+function switchWorkspaceView(mode) {
+    const requestedMode = mode;
+    const normalizedMode = (requestedMode === 'deck' || requestedMode === 'slide' || requestedMode === 'digest') ? 'detail' : requestedMode;
+    if (isDeckMode && normalizedMode !== 'detail') saveCurrentCardState();
+    if (currentWorkspaceView === 'gantt' && normalizedMode !== 'gantt') captureGanttScrollState();
+
+    const prevWasSlide = isDeckMode;
+    currentWorkspaceView = normalizedMode;
+    if (requestedMode === 'detail') currentDetailFace = 'detail';
+    if (requestedMode === 'deck' || requestedMode === 'slide') currentDetailFace = 'slide';
+    syncWorkspaceModeState();
+
+    if (normalizedMode !== 'grid' && currentGridPivot === 'global-log') {
+        currentGridPivot = 'velocity';
+        const pivot = getEl('grid-pivot-select');
+        if (pivot) pivot.value = currentGridPivot;
+    }
+
+    const userFilter = getEl('filter-log-user');
+    if (userFilter) {
+        userFilter.style.display = (normalizedMode === 'grid' && (currentGridPivot === 'changelog' || currentGridPivot === 'global-log')) ? 'inline-flex' : 'none';
+    }
+
+    // FULLSCREEN ORCHESTRATION: synchronizes dock, panel, and workspace chrome before deferred view rendering
+    // Z-INDEX DEPENDENCY: top nav, smart dock, outbox pane, deck action deck, and Gantt workspace shell
+    syncWorkspaceChrome();
+
+    if (prevWasSlide && normalizedMode !== 'detail') {
+        currentGridPivot = deckPrevPivot || currentGridPivot;
+        const pivot = getEl('grid-pivot-select');
+        if (pivot) pivot.value = currentGridPivot;
+    }
+
+    const grid = getEl('grid-content');
+    const welcome = getEl('welcome-screen');
+    const paneContent = getEl('pane-content');
+    const deckStage = getEl('deck-stage');
+    const ganttPanel = getEl('gantt-panel');
+    if (grid) {
+        grid.style.display = 'none';
+        grid.style.flex = '';
+        grid.style.width = '';
+    }
+    if (paneContent) {
+        paneContent.style.display = 'none';
+        paneContent.style.flex = '';
+        paneContent.style.width = '';
+    }
+    if (deckStage) {
+        deckStage.style.display = 'none';
+        deckStage.style.flex = '';
+        deckStage.style.width = '';
+        deckStage.style.padding = '';
+        deckStage.style.overflow = '';
+    }
+    if (ganttPanel) {
+        ganttPanel.style.display = 'none';
+        ganttPanel.style.flex = '';
+        ganttPanel.style.height = '';
+    }
+    if (grid) grid.classList.toggle('active', isGridMode);
+
+    setTimeout(() => {
+        if (normalizedMode === 'detail') {
+            renderDetailWorkspaceFace();
+            if (grid) grid.style.display = 'none';
+            applyFilters();
+        } else if (normalizedMode === 'grid') {
+            setAdminPanelOpen(false);
+            if (welcome) welcome.style.display = 'none';
+            if (paneContent) paneContent.style.display = 'none';
+            if (deckStage) deckStage.style.display = 'none';
+            if (grid) grid.style.display = 'grid';
+            renderGrid();
+        } else if (normalizedMode === 'gantt') {
+            // FULLSCREEN ORCHESTRATION: hides detail/deck surfaces and promotes the Gantt shell into the active workspace
+            // Z-INDEX DEPENDENCY: Gantt panel, smart dock, outbox pane, and top nav
+            setAdminPanelOpen(false);
+            if (welcome) welcome.style.display = 'none';
+            if (paneContent) paneContent.style.display = 'none';
+            if (deckStage) deckStage.style.display = 'none';
+            if (ganttPanel) ganttPanel.style.display = 'flex';
+            applyFilters();
+        }
+
+        syncGanttIslandState();
+    }, 40);
+}
+
+function syncOutboxPanelMode() {
+    let title = getEl('review-hub-title');
+    let tabBar = document.querySelector('#review-hub-main-header .panel-tab-bar');
+    let deckPanel = getEl('deck-action-panel');
+    let adminPanel = getEl('ob-panel-admin');
+    let reviewedPanel = getEl('ob-panel-reviewed');
+    let changelogPanel = getEl('ob-panel-changelog');
+    let fab = getEl('admin-fab');
+    let isDeckView = isSlideFaceActive();
+
+    if (title) {
+        title.innerHTML = '<span>Review</span><span>Hub</span>';
+    }
+    if (tabBar) tabBar.style.display = isDeckView ? 'none' : 'flex';
+    if (deckPanel) deckPanel.style.display = isDeckView ? 'flex' : 'none';
+    if (fab) {
+        fab.title = 'Admin / Reviewed';
+        fab.setAttribute('aria-label', 'Open admin panel');
+    }
+
+    if (isDeckView) {
+        // FULLSCREEN ORCHESTRATION: suppresses panel-tab surfaces while the deck action panel owns the outbox lane
+        // Z-INDEX DEPENDENCY: outbox pane, panel tab bar, deck action panel, and admin FAB anchor
+        if (adminPanel) adminPanel.style.display = 'none';
+        if (reviewedPanel) reviewedPanel.style.display = 'none';
+        if (changelogPanel) changelogPanel.style.display = 'none';
+        return;
+    }
+
+    if (adminPanel) adminPanel.style.display = (currentPanelTab === 'admin') ? 'flex' : 'none';
+    if (reviewedPanel) reviewedPanel.style.display = (currentPanelTab === 'reviewed') ? 'flex' : 'none';
+    if (changelogPanel) changelogPanel.style.display = (currentPanelTab === 'changelog') ? 'flex' : 'none';
+}
+
+function switchPanelTab(tab) {
+    currentPanelTab = tab;
+    let adminPanel = getEl('ob-panel-admin'), reviewedPanel = getEl('ob-panel-reviewed'), changelogPanel = getEl('ob-panel-changelog');
+    let adminTab = getEl('panel-tab-admin'), reviewedTab = getEl('panel-tab-reviewed'), changelogTab = getEl('panel-tab-changelog');
+
+    if (adminPanel) adminPanel.style.display = (tab === 'admin') ? 'flex' : 'none';
+    if (reviewedPanel) reviewedPanel.style.display = (tab === 'reviewed') ? 'flex' : 'none';
+    if (changelogPanel) changelogPanel.style.display = (tab === 'changelog') ? 'flex' : 'none';
+
+    if (adminTab) adminTab.classList.toggle('active', tab === 'admin');
+    if (reviewedTab) reviewedTab.classList.toggle('active', tab === 'reviewed');
+    if (changelogTab) changelogTab.classList.toggle('active', tab === 'changelog');
+
+    if (tab === 'changelog') {
+        try { sessionStorage.setItem(CHANGELOG_PULSE_SESSION_KEY, '1'); } catch (e) {}
+        let clBadge = getEl('changelog-badge');
+        if (clBadge) clBadge.style.display = 'none';
+        renderChangeLog();
+    }
+    syncOutboxPanelMode();
+}
+</script>

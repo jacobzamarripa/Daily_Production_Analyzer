@@ -9,7 +9,7 @@
 // ============================================================
 -->
 <style>
-      .top-nav { background: transparent; height: auto; box-sizing: border-box; padding: 10px 18px 6px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; z-index: 10000; position: relative; flex-shrink: 0; transition: background 0.3s, border-color 0.3s; gap: 12px; border-bottom: none; }
+      .top-nav { background: transparent; height: auto; box-sizing: border-box; padding: 10px 18px 6px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; z-index: 100015; position: relative; flex-shrink: 0; transition: background 0.3s, border-color 0.3s; gap: 12px; border-bottom: none; }
       .top-nav-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; justify-self: start; }
       .top-nav-center { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; justify-self: center; }
 
@@ -36,7 +36,7 @@
           padding: 96px 32px 40px;
       }
 
-      .mobile-menu-toggle { display: none; }
+      .btn-icon.mobile-menu-toggle { display: none; }
 
       .mobile-outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 290; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
       .mobile-outbox-overlay.open { display: block; }
@@ -84,7 +84,7 @@
           margin-bottom: var(--panel-gutter-y);
           background: color-mix(in srgb, var(--card-bg) 98%, transparent);
           border-left: 1px solid var(--border);
-          z-index: 1001;
+          z-index: 100010;
           border: 1px solid var(--border);
           border-radius: 22px;
           box-shadow: 0 28px 60px rgba(15,23,42,0.24);
@@ -120,9 +120,9 @@
       .outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 119; backdrop-filter: none; -webkit-backdrop-filter: none; }
 
       /* 📖 HELP PANEL */
-      .help-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 99997; display: none; }
+      .help-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100020; display: none; }
       .help-overlay.open { display: block; }
-      .help-panel { position: fixed; top: 0; right: 0; width: 360px; max-width: 92vw; height: 100vh; background: var(--card-bg); border-left: 1px solid var(--border); z-index: 99998; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow: -8px 0 32px rgba(0,0,0,0.2); }
+      .help-panel { position: fixed; top: 0; right: 0; width: 360px; max-width: 92vw; height: 100vh; background: var(--card-bg); border-left: 1px solid var(--border); z-index: 100021; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); box-shadow: -8px 0 32px rgba(0,0,0,0.2); }
       .help-panel.open { transform: translateX(0); }
       .help-hdr { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; gap: 12px; }
       .help-hdr-title { font-size: 13px; font-weight: 900; letter-spacing: -0.3px; }

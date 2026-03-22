@@ -15,6 +15,7 @@
 > Workstream 3 complete March 21, 2026. Low-risk modules extracted, queue/router/session state owners grouped in `WebApp.html`, and high-risk extractions deferred to Workstream 4.
 > Workstream 4 complete March 21, 2026. Queue/router/session state owners extracted to dedicated partial files, include order updated, and smoke tests passed after each phase. Next: Workstream 5 high-risk module extractions.
 > Workstream 5 complete March 21, 2026. High-risk modules extracted with smoke tests passed after each phase; `_module_tabs.html` deferred, `_module_gantt.html` partially extracted, and `WebApp.html` reduced to bootstrap anchors plus remaining shared runtime.
+> Workstream 6 complete March 21, 2026. Router isolation and tabs extraction landed, pre-existing UI bugs were resolved, and the desktop FAB dropdown shipped for Sync QB / Run Review / Refresh.
 
 ---
 
@@ -53,8 +54,9 @@
 - `currentPanelTab` is still missing from `_state_router.html` — add it during the Workstream 6 router isolation pass before any tab extraction resumes.
 
 ## Known UI Bugs (Pre-Existing)
-- Admin panel close button (X) covered by widget z-index when calculator or calendar is open. Attempted fix: raised `.outbox-pane` z-index to `100010` in `_styles_layout.html` — did not resolve. Needs deeper investigation.
-- Hamburger menu visible on desktop header. Attempted fix: `.mobile-menu-toggle { display: none !important; }` in `_styles_layout.html` — did not resolve. Likely JS-driven show or higher specificity override. Needs deeper investigation.
+- Admin panel close button — RESOLVED. Fixed via absolute positioning on `.panel-tab-close` in `_styles_components.html`. Minor cosmetic note: X button overlaps the Activity tab at narrow viewports — accepted for now.
+- Hamburger menu visible on desktop — RESOLVED. Fixed via compound selector `.btn-icon.mobile-menu-toggle { display: none }` in `_styles_layout.html` beating the `.btn-icon` override.
+- Dark mode icon missing on initial load — RESOLVED. Fixed by removing `getEl()` dependency from `applyTheme()` and adding a `DOMContentLoaded` guard in `_module_theme_controls.html`, plus bootstrap re-apply at the end of `initDashboard()` in `WebApp.html`.
 
 ---
 
@@ -827,14 +829,37 @@ directives without changing any function signatures, variable names, or
   - Left in `WebApp.html`: shared workspace helpers (`syncDockPlacementState()`, `syncWorkspaceChrome()`)
 - `currentPanelTab` is still owned in `WebApp.html` and is missing from `_state_router.html`. Add it during Workstream 6 before attempting `_module_tabs.html`.
 
-## Workstream 6 Recommendation
-- First priority: isolate workspace router state and helpers, including `currentPanelTab`, before touching tabs. This is the prerequisite for safely extracting `_module_tabs.html`.
-- Resume `_module_tabs.html` only after router isolation resolves the fullscreen bleed-through and overlay layering orchestration.
-- Keep the approved Gantt TODOs open:
-  - Quick peek extraction must wait until session/deck state and its `google.script.run` callbacks are isolated.
-  - Shared KPI HUD helpers should stay shared until their ownership is separated cleanly from Gantt.
-- Add the FAB dropdown feature to replace the desktop header button cluster once router state is stabilized.
-- Start the mobile buildout against `MobileApp.html` after desktop router isolation, using the extracted desktop module/state boundaries as the reference architecture rather than reusing desktop layout assumptions directly.
-- Carry forward the known UI bugs:
-  - Admin panel close button is still covered by widget z-index layering in some states.
-  - Hamburger menu is still visible on the desktop header.
+## Workstream 6 Complete
+> Completed March 21, 2026
+
+### Files created or modified
+- `_module_router.html` — created
+- `_module_tabs.html` — created
+- `_state_router.html` — `currentPanelTab` added
+- `_styles_layout.html` — z-index fixes, help stacking updates, and `.top-nav` raised to `100015`
+- `_styles_components.html` — admin X button fix, nav FAB styles, and dropdown animation/layer updates
+- `_module_theme_controls.html` — `getEl()` removed from `applyTheme()` and `DOMContentLoaded` guard added
+- `WebApp.html` — FAB markup, `toggleNavFab()`, dark-mode bootstrap re-apply, include-order updates, and router/tabs extraction points
+
+### Bug fix outcomes
+- Admin X button — RESOLVED
+- Hamburger menu — RESOLVED
+- Dark mode icon on load — RESOLVED
+
+### Feature outcomes
+- FAB dropdown — COMPLETE
+  - Sync QB, Run Review, and Refresh now route through the compact desktop nav dropdown
+  - Dark mode and Help remain standalone header buttons
+
+## Workstream 7 Recommendation
+- Target mobile buildout in `MobileApp.html`
+- Use the extracted desktop module/state boundaries as the reference architecture
+- Do not reuse desktop layout assumptions directly
+- Gantt quick peek TODOs still open in `WebApp.html`: `renderQuickPeek()`, `closeQuickPeek()`, `syncQuickPeekNote()`, `askGeminiForQuickPeek()`, and `saveQuickPeek()`
+- Shared KPI HUD TODOs still open in `WebApp.html`: `renderProjectsHUD()` and `renderBslsHUD()`
+- `_module_tabs.html` fullscreen bleed-through still needs diagnosis in the mobile context
+- Remaining HIGH RISK TODOs from prior workstreams:
+  - `initDashboard()` remains the bootstrap anchor and shared desktop hydration contract
+  - `applyFilters()` remains the shared render/orchestration anchor across queue, admin, grid, digest, and gantt
+  - Deck/export flows still write back into queue/admin/reviewed state through shared runtime ownership
+  - Gantt extraction is still partial; row-header-coupled render paths and shared workspace orchestration remain mixed into the shell

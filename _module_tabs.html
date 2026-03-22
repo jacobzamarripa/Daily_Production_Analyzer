@@ -1,0 +1,60 @@
+<script>
+// ============================================================
+// FILE: _module_tabs.html
+// ROLE: Tab UI, notification badges, and workspace
+//   transition visual handlers
+// DEPENDS ON: _state_router.html, _state_queue.html,
+//   _module_router.html
+// DEPENDED ON BY: WebApp.html main runtime
+// MOBILE NOTES: Tab UX needs full rethink for mobile —
+//   do not reuse desktop tab markup or event handlers
+//   directly in MobileApp.html
+// AGENT NOTES: Read _module_router.html before editing.
+//   Fullscreen bleed-through root cause documented inline.
+//   Badge updates touch admin and changelog state.
+// ============================================================
+// Fullscreen bleed-through root cause:
+// Presentation mode is owned outside the tab system, but its
+// body-scoped CSS hides shared chrome (`.top-nav`,
+// `.inbox-sidebar`, `.outbox-pane`) across module boundaries.
+// Router isolation clarifies that tab switching is not the
+// primary owner of the bleed-through; the shared
+// `body.presentation-active` rules and deck/presentation state
+// are still the dominant source.
+
+function updateAdminBadge() {
+    if (!allActionItems) return;
+    let count = getActiveQueueItems().filter(i =>
+        i.flags.includes('ADMIN: CHECK CROSSINGS') ||
+        i.flags.includes('PLEASE INPUT BOM') ||
+        i.flags.includes('CHECK BOM (UG/AE)') ||
+        i.flags.includes('STATUS MISMATCH') ||
+        i.flags.includes('MISSING QB STATUS')
+    ).length;
+    let badge = getEl('admin-badge');
+    if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline-flex' : 'none'; }
+    let fabBadge = getEl('admin-fab-badge');
+    if (fabBadge) { fabBadge.textContent = count; fabBadge.style.display = count > 0 ? 'inline-flex' : 'none'; }
+}
+
+function updateChangelogBadge() {
+    let recentActivityCount = 0;
+    let yesterdayTime = Date.now() - (24 * 60 * 60 * 1000);
+    allGlobalLogs.forEach(log => {
+        if (Number(log.timestampObj || 0) >= yesterdayTime) recentActivityCount++;
+    });
+
+    const changelogBadge = getEl('changelog-badge');
+    if (!changelogBadge) return;
+
+    let pulseSeen = false;
+    try { pulseSeen = sessionStorage.getItem(CHANGELOG_PULSE_SESSION_KEY) === '1'; } catch (e) {}
+
+    if (recentActivityCount > 0 && !pulseSeen) {
+        changelogBadge.innerText = recentActivityCount;
+        changelogBadge.style.display = 'inline-flex';
+    } else {
+        changelogBadge.style.display = 'none';
+    }
+}
+</script>

@@ -162,9 +162,15 @@
       <div class="nav-actions">
         <span id="nav-ref-age" class="ref-age-badge" style="display:none;"></span>
         <span class="gemini-badge ai-ok" id="gemini-badge" title="Gemini API calls used today" style="display:none"></span>
-        <button class="btn-nav" onclick="triggerQBSync()"    id="btn-qb-sync">⟳ Sync QB</button>
-        <button class="btn-nav" onclick="triggerRunReview()" id="btn-run-review">▶ Run Review</button>
-        <button class="btn-nav" onclick="triggerUIRefresh()" id="btn-refresh">↻ Refresh</button>
+        <button class="btn-nav nav-fab-hide" onclick="triggerQBSync()"    id="btn-qb-sync">⟳ Sync QB</button>
+        <button class="btn-nav nav-fab-hide" onclick="triggerRunReview()" id="btn-run-review">▶ Run Review</button>
+        <button class="btn-nav nav-fab-hide" onclick="triggerUIRefresh()" id="btn-refresh">↻ Refresh</button>
+        <button class="btn-icon nav-fab-trigger" id="btn-nav-fab" onclick="toggleNavFab()" title="Actions">☰</button>
+        <div class="nav-fab-dropdown" id="nav-fab-dropdown">
+          <button onclick="triggerQBSync()">⟳ Sync QB</button>
+          <button onclick="triggerRunReview()">▶ Run Review</button>
+          <button onclick="triggerUIRefresh()">↻ Refresh</button>
+        </div>
         <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme" title="Toggle dark mode"></button>
         <button class="btn-nav" onclick="toggleHelpPanel()" id="btn-help">?</button>
         <button class="btn-icon mobile-menu-toggle" id="btn-hamburger" onclick="toggleMobileMenu()" title="Menu" style="font-size:18px;">☰</button>
@@ -654,6 +660,7 @@
     <?!= include('_state_session') ?>
     <?!= include('_utils_shared') ?>
     <?!= include('_utils_notifications') ?>
+    <?!= include('_module_router') ?>
     <?!= include('_module_tools_widgets') ?>
     <?!= include('_module_changelog') ?>
     <?!= include('_module_theme_controls') ?>
@@ -663,6 +670,7 @@
     <?!= include('_module_special_crossings') ?>
     <?!= include('_module_gantt') ?>
     <?!= include('_module_deck') ?>
+    <?!= include('_module_tabs') ?>
     <script>
       // 🚀 BOOT SEQUENCE CONTROLLER
       // STATE: bootInterval
@@ -883,68 +891,8 @@
 
       // Extracted to _module_queue_state.html
 
-      function syncWorkspaceModeState() {
-          isGridMode = (currentWorkspaceView === 'grid');
-          isDeckMode = isSlideFaceActive();
-
-          document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active', 'digest-mode-active');
-          if (isGridMode) document.body.classList.add('grid-mode-active');
-          if (isDeckMode) document.body.classList.add('deck-mode-active');
-          if (currentWorkspaceView === 'gantt') document.body.classList.add('gantt-view-active');
-      }
-
-      // TODO: DOM-COUPLED - extract after state layer is isolated
-      function syncWorkspaceChrome() {
-          ['detail', 'grid', 'gantt'].forEach(v => {
-              const btn = getEl(`view-btn-${v}`);
-              if (btn) btn.classList.toggle('active', v === currentWorkspaceView);
-          });
-
-          const isDetailMode = currentWorkspaceView === 'detail';
-          const isGridModeView = currentWorkspaceView === 'grid';
-          const isGanttView = currentWorkspaceView === 'gantt';
-          const pivotZone = getEl('dock-pivot-zone');
-          const groupZone = getEl('dock-group-zone');
-          const filtersZone = getEl('dock-filters-zone');
-          const focusZone = getEl('dock-focus-zone');
-          const clearZone = getEl('dock-clear-zone');
-          const faceBtn = getEl('dock-btn-face-toggle');
-          const slideDeck = getEl('slide-action-deck');
-          const showSlideDeck = isSlideFaceActive() && !isGanttView;
-          const groupSelect = getEl('group-by-select');
-
-          if (filtersZone) filtersZone.classList.remove('collapsed');
-          if (groupZone) groupZone.classList.remove('collapsed');
-          if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridModeView);
-          if (focusZone) focusZone.classList.toggle('collapsed', !isDetailMode);
-          if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
-          if (slideDeck) slideDeck.classList.toggle('visible', showSlideDeck && !isGanttView);
-          if (groupSelect) {
-              groupSelect.value = currentGroupBy;
-              groupSelect.classList.toggle('is-active', currentGroupBy !== 'none');
-          }
-
-          if (faceBtn) {
-              faceBtn.style.display = isDetailMode ? 'inline-flex' : 'none';
-              faceBtn.classList.toggle('is-slide-cta', !isDeckMode);
-              faceBtn.classList.toggle('is-detail-cta', isDeckMode);
-              faceBtn.innerHTML = `${_SLIDE_SVG}<span class="btn-label">${isDeckMode ? 'Detail View' : 'Slide View'}</span>`;
-          }
-
-          const sortQueue = getEl('sort-queue');
-          if (sortQueue) sortQueue.style.display = currentViewMode === 'grid' ? 'none' : '';
-          syncSortControls();
-          const sidebarPivot = getEl('sidebar-pivot-select');
-          if (sidebarPivot) sidebarPivot.style.display = currentViewMode === 'grid' ? 'inline-block' : 'none';
-          syncGanttViewportLayout();
-          syncDockPlacementState();
-          syncRawDataStripState();
-          syncSlideActionDeck();
-          syncOutboxPanelMode();
-          syncDockLayoutSpacing();
-          updateFloatingPillsPosition();
-          syncDockClearanceState();
-      }
+      // syncWorkspaceModeState extracted to _module_router.html
+      // syncWorkspaceChrome extracted to _module_router.html
 
       function renderDetailWorkspaceFace() {
           if (currentWorkspaceView !== 'detail') return;
@@ -1071,19 +1019,7 @@
           }, 460);
       }
 
-      function syncDockPlacementState() {
-          const dock = getEl('filter-strip');
-          if (!dock) return;
-          const nextPlacement = currentWorkspaceView === 'gantt' ? 'bottom' : 'top';
-          if (currentDockPlacement === nextPlacement) return;
-          dock.classList.remove('dock-slide-down-enter', 'dock-rise-up-enter');
-          void dock.offsetWidth;
-          dock.classList.add(nextPlacement === 'bottom' ? 'dock-slide-down-enter' : 'dock-rise-up-enter');
-          currentDockPlacement = nextPlacement;
-          setTimeout(() => {
-              dock.classList.remove('dock-slide-down-enter', 'dock-rise-up-enter');
-          }, 460);
-      }
+      // syncDockPlacementState extracted to _module_router.html
 
       function syncRawDataStripState() {
           const strip = getEl('raw-data-strip');
@@ -1150,6 +1086,20 @@
                   el.classList.remove('open');
                   openDropdownId = null;
               }
+          }
+      });
+
+      function toggleNavFab() {
+          let dropdown = document.getElementById('nav-fab-dropdown');
+          if (!dropdown) return;
+          dropdown.classList.toggle('open');
+      }
+      document.addEventListener('click', function(e) {
+          let dropdown = document.getElementById('nav-fab-dropdown');
+          let trigger = document.getElementById('btn-nav-fab');
+          if (!dropdown || !trigger || !dropdown.classList.contains('open')) return;
+          if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+              dropdown.classList.remove('open');
           }
       });
 
@@ -1536,22 +1486,7 @@
           });
       }
 
-      function syncGanttViewportLayout() {
-          let nav = document.querySelector('.top-nav');
-          let topOffset = nav ? Math.ceil(nav.getBoundingClientRect().bottom) : 72;
-          let dock = getEl('filter-strip');
-          if (dock && getComputedStyle(dock).display !== 'none') {
-              if (currentWorkspaceView !== 'gantt') {
-                  topOffset = Math.max(topOffset, Math.ceil(dock.getBoundingClientRect().bottom + 10));
-              }
-          }
-          let pills = getEl('active-filter-pills');
-          if (pills && pills.childElementCount > 0 && getComputedStyle(pills).display !== 'none') {
-              topOffset = Math.max(topOffset, Math.ceil(pills.getBoundingClientRect().bottom + 10));
-          }
-          document.documentElement.style.setProperty('--gantt-top-offset', `${Math.max(0, topOffset)}px`);
-          document.documentElement.style.setProperty('--gantt-bottom-offset', '0px');
-      }
+      // syncGanttViewportLayout extracted to _module_router.html
 
       function applyGanttFocusState(behavior) {
           let ganttArea = getEl('gantt-area-main');
@@ -2050,12 +1985,7 @@
       // Queue view toggles extracted to _module_queue_state.html
       function _syncDrawerTop() { /* no-op */ }
 
-      // STATE: currentPanelTab
-      // READS: admin/outbox drawer rendering
-      // WRITES: panel tab switchers
-      // EXTRACT WITH: syncOutboxPanelMode, switchPanelTab
-      // WORKSTREAM 3 RISK: Low
-      let currentPanelTab = 'admin';
+      // currentPanelTab extracted to _state_router.html
       // STATE: allGlobalLogs
       // READS: changelog, digest, grid, item history
       // WRITES: bootstrap payload load and changelog render
@@ -2112,58 +2042,8 @@
       function getReviewedBadgeCount() {
           return getStagedReviewItems().length + (committedItems || []).length;
       }
-      function syncOutboxPanelMode() {
-          let title = getEl('review-hub-title');
-          let tabBar = document.querySelector('#review-hub-main-header .panel-tab-bar');
-          let deckPanel = getEl('deck-action-panel');
-          let adminPanel = getEl('ob-panel-admin');
-          let reviewedPanel = getEl('ob-panel-reviewed');
-          let changelogPanel = getEl('ob-panel-changelog');
-          let fab = getEl('admin-fab');
-          let isDeckView = isSlideFaceActive();
-
-          if (title) {
-              title.innerHTML = '<span>Review</span><span>Hub</span>';
-          }
-          if (tabBar) tabBar.style.display = isDeckView ? 'none' : 'flex';
-          if (deckPanel) deckPanel.style.display = isDeckView ? 'flex' : 'none';
-          if (fab) {
-              fab.title = 'Admin / Reviewed';
-              fab.setAttribute('aria-label', 'Open admin panel');
-          }
-
-          if (isDeckView) {
-              if (adminPanel) adminPanel.style.display = 'none';
-              if (reviewedPanel) reviewedPanel.style.display = 'none';
-              if (changelogPanel) changelogPanel.style.display = 'none';
-              return;
-          }
-
-          if (adminPanel) adminPanel.style.display = (currentPanelTab === 'admin') ? 'flex' : 'none';
-          if (reviewedPanel) reviewedPanel.style.display = (currentPanelTab === 'reviewed') ? 'flex' : 'none';
-          if (changelogPanel) changelogPanel.style.display = (currentPanelTab === 'changelog') ? 'flex' : 'none';
-      }
-      function switchPanelTab(tab) {
-          currentPanelTab = tab;
-          let adminPanel = getEl('ob-panel-admin'), reviewedPanel = getEl('ob-panel-reviewed'), changelogPanel = getEl('ob-panel-changelog');
-          let adminTab = getEl('panel-tab-admin'), reviewedTab = getEl('panel-tab-reviewed'), changelogTab = getEl('panel-tab-changelog');
-
-          if (adminPanel) adminPanel.style.display = (tab === 'admin') ? 'flex' : 'none';
-          if (reviewedPanel) reviewedPanel.style.display = (tab === 'reviewed') ? 'flex' : 'none';
-          if (changelogPanel) changelogPanel.style.display = (tab === 'changelog') ? 'flex' : 'none';
-
-          if (adminTab) adminTab.classList.toggle('active', tab === 'admin');
-          if (reviewedTab) reviewedTab.classList.toggle('active', tab === 'reviewed');
-          if (changelogTab) changelogTab.classList.toggle('active', tab === 'changelog');
-
-          if (tab === 'changelog') {
-              try { sessionStorage.setItem(CHANGELOG_PULSE_SESSION_KEY, '1'); } catch (e) {}
-              let clBadge = getEl('changelog-badge');
-              if (clBadge) clBadge.style.display = 'none';
-              renderChangeLog();
-          }
-          syncOutboxPanelMode();
-      }
+      // syncOutboxPanelMode extracted to _module_router.html
+      // switchPanelTab extracted to _module_router.html
       function toggleFilterStrip() {
           let strip = getEl('filter-strip');
           let btn = getEl('btn-filters');
@@ -4180,24 +4060,7 @@
             let groupSelect = getEl('group-by-select');
             if (groupSelect) groupSelect.value = currentGroupBy;
             renderChangeLog();
-            let recentActivityCount = 0;
-            let yesterdayTime = Date.now() - (24 * 60 * 60 * 1000);
-            allGlobalLogs.forEach(log => {
-                if (Number(log.timestampObj || 0) >= yesterdayTime) recentActivityCount++;
-            });
-
-            const changelogBadge = getEl('changelog-badge');
-            if (changelogBadge) {
-                let pulseSeen = false;
-                try { pulseSeen = sessionStorage.getItem(CHANGELOG_PULSE_SESSION_KEY) === '1'; } catch (e) {}
-
-                if (recentActivityCount > 0 && !pulseSeen) {
-                    changelogBadge.innerText = recentActivityCount;
-                    changelogBadge.style.display = 'inline-flex';
-                } else {
-                    changelogBadge.style.display = 'none';
-                }
-            }
+            updateChangelogBadge();
             if (!data || !data.actionItems || data.actionItems.length === 0) {
                 allActionItems = [];
                 setHtml('gantt-container', `<div class="empty-msg">All Clear ✓</div>`);
@@ -4231,6 +4094,10 @@
             }
             applyFilters();
             showStartupSelector();
+            // Re-apply theme after bootstrap to ensure icon renders
+            if (typeof applyTheme === 'function') {
+                applyTheme(_sysDark && _sysDark.matches);
+            }
         });
       }
 
@@ -5869,92 +5736,7 @@
       }
       */
 
-      // TODO: MODULE CANDIDATE - tabs/workspace router is coupled to currentWorkspaceView, currentDetailFace, deck state, Gantt state, and shared DOM visibility orchestration.
-      function switchWorkspaceView(mode) {
-        const requestedMode = mode;
-        const normalizedMode = (requestedMode === 'deck' || requestedMode === 'slide' || requestedMode === 'digest') ? 'detail' : requestedMode;
-        if (isDeckMode && normalizedMode !== 'detail') saveCurrentCardState();
-        if (currentWorkspaceView === 'gantt' && normalizedMode !== 'gantt') captureGanttScrollState();
-
-        const prevWasSlide = isDeckMode;
-        currentWorkspaceView = normalizedMode;
-        if (requestedMode === 'detail') currentDetailFace = 'detail';
-        if (requestedMode === 'deck' || requestedMode === 'slide') currentDetailFace = 'slide';
-        syncWorkspaceModeState();
-
-        if (normalizedMode !== 'grid' && currentGridPivot === 'global-log') {
-            currentGridPivot = 'velocity';
-            const pivot = getEl('grid-pivot-select');
-            if (pivot) pivot.value = currentGridPivot;
-        }
-
-        const userFilter = getEl('filter-log-user');
-        if (userFilter) {
-            userFilter.style.display = (normalizedMode === 'grid' && (currentGridPivot === 'changelog' || currentGridPivot === 'global-log')) ? 'inline-flex' : 'none';
-        }
-
-        syncWorkspaceChrome();
-
-        if (prevWasSlide && normalizedMode !== 'detail') {
-            currentGridPivot = deckPrevPivot || currentGridPivot;
-            const pivot = getEl('grid-pivot-select');
-            if (pivot) pivot.value = currentGridPivot;
-        }
-
-        const grid = getEl('grid-content');
-        const welcome = getEl('welcome-screen');
-        const paneContent = getEl('pane-content');
-        const deckStage = getEl('deck-stage');
-        const ganttPanel = getEl('gantt-panel');
-        if (grid) {
-            grid.style.display = 'none';
-            grid.style.flex = '';
-            grid.style.width = '';
-        }
-        if (paneContent) {
-            paneContent.style.display = 'none';
-            paneContent.style.flex = '';
-            paneContent.style.width = '';
-        }
-        if (deckStage) {
-            deckStage.style.display = 'none';
-            deckStage.style.flex = '';
-            deckStage.style.width = '';
-            deckStage.style.padding = '';
-            deckStage.style.overflow = '';
-        }
-        if (ganttPanel) {
-            ganttPanel.style.display = 'none';
-            ganttPanel.style.flex = '';
-            ganttPanel.style.height = '';
-        }
-        if (grid) grid.classList.toggle('active', isGridMode);
-
-        // 2. DEFERRED HEAVY RENDERING (browser paints the dock animation first)
-        setTimeout(() => {
-            if (normalizedMode === 'detail') {
-                renderDetailWorkspaceFace();
-                if (grid) grid.style.display = 'none';
-                applyFilters();
-            } else if (normalizedMode === 'grid') {
-                setAdminPanelOpen(false);
-                if (welcome) welcome.style.display = 'none';
-                if (paneContent) paneContent.style.display = 'none';
-                if (deckStage) deckStage.style.display = 'none';
-                if (grid) grid.style.display = 'grid';
-                renderGrid();
-            } else if (normalizedMode === 'gantt') {
-                setAdminPanelOpen(false);
-                if (welcome) welcome.style.display = 'none';
-                if (paneContent) paneContent.style.display = 'none';
-                if (deckStage) deckStage.style.display = 'none';
-                if (ganttPanel) ganttPanel.style.display = 'flex';
-                applyFilters();
-            }
-
-            syncGanttIslandState();
-        }, 40);
-      }
+      // switchWorkspaceView extracted to _module_router.html
 
       /* DECK INLINE COPY DISABLED: extracted to _module_deck.html
       function navDeck(dir) {
@@ -6015,7 +5797,10 @@
         if (e.key === 'ArrowUp') { e.preventDefault(); navGlobal(-1, true); }
 
         if (e.key === 'Escape') {
-          if (isPresentationMode) togglePresentationMode();
+          let dropdown = document.getElementById('nav-fab-dropdown');
+          if (dropdown && dropdown.classList.contains('open')) {
+            dropdown.classList.remove('open');
+          } else if (isPresentationMode) togglePresentationMode();
           else if (document.getElementById('gantt-area-main')?.classList.contains('has-focus')) exitTheaterMode();
         }
       });
