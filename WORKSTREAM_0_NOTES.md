@@ -892,7 +892,7 @@ Started: March 21, 2026
   best-effort after local state advance
   All actions: loading overlay + success/error toasts
   All google.script.run calls have withSuccessHandler + withFailureHandler
-- Phase 5: Gantt timeline — March 22, 2026
+- Phase 5: Gantt timeline — commit 83a4f80 — March 22, 2026
   Single overflow: auto container, row labels sticky-left 132px, date header sticky-top
   Month (22px/day) and Week (34px/day) zoom toggle chip below tab bar
   Today line centered on render and zoom toggle via requestAnimationFrame
