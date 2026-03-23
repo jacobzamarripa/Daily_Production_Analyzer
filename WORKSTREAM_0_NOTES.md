@@ -54,6 +54,18 @@
 - `currentPanelTab` is still missing from `_state_router.html` — add it during the Workstream 6 router isolation pass before any tab extraction resumes.
 - Auto device detection routing deferred — mobile surface requires explicit `?view=mobile` parameter. Revisit in Workstream 8 using a server-side user-agent approach or a published standalone mobile URL.
 
+## Auto Routing — Final Resolution (WS8)
+Server-side detection: not available in GAS doGet() — e object exposes no UA or headers.
+Client-side detector page: tested and failed — GAS iframe blocks window.location.href redirect on mobile browsers (confirmed WS7 + WS8).
+
+Final decision: Option C — two bookmark URLs.
+- Mobile URL: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=mobile
+- Desktop URL: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=web
+
+Users should bookmark the mobile URL to their iOS/Android home screen. The ?view=web escape hatch allows desktop access when needed.
+
+Auto routing via JavaScript or server-side detection is not achievable within GAS HtmlService constraints.
+
 ## Known UI Bugs (Pre-Existing)
 - Admin panel close button — RESOLVED. Fixed via absolute positioning on `.panel-tab-close` in `_styles_components.html`. Minor cosmetic note: X button overlaps the Activity tab at narrow viewports — accepted for now.
 - Hamburger menu visible on desktop — RESOLVED. Fixed via compound selector `.btn-icon.mobile-menu-toggle { display: none }` in `_styles_layout.html` beating the `.btn-icon` override.

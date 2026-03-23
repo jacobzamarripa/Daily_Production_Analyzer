@@ -126,7 +126,6 @@ Enforcement: floating pill hint auto-dismisses after 3 seconds. JS checks `windo
 
 | Issue | Deferred to |
 |---|---|
-| Auto device detection (requires `?view=mobile` manually) | WS8 |
 | PWA / home screen install support | WS8 |
 | Offline queue caching | WS8 |
 | Push notifications via GAS triggers | WS8 |
@@ -136,9 +135,17 @@ Enforcement: floating pill hint auto-dismisses after 3 seconds. JS checks `windo
 
 ---
 
+## App URLs
+- Desktop: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=web
+- Mobile: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=mobile
+
+Auto routing is not achievable in GAS HtmlService — mobile users bookmark the mobile URL directly. The ?view=web parameter forces desktop on any device if needed.
+
+---
+
 ## WS8 Starting Points
 
-**Auto device detection** — edit `doGet()` in `02_Utilities.js`. Check `e.parameter.view` first (explicit override), then fall back to `e.userObject` or a `navigator.userAgent` server-side check. Route to `MobileApp.html` for mobile agents.
+**Auto device detection** — resolved by explicit bookmark URLs because GAS HtmlService blocks reliable auto redirect on mobile browsers.
 
 **PWA install** — add a `manifest.json` served via a GAS doGet route or embedded as a `<link>` tag. Add service worker registration in `MobileApp.html` `<head>`. GAS apps can be pinned to home screen on iOS via Safari "Add to Home Screen" if the manifest is present.
 

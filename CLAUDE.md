@@ -21,6 +21,7 @@
    * Floating Pills: `3000`
    * Deck/Cards: `5` - `100`
 7. **WebApp Template Serving:** `WebApp.html` must be served via `createTemplateFromFile('WebApp').evaluate()` in `02_Utilities.js`, never `createHtmlOutputFromFile()`. The latter will silently break all `<?!= include() ?>` directives.
+8. **Auto Device Routing:** Auto device routing is not achievable in GAS HtmlService — client-side redirects are blocked by the iframe sandbox on mobile. Two explicit URLs are the correct solution: `?view=mobile` for mobile, `?view=web` for desktop. Do not attempt client-side redirect approaches in future workstreams.
 
 ## Error Handling & Logging
 * Use the custom `logMsg()` function in `00_Config.js` instead of `console.log()` for backend logic, as it writes directly to the `System_Logs` sheet.
