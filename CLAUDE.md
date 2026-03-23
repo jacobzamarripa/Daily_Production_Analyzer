@@ -84,7 +84,7 @@ When executing any workstream in this project:
 
 ## File Map
 > Agent navigation index. Read this before opening any file.
-> Last updated: March 22, 2026
+> Last updated: March 23, 2026
 
 ### How to Use This Map
 - Check **Agent Notes** before editing any file
@@ -103,7 +103,7 @@ When executing any workstream in this project:
 |---|---|---|
 | `00_Config.js` | Global constants, sheet names, formatting helpers, shared backend utility primitives | Read before touching any backend file. Sheet name constants live here — never hardcode sheet names elsewhere. |
 | `01_Engine.js` | Daily review engine, archive parsing, vendor/ref lookups, mirror-sheet generation | Source of truth for tracker linkage and engine flags (`🔵 OFS`, `🟢 COMPLETE`, etc.). Do not replicate its logic in frontend. |
-| `02_Utilities.js` | GAS entrypoints, HtmlService routing, web-app bridges, exports, utility workflows | Contains `doGet()` routing to `WebApp.html` vs `MobileApp.html`. Touch when adding new server-exposed functions. |
+| `02_Utilities.js` | GAS entrypoints, HtmlService routing, web-app bridges, exports, utility workflows | `doGet()` now uses the document.write() auto-routing loader for bare URLs, and `getSurfaceHTML(isMobile)` returns evaluated mobile/desktop HTML for that bridge. Touch when adding new server-exposed functions. |
 | `03_Analytics.js` | Historical benchmark and milestone timeline generation | Isolated — safe to edit without reading other backend files. |
 | `05_CDAnalyzer.js` | Gemini/CD analysis workflows, AI narrative generation | Gemini entry points only. Do not hardcode model strings — pull from `00_Config.js`. |
 | `06_QBSync.js` | QuickBase sync, change-log import, crossings queue staging, guarded writeback stub | Read QB guard comment before touching writeback. CSV export path only — no direct QB writes from frontend. `QB_USER_TOKEN` via Script Properties only. |

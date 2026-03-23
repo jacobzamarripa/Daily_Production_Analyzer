@@ -8,7 +8,7 @@
 // ============================================================
 
 # Workstream 0 Checkpoint
-> Last updated: March 21, 2026
+> Last updated: March 23, 2026
 > Workstream 1 complete March 21, 2026. CSS extracted, JS tagged, 19 data calls inventoried. Next: Workstream 2 state isolation.
 > Workstream 1 closeout note: `02_Utilities.js` required a `createHtmlOutputFromFile('WebApp')` to `createTemplateFromFile('WebApp').evaluate()` fix so `<?!= include() ?>` directives in `WebApp.html` would process correctly.
 > Workstream 2 complete March 21, 2026. Full `WebApp.html` state inventory mapped, consumer dependencies documented, and inline extraction-risk tags added. Next: Workstream 3 sequenced module extraction.
@@ -16,6 +16,7 @@
 > Workstream 4 complete March 21, 2026. Queue/router/session state owners extracted to dedicated partial files, include order updated, and smoke tests passed after each phase. Next: Workstream 5 high-risk module extractions.
 > Workstream 5 complete March 21, 2026. High-risk modules extracted with smoke tests passed after each phase; `_module_tabs.html` deferred, `_module_gantt.html` partially extracted, and `WebApp.html` reduced to bootstrap anchors plus remaining shared runtime.
 > Workstream 6 complete March 21, 2026. Router isolation and tabs extraction landed, pre-existing UI bugs were resolved, and the desktop FAB dropdown shipped for Sync QB / Run Review / Refresh.
+> Workstream 8 complete March 23, 2026. Auto-routing, PWA closeout, offline queue caching, and mobile Admin crossings staged commit shipped. Next: Workstream 9 mobile polish and deferred UX/platform items.
 
 ---
 
@@ -951,32 +952,44 @@ Five mobile tab surfaces built and polished. Token system complete.
 
 ---
 
+## Workstream 8 Complete
+Completed March 23, 2026.
+
+- Phase 1: single URL auto-routing complete — commit `f18e449` — March 23, 2026
+  Bare URL now serves a thin loader and routes through `document.write()` instead of nested iframe redirects.
+  Explicit `?view=mobile` and `?view=web` routes remain intact.
+  Files: `02_Utilities.js`, `CLAUDE.md`, `WORKSTREAM_0_NOTES.md`, `COPILOT_HANDOFF.md`
+
+- Phase 2: PWA home screen meta tags closeout — commit `80bd12d` — March 23, 2026
+  Effective home-screen meta tags retained; unsupported icon/manifest path removed after confirming GAS top-level icon limitation.
+  CLAUDE architecture rules updated to document the limitation and external-wrapper workaround.
+  Files: `MobileApp.html`, `CLAUDE.md`
+
+- Phase 3: offline queue caching — commit `5d7bf45` — March 23, 2026
+  localStorage cache with 4-hour expiry added.
+  Cache-first init, stale-data banner, and graceful offline fallback shipped.
+  Files: `MobileApp.html`, `_styles_mobile.html`
+
+- Phase 4: mobile Admin crossings staged commit — commit `1bff392` — March 23, 2026
+  Crossings cards now support local verify state, staged commit count, confirm flow, and best-effort backend commit.
+  Files: `MobileApp.html`, `_styles_mobile.html`
+
+WS8 outcome:
+- Auto device detection routing complete
+- PWA meta/install closeout complete within GAS platform limits
+- Offline queue caching complete
+- Mobile Admin crossings staged commit complete
+
 ---
 
-## Workstream 8 Recommendation
-Priority items deferred from WS7 and prior workstreams:
+## Workstream 9 Recommendation
+Priority items after WS8 closeout:
 
-### Deferred from WS7
-- **Auto device detection routing** — mobile surface requires explicit `?view=mobile` parameter.
-  Implement server-side user-agent detection in `doGet()` (`02_Utilities.js`) to route automatically.
-- **PWA / home screen install support** — add Web App Manifest and service worker registration
-  so the mobile URL can be saved to the iOS/Android home screen with full-screen launch.
-- **Push notifications via GAS triggers** — time-based GAS triggers can call a notification
-  endpoint; requires a registered push subscription on the client.
-- **Offline queue caching** — cache last-loaded `mobileState` in localStorage so the queue
-  renders stale data when the device is offline.
-
-### Deferred from WS6
-- **Crossings staged commit on mobile Admin** — Admin Crossings sub-tab currently shows
-  read-only cards. Staged commit workflow (verify → commit → CSV export) was deferred from
-  Phase 6. Reference `_module_special_crossings.html` for the desktop implementation contract.
-- **`_module_tabs.html` fullscreen bleed-through diagnosis** — tab badge fullscreen bleed-through
-  documented but unresolved. Needs diagnosis in the mobile context as well.
-
-### Deferred from WS5
-- **Gantt quick peek** — bar tap currently navigates to Detail tab. A slide-up quick-peek panel
-  (showing key fields inline without tab switch) was deferred. Reference desktop `renderQuickPeek()`
-  contract in `WebApp.html` for field set.
+- **Mobile style polish pass across all 5 tabs** — spacing, touch rhythm, secondary text weight, and visual consistency sweep after WS8 feature landing.
+- **Gantt quick peek slide-up panel** — keep timeline context on mobile instead of forcing a tab switch to Detail.
+- **`_module_tabs.html` fullscreen bleed-through fix** — unresolved desktop shell issue still needs diagnosis and permanent correction.
+- **Push notifications** — deferred from WS8 pending client subscription and GAS-trigger delivery design.
+- **External thin wrapper for custom home screen icon** — deferred from WS8 because GAS HtmlService cannot control top-level icon tags.
 
 ## Phase 5 Plan (Approved — Built March 22, 2026)
 
