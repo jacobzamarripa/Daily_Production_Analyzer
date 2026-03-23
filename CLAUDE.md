@@ -21,7 +21,8 @@
    * Floating Pills: `3000`
    * Deck/Cards: `5` - `100`
 7. **WebApp Template Serving:** `WebApp.html` must be served via `createTemplateFromFile('WebApp').evaluate()` in `02_Utilities.js`, never `createHtmlOutputFromFile()`. The latter will silently break all `<?!= include() ?>` directives.
-8. **Auto Device Routing:** Auto device routing is not achievable in GAS HtmlService — client-side redirects are blocked by the iframe sandbox on mobile. Two explicit URLs are the correct solution: `?view=mobile` for mobile, `?view=web` for desktop. Do not attempt client-side redirect approaches in future workstreams.
+8. **Auto Device Routing:** Single URL auto-routing uses the document.write() client-side router pattern — NOT window.location.replace() or redirects. Redirecting a GAS HtmlService page creates nested iframe inception which breaks viewport on mobile. The correct pattern: serve a thin loader page that calls getSurfaceHTML(isMobile) via google.script.run, then overwrites the DOM with document.write(). This keeps the user in a single iframe wrapper. See doGet() in 02_Utilities.js for the reference implementation.
+9. **Mobile Viewport in GAS:** GAS HtmlService ignores viewport meta tags declared in HTML files. Always set viewport via `addMetaTag()` in the `doGet()` serve function. Use `width=device-width, initial-scale=1, viewport-fit=cover` — do not include `maximum-scale` or `user-scalable` in the `addMetaTag()` value as these cause scaling issues in GAS iframe contexts.
 
 ## Error Handling & Logging
 * Use the custom `logMsg()` function in `00_Config.js` instead of `console.log()` for backend logic, as it writes directly to the `System_Logs` sheet.

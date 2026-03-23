@@ -136,10 +136,13 @@ Enforcement: floating pill hint auto-dismisses after 3 seconds. JS checks `windo
 ---
 
 ## App URLs
-- Desktop: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=web
-- Mobile: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=mobile
+Single URL — auto-detects device:
+https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec
 
-Auto routing is not achievable in GAS HtmlService — mobile users bookmark the mobile URL directly. The ?view=web parameter forces desktop on any device if needed.
+Force mobile: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=mobile
+Force desktop: https://script.google.com/macros/s/AKfycbwydv48JbcxGH9gZLf07GeukTuv0CqOPN4nzjQiad9wl0aLpYPBoLLlsz4G2QWVZRN4/exec?view=web
+
+Do NOT use window.location.replace() for routing in GAS — causes iframe inception and breaks mobile viewport. Use the document.write() pattern in doGet().
 
 ---
 
