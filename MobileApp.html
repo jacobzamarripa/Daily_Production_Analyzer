@@ -63,6 +63,16 @@
         <div id="header-context-bar" class="mobile-header__context">Queue shell ready</div>
       </header>
 
+      <div id="mobile-stale-banner" 
+           class="stale-banner" hidden>
+        <span id="stale-banner-text">
+          Showing cached data
+        </span>
+        <button onclick="loadQueueData(true)">
+          Retry ↻
+        </button>
+      </div>
+
       <main id="mobile-main" class="mobile-main">
         <!--
         // PHASE 2 COMPLETE — Queue tab
@@ -440,6 +450,10 @@
       orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
       toastCounter: 0
     };
+
+    const CACHE_KEY = 'omni_pmo_queue_cache';
+    const CACHE_META_KEY = 'omni_pmo_cache_meta';
+    const CACHE_MAX_AGE_MS = 4 * 60 * 60 * 1000;
 
     let globalEndCounts = {};
     let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
@@ -1350,6 +1364,80 @@
       setActiveTab('detail');
     }
 
+    function saveQueueCache(data) {
+      try {
+        localStorage.setItem(CACHE_KEY, 
+          JSON.stringify(data));
+        localStorage.setItem(CACHE_META_KEY, 
+          JSON.stringify({
+            savedAt: Date.now(),
+            count: data.actionItems 
+              ? data.actionItems.length : 0
+          }));
+      } catch(e) { /* localStorage may be 
+        blocked in GAS iframe — fail silently */ }
+    }
+
+    function loadQueueCache() {
+      try {
+        var raw = localStorage.getItem(CACHE_KEY);
+        var meta = localStorage.getItem(CACHE_META_KEY);
+        if (!raw || !meta) return null;
+        var m = JSON.parse(meta);
+        if (Date.now() - m.savedAt > 
+            CACHE_MAX_AGE_MS) return null;
+        return { 
+          data: JSON.parse(raw), 
+          savedAt: m.savedAt,
+          count: m.count
+        };
+      } catch(e) { return null; }
+    }
+
+    function showStaleBanner(savedAt) {
+      var el = document.getElementById(
+        'mobile-stale-banner');
+      var txt = document.getElementById(
+        'stale-banner-text');
+      if (!el || !txt) return;
+      var mins = Math.round(
+        (Date.now() - savedAt) / 60000);
+      var age = mins < 60 
+        ? mins + 'm ago' 
+        : Math.round(mins/60) + 'h ago';
+      txt.textContent = 'Cached data from ' 
+        + age + ' — no connection';
+      el.hidden = false;
+    }
+
+    function hideStaleBanner() {
+      var el = document.getElementById(
+        'mobile-stale-banner');
+      if (el) el.hidden = true;
+    }
+
+    function applyDashboardPayload(data) {
+      mobileState.all = data && data.actionItems ? data.actionItems : [];
+      mobileState.globalLogs = data && data.globalLogs ? data.globalLogs : [];
+      mobileState.vendorGoals = data && data.vendorGoals ? data.vendorGoals : {};
+      globalEndCounts = data && data.globalEndCounts ? data.globalEndCounts : globalEndCounts || {};
+      globalTodayData = data && data.globalTodayData ? data.globalTodayData : globalTodayData || { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
+      if (!mobileState.activeItem && mobileState.all.length) {
+        mobileState.activeItem = mobileState.all[0];
+      }
+      applyQueueFilters();
+      renderDetailView();
+      if (mobileState.activeTab === 'gantt') {
+        renderGanttTimeline();
+      }
+      if (mobileState.activeTab === 'admin') {
+        renderAdminTab();
+      }
+      if (mobileState.activeTab === 'digest') {
+        renderDigestTab();
+      }
+    }
+
     function loadQueueData(forceToast) {
       mobileState.queueLoading = true;
       mobileState.queueError = '';
@@ -1359,8 +1447,18 @@
       renderQueueContent();
 
       if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        var unavailableCache = loadQueueCache();
+        if (unavailableCache && unavailableCache.data) {
+          mobileState.queueLoading = false;
+          mobileState.queueError = '';
+          applyDashboardPayload(unavailableCache.data);
+          showStaleBanner(unavailableCache.savedAt);
+          showToast('Loaded cached queue (' + (unavailableCache.count || mobileState.all.length) + ' projects)', 'info');
+          return;
+        }
         mobileState.queueLoading = false;
         mobileState.queueError = 'google.script.run is unavailable in this context.';
+        hideStaleBanner();
         updateQueueBadge('ready', 0);
         renderQueueContent();
         return;
@@ -1368,25 +1466,11 @@
 
       google.script.run
         .withSuccessHandler(function(data) {
+          saveQueueCache(data);
           mobileState.queueLoading = false;
           mobileState.queueError = '';
-          mobileState.all = data && data.actionItems ? data.actionItems : [];
-          globalEndCounts = globalEndCounts || {};
-          globalTodayData = globalTodayData || { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
-          if (!mobileState.activeItem && mobileState.all.length) {
-            mobileState.activeItem = mobileState.all[0];
-          }
-          applyQueueFilters();
-          renderDetailView();
-          if (mobileState.activeTab === 'gantt') {
-            renderGanttTimeline();
-          }
-          if (mobileState.activeTab === 'admin') {
-            renderAdminTab();
-          }
-          if (mobileState.activeTab === 'digest') {
-            renderDigestTab();
-          }
+          hideStaleBanner();
+          applyDashboardPayload(data);
           showToast(mobileState.all.length + ' projects loaded', 'success');
           if (forceToast && dom.queuePullIndicator) {
             dom.queuePullIndicator.textContent = 'Queue refreshed';
@@ -1400,8 +1484,18 @@
           }
         })
         .withFailureHandler(function(error) {
+          var cached = loadQueueCache();
+          if (cached && cached.data) {
+            mobileState.queueLoading = false;
+            mobileState.queueError = '';
+            applyDashboardPayload(cached.data);
+            showStaleBanner(cached.savedAt);
+            showToast('Loaded cached queue (' + (cached.count || mobileState.all.length) + ' projects)', 'info');
+            return;
+          }
           mobileState.queueLoading = false;
           mobileState.queueError = error && error.message ? error.message : 'Unable to load dashboard data.';
+          hideStaleBanner();
           if (dom.queueSummaryCount) dom.queueSummaryCount.textContent = 'Queue unavailable';
           if (dom.queueSummarySub) dom.queueSummarySub.textContent = 'Retry when ready';
           updateQueueBadge('ready', 0);
@@ -2162,6 +2256,11 @@
         setActiveTab(mobileState.activeTab);
         checkOrientationForTab(mobileState.activeTab);
         hideLoading();
+        var initialCache = loadQueueCache();
+        if (initialCache && initialCache.data) {
+          applyDashboardPayload(initialCache.data);
+          showStaleBanner(initialCache.savedAt);
+        }
         renderDetailView();
         loadQueueData(false);
       } catch (err) {
