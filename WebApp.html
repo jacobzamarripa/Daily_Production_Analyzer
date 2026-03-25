@@ -182,7 +182,18 @@
 
     <div id="brief-widget" class="tool-widget">
         <div class="tool-header" id="brief-widget-header">Morning Briefing<button class="tool-close" onclick="toggleWidget('brief-widget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
-        <div id="brief-content" style="padding: 16px; overflow-y: auto; max-height: 400px;">
+        <div class="brief-toggle-container">
+            <select class="brief-select" onchange="setBriefTimeframe(this.value)">
+                <option value="lifetime" selected>Lifetime</option>
+                <option value="today">Today</option>
+                <option value="recent7">This Week</option>
+                <option value="month">This Month</option>
+                <option value="prevMonth">Prev Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="prevQuarter">Prev Quarter</option>
+            </select>
+        </div>
+        <div id="brief-content" style="padding: 0 16px 16px; overflow-y: auto; max-height: 400px;">
             <div class="digest-panel-empty">Loading production stats...</div>
         </div>
     </div>

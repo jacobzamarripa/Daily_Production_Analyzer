@@ -2,32 +2,127 @@
  * FILE: 02_Utilities.gs
  */
 
-function getVendorFiberStats() {
+function getVendorHybridStats() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const historySheet = ss.getSheetByName(HISTORY_SHEET);
-  if (!historySheet || historySheet.getLastRow() < 2) return {};
-
-  const data = historySheet.getDataRange().getValues();
-  const headers = data[0];
-  const contractorIdx = headers.indexOf("Contractor");
-  const fiberFootageIdx = headers.indexOf("Daily Fiber Footage");
-
-  if (contractorIdx === -1 || fiberFootageIdx === -1) return {};
-
   let stats = {};
-  for (let i = 1; i < data.length; i++) {
-    let vendor = String(data[i][contractorIdx] || '').trim();
-    if (!vendor || vendor === '-') continue;
-    
-    let footage = Number(data[i][fiberFootageIdx]) || 0;
-    if (footage === 0) continue;
 
-    if (!stats[vendor]) stats[vendor] = { footage: 0, miles: 0 };
-    stats[vendor].footage += footage;
+  // 1. LIFETIME PASS (Authoritative Reference Data)
+  const refSheet = ss.getSheetByName(REF_SHEET);
+  if (refSheet && refSheet.getLastRow() > 1) {
+    const data = refSheet.getDataRange().getValues();
+    const headers = data[0];
+    const contractorIdx = headers.findIndex(h => h && ["CX VENDOR", "CONTRACTOR", "VENDOR"].includes(h.trim().toUpperCase()));
+    const fiberTotIdx = headers.findIndex(h => h && ["FIBER FOOTAGE", "TOTAL FIBER FOOTAGE COMPLETE", "FIBER FOOTAGE COMPLETE"].includes(h.trim().toUpperCase()));
+    const fdhIdx = headers.findIndex(h => h && h.trim().toUpperCase().includes("FDH"));
+
+    if (fiberTotIdx === -1) logMsg('WARN', 'getVendorHybridStats', 'Fiber Footage column not found in Reference_Data. Headers: ' + JSON.stringify(headers.slice(0, 20)));
+    if (contractorIdx > -1) {
+      for (let i = 1; i < data.length; i++) {
+        let vendor = String(data[i][contractorIdx] || '').trim();
+        if (!vendor || vendor === '-' || vendor === 'Unknown') continue;
+        
+        if (!stats[vendor]) {
+          stats[vendor] = {
+            lifetime:    { footage: 0, miles: 0, fdhs: new Set() },
+            recent30:    { footage: 0, miles: 0 },
+            recent7:     { footage: 0, miles: 0 },
+            today:       { footage: 0, miles: 0 },
+            month:       { footage: 0, miles: 0 },
+            prevMonth:   { footage: 0, miles: 0 },
+            quarter:     { footage: 0, miles: 0 },
+            prevQuarter: { footage: 0, miles: 0 }
+          };
+        }
+
+        if (fiberTotIdx > -1) {
+          let rawFootage = data[i][fiberTotIdx];
+          if (rawFootage instanceof Date) {
+            logMsg('WARN', 'getVendorHybridStats', 'Fiber Footage cell is Date-typed at row ' + i + ' — skipping. Reformat column as Number in Sheets.');
+          } else {
+            stats[vendor].lifetime.footage += (Number(rawFootage) || 0);
+          }
+        }
+        if (fdhIdx > -1) {
+          let fdh = String(data[i][fdhIdx] || '').trim();
+          if (fdh) stats[vendor].lifetime.fdhs.add(fdh);
+        }
+      }
+    }
   }
 
+  // 2. RECENT PASS (Master Archive Dailies)
+  const historySheet = ss.getSheetByName(HISTORY_SHEET);
+  if (historySheet && historySheet.getLastRow() > 1) {
+    const data = historySheet.getDataRange().getValues();
+    const headers = data[0];
+    const contractorIdx = headers.indexOf("Contractor");
+    const fiberDailyIdx = headers.indexOf("Daily Fiber Footage");
+    const dateIdx = headers.indexOf("Date");
+
+    const now = new Date();
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const nowMonth  = now.getMonth();
+    const nowYear   = now.getFullYear();
+    const nowQ      = Math.floor(nowMonth / 3);
+    const prevMoNum = nowMonth === 0 ? 11 : nowMonth - 1;
+    const prevMoYr  = nowMonth === 0 ? nowYear - 1 : nowYear;
+    const prevQNum  = nowQ === 0 ? 3 : nowQ - 1;
+    const prevQYr   = nowQ === 0 ? nowYear - 1 : nowYear;
+
+    if (contractorIdx > -1 && fiberDailyIdx > -1 && dateIdx > -1) {
+      for (let i = 1; i < data.length; i++) {
+        let vendor = String(data[i][contractorIdx] || '').trim();
+        if (!vendor || vendor === '-') continue;
+        
+        let footage = Number(data[i][fiberDailyIdx]) || 0;
+        if (footage === 0) continue;
+
+        let entryDate = new Date(data[i][dateIdx]);
+        if (isNaN(entryDate.getTime())) continue;
+
+        let diffDays = (now - entryDate) / msPerDay;
+
+        if (!stats[vendor]) {
+          stats[vendor] = {
+            lifetime:    { footage: 0, miles: 0, fdhs: new Set() },
+            recent30:    { footage: 0, miles: 0 },
+            recent7:     { footage: 0, miles: 0 },
+            today:       { footage: 0, miles: 0 },
+            month:       { footage: 0, miles: 0 },
+            prevMonth:   { footage: 0, miles: 0 },
+            quarter:     { footage: 0, miles: 0 },
+            prevQuarter: { footage: 0, miles: 0 }
+          };
+        }
+
+        if (diffDays <= 30) stats[vendor].recent30.footage += footage;
+        if (diffDays <= 7)  stats[vendor].recent7.footage  += footage;
+        if (diffDays < 1)   stats[vendor].today.footage    += footage;
+
+        var eMonth = entryDate.getMonth(), eYear = entryDate.getFullYear();
+        var eQ = Math.floor(eMonth / 3);
+        if (eMonth === nowMonth  && eYear === nowYear)   stats[vendor].month.footage       += footage;
+        if (eMonth === prevMoNum && eYear === prevMoYr)  stats[vendor].prevMonth.footage   += footage;
+        if (eQ === nowQ          && eYear === nowYear)   stats[vendor].quarter.footage     += footage;
+        if (eQ === prevQNum      && eYear === prevQYr)   stats[vendor].prevQuarter.footage += footage;
+      }
+    }
+  }
+
+  // 3. FINAL CONVERSION & CLEANUP
   for (let vendor in stats) {
-    stats[vendor].miles = Number((stats[vendor].footage / FT_PER_MILE).toFixed(2));
+    let s = stats[vendor];
+    s.lifetime.miles = Number((s.lifetime.footage / FT_PER_MILE).toFixed(2));
+    s.lifetime.fdhCount = s.lifetime.fdhs.size;
+    delete s.lifetime.fdhs; // Remove Set before JSON stringify
+
+    s.recent30.miles    = Number((s.recent30.footage    / FT_PER_MILE).toFixed(2));
+    s.recent7.miles     = Number((s.recent7.footage     / FT_PER_MILE).toFixed(2));
+    s.today.miles       = Number((s.today.footage       / FT_PER_MILE).toFixed(2));
+    s.month.miles       = Number((s.month.footage       / FT_PER_MILE).toFixed(2));
+    s.prevMonth.miles   = Number((s.prevMonth.footage   / FT_PER_MILE).toFixed(2));
+    s.quarter.miles     = Number((s.quarter.footage     / FT_PER_MILE).toFixed(2));
+    s.prevQuarter.miles = Number((s.prevQuarter.footage / FT_PER_MILE).toFixed(2));
   }
 
   return stats;
@@ -160,7 +255,7 @@ function exportInboxReviewsCSV() {
 }
 
 function getDashboardData() {
-  const CACHE_KEY = 'dashboard_data_cache_v10';
+  const CACHE_KEY = 'dashboard_data_cache_v11';
   const cache = CacheService.getScriptCache();
   const cached = cache.get(CACHE_KEY);
   if (cached) { try { return JSON.parse(cached); } catch(e) {} }
@@ -171,7 +266,7 @@ function getDashboardData() {
   const refDict = getReferenceDictionary();
   const vendorGoals = getVendorDailyGoals();
   const cityCoordinates = getCityCoordinates();
-  const fiberStats = getVendorFiberStats();
+  const fiberStats = getVendorHybridStats();
 
   const data = mirrorSheet.getDataRange().getValues();
   const headers = data[0].map(String); // Force strings
@@ -288,7 +383,7 @@ function getDashboardData() {
              .filter(({ v }) => v !== '');
 
          let vendorName = vendorIdx > -1 ? String(data[i][vendorIdx] || "").trim() : "";
-         let stats = fiberStats[vendorName] || { footage: 0, miles: 0 };
+         let vStats = fiberStats[vendorName] || { lifetime: { footage: 0, miles: 0 }, recent30: { footage: 0, miles: 0 }, recent7: { footage: 0, miles: 0 }, today: { footage: 0, miles: 0 }, month: { footage: 0, miles: 0 }, prevMonth: { footage: 0, miles: 0 }, quarter: { footage: 0, miles: 0 }, prevQuarter: { footage: 0, miles: 0 } };
 
          actionItems.push({
              fdh: fdhIdx > -1 ? String(data[i][fdhIdx] || "") : "",
@@ -329,7 +424,7 @@ function getDashboardData() {
              hasBOMPo: refData ? refData.hasBOMPo : false,
              hasSOW: refData ? refData.hasSOW : false,
              qbRef: refData ? (refData.qbRef || {}) : {},
-             fiberTotalMiles: stats.miles,
+             fiberTotalMiles: vStats.lifetime.miles,
              vel: {                 ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },
                  ae: { tot: parseNum(data[i][aeTotIdx]), bom: parseNum(data[i][aeBomIdx]), daily: parseNum(data[i][aeDailyIdx]) },
                  fib: { tot: parseNum(data[i][fibTotIdx]), bom: parseNum(data[i][fibBomIdx]), daily: parseNum(data[i][fibDailyIdx]) },
@@ -756,7 +851,7 @@ function webAppTrigger3a(targetDateStr) {
 
 // 🧠 WEB APP BRIDGE: Logs the Admin Check permanently and cleans the Daily Review sheet instantly
 function markAdminCheckComplete(fdhId) {
-  CacheService.getScriptCache().remove('dashboard_data_cache');
+  CacheService.getScriptCache().remove('dashboard_data_cache_v11');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if(!adminSheet) return false;
@@ -802,7 +897,7 @@ function markAdminCheckComplete(fdhId) {
 }
 
 function verifySpecialCrossings(fdhId) {
-  CacheService.getScriptCache().remove('dashboard_data_cache');
+  CacheService.getScriptCache().remove('dashboard_data_cache_v11');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if (!adminSheet) return false;
@@ -849,7 +944,7 @@ function verifySpecialCrossings(fdhId) {
 
 // 🧠 NEW: Status Sync Log Bridge
 function markStatusSyncComplete(fdhId) {
-  CacheService.getScriptCache().remove('dashboard_data_cache');
+  CacheService.getScriptCache().remove('dashboard_data_cache_v11');
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if(!adminSheet) return false;

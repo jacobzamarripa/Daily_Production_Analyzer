@@ -175,18 +175,31 @@
       window.addEventListener('resize', syncWidgetsToViewport);
   }
 
+  var currentBriefTimeframe = 'lifetime';
+
+  function setBriefTimeframe(tf) {
+      currentBriefTimeframe = tf;
+      renderMorningBrief();
+  }
+
   function renderMorningBrief() {
       var content = document.getElementById('brief-content');
       if (!content) return;
-      
+
+      // Sync dropdown to active timeframe on every render (handles reopen state)
+      var sel = document.querySelector('.brief-select');
+      if (sel) sel.value = currentBriefTimeframe;
+
       var fiberStats = (window._lastDashboardPayload && window._lastDashboardPayload.fiberStats) || {};
       if (Object.keys(fiberStats).length === 0) {
           content.innerHTML = '<div class="digest-panel-empty">No historical fiber production data found.</div>';
           return;
       }
-      
+
       var sortedVendors = Object.keys(fiberStats).sort(function(a, b) {
-          return fiberStats[b].miles - fiberStats[a].miles;
+          var valA = fiberStats[a][currentBriefTimeframe] ? fiberStats[a][currentBriefTimeframe].miles : 0;
+          var valB = fiberStats[b][currentBriefTimeframe] ? fiberStats[b][currentBriefTimeframe].miles : 0;
+          return valB - valA;
       });
 
       // Simple esc helper if not available
@@ -195,17 +208,45 @@
           return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
       };
 
-      var html = '<div style="display:flex; flex-direction:column; gap:12px;">';
-      html += '<div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); padding-bottom:6px;">Fiber Miles Leaderboard</div>';
-      
+      // Days-in-period map for avg calculation
+      var now = new Date();
+      var daysInMonth = function(yr, mo) { return new Date(yr, mo + 1, 0).getDate(); };
+      var periodDays = {
+          lifetime:    null,
+          today:       1,
+          recent7:     7,
+          month:       daysInMonth(now.getFullYear(), now.getMonth()),
+          prevMonth:   daysInMonth(now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear(), now.getMonth() === 0 ? 11 : now.getMonth() - 1),
+          quarter:     91,
+          prevQuarter: 91
+      };
+
+      var html = '<div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">';
+
       sortedVendors.forEach(function(v) {
-          var stats = fiberStats[v];
+          var s = fiberStats[v][currentBriefTimeframe];
+          if (!s || s.miles === 0) return;
+
+          var subMetric = "";
+          if (currentBriefTimeframe === 'lifetime') {
+              subMetric = '<span class="brief-badge">' + (fiberStats[v].lifetime.fdhCount || 0) + ' FDHs</span>';
+          } else if (currentBriefTimeframe === 'today') {
+              subMetric = '<span style="color:var(--text-muted); font-size:9px; font-weight:600;">' + s.footage.toLocaleString() + ' ft today</span>';
+          } else {
+              var days = periodDays[currentBriefTimeframe] || 30;
+              var dailyAvg = (s.footage / days).toFixed(0);
+              subMetric = '<span style="color:var(--text-muted); font-size:9px; font-weight:600;">Avg: ' + Number(dailyAvg).toLocaleString() + ' ft/day</span>';
+          }
+
           html += `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0;">
-                  <span style="font-weight:800; font-size:12px; color:var(--text-main);">${esc(v)}</span>
+              <div class="brief-stat-row">
+                  <div style="display:flex; flex-direction:column; gap:2px;">
+                      <span style="font-weight:800; font-size:12px; color:var(--text-main);">${esc(v)}</span>
+                      ${subMetric}
+                  </div>
                   <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                      <span style="color:#ef4444; font-weight:900; font-size:13px;">${stats.miles.toLocaleString()} mi</span>
-                      <span style="color:var(--text-muted); font-size:9px; font-weight:600;">${stats.footage.toLocaleString()} ft</span>
+                      <span style="color:#ef4444; font-weight:900; font-size:13px;">${s.miles.toLocaleString()} mi</span>
+                      <span style="color:var(--text-muted); font-size:9px; font-weight:600;">${s.footage.toLocaleString()} ft</span>
                   </div>
               </div>
           `;
@@ -213,6 +254,8 @@
       html += '</div>';
       content.innerHTML = html;
   }
+
+  window.setBriefTimeframe = setBriefTimeframe;
 
   // MODULE CANDIDATE: _module_tools_widgets.html
   // STATE DEPS: calcWidgetDragState, currentCalDate, calcState
