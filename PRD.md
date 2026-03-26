@@ -25,10 +25,11 @@
 - [ ] Phase 1: Breakpoint tokens + routing cleanup (`_styles_base.html`, `02_Utilities.js`)
 - [ ] Phase 2: Phone layout stacking (`_styles_layout.html`)
 - [ ] Phase 3: Bottom tab navigation (`WebApp.html`, `_styles_layout.html`, `_module_router.html`)
-- [ ] Phase 4: Touch targets + compact header (`_styles_components.html`, `_styles_layout.html`)
+- [x] Phase 4: Touch targets + compact header (`_styles_components.html`, `_styles_layout.html`)
 - [ ] Phase 5: Gantt landscape / portrait placeholder (`_styles_gantt.html`, `_module_gantt.html`)
 - [ ] Phase 6: Grid hide + detail/admin scroll audit
 - [ ] Phase 7: Archive mobile files + routing cleanup (`02_Utilities.js`, CLAUDE.md)
+- [x] Phase 8: Executive Glass & Spring Transition Refit (Mobile) (`_styles_mobile.html`, `JS_Modules_Mobile.html`)
 
 ## Workstream 11 — Visual Redesign Pass (Complete)
 

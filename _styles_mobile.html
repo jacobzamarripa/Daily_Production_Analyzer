@@ -21,11 +21,23 @@
     --surface-strong: rgba(255, 255, 255, 0.92);
     --surface-overlay: rgba(241, 245, 249, 0.96);
 
+    /* --- CENTRIC-OPS EXECUTIVE GLASS --- */
+    --bg-glass: rgba(255, 255, 255, 0.72);
+    --border-glass: rgba(226, 232, 240, 0.8);
+    --glass-blur: 12px;
+    --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.05);
+    --shadow-hover: 0 15px 35px rgba(15, 23, 42, 0.1);
+
     --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.08);
     --shadow-dock: 0 -8px 24px rgba(15, 23, 42, 0.08);
     --shadow-hub: 0 16px 40px rgba(15, 23, 42, 0.12);
     --shadow-header: 0 8px 24px rgba(15, 23, 42, 0.06);
     --shadow-sheet: 0 24px 60px rgba(15, 23, 42, 0.22);
+
+    /* --- SPRING TRANSITIONS --- */
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --spring-duration: 0.5s;
+    --spring: var(--spring-duration) var(--spring-easing);
 
     --starGold: #fbbf24;
     --accent: #3b82f6;
@@ -145,6 +157,8 @@
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0f172a;
+      --bg-glass: rgba(30, 41, 59, 0.48);
+      --border-glass: rgba(241, 245, 249, 0.12);
       --card-bg: #1e293b;
       --card-bg-2: #1e293b;
       --card-bg-3: #0f172a;
@@ -175,6 +189,8 @@
 
   body.dark-mode {
     --bg: #0f172a;
+    --bg-glass: rgba(24, 24, 27, 0.48);
+    --border-glass: rgba(63, 63, 70, 0.4);
     --card-bg: #18181b;
     --card-bg-2: #27272a;
     --card-bg-3: #09090b;
@@ -513,28 +529,29 @@
     padding: 12px 0 calc(var(--tabbar-height) + var(--safe-bottom) + 24px);
     opacity: 0;
     pointer-events: none;
-    transform: translateY(10px);
-    transition: opacity var(--transition-std) ease, transform var(--transition-std) var(--ease-out-expo);
+    transform: translateY(20px) scale(0.96);
+    transition: opacity 0.3s ease, transform var(--spring);
+    will-change: transform, opacity;
   }
 
   .tab-panel.is-active {
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 
-  .tab-panel.is-active.slide-from-right {
-    animation: slideInFromRight var(--transition-std) var(--ease-out-expo) both;
+  .tab-panel.slide-from-right {
+    animation: slideInFromRight var(--spring) both;
   }
 
   @keyframes slideInFromRight {
     from {
       opacity: 0;
-      transform: translateX(40px);
+      transform: translateX(60px) scale(0.95);
     }
     to {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateX(0) scale(1);
     }
   }
 
@@ -1814,8 +1831,10 @@
   .queue-group,
   .queue-card {
     border-radius: 24px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
+    background: var(--bg-glass);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-glass);
     box-shadow: var(--shadow-card);
   }
 

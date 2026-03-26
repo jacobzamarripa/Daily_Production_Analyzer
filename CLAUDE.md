@@ -8,7 +8,7 @@
 
 ## Architecture Rules
 1. **No Node.js:** Do not suggest `npm install`, `require()`, or standard Node.js modules. Use `UrlFetchApp` for HTTP requests, `SpreadsheetApp` for database operations, and `CacheService` for caching.
-2. **Frontend Modifications:** `WebApp.html` and `MobileApp.html` are massive files. When making CSS/JS changes, search for existing `:root` variables and reuse them. Do not duplicate CSS classes.
+2. **Frontend Modifications:** `WebApp.html` is the primary surface. Logic changes go in `JS_Modules.html`. When making CSS/JS changes, search for existing `:root` variables and reuse them. Do not duplicate CSS classes. `MobileApp.html` is frozen (WS12 deprecation target).
 3. **Date Handling:** QuickBase sends dates with midnight timestamps (e.g., `00:00:00 GMT-0600`). Always normalize these on the frontend using standard UTC-locked formatting utilities to avoid timezone shifting bugs.
 4. **HtmlService Routing:** ALL HtmlService routes in `doGet()` must use `createTemplateFromFile('filename').evaluate()` — never `createHtmlOutputFromFile()`. The latter blocks script execution in some GAS iframe contexts. This applies to every current and future app surface.
 5. **Mobile CSS Includes:** `MobileApp.html` must never contain a large inline `<style>` block. All CSS must live in included partials (`_styles_mobile.html` etc.) and be pulled in via `<?!= include('_styles_mobile') ?>`. GAS HtmlService sanitizes large inline style blocks and can silently break script execution. This applies to any future mobile partials as well.
@@ -21,7 +21,7 @@
    * Floating Pills: `3000`
    * Deck/Cards: `5` - `100`
 7. **WebApp Template Serving:** `WebApp.html` must be served via `createTemplateFromFile('WebApp').evaluate()` in `02_Utilities.js`, never `createHtmlOutputFromFile()`. The latter will silently break all `<?!= include() ?>` directives.
-8. **Auto Device Routing:** Single URL auto-routing uses the document.write() client-side router pattern — NOT window.location.replace() or redirects. Redirecting a GAS HtmlService page creates nested iframe inception which breaks viewport on mobile. The correct pattern: serve a thin loader page that calls getSurfaceHTML(isMobile) via google.script.run, then overwrites the DOM with document.write(). This keeps the user in a single iframe wrapper. See doGet() in 02_Utilities.js for the reference implementation.
+8. **Single Responsive Surface (WS12):** The app is moving to a single `WebApp.html` surface with CSS breakpoints — no separate mobile shell. `doGet()` in `02_Utilities.js` serves `WebApp.html` for all devices. `MobileApp.html`, `JS_Modules_Mobile.html`, and `_styles_mobile.html` are WS12 deprecation targets — do not add new features to them. When WS12 is complete these files will be archived.
 9. **Mobile Viewport in GAS:** GAS HtmlService ignores viewport meta tags declared in HTML files. Always set viewport via `addMetaTag()` in the `doGet()` serve function. Use `width=device-width, initial-scale=1, viewport-fit=cover` — do not include `maximum-scale` or `user-scalable` in the `addMetaTag()` value as these cause scaling issues in GAS iframe contexts.
 10. **Home Screen Icon Limitation in GAS:** Custom home screen icons (apple-touch-icon) are not achievable in GAS HtmlService — iOS Safari only reads icon tags from the top-level document which is controlled by Google. The workaround requires a thin wrapper page hosted externally (GitHub Pages, Netlify). For internal tools, the auto-generated letter icon is acceptable. The app-capable and status-bar meta tags DO work via addMetaTag() and should always be included for home screen installs.
 
@@ -114,8 +114,10 @@ When executing any workstream in this project:
 
 | File | Role | Agent Notes | Mobile Notes |
 |---|---|---|---|
-| `WebApp.html` | Desktop HtmlService shell with extracted style/state/module partials, desktop nav FAB markup, and the remaining bootstrap anchors/shared runtime glue | **Massive file.** `initDashboard()` and `applyFilters()` remain the bootstrap anchors in the shell. Shared quick-peek paths, shared KPI HUD helpers, nav FAB toggle logic, and a few cross-module globals still live here. When extracting partials, use `<?!= include('filename') ?>`. | Desktop-only layout assumptions — flag any px widths before mobile work |
-| `MobileApp.html` | Mobile HtmlService app surface — phone and tablet. **All 7 phases + Design Polish Pass complete (WS7).** CSS lives in `_styles_mobile.html` — never inline. Requires `?view=mobile` parameter. Bottom tab bar: Queue, Detail, Gantt, Admin, Digest. | Routed from `02_Utilities.js` doGet(). Treat as separate surface from `WebApp.html` — changes that work on desktop may break mobile. Read `_styles_mobile.html` before any CSS work here. WS8 items: auto device detection, PWA install, offline cache, Gantt quick peek, Crossings staged commit. | Primary mobile surface — touch targets, font sizes, and bottom tab bar behavior live here |
+| `WebApp.html` | Primary HtmlService shell — single responsive surface target for WS12. Desktop nav FAB markup, bootstrap anchors, and shared runtime glue. | **Massive file.** `initDashboard()` and `applyFilters()` remain the bootstrap anchors. Logic lives in `JS_Modules.html` — edit there, not in the shell. When extracting partials, use `<?!= include('filename') ?>`. | Add mobile breakpoints here via `_styles_components.html` / `_styles_layout.html` — do not inline mobile CSS in this shell |
+| `JS_Modules.html` | ~5,800-line desktop logic bundle (extracted by Gemini 03/25) | All desktop interactive handlers, Gantt runtime, deck workspace, digest analytics. Included at bottom of `WebApp.html`. **Edit logic here — not in the shell.** | N/A |
+| `MobileApp.html` | ⚠️ **WS12 DEPRECATION TARGET.** Separate mobile surface — still functional but frozen. Bottom tab bar: Queue, Detail, Gantt, Admin, Digest. | Do not add new features here. Existing logic lives in `JS_Modules_Mobile.html`. Will be archived once responsive `WebApp.html` is validated. | Still the active mobile surface until WS12 completes |
+| `JS_Modules_Mobile.html` | ⚠️ **WS12 DEPRECATION TARGET.** ~2,900-line mobile logic bundle (extracted by Gemini 03/25) | Queue interactions, detail card handlers, bottom tab bar routing. Included at bottom of `MobileApp.html`. Do not add new features — WS12 will merge this into shared modules. | N/A |
 | `Sidebar.html` | Sidebar dashboard view, anomaly cards, lightweight filtering | Isolated — safe to edit independently | N/A |
 | `DatePicker.html` | Modal date-picker partial used by GAS dialogs | Isolated modal — z-index range `999990–999999` | N/A |
 
@@ -130,7 +132,7 @@ When executing any workstream in this project:
 | `_styles_layout.html` | Structural page framing, panel positioning, and responsive layout scaffolding | Read with `WebApp.html` markup before changing workspace or pane structure. | Contains desktop-first pane widths and touch-device layout assumptions |
 | `_styles_components.html` | Non-Gantt component visuals, overlays, controls, and utility widget styling | Read after `_styles_base.html`; prefer existing component selectors over adding new ones. | Contains hover states, dense controls, and fixed-size widgets that are desktop-biased |
 | `_styles_gantt.html` | Gantt timeline, sticky headers, quick peek, HUD, and Gantt-owned styles | Read with Gantt markup/runtime before touching timeline visuals or layering. | Contains fixed row-header widths, hover HUD patterns, and fullscreen layout assumptions |
-| `_styles_mobile.html` | CSS partial for `MobileApp.html` — all mobile styles live here. Included via `<?!= include('_styles_mobile') ?>` in `MobileApp.html`. Never put large CSS blocks inline in `MobileApp.html`. Token system complete (WS7 Polish Pass): all hardcoded colors replaced with tokens; key tokens: `--text-inverse`, `--overlay-strong`, `--overlay-chip-count`, `--overlay-chip-active`, `--overlay-gantt-spike`, `--flag-critical`, `--flag-review`, `--pill-*`, `--qb-*`. | GAS sanitizes large inline style blocks and can silently break script execution — CSS must stay in this partial. Read before any mobile CSS work. Reuse existing `:root` tokens — do not add hardcoded colors. | This IS the mobile CSS surface — all touch targets, tab bar, orientation hints, and mobile layout tokens live here |
+| `_styles_mobile.html` | ⚠️ **WS12 DEPRECATION TARGET.** CSS partial for `MobileApp.html`. Token system complete (WS7). Key tokens: `--text-inverse`, `--overlay-strong`, `--pill-*`, `--qb-*`, `--flag-*`. | Do not add new styles here. WS12 will convert this to `@media (max-width: 768px)` blocks in `_styles_components.html` / `_styles_layout.html`. Remains active until `MobileApp.html` is archived. | Active mobile CSS surface until WS12 completes |
 | `_state_queue.html` | Authoritative queue, selection, filter, grouping, and queue view-mode state owner | Load before shared utilities, modules, and the main runtime. Keeps queue globals on `window` via top-level declarations. | Any future mobile queue/filter surface should read from this shared state owner |
 | `_state_router.html` | Authoritative workspace routing, detail face, deck mode, deck index, and dock placement state owner | Load after `_state_queue.html` and before modules. Bottom-dock inversion behavior depends on this state staying global. | Dock-placement behavior will matter for any mobile surface that mirrors Gantt/dock patterns |
 | `_state_session.html` | Authoritative PM session memory, staged deck, ref-data date, and presentation mode state owner | Load after `_state_router.html`. Used by deck staging, export flows, PM memory, and ref-data indicators. | Any mobile surface showing ref-data age or staged deck status should read from this state owner |
@@ -147,6 +149,17 @@ When executing any workstream in this project:
 | `_module_special_crossings.html` | Special crossings admin section, verification action, staged commit workflow, and crossings review helpers | Keep Gemini/registry contracts unchanged. Still depends on shared queue/admin review state. | Desktop review flow only for now |
 | `_module_gantt.html` | Partial Gantt extraction: core render/session/focus helpers, row-header-coupled `renderGantt()`, and hover HUD helpers | Conservative partial only. Quick-peek write flows, shared KPI HUD helpers, and shared workspace dock orchestration still remain in `WebApp.html`. | Mobile timeline should reuse data ideas only; desktop sticky headers/fullscreen assumptions remain here |
 | `_module_deck.html` | Deck/slide workspace rendering, PM memory helpers, staging/export flows, and presentation/theater runtime | Reads `stagedDeckItems`, `pmSessionMemory`, and `isPresentationMode` from `_state_session.html`. `moveItemToReviewed()` still writes back into queue/admin state by design. | Presentation keyboard/runtime behavior is desktop-specific; mobile should not reuse it directly |
+
+### WS12 Deprecation Targets
+> These files are **frozen** — do not add new features. They will be archived once the responsive retrofit in WS12 is complete.
+
+| File | Lines | WS12 Action |
+|---|---|---|
+| `MobileApp.html` | ~3,375 | Archive after responsive `WebApp.html` is validated |
+| `JS_Modules_Mobile.html` | ~2,900 | Merge logic into shared `_module_*.html` partials |
+| `_styles_mobile.html` | ~3,644 | Convert to `@media (max-width: 768px)` blocks in `_styles_components.html` / `_styles_layout.html` |
+
+---
 
 ### WebApp Include Order
 - `_registry.html`
@@ -170,6 +183,7 @@ When executing any workstream in this project:
 - `_module_special_crossings.html`
 - `_module_gantt.html`
 - `_module_deck.html`
+- `JS_Modules.html`
 - main inline script
 
 ---

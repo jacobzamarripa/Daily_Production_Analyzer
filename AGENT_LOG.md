@@ -1,100 +1,121 @@
-# AGENT_LOG.md — Daily Production Analyzer
+# Agent Log - Daily Production Analyzer
 
-> Format: Obsidian Callouts `> [!info] YYYY-MM-DD: [Action]`
-> One entry per workstream close or major milestone.
+## [2026-03-25] — WS12 Phase 4: Touch Targets + Compact Header (Architect: Claude)
 
-## [2026-03-25] — Pre-Refactor Backup (Final)
+### Accomplishments
+- **`_styles_layout.html`** — inside existing `@media (max-width: 768px)` block:
+  - Upgraded `#btn-hamburger`, `#btn-theme`, `#btn-help` from 40px → 44px (height + min-height + min-width)
+  - Added compact 2-col grid override: `.top-nav { grid-template-columns: minmax(0, 1fr) auto }` (center column hidden)
+  - Added global `-webkit-tap-highlight-color: transparent` reset for all interactive elements
+  - Added `touch-action: manipulation` to prevent double-tap zoom on buttons, tabs, and menu items
+  - Added `.mobile-menu-panel button` touch target rule: 44px min-height, flex row, 16px padding
+- **`_styles_components.html`** — appended new `@media (max-width: 768px)` block:
+  - `.smart-dock .btn` → 44px
+  - `.slide-action-deck .btn` + `.dock-arrow` → 44px × 44px
+  - `.filter-strip .btn` → 44px
+  - `.filter-strip input[type="text"]` + `select` → 44px
+- **PRD.md**: Phase 4 checkbox marked `[x]`
 
-> [!info] 2026-03-25: Pre-Refactor Git Backup Updated — Final State
-> - Final feature added post-initial snapshot; tag moved to new commit `fd147a7`
-> - Files included in final snapshot: `02_Utilities.js`, `AGENT_LOG.md`, `WebApp.html`, `_module_tools_widgets.html`, `_styles_components.html`
-> - Tag `pre-refactor-backup` now points to `fd147a7`
-> - Branch `backup/pre-refactor` updated to match
-> - **Rollback command:** `git reset --hard pre-refactor-backup`
-> - Logged to Obsidian: `01_Projects/Omni PMO App/AGENT_LOG.md`
-
-### Lesson Learned
-- Tag + branch combo gives both an immutable rollback point and a browsable backup branch — use this pattern before any major refactor.
-- If a last-minute change is needed after tagging, force-move the tag (`git tag -f`) rather than creating a second tag — keeps the rollback reference clean.
-
----
-
-## [2026-03-25] — Morning Brief Widget
-
-### Accomplishment
-- Implemented a new "Morning Brief" utility widget for the Web App.
-- Added a new icon to the top navigation (next to calc/calendar) to trigger the brief.
-- Refactored widget drag logic in `_module_tools_widgets.html` to support multiple draggable tool widgets.
-- The widget displays the Fiber Miles Leaderboard, providing quick access to cumulative production data.
-
-### Lesson Learned
-- Abstracting widget drag logic into a generic handler simplifies the addition of new floating tools.
-- Utility widgets are a more accessible way to surface high-level KPIs than full-workspace views for quick checks.
+### Next
+- WS12 Phase 5: Gantt landscape / portrait placeholder (`_styles_gantt.html`, `_module_gantt.html`)
 
 ---
 
-## [2026-03-25] — Vendor Fiber Mileage Tracker
+## [2026-03-25] — WS12 Phase 8: Mobile Glass & Spring Transitions (Oracle: Gemini)
 
-### Accomplishment
-- Implemented a "Fiber Miles Leaderboard" in the Web App's Digest workspace.
-- Added backend logic to aggregate and convert fiber footage from `2-Master_Archive` into miles grouped by vendor.
-- Successfully pushed the updated project to Google Apps Script using `clasp`.
+### Accomplishments
+- **Executive Glass Implementation** (`_styles_mobile.html`): Defined `--bg-glass` (72% white), `--border-glass`, and `--glass-blur` (12px) tokens. Applied glass effect to `.queue-card`, `.queue-group`, and `.queue-state-card` with `backdrop-filter`.
+- **Spring Transitions Standardized** (`_styles_mobile.html` + `JS_Modules_Mobile.html`):
+  - Defined `--spring` transition using `cubic-bezier(0.175, 0.885, 0.32, 1.275)`.
+  - Updated `.tab-panel` to use spring-loaded transforms (`translateY(20px) scale(0.96)`) on entry.
+  - Standardized `setActiveTab` in `JS_Modules_Mobile.html` to apply `.slide-from-right` to all active tabs.
+- **Dark Mode Glass Fidelity**: Updated `prefers-color-scheme: dark` and `body.dark-mode` to use semi-transparent glass backgrounds (`rgba(30, 41, 59, 0.48)`) instead of solid cards.
+- **Redundant Transition Cleanup**: Simplified `openQueueDetail` in `JS_Modules_Mobile.html` by removing manual animation listeners, delegating panel entry to the centralized `setActiveTab` logic.
 
-### Lesson Learned
-- Aggregating historical data from `HISTORY_SHEET` is more efficient for cumulative KPIs than relying on the `MIRROR_SHEET` alone.
-- Converting footage (ft) to miles (mi) early in the backend reduces processing overhead in the frontend.
+### Next Step
+**WS12 Phase 4** — Responsive breakpoint migration (Claude).
 
 ---
 
-> [!info] 2026-03-25: WS12 Phase 3 — Panel Full-Screen (IN PROGRESS, unresolved)
-> **What was done:**
-> - Diagnosed Block 1 (Phase 2) vs Block 2 (WS12) conflict on `.inbox-sidebar`: `max-height: 45vh`, `min-height: 220px`, `margin: 8px`, `border-radius: 16px` were not cleared in Block 2
-> - Added `max-height: unset`, `min-height: unset`, `margin: 0`, `border-radius: 0` to `.inbox-sidebar` Block 2 rule in `_styles_layout.html`
-> - Push tested — panels still not filling full screen; root cause not yet resolved
-> **Suspects for next session:**
-> - `#main-workspace` height: `calc(100svh - 84px - 80px)` — `svh` unit may not be supported in GAS iframe context; try fallback to `100vh` or explicit `height: 100%` + flex on body
-> - `position: absolute; inset: 0` may not be resolving because `#main-workspace` context is `display: block` without correct height propagation from body
-> - JS IIFE timing — runs at end of body, but styles may not have fully applied when `display: flex` is set
-> - Additional CSS conflict not yet located — need fresh audit of all desktop `.inbox-sidebar` base rules
-> **Files changed:** `_styles_layout.html`
-> **Phase 3 status:** 🔄 STILL IN PROGRESS
+## [2026-03-25] — WS12 Mobile Full-Screen & Polymorphic Dock (Architect: Claude)
 
-> [!info] 2026-03-24: WS11 Complete — Visual Redesign Pass (Mobile)
-> **Phases completed (all smoke tested):**
-> - Phase 1: Transition token standardization — `--transition-fast`/`--transition-std` in `_styles_base.html`; all durations normalized in `_styles_mobile.html`
-> - Phase 2: Drill-down slide animation — `slideInFromRight` keyframe on Queue → Detail via `openQueueDetail()` + `animationend` cleanup
-> - Phase 3: Flag badge class reconciliation — `buildFlagBadges()` wired on queue cards (`_render_queue_card.html`) and detail view; `flag-badge--admin` severity added; `flag-badge` CSS added to `_styles_mobile.html`
-> - Phase 4: Typography upgrade — Fira Code loaded via `<link>` in MobileApp.html; `--font-mono` token applied to `.queue-card__fdh`, `.detail-title`, `.detail-kpi__value`, `.detail-value`
-> - Phase 5: Dark mode 3-level card depth — `--card-bg: #18181b`, `--card-bg-2: #27272a`, `--card-bg-3: #09090b`, `--border: #3f3f46` in `body.dark-mode` of `_styles_mobile.html`
-> - Phase 6: WebApp.html cutover — ⛔ ABORTED mid-session. Desktop broke. Reverted. Desktop queue renderer (email-card/DOM nodes) is architecturally separate — requires dedicated desktop WS.
-> - Phase 7: Digest chart depth — gradient fill bars + inset track shadow in `_styles_mobile.html`
->
-> **Key lessons:**
-> - During a mobile-scoped visual pass, NEVER touch WebApp.html, _module_queue_state.html, or _styles_components.html. Desktop queue renderer is separate architecture.
-> - "Deferred cutover" notes in WORKSTREAM_0_NOTES.md are not authorization to touch desktop files mid-workstream.
->
-> **Deferred to WS12:** Haptic polish (`navigator.vibrate(10)` on commit/confirm), WebApp.html card builder cutover (dedicated desktop WS), presentation/theater mode on mobile
->
-> **Commit:** refactor(ws11) — 6 of 7 phases, March 24, 2026
+### Accomplishments
+- **Breakpoint 480→768px** (`_styles_layout.html`): All three `@media (max-width: 480px)` blocks widened to 768px. Covers all phone sizes including iPhone 14 Plus (430px) and eliminates the GAS iframe ±1px variance that caused panels to use desktop layout.
+- **Header compressed to single 52px row** (`_styles_layout.html`): Removed 2-row (84px) layout. KPI pills hidden from header (clutter eliminated). `#main-workspace` height updated: `calc(100svh - 52px - 80px)`. `#gantt-panel` top updated to `52px`. Reclaimed ~32px of vertical content space.
+- **`mSwitchView()` guard fixed** (`WebApp.html`): Replaced `window.innerWidth > 480` with `window.matchMedia('(max-width: 768px)').matches` — consistent with CSS breakpoint, not subject to iframe viewport reporting variance. Init IIFE updated to match.
+- **Polymorphic dock implemented** (`WebApp.html` + `_styles_layout.html`):
+  - Dock HTML wrapped in `.m-dock-nav` (standard 5-tab) + `.m-dock-ctx` context variants
+  - `body[data-mview="detail"]` → hides nav, shows `.m-dock-detail`: Back / Skip / Commit
+  - `body[data-mview="gantt"]` → hides nav, shows `.m-dock-gantt`: Back / Month / Week
+  - Admin/Queue/Digest → standard nav tabs remain
+  - `mCtxSkip()` → delegates to `skipReview()` + returns to Queue
+  - `mCtxCommit()` → delegates to `commitReview()` + returns to Queue
+  - `mGanttZoom()` → toggles zoom state + calls `renderGanttTimeline()`
 
-> [!info] 2026-03-24: WS10 Complete — Mobile Feature Parity + Shared Rendering Architecture
-> **Phases completed (all smoke tested):**
-> - Phase 1: Gantt quick peek (slide-up sheet, drag dismiss)
-> - Phase 2: Gemini on mobile (draft, AI peek, save note)
-> - Phase 3: Shared utility partials (DRY pass, _utils_shared.html wired on mobile)
-> - Phase 4: Queue view modes (List + Grid)
-> - Phase 5: KPI HUD strip
-> - Phase 6: Critical Hub
-> - Phase 7: Changelog / Review Hub
-> - Phase 8: Deck workspace
-> - Phase 9: State contract alignment — mobileState.all/filtered/activeItem retired; allActionItems/filteredItems/currentActiveItem now shared via _state_queue/_state_session includes
-> - Phase 10: Shared rendering primitives — _render_status_pill.html, _render_flag_badge.html, _render_queue_card.html extracted
->
-> **Key lessons:**
-> - Mobile flag rendering uses queue-flag/detail-flag classes — buildFlagBadges() call-site swap deferred to WS11 class reconciliation
-> - _render_queue_card.html wired to MobileApp.html only; WebApp.html cutover deferred to WS11
-> - askGeminiForDraft / askGeminiForQuickPeek are desktop-only wrappers — correct backend calls are generateAndSaveFDHNarrative() and saveDeckAnswers()
->
-> **Deferred to WS11:** flag badge class reconciliation, WebApp.html card builder cutover, transition standardization, drill-down slide animation, typography (Fira Code), 3-level card depth
->
-> **Commit:** refactor(ws10) — all 10 phases, March 24, 2026
+### Next smoke tests
+1. All views (Queue/Detail/Admin/Digest) show full-screen — no sidebar bleed
+2. Header is compact single row (~52px)
+3. Tapping Detail tab shows Back/Skip/Commit dock
+4. Tapping Gantt shows Back/Month/Week dock; zoom toggles work
+5. Commit/Skip return user to Queue view
+
+---
+
+## [2026-03-25] — Phase 3: Mobile Detail Polish (Architect: Claude)
+
+### Accomplishments
+- **CSS_Mobile.html created**: Phase 3 staging sandbox. Defines `.detail-layout` (sticky header + scrollable body + sticky action bar), `.detail-gemini-inline`, and `.detail-action-bar`. WS12 migration target → `_styles_components.html` `@media (max-width: 768px)` blocks.
+- **Detail view redesigned for one-handed use**: `renderDetailView()` in `JS_Modules_Mobile.html` restructured into three zones:
+  - Zone 1: `.detail-sticky-header` — compact FDH ID, countdown, status pills; always visible
+  - Zone 2: `.detail-scroll-body` — all sections scroll freely between header and bar
+  - Zone 3: `.detail-action-bar` — Prev ◀ / Skip / Commit / Next ▶ pinned at thumb-reach bottom; padded above tab bar using `--tabbar-height` + `--safe-bottom`
+- **Gemini Draft backend bridge wired**: `detail-gemini-button` placeholder toast removed. `btn-gemini-draft` + `detail-draft-output` + `detail-save-note-row` are now inline inside PM Note section. `triggerGeminiDraft()` → `generateAndSaveFDHNarrative()` bridge is live on both tap paths.
+- **MutationObserver IIFE removed**: `mountDetailGeminiSection()` IIFE deleted — no longer needed since Gemini section renders inline on every `renderDetailView()` call.
+- **MobileApp.html cleaned up**: Static `detail-gemini-section` markup removed from shell. `<?!= include('CSS_Mobile') ?>` added after `_styles_mobile` include.
+
+### Deferred
+- Desktop `askGeminiForDraft()` in `JS_Modules.html` is already live — no changes needed.
+- `triggerGeminiDraft()` stale-ref guard (navigation during async load) deferred to WS12 state cleanup.
+
+### Next Step
+**WS12 Phase 4** — Responsive breakpoint migration: port `CSS_Mobile.html` detail polish into `_styles_components.html` `@media` blocks and validate single-surface `WebApp.html` detail view.
+
+---
+
+## [2026-03-25] — Mobile Maintenance & WS12 Prep (Architect: Claude)
+
+### Accomplishments
+- **Dead code removed**: Deleted `CSS_Mobile.html` and `CSS_Styles_Mobile.html` (empty stubs, never included anywhere).
+- **Unused routing functions purged**: Removed `getSurfaceHTML()`, `serveMobile()`, and `serveDesktop()` from `02_Utilities.js` — none were called by `doGet()` or any other function.
+- **CLAUDE.md File Map updated**:
+  - Added `JS_Modules.html` and `JS_Modules_Mobile.html` (created by Gemini 03/25 but missing from map).
+  - Marked `MobileApp.html`, `JS_Modules_Mobile.html`, and `_styles_mobile.html` as WS12 deprecation targets.
+  - Architecture Rule #8 updated to reflect single-surface responsive strategy.
+  - Architecture Rule #2 updated to clarify `JS_Modules.html` is the logic edit target.
+  - Added WS12 Deprecation Targets table to File Map.
+  - Added `JS_Modules.html` to WebApp Include Order.
+
+### Strategic Decision
+Moving from two separate surfaces (`WebApp.html` + `MobileApp.html`) to a single responsive `WebApp.html` with CSS breakpoints. WS12 Responsive Retrofit will execute this migration.
+
+### Next Step
+**WS12: Responsive Retrofit** — Phase 1 (breakpoint tokens + routing cleanup in `_styles_base.html`).
+
+---
+
+## [2026-03-25] — Modularization Strike (Oracle: Gemini)
+
+### Accomplishments
+- **GAS Modularization Pattern Applied**: Successfully cleared the "deck" by extracting monolithic logic and styles.
+- **Integrity Recovery (CRITICAL)**: Identified a silent truncation error where ~8,000 lines were lost. Restored from git and used terminal-level `sed` extraction to perform a bit-for-bit migration.
+- **Backend Standardized**: Updated `include()` helper in `02_Utilities.js` to the evaluate pattern.
+- **Component Breakout**:
+    - `CSS_Styles.html`: ~400 lines of global CSS.
+    - `JS_Modules.html`: ~5,800 lines of desktop logic.
+    - `JS_Modules_Mobile.html`: ~2,900 lines of mobile logic.
+    - `CSS_Mobile.html`: Global Mobile Override Sandbox.
+
+### Handoff Notes for Claude (The Architect)
+- **Objective**: The sandbox is now objective-driven. 
+- **Safety**: Do not edit `WebApp.html` or `MobileApp.html` skeletons directly unless changing the UI layout. All logic changes should happen in the `JS_Modules` partials.
+- **Next Step**: Move into **Phase 3: The Mobile Detail Polish**. Claude can now work exclusively within `JS_Modules_Mobile.html`.

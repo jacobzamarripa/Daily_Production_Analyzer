@@ -179,27 +179,6 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
 }
 
-function getSurfaceHTML(isMobile) {
-  return HtmlService.createTemplateFromFile('WebApp')
-    .evaluate()
-    .getContent();
-}
-
-function serveMobile() {
-  return HtmlService.createTemplateFromFile('MobileApp')
-      .evaluate()
-  .setTitle('Omni PMO')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-}
-
-function serveDesktop() {
-  return HtmlService.createTemplateFromFile('WebApp')
-      .evaluate()
-      .setTitle('Daily Production Hub')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-}
 
 function logFrontendError(errorMsg) {
   logMsg("💻 WEB APP CRASH: " + errorMsg);
