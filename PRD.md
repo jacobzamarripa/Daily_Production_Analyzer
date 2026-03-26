@@ -30,6 +30,7 @@
 - [ ] Phase 6: Grid hide + detail/admin scroll audit
 - [ ] Phase 7: Archive mobile files + routing cleanup (`02_Utilities.js`, CLAUDE.md)
 - [x] Phase 8: Executive Glass & Spring Transition Refit (Mobile) (`_styles_mobile.html`, `JS_Modules_Mobile.html`)
+- [x] Phase 9: Apple-Style Responsive Refit (Floating Header, Polymorphic Dock, Standalone Panels)
 
 ## Workstream 11 — Visual Redesign Pass (Complete)
 

@@ -1,5 +1,26 @@
 # Agent Log - Daily Production Analyzer
 
+## [2026-03-25] — WS12 Phase 9: Apple-Style Responsive Refit (Oracle: Gemini)
+
+### Accomplishments
+- **Floating Glass Header Implementation** (`_styles_layout.html`):
+    - Changed `.top-nav` to `position: fixed` with `backdrop-filter: blur(20px) saturate(180%)`.
+    - Set semi-transparent backgrounds for light (`rgba(255, 255, 255, 0.7)`) and dark (`rgba(15, 23, 42, 0.7)`) modes.
+    - Updated `#main-workspace` to `height: 100svh` with `padding-top: 52px` to prevent header overlap while allowing scroll-behind effect.
+- **Ultra-Thin Polymorphic Dock** (`WebApp.html` + `_styles_layout.html`):
+    - Refactored `#m-dock-nav` to contain only: **Menu** (Left), **Queue** (Center), and **Search** (Right).
+    - Refined dock aesthetics: 64px height, 32px border-radius, and enhanced glassmorphism (`blur(40px)`).
+    - Kept context-aware swaps (`m-dock-detail`, `m-dock-gantt`) for streamlined workflows.
+- **Standalone Mobile Panels & Navigation**:
+    - Created **Main Menu Bottom Sheet** (`m-menu-sheet`) to house secondary views (Gantt, Admin, Digest, Detail).
+    - Implemented `mToggleMenu()` and `mSelectView()` logic for a native "Apple Notes" navigation feel.
+    - Simplified `mSwitchView()` to handle both dock tabs and menu selections uniformly.
+
+### Next Step
+**WS12 Phase 5** — Gantt landscape / portrait placeholder.
+
+---
+
 ## [2026-03-25] — WS12 Phase 4: Touch Targets + Compact Header (Architect: Claude)
 
 ### Accomplishments
