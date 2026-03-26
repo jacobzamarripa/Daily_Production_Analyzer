@@ -97,6 +97,15 @@ function flattenGroupedSections(sections) {
     }, []);
 }
 
+// ── DEBOUNCED SEARCH ──
+let searchTimeout;
+function handleSearchInput(e) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        applyFilters();
+    }, 200);
+}
+
 function handleFilterCheck(category, value, isChecked) {
     if (isChecked) {
         if (!activeFilters[category].includes(value)) activeFilters[category].push(value);
@@ -207,13 +216,13 @@ function renderList(items) {
     let list = getEl('inbox-list');
     if (!list) return;
     setTxt('inbox-count', items.length);
-    list.innerHTML = '';
+    
     let groupedSections = currentGroupBy !== 'none' ? getGroupedQueueSections(items) : [];
+    let html = '';
 
-    function appendListCard(item, targetEl) {
+    function getListCardHtml(item) {
         let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== "");
         let highestSev = "info";
-        let tagsHtml = '';
         let tagParts = [];
         let visibleTagLimit = isVendorTrackerLinked(item) ? 2 : 3;
 
@@ -222,40 +231,38 @@ function renderList(items) {
         }
 
         rawFlags.slice(0, visibleTagLimit).forEach(f => {
-            let cleanText = cleanDiagnosticFlagText(f);
             let tagCls = getDiagnosticTagClass(f);
-            if (tagCls === 'chip-admin' || tagCls === 'chip-warn') highestSev = "warn";
+            if (tagCls === 'chip-admin' || tagCls === 'chip-warn') { if(highestSev!=="crit") highestSev = "warn"; }
             else if (tagCls === 'tag-red') highestSev = "crit";
             else if (tagCls === 'chip-ghost' && highestSev !== "crit" && highestSev !== "warn") highestSev = "ghost";
-            tagParts.push(`<span class="tag ${tagCls}">${cleanText}</span>`);
+            tagParts.push(`<span class="tag ${tagCls}">${cleanDiagnosticFlagText(f)}</span>`);
         });
         if (rawFlags.length > visibleTagLimit) tagParts.push(`<span class="tag chip-muted">+${rawFlags.length - visibleTagLimit}</span>`);
-        tagsHtml = tagParts.join('');
 
         let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
         let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
         if (item.flags.includes("MISSING QB STATUS") && !item.flags.includes("NOT IN QB REFERENCE")) combinedPill = "MISSING QB STATUS";
 
         let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+        let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'selected' : '';
 
-        let card = document.createElement('div');
-        card.className = `email-card ${highestSev}`;
-        card.id = `card-${item.fdh}`;
-        card.setAttribute('data-fdh', item.fdh);
-        card.onclick = () => { openPane(item, card); };
-        card.innerHTML = `
-           <div class="em-header">
-              <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
-                  <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div><div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
+        // Note: Using onclick string instead of arrow function for batch performance
+        return `
+           <div class="email-card ${highestSev} ${isSelected}" id="card-${item.fdh}" data-fdh="${item.fdh}" onclick="handleCardClick('${item.fdh}')">
+              <div class="em-header">
+                 <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
+                     <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div>
+                     <div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
+                 </div>
+                 <div class="em-pill-stack">
+                     <span class="glass-pill ${pillCls}" style="flex-shrink: 0;">${combinedPill}</span>
+                 </div>
               </div>
-              <div class="em-pill-stack">
-                  <span class="glass-pill ${pillCls}" style="flex-shrink: 0;">${combinedPill}</span>
-              </div>
-           </div><div class="em-tags">${tagsHtml}</div>`;
-        targetEl.appendChild(card);
+              <div class="em-tags">${tagParts.join('')}</div>
+           </div>`;
     }
 
-    function appendGridCard(item, targetEl) {
+    function getGridCardHtml(item) {
         let pivot = getEl('sidebar-pivot-select')?.value || 'schedule';
         let today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -328,60 +335,56 @@ function renderList(items) {
         }
 
         let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'is-selected' : '';
-        let card = document.createElement('div');
-        card.className = `grid-card ${isSelected}`;
-        card.setAttribute('data-fdh', item.fdh);
-        card.id = `queue-grid-card-${item.fdh}`;
-        card.onclick = () => { openPane(item, card); };
-        card.innerHTML = `
-            <div class="grid-card-header" style="padding-bottom:6px;">
-                <div>
-                    <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
-                    <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item.vendor}</div>
+        return `
+            <div class="grid-card ${isSelected}" id="queue-grid-card-${item.fdh}" data-fdh="${item.fdh}" onclick="handleCardClick('${item.fdh}')">
+                <div class="grid-card-header" style="padding-bottom:6px;">
+                    <div>
+                        <div style="font-size:14px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
+                        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase;">${item.vendor}</div>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px;">
+                        <span class="glass-pill ${pillCls}" style="font-size:8px; padding:2px 6px;">${combinedPill}</span>
+                        ${renderTrackerPill(item, { inline: true, stopPropagation: 'event.stopPropagation()' })}
+                    </div>
                 </div>
-                <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px;">
-                    <span class="glass-pill ${pillCls}" style="font-size:8px; padding:2px 6px;">${combinedPill}</span>
-                    ${renderTrackerPill(item, { inline: true, stopPropagation: 'event.stopPropagation()' })}
-                </div>
-            </div>
-            <div class="grid-card-body" style="gap:4px;">${bodyHtml}</div>`;
-        targetEl.appendChild(card);
-    }
-
-    function renderInto(targetEl, sectionItems) {
-        if (currentViewMode !== 'grid') {
-            sectionItems.forEach(function(item) { appendListCard(item, targetEl); });
-        } else {
-            sectionItems.forEach(function(item) { appendGridCard(item, targetEl); });
-        }
+                <div class="grid-card-body" style="gap:4px;">${bodyHtml}</div>
+            </div>`;
     }
 
     if (groupedSections.length > 0) {
-        groupedSections.forEach(function(section) {
-            let groupWrap = document.createElement('div');
-            groupWrap.className = 'queue-group';
-            let header = document.createElement('div');
-            header.className = 'queue-group-header';
-            header.onclick = function() { toggleQueueGroupSection(section.key); };
+        groupedSections.forEach(section => {
             let collapsed = isQueueGroupCollapsed(section.key);
-            header.innerHTML = `
-                <div class="queue-group-title">
-                    <span class="queue-group-toggle">${collapsed ? '&#9656;' : '&#9662;'}</span>
-                    <span>${esc(section.label)}</span>
-                </div>
-                <span class="queue-group-count">${section.items.length}</span>`;
-            let body = document.createElement('div');
-            body.className = `queue-group-body${collapsed ? ' collapsed' : ''}`;
-            renderInto(body, section.items);
-            groupWrap.appendChild(header);
-            groupWrap.appendChild(body);
-            list.appendChild(groupWrap);
+            html += `
+                <div class="queue-group">
+                    <div class="queue-group-header" onclick="toggleQueueGroupSection('${section.key}')">
+                        <div class="queue-group-title">
+                            <span class="queue-group-toggle">${collapsed ? '&#9656;' : '&#9662;'}</span>
+                            <span>${esc(section.label)}</span>
+                        </div>
+                        <span class="queue-group-count">${section.items.length}</span>
+                    </div>
+                    <div class="queue-group-body ${collapsed ? 'collapsed' : ''}">
+                        ${section.items.map(item => currentViewMode === 'grid' ? getGridCardHtml(item) : getListCardHtml(item)).join('')}
+                    </div>
+                </div>`;
         });
     } else {
-        renderInto(list, items);
+        html = items.map(item => currentViewMode === 'grid' ? getGridCardHtml(item) : getListCardHtml(item)).join('');
     }
 
-    if (items.length > 0 && !currentActiveItem) openPane(items[0], getEl(`card-${items[0].fdh}`));
+    list.innerHTML = html;
+
+    if (items.length > 0 && !currentActiveItem) {
+        handleCardClick(items[0].fdh);
+    }
+}
+
+// ── OPTIMIZED CLICK HANDLER ──
+function handleCardClick(fdh) {
+    let item = (allActionItems || []).find(i => String(i.fdh) === String(fdh));
+    if (!item) return;
+    let cardEl = getEl(`card-${fdh}`) || getEl(`queue-grid-card-${fdh}`);
+    openPane(item, cardEl);
 }
 
 function renderDiagnosticStrip(rowArray) {

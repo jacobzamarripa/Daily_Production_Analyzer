@@ -1,0 +1,608 @@
+    <script>
+      // 🚀 BOOT SEQUENCE CONTROLLER
+      // STATE: bootInterval
+      // READS: startup
+      // WRITES: startup
+      // EXTRACT WITH: runBootSequence, hideSplash
+      // WORKSTREAM 3 RISK: Low
+      let bootInterval;
+
+      
+
+
+      // ── GLOBAL STATE VARIABLES (CRITICAL SCOPE) ──
+      // TODO: HIGH RISK - central state owner. Must be isolated
+      // before any dependent module can be extracted.
+      // STATE: isDeckEditing
+      // READS: deck stage rendering
+      // WRITES: deck edit toggles, deck navigation
+      // EXTRACT WITH: renderDeckStage, toggleDeckEditMode
+      // WORKSTREAM 3 RISK: Low
+      /* DECK INLINE COPY DISABLED: extracted to _module_deck.html
+      let isDeckEditing = false;
+      */
+      // STATE: deckPrevPivot
+      // READS: workspace-router
+      // WRITES: deck/view transitions
+      // EXTRACT WITH: currentGridPivot, switchWorkspaceView
+      // WORKSTREAM 3 RISK: Low
+      let deckPrevPivot = 'velocity';
+      // STATE: deckIdleTimer
+      // READS: presentation mode toggle
+      // WRITES: deck idle reset
+      // EXTRACT WITH: isPresentationMode, resetDeckIdleTimer
+      // WORKSTREAM 3 RISK: Low
+      /* DECK INLINE COPY DISABLED: extracted to _module_deck.html
+      let deckIdleTimer = null;
+      */
+      // STATE: activePieStageFilter
+      // READS: HUD filters, active filter pills
+      // WRITES: pie HUD interactions, applyFilters, clearAllFilters
+      // EXTRACT WITH: currentFilterStats, activeFilters
+      // WORKSTREAM 3 RISK: Medium
+      let activePieStageFilter = null;
+      // STATE: openDropdownId
+      // READS: filter dropdown rendering
+      // WRITES: dropdown toggles and reset flows
+      // EXTRACT WITH: renderMultiSelect, toggleDropdown
+      // WORKSTREAM 3 RISK: Low
+      let openDropdownId = null;
+      // STATE: CHANGELOG_PULSE_SESSION_KEY
+      // READS: bootstrap, changelog badge
+      // WRITES: none
+      // EXTRACT WITH: initDashboard, switchPanelTab
+      // WORKSTREAM 3 RISK: Low
+      
+      // STATE: STAGED_REVIEW_SESSION_KEY
+      // READS: reviewed tray persistence helpers
+      // WRITES: none
+      // EXTRACT WITH: persistStagedReviewSession, loadStagedReviewSession
+      // WORKSTREAM 3 RISK: Low
+      
+      // STATE: STAGED_REVIEW_COLLAPSED_SESSION_KEY
+      // READS: reviewed tray persistence helpers
+      // WRITES: none
+      // EXTRACT WITH: persistStagedReviewSession, loadStagedReviewSession
+      // WORKSTREAM 3 RISK: Low
+      
+      // STATE: GANTT_VIEW_SCROLL_SESSION_KEY
+      // READS: gantt session persistence
+      // WRITES: none
+      // EXTRACT WITH: persistGanttViewSession, restoreGanttViewSession
+      // WORKSTREAM 3 RISK: Low
+      
+      // STATE: GANTT_VIEW_FOCUS_SESSION_KEY
+      // READS: gantt session persistence
+      // WRITES: none
+      // EXTRACT WITH: persistGanttViewSession, restoreGanttViewSession
+      // WORKSTREAM 3 RISK: Low
+      
+      // STATE: GROUP_BY_SESSION_KEY
+      // READS: queue grouping persistence
+      // WRITES: none
+      // EXTRACT WITH: persistQueueGroupingSession, currentGroupBy
+      // WORKSTREAM 3 RISK: Low
+      
+      // STATE: GROUP_COLLAPSE_SESSION_KEY
+      // READS: queue grouping persistence
+      // WRITES: none
+      // EXTRACT WITH: persistQueueGroupingSession, queueGroupCollapseState
+      // WORKSTREAM 3 RISK: Low
+      const GROUP_COLLAPSE_SESSION_KEY = 'dpa.queueGroupCollapse.v1';
+      // STATE: GROUP_BY_OPTIONS
+      // READS: queue grouping controls
+      // WRITES: none
+      // EXTRACT WITH: currentGroupBy, setGroupBy
+      // WORKSTREAM 3 RISK: Low
+      const GROUP_BY_OPTIONS = ['none', 'vendor', 'city', 'health', 'stage', 'status'];
+      // Queue state owner extracted to _state_queue.html
+      // Workspace router state owner extracted to _state_router.html
+      // Session and deck state owner extracted to _state_session.html
+      // STATE: pendingFaceAnimation
+      // READS: detail face transitions
+      // WRITES: face animation helpers
+      // EXTRACT WITH: currentDetailFace, isDeckMode
+      // WORKSTREAM 3 RISK: Low
+      let pendingFaceAnimation = null;
+      // STATE: preferredPresentationCardTheme
+      // READS: deck theme sync
+      // WRITES: deck theme toggles, presentation mode
+      // EXTRACT WITH: isPresentationMode, preTheaterThemeWasDark
+      // WORKSTREAM 3 RISK: Low
+      /* DECK INLINE COPY DISABLED: extracted to _module_deck.html
+      let preferredPresentationCardTheme = null;
+      */
+      // STATE: isStagedReviewCollapsed
+      // READS: outbox rendering
+      // WRITES: reviewed tray collapse toggles and persistence
+      // EXTRACT WITH: stagedDeckItems, persistStagedReviewSession
+      // WORKSTREAM 3 RISK: Low
+      let isStagedReviewCollapsed = false;
+      // STATE: ganttHasMounted
+      // READS: gantt render lifecycle
+      // WRITES: gantt mount helper
+      // EXTRACT WITH: ganttNeedsRender, ensureGanttRendered
+      // WORKSTREAM 3 RISK: Low
+      /* GANTT INLINE COPY DISABLED: extracted to _module_gantt.html
+      let ganttHasMounted = false;
+      // STATE: ganttNeedsRender
+      // READS: gantt render lifecycle
+      // WRITES: gantt render helper, applyFilters
+      // EXTRACT WITH: ganttHasMounted, filteredItems, ganttFocusedFdh
+      // WORKSTREAM 3 RISK: Medium
+      let ganttNeedsRender = true;
+      // STATE: ganttFocusedFdh
+      // READS: gantt focus restore, applyFilters, focus state sync
+      // WRITES: gantt open/focus handlers and session restore
+      // EXTRACT WITH: ganttScrollState, ganttHasVisited, currentWorkspaceView
+      // WORKSTREAM 3 RISK: Medium
+      let ganttFocusedFdh = null;
+      // STATE: ganttScrollState
+      // READS: gantt persistence and viewport restore
+      // WRITES: gantt capture/restore/open handlers
+      // EXTRACT WITH: ganttFocusedFdh, ganttHasVisited, currentWorkspaceView
+      // WORKSTREAM 3 RISK: Medium
+      let ganttScrollState = { top: 0, left: 0 };
+      // STATE: ganttHasVisited
+      // READS: applyFilters, focus clear
+      // WRITES: gantt session restore and open helpers
+      // EXTRACT WITH: ganttFocusedFdh, ganttScrollState
+      // WORKSTREAM 3 RISK: Medium
+      let ganttHasVisited = false;
+      */
+      // STATE: queueGroupCollapseState extracted to _state_queue.html
+
+
+      // Extracted to _module_queue_state.html
+
+      // syncWorkspaceModeState extracted to _module_router.html
+      // syncWorkspaceChrome extracted to _module_router.html
+
+
+      /* DECK INLINE COPY DISABLED: extracted to _module_deck.html
+
+      */
+
+
+      // syncDockPlacementState extracted to _module_router.html
+
+
+      /* DECK INLINE COPY DISABLED: extracted to _module_deck.html
+
+      */
+
+
+      // UI Event Listeners (Moved to _module_router.html)
+
+      window.addEventListener('resize', updateFloatingPillsPosition);
+      window.addEventListener('scroll', updateFloatingPillsPosition, { passive: true });
+
+      // Queue filter helpers extracted to _module_queue_state.html
+
+
+      // renderMultiSelect extracted to _module_queue_state.html
+
+
+      // DOM helpers moved to _utils_shared.html
+
+      // toggleFilterValue extracted to _module_queue_state.html
+
+      // TODO: DOM-COUPLED - extract after state layer is isolated
+
+
+      // TODO: DOM-COUPLED - extract after state layer is isolated
+
+
+      // TODO: DOM-COUPLED - extract after state layer is isolated
+
+
+      // TODO: DOM-COUPLED - extract after state layer is isolated
+
+
+      // Dynamic Island State Memory
+      // STATE: previousDockState
+      // READS: dock restore
+      // WRITES: dock restore/memory helpers
+      // EXTRACT WITH: currentDockPlacement, syncDockLayoutSpacing
+      // WORKSTREAM 3 RISK: Low
+      let previousDockState = [];
+
+
+      /* GANTT INLINE COPY DISABLED: extracted to _module_gantt.html
+
+
+      // syncGanttViewportLayout extracted to _module_router.html
+
+
+
+      // ── Gantt Quick-Peek Slide-Over ──────────────────────────────────────────
+      // TODO: MODULE CANDIDATE - Gantt interactions are coupled to currentActiveItem, allActionItems, quick-peek DOM, focus state, and dock inversion logic.
+
+      */
+
+      // ── End Gantt Quick-Peek ─────────────────────────────────────────────────
+
+
+      // TODO: DOM-COUPLED - extract after state layer is isolated
+
+      /* ADMIN INLINE COPY DISABLED: extracted to _module_admin.html
+
+      */
+      // Queue view toggles extracted to _module_queue_state.html
+
+
+      // currentPanelTab extracted to _state_router.html
+      // STATE: allGlobalLogs
+      // READS: changelog, digest, grid, item history
+      // WRITES: bootstrap payload load and changelog render
+      // EXTRACT WITH: initDashboard, currentGridPivot, digest workspace
+      // WORKSTREAM 3 RISK: High
+      /* DUPLICATE STATE: extracted to _module_webapp_core.html
+      let allGlobalLogs = [];
+      */
+      /* ADMIN INLINE COPY DISABLED: extracted to _module_admin.html
+
+      */
+
+      // syncOutboxPanelMode extracted to _module_router.html
+      // switchPanelTab extracted to _module_router.html
+
+      /* ADMIN INLINE COPY DISABLED: extracted to _module_admin.html
+
+      // Close mobile menu on outside tap
+      document.addEventListener('click', function(e) {
+          let panel = getEl('mobile-menu-panel'); if (!panel || !panel.classList.contains('open')) return;
+          let btn = getEl('btn-hamburger');
+          if (!panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) panel.classList.remove('open');
+      });
+      document.addEventListener('click', function(e) {
+          let pane = getEl('outbox-pane'); let fab = getEl('admin-fab');
+          if (!pane || !fab || !pane.classList.contains('open') || window.innerWidth > 768) return;
+          if (!pane.contains(e.target) && !fab.contains(e.target)) {
+              setAdminPanelOpen(false);
+          }
+      });
+
+
+      */
+      window.addEventListener('resize', () => {
+          if (!currentActiveItem || window.innerWidth <= 768) return;
+          if (shouldAutoOpenAdminPanel()) {
+              setAdminPanelOpen(true);
+          } else if (isIPadLike()) {
+              setAdminPanelOpen(false);
+          }
+      });
+      window.addEventListener('resize', syncDockClearanceState);
+
+      // STATE: hudLocked
+      // READS: gantt HUD visibility helpers
+      // WRITES: HUD lock toggles and theater exit
+      // EXTRACT WITH: gantt HUD helpers
+      // WORKSTREAM 3 RISK: Low
+      /* GANTT INLINE COPY DISABLED: extracted to _module_gantt.html
+      let hudLocked = false;
+
+      */
+
+      
+      // STATE: _SLIDE_SVG
+      // READS: workspace chrome
+      // WRITES: none
+      // EXTRACT WITH: syncWorkspaceChrome
+      // WORKSTREAM 3 RISK: Low
+      const _SLIDE_SVG = `<span class="dock-face-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 18v3"></path><path d="M15 9l-4 3 4 3"></path></svg></span>`;
+      applyViewMode(); // restore persisted queue view (card/list/grid)
+      if (navigator.maxTouchPoints > 1 && window.innerWidth >= 769) document.body.classList.add('touch-tablet');
+      // Debounced search filter (300ms delay prevents re-render on every keystroke)
+      // STATE: _filterDebounce
+      // READS: search debounce handler
+      // WRITES: search input listener
+      // EXTRACT WITH: _filterInput, applyFilters
+      // WORKSTREAM 3 RISK: Low
+      let _filterDebounce;
+      // STATE: _filterInput
+      // READS: search debounce setup
+      // WRITES: none
+      // EXTRACT WITH: _filterDebounce, applyFilters
+      // WORKSTREAM 3 RISK: Low
+      let _filterInput = getEl('search-input');
+      if (_filterInput) {
+          _filterInput.addEventListener('input', () => {
+              clearTimeout(_filterDebounce);
+              _filterDebounce = setTimeout(applyFilters, 300);
+          });
+      }
+      // ✨ KINETIC LOADER CONTROLLERS
+      // STATE: frostedInterval
+      // READS: frosted loader hide flow
+      // WRITES: frosted loader show flow
+      // EXTRACT WITH: showFrostedLoader, hideFrostedLoader
+      // WORKSTREAM 3 RISK: Low
+      let frostedInterval;
+
+
+      // ── ⟳ Sync QB — pulls fresh reference data from QuickBase API ──────────
+
+
+      // ── ▶ Run Review — re-runs the diagnostic engine for a given date ────
+
+
+      // ── ↻ Refresh — fast re-read of mirror sheet, no engine re-run ────────
+
+
+      // Queue selection adapter extracted to _module_queue_state.html
+
+      /* DIGEST INLINE COPY DISABLED: extracted to _module_digest.html
+      // STATE: DIGEST_STAGE_ORDER
+      // READS: digest summaries and leaderboards
+      // WRITES: none
+      // EXTRACT WITH: digest helpers
+      // WORKSTREAM 3 RISK: Low
+      const DIGEST_STAGE_ORDER = ['permitApproved', 'construction', 'completed', 'ofs'];
+      // STATE: DIGEST_STAGE_META
+      // READS: digest labels, pills, stage cards
+      // WRITES: none
+      // EXTRACT WITH: digest helpers
+      // WORKSTREAM 3 RISK: Low
+      const DIGEST_STAGE_META = {
+          permitApproved: { label: 'Permitting Approved', shortLabel: 'Permits', pillClass: 'pill-permit', accent: '#a855f7' },
+          construction:   { label: 'Construction', shortLabel: 'Construction', pillClass: 'pill-active', accent: '#f59e0b' },
+          completed:      { label: 'Completed', shortLabel: 'Completed', pillClass: 'pill-complete', accent: '#22c55e' },
+          ofs:            { label: 'OFS', shortLabel: 'OFS', pillClass: 'pill-ofs', accent: '#06b6d4' },
+          other:          { label: 'Other', shortLabel: 'Other', pillClass: 'pill-default', accent: '#64748b' }
+      };
+      // STATE: DIGEST_MAP_BOUNDS
+      // READS: digest vendor map projection
+      // WRITES: none
+      // EXTRACT WITH: digest map helpers
+      // WORKSTREAM 3 RISK: Low
+      const DIGEST_MAP_BOUNDS = { minLat: 24.5, maxLat: 48.8, minLng: -107.5, maxLng: -74.0 };
+      // STATE: DIGEST_STATE_BOUNDS
+      // READS: digest vendor map projection
+      // WRITES: none
+      // EXTRACT WITH: digest map helpers
+      // WORKSTREAM 3 RISK: Low
+      const DIGEST_STATE_BOUNDS = {
+          TX: { minLat: 25.8, maxLat: 36.6, minLng: -106.7, maxLng: -93.4, label: 'Texas' },
+          MI: { minLat: 41.7, maxLat: 48.4, minLng: -90.5, maxLng: -82.3, label: 'Michigan' },
+          OH: { minLat: 38.4, maxLat: 42.4, minLng: -84.9, maxLng: -80.4, label: 'Ohio' },
+          PA: { minLat: 39.7, maxLat: 42.5, minLng: -80.7, maxLng: -74.7, label: 'Pennsylvania' }
+      };
+
+
+      // TODO: MODULE CANDIDATE - digest workspace still depends on allActionItems, filteredItems, admin panel docking, and shared selection state.
+
+
+      */
+      // Digest workspace extracted to _module_digest.html
+
+
+      /* 🧠 Touch-safe HUD Positioning */
+      /* GANTT INLINE COPY DISABLED: extracted to _module_gantt.html
+
+      */
+
+      // STATE: REVIEWED_TRAY_STORAGE_KEY
+      // READS: reviewed tray persistence
+      // WRITES: none
+      // EXTRACT WITH: persistReviewedTray, loadReviewedTray
+      // WORKSTREAM 3 RISK: Low
+      const REVIEWED_TRAY_STORAGE_KEY = 'dpa.reviewedTray.v1';
+      // STATE: globalHeaders
+      // READS: raw data/detail rendering
+      // WRITES: bootstrap payload load
+      // EXTRACT WITH: allActionItems, currentActiveItem
+      // WORKSTREAM 3 RISK: High
+      // STATE: globalEndCounts
+      // READS: gantt and HUD summaries
+      // WRITES: renderGantt
+      // EXTRACT WITH: globalTodayData, currentFilterStats
+      // WORKSTREAM 3 RISK: High
+      // STATE: globalTodayData
+      // READS: gantt and HUD summaries
+      // WRITES: renderGantt
+      // EXTRACT WITH: globalEndCounts, currentFilterStats
+      // WORKSTREAM 3 RISK: High
+      /* DUPLICATE STATE: extracted to _module_webapp_core.html
+      let globalHeaders = []; let globalEndCounts = {}; let globalTodayData = { total: 0, vendors: {}, projects: [], activeBsls: 0, criticalCount: 0 };
+      // STATE: currentFilterStats
+      // READS: BSL and projects HUDs
+      // WRITES: applyFilters and HUD recompute flows
+      // EXTRACT WITH: filteredItems, globalEndCounts, globalTodayData, activePieStageFilter
+      // WORKSTREAM 3 RISK: High
+      let currentFilterStats = { bslByVendor: {}, bslByMonth: {}, bslMatrix: {}, lifecycle: { active: 0, pending: 0, overdue: 0 }, stageCounts: {}, pieCounts: {} };
+      // STATE: globalAllFdhIds
+      // READS: datalist/buildSmartFdhDatalist
+      // WRITES: bootstrap payload load
+      // EXTRACT WITH: initDashboard, buildSmartFdhDatalist
+      // WORKSTREAM 3 RISK: Medium
+      let globalAllFdhIds = [];
+      // STATE: currentCriticalHubItems
+      // READS: critical hub render and navigation
+      // WRITES: applyFilters
+      // EXTRACT WITH: criticalHubState, acknowledgedCriticalFdhs, filteredItems
+      // WORKSTREAM 3 RISK: Medium
+      let currentCriticalHubItems = [];
+      // STATE: acknowledgedCriticalFdhs
+      // READS: critical hub filters and badges
+      // WRITES: applyFilters and critical-hub actions
+      // EXTRACT WITH: currentCriticalHubItems, criticalHubState
+      // WORKSTREAM 3 RISK: Medium
+      let acknowledgedCriticalFdhs = [];
+      // STATE: criticalHubState
+      // READS: critical hub filters and render
+      // WRITES: critical hub controls
+      // EXTRACT WITH: currentCriticalHubItems, acknowledgedCriticalFdhs
+      // WORKSTREAM 3 RISK: High
+      let criticalHubState = { market: 'ALL', vendor: 'ALL', type: 'ALL', sort: 'default', showAcknowledged: false };
+      */
+
+      // View mode is managed by currentViewMode + applyViewMode()
+      loadStagedReviewSession();
+      loadReviewedTray();
+      renderOutbox();
+
+      /* ADMIN INLINE COPY DISABLED: extracted to _module_admin.html
+
+
+      // Active queue adapter extracted to _module_queue_state.html
+
+      */
+
+      // STATE: activeAdminFilter
+      // READS: admin pane rendering and filter controls
+      // WRITES: admin toggle helpers and applyFilters
+      // EXTRACT WITH: filteredItems, allActionItems, currentActiveItem
+      // WORKSTREAM 3 RISK: Medium
+      /* DUPLICATE STATE: extracted to _module_webapp_core.html
+      let activeAdminFilter = null;
+      */
+      // STATE: startupTimer
+      // READS: startup selector timing
+      // WRITES: startup selector helpers
+      // EXTRACT WITH: showStartupSelector, completeStartup
+      // WORKSTREAM 3 RISK: Low
+      let startupTimer;
+      // STATE: startupCountdown
+      // READS: startup selector timing
+      // WRITES: startup selector helpers
+      // EXTRACT WITH: showStartupSelector, completeStartup
+      // WORKSTREAM 3 RISK: Low
+      let startupCountdown = 6;
+
+      // STATE: QB_STYLES
+      // READS: gantt, velocity bars, detail cards
+      // WRITES: none
+      // EXTRACT WITH: shared QB visual helpers
+      // WORKSTREAM 3 RISK: Low
+      const QB_STYLES = {
+          "UG": { color: "var(--qb-ug)", bg: "var(--qb-ug)", border: "var(--qb-ug)" }, "AE": { color: "var(--text-main)", bg: "var(--qb-ae-bg)", border: "#94a3b8" },
+          "FIB": { color: "var(--text-main)", bg: "var(--qb-fib-bg)", border: "var(--qb-fib-border)" }, "NAP": { color: "var(--text-main)", bg: "var(--qb-nap-bg)", border: "var(--qb-nap-border)" },
+          "DONE": { color: "var(--qb-done)", bg: "var(--qb-done)", border: "var(--qb-done)" }
+      };
+
+
+      // TODO: DOM-COUPLED - extract after state layer is isolated
+
+      // BOOTSTRAP ANCHOR: hydrates allActionItems/global payload state and fans out to every major desktop surface
+
+
+      // TODO: HIGH RISK - bootstrap contract for all views.
+      // Extract last, after all consumers are modularized.
+      // BOOTSTRAP ANCHOR: recomputes filteredItems, queue selection, admin, digest, grid, gantt, HUDs, and badges from shared state
+
+
+      // TODO: QUICK PEEK — depends on pmSessionMemory,
+      // google.script.run callbacks, and shared state.
+      // Extract after session/deck module is isolated.
+
+      /* GANTT INLINE COPY DISABLED: extracted to _module_gantt.html
+      // 🧠 GANTT CHART ENGINE (REBUILT FOR PERFECT LAYERING)
+
+      */
+
+      window.addEventListener('orientationchange', () => { setTimeout(scrollGanttToToday, 350); });
+      window.addEventListener('resize', syncGanttViewportLayout);
+
+      // Queue rendering/detail helpers extracted to _module_queue_state.html
+
+      // Queue/detail selection renderer extracted to _module_queue_state.html
+
+      // Queue action advance helper extracted to _module_queue_state.html
+
+
+      /* ADMIN INLINE COPY DISABLED: extracted to _module_admin.html
+
+      */
+
+
+      // STATE: bslsHudLocked
+      // READS: BSL HUD show/hide
+      // WRITES: BSL HUD lock toggle
+      // EXTRACT WITH: renderBslsHUD, hidePieHUD
+      // WORKSTREAM 3 RISK: Low
+      /* DUPLICATE STATE: extracted to _module_webapp_core.html
+      let bslsHudLocked = false;
+      */
+      // STATE: projectsHudLocked
+      // READS: projects HUD show/hide
+      // WRITES: projects HUD lock toggle
+      // EXTRACT WITH: renderProjectsHUD, hidePieHUD
+      // WORKSTREAM 3 RISK: Low
+      /* DUPLICATE STATE: extracted to _module_webapp_core.html
+      let projectsHudLocked = false;
+      */
+
+
+      document.addEventListener('click', function(e) {
+          if (bslsHudLocked) {
+              let hud = getEl('bsls-pie-hud');
+              let pill = getEl('nav-bsls-pill');
+              if (hud && !hud.contains(e.target) && pill && !pill.contains(e.target)) {
+                  bslsHudLocked = false;
+                  if (pill) pill.classList.remove('is-locked');
+                  hidePieHUD('bsls');
+              }
+          }
+          if (projectsHudLocked) {
+              let hud = getEl('projects-pie-hud');
+              let pill = getEl('nav-projects-pill');
+              if (hud && !hud.contains(e.target) && pill && !pill.contains(e.target)) {
+                  projectsHudLocked = false;
+                  if (pill) pill.classList.remove('is-locked');
+                  hidePieHUD('projects');
+              }
+          }
+      });
+
+
+      // STATE: preTheaterThemeWasDark
+      // READS: presentation theme restore
+      // WRITES: presentation mode/theme sync
+      // EXTRACT WITH: isPresentationMode, preferredPresentationCardTheme
+      // WORKSTREAM 3 RISK: Low
+      /* DUPLICATE STATE: extracted to _module_webapp_core.html
+      var preTheaterThemeWasDark = false;
+      */
+
+
+      // TODO: HIGH RISK - mutates queue/detail/admin/reviewed tray state.
+      // Requires state layer isolation before extraction.
+      // TODO: MODULE CANDIDATE - Gemini draft flows mutate currentActiveItem/filteredItems and view-specific DOM; isolate state adapters first
+
+      // Calculator Keyboard Support
+      document.addEventListener('keydown', function(e) {
+          var calcWidget = document.getElementById('calc-widget');
+          if (!calcWidget || !calcWidget.classList.contains('open')) return;
+          var key = e.key;
+          if (/[0-9\.]/.test(key)) {
+              e.preventDefault(); calcNum(key);
+          } else if (['+', '-', '*', '/', '(', ')'].includes(key)) {
+              e.preventDefault(); calcOp(key);
+          } else if (key === 'Enter' || key === '=') {
+              e.preventDefault(); calcOp('=');
+          } else if (key === 'Backspace') {
+              e.preventDefault();
+              if (calcState !== 'Err' && calcState.length > 0) {
+                  calcState = calcState.slice(0, -1);
+                  updateCalc();
+              }
+          } else if (key === 'Escape') {
+              e.preventDefault(); toggleWidget('calc-widget');
+          }
+      });
+    </script>
+<!-- Append second block -->
+                                <script>
+                                // WS12 Mobile view switcher
+
+
+                                // Init: show queue panel on mobile load
+                                (function() {
+                                    if (window.innerWidth <= 480) {
+                                        var inbox = document.querySelector('.inbox-sidebar');
+                                        if (inbox) inbox.style.setProperty('display', 'flex', 'important');
+                                    }
+                                })();
+                                </script>

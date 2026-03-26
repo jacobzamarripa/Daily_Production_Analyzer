@@ -264,4 +264,25 @@ function switchPanelTab(tab) {
     }
     syncOutboxPanelMode();
 }
+
+// ── GLOBAL UI EVENT LISTENERS ──
+document.addEventListener('click', (e) => {
+    // Dropdown auto-close
+    if (typeof openDropdownId !== 'undefined' && openDropdownId) {
+        let el = document.getElementById(openDropdownId);
+        if (el && !el.contains(e.target)) {
+            el.classList.remove('open');
+            openDropdownId = null;
+        }
+    }
+
+    // FAB Dropdown auto-close
+    let dropdown = document.getElementById('nav-fab-dropdown');
+    let trigger = document.getElementById('btn-nav-fab');
+    if (dropdown && trigger && dropdown.classList.contains('open')) {
+        if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    }
+});
 </script>

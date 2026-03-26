@@ -216,10 +216,12 @@
                                                                                                                                                                                                 /* ── WS12 Phone portrait (≤480px) ─────────────────────────── */
                                                                                                                                                                                                 @media (max-width: 768px) {
 
-                                                                                                                                                                                                    /* Prevent page scroll — panels scroll internally */
+                                                                                                                                                                                                    /* Prevent body overflow while allowing internal panel scroll */
                                                                                                                                                                                                     html, body {
                                                                                                                                                                                                         overflow: hidden !important;
                                                                                                                                                                                                         height: 100% !important;
+                                                                                                                                                                                                        position: fixed !important; /* Prevents elastic pull-to-refresh on iOS */
+                                                                                                                                                                                                        width: 100% !important;
                                                                                                                                                                                                     }
                                                                                                                                                                                                     body { padding-bottom: 0 !important; }
 
@@ -438,6 +440,15 @@
                                                                                                                                                                                                 /* ── Gantt tab hidden in portrait ───────────────────────────── */
                                                                                                                                                                                                 @media (max-width: 768px) and (orientation: portrait) {
                                                                                                                                                                                                     .m-tab-btn[data-mview="gantt"] { display: none !important; }
+                                                                                                                                                                                                }
+
+                                                                                                                                                                                                /* ── Grid/Deck hidden on mobile ─────────────────────────────── */
+                                                                                                                                                                                                @media (max-width: 768px) {
+                                                                                                                                                                                                    /* Hide workspace surfaces */
+                                                                                                                                                                                                    #grid-content, #deck-stage, .startup-card:nth-child(2), .startup-card:nth-child(4) { 
+                                                                                                                                                                                                        display: none !important; 
+                                                                                                                                                                                                    }
+                                                                                                                                                                                                    /* Note: #startup-overlay cards are nth-child indexed: 1=detail, 2=grid, 3=gantt, 4=slide */
                                                                                                                                                                                                 }
 
                                                                                                                                                                                                 /* ── Dark mode dock ─────────────────────────────────────────── */

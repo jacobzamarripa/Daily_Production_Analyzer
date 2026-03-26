@@ -1,0 +1,208 @@
+<script>
+// WS12 Mobile view switcher
+                                function mSwitchView(view, btn) {
+                                    // Guard: only run on mobile viewports
+                                    if (!window.matchMedia('(max-width: 768px)').matches) return;
+                                    
+                                    // Manage body attribute for dock context swapping
+                                    document.body.setAttribute('data-mview', view);
+
+                                    // Manage active tab state (for bottom dock)
+                                    document.querySelectorAll('.m-tab-btn').forEach(function(b) {
+                                        b.classList.remove('active');
+                                    });
+                                    if (btn) btn.classList.add('active');
+                                    // If no button passed (e.g. from selectView), find the matching tab
+                                    else {
+                                        var target = document.querySelector('.m-tab-btn[data-mview="' + view + '"]');
+                                        if (target) target.classList.add('active');
+                                    }
+
+                                    // Get real panel elements
+                                    var inbox   = document.querySelector('.inbox-sidebar');
+                                    var reading = document.querySelector('.reading-pane');
+                                    var gantt   = document.getElementById('gantt-panel');
+                                    
+                                    // Reset all display properties
+                                    [inbox, reading, gantt].forEach(function(el) {
+                                        if (el) el.style.setProperty('display', 'none', 'important');
+                                    });
+
+                                    // Show correct panel + wire router
+                                    if (view === 'queue') {
+                                        if (inbox) inbox.style.setProperty('display', 'flex', 'important');
+                                    } else if (view === 'gantt') {
+                                        if (gantt) gantt.style.setProperty('display', 'flex', 'important');
+                                        if (typeof switchWorkspaceView === 'function') switchWorkspaceView('gantt');
+                                    } else if (view === 'admin') {
+                                        // Admin is a bottom sheet over the current view
+                                        // We stay in current view visually but open the sheet
+                                        if (inbox) inbox.style.setProperty('display', 'flex', 'important');
+                                        mShowAdminSheet();
+                                    } else if (view === 'digest') {
+                                        if (reading) reading.style.setProperty('display', 'flex', 'important');
+                                        if (typeof switchWorkspaceView === 'function') switchWorkspaceView('digest');
+                                    } else {
+                                        // detail
+                                        if (reading) reading.style.setProperty('display', 'flex', 'important');
+                                        if (typeof switchWorkspaceView === 'function') switchWorkspaceView('detail');
+                                    }
+                                }
+
+                                function mToggleMenu() {
+                                    var sheet = document.getElementById('m-menu-sheet');
+                                    var backdrop = document.getElementById('m-menu-backdrop');
+                                    if (!sheet) return;
+                                    var isOpen = sheet.classList.contains('open');
+                                    sheet.classList.toggle('open', !isOpen);
+                                    if (backdrop) {
+                                        backdrop.style.display = isOpen ? 'none' : 'block';
+                                        requestAnimationFrame(function() {
+                                            backdrop.classList.toggle('open', !isOpen);
+                                        });
+                                    }
+                                }
+
+                                function mSelectView(view) {
+                                    mToggleMenu();
+                                    mSwitchView(view, null);
+                                }
+
+                                // Init: show queue panel on mobile load
+                                (function() {
+                                    if (window.matchMedia('(max-width: 768px)').matches) {
+                                        var inbox = document.querySelector('.inbox-sidebar');
+                                        if (inbox) inbox.style.setProperty('display', 'flex', 'important');
+                                        document.body.setAttribute('data-mview', 'queue');
+                                    }
+                                })();
+
+                                // ── Polymorphic dock action handlers ──
+                                function mCtxSkip() {
+                                    if (typeof skipReview === 'function') {
+                                        skipReview();
+                                        // Return to queue after skip
+                                        setTimeout(function() { mSwitchView('queue', document.querySelector('.m-tab-btn[data-mview="queue"]')); }, 200);
+                                    }
+                                }
+                                function mCtxCommit() {
+                                    if (typeof commitReview === 'function') {
+                                        commitReview();
+                                        setTimeout(function() { mSwitchView('queue', document.querySelector('.m-tab-btn[data-mview="queue"]')); }, 200);
+                                    }
+                                }
+                                function mGanttZoom(mode) {
+                                    var monthBtn = document.getElementById('m-gantt-month');
+                                    var weekBtn  = document.getElementById('m-gantt-week');
+                                    if (monthBtn) monthBtn.classList.toggle('active-zoom', mode === 'month');
+                                    if (weekBtn)  weekBtn.classList.toggle('active-zoom', mode === 'week');
+                                    // Delegate to existing Gantt zoom logic
+                                    if (typeof ganttZoomMode !== 'undefined') ganttZoomMode = mode;
+                                    if (typeof renderGanttTimeline === 'function') renderGanttTimeline();
+                                    else if (typeof renderGantt === 'function') renderGantt();
+                                }
+
+                                // ── Admin Bottom Sheet ──
+                                function mShowAdminSheet() {
+                                    var sheet = document.getElementById('m-admin-sheet');
+                                    var backdrop = document.getElementById('m-admin-backdrop');
+                                    if (!sheet) return;
+                                    sheet.classList.add('open');
+                                    if (backdrop) backdrop.classList.add('open');
+                                    // Trigger existing admin panel render into reading-pane (desktop path)
+                                    // then mirror content into sheet body on next tick
+                                    if (typeof switchWorkspaceView === 'function') switchWorkspaceView('detail');
+                                    setTimeout(function() {
+                                        if (typeof setAdminPanelOpen === 'function') setAdminPanelOpen(true);
+                                        // Mirror reading-pane content into sheet body
+                                        var body = document.getElementById('m-admin-sheet-body');
+                                        var reading = document.querySelector('.reading-pane');
+                                        if (body && reading) {
+                                            body.innerHTML = '';
+                                            // Move reading-pane visually inside sheet (reparent temporarily)
+                                            body.appendChild(reading);
+                                            reading.style.removeProperty('display');
+                                            reading.style.height = '100%';
+                                            reading.style.overflow = 'auto';
+                                        }
+                                    }, 100);
+                                }
+                                function mHideAdminSheet() {
+                                    var sheet = document.getElementById('m-admin-sheet');
+                                    var backdrop = document.getElementById('m-admin-backdrop');
+                                    var body = document.getElementById('m-admin-sheet-body');
+                                    // Return reading-pane to its original parent (main-workspace)
+                                    var reading = document.querySelector('.reading-pane');
+                                    var workspace = document.getElementById('main-workspace');
+                                    if (reading && workspace && reading.parentNode === body) {
+                                        reading.style.removeProperty('height');
+                                        reading.style.removeProperty('overflow');
+                                        reading.style.setProperty('display', 'none', 'important');
+                                        workspace.appendChild(reading);
+                                    }
+                                    if (sheet) sheet.classList.remove('open');
+                                    if (backdrop) backdrop.classList.remove('open');
+                                    // Return dock to queue state
+                                    document.body.setAttribute('data-mview', 'queue');
+                                    document.querySelectorAll('.m-tab-btn').forEach(function(b) {
+                                        b.classList.toggle('active', b.getAttribute('data-mview') === 'queue');
+                                    });
+                                }
+
+                                // ── Search/Filter Bottom Sheet ──
+                                var _mSearchDebounce;
+                                function mToggleSearch() {
+                                    var sheet = document.getElementById('m-search-sheet');
+                                    var backdrop = document.getElementById('m-search-backdrop');
+                                    var btn = document.getElementById('m-search-toggle');
+                                    if (!sheet) return;
+                                    var isOpen = sheet.classList.contains('open');
+                                    if (isOpen) {
+                                        sheet.classList.remove('open');
+                                        if (backdrop) backdrop.classList.remove('open');
+                                        if (btn) btn.classList.remove('search-open');
+                                    } else {
+                                        mSyncSearchFilters();
+                                        sheet.classList.add('open');
+                                        if (backdrop) backdrop.classList.add('open');
+                                        if (btn) btn.classList.add('search-open');
+                                        setTimeout(function() {
+                                            var inp = document.getElementById('m-search-input');
+                                            if (inp) inp.focus();
+                                        }, 350);
+                                    }
+                                }
+                                function mSyncSearchFilters() {
+                                    // Mirror desktop search value
+                                    var desktop = document.getElementById('search-input');
+                                    var mobile = document.getElementById('m-search-input');
+                                    if (desktop && mobile) mobile.value = desktop.value;
+                                    // Clone rendered filter dropdowns (onclick attrs survive innerHTML clone; activeFilters is a shared global)
+                                    ['severity','vendor','city','ofs','status'].forEach(function(cat) {
+                                        var src = document.getElementById('wrap-filter-' + cat);
+                                        var dst = document.getElementById('m-wrap-filter-' + cat);
+                                        if (src && dst) dst.innerHTML = src.innerHTML;
+                                    });
+                                }
+                                function mSearchInput(val) {
+                                    // Mirror into desktop input so applyFilters() reads the correct value
+                                    var desktop = document.getElementById('search-input');
+                                    if (desktop) desktop.value = val;
+                                    var clearBtn = document.getElementById('m-search-clear');
+                                    if (clearBtn) clearBtn.style.display = val.trim() ? '' : 'none';
+                                    clearTimeout(_mSearchDebounce);
+                                    _mSearchDebounce = setTimeout(function() {
+                                        if (typeof applyFilters === 'function') applyFilters();
+                                    }, 300);
+                                }
+                                function mClearSearch() {
+                                    var inp = document.getElementById('m-search-input');
+                                    var desktop = document.getElementById('search-input');
+                                    if (inp) inp.value = '';
+                                    if (desktop) desktop.value = '';
+                                    var clearBtn = document.getElementById('m-search-clear');
+                                    if (clearBtn) clearBtn.style.display = 'none';
+                                    if (typeof applyFilters === 'function') applyFilters();
+                                    if (inp) inp.focus();
+                                }
+                                </script>

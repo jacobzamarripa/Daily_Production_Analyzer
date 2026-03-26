@@ -1678,8 +1678,16 @@
       .inbox-title-stack { display: flex; flex-direction: column; gap: 1px; line-height: 0.92; letter-spacing: 0.04em; font-size: 10px; }
       .inbox-title-stack span:last-child { color: var(--text-main); }
       .inbox-count { background: var(--border); padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 900; color: var(--text-main);}
-      .inbox-list { overflow-y: auto !important; flex-grow: 1; display: flex; flex-direction: column; padding: 0; gap: 0;}
-      .inbox-list.grid-view { padding: 14px; gap: 12px; }
+      .inbox-list { 
+          overflow-y: auto !important; 
+          flex-grow: 1; 
+          display: flex; 
+          flex-direction: column; 
+          padding: 0; 
+          gap: 0;
+          content-visibility: auto;
+          contain-intrinsic-size: 1px 5000px;
+      }      .inbox-list.grid-view { padding: 14px; gap: 12px; }
 
       .admin-strip { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--card-bg); flex-shrink: 0; transition: background 0.3s, border-color 0.3s; position: sticky; top: 0; z-index: 10; }
       .admin-kpi { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; text-align: center; transition: all 0.15s; }

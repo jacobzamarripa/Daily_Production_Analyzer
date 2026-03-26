@@ -45,6 +45,12 @@ let filteredItems = []; let currentQueueIndex = -1;
 // EXTRACT WITH: filteredItems, currentGroupBy, activeAdminFilter, activePieStageFilter
 // WORKSTREAM 3 RISK: High
 let activeFilters = { sev: [], vendor: [], city: [], ofs: [], status: [] };
+// STATE: GROUP_BY_OPTIONS
+// READS: queue grouping controls and init
+// WRITES: none
+// EXTRACT WITH: currentGroupBy, setGroupBy
+// WORKSTREAM 3 RISK: Low
+const GROUP_BY_OPTIONS = ['none', 'vendor', 'city', 'health', 'stage', 'status'];
 // STATE: currentGroupBy
 // READS: queue grouping, filter pills, bootstrap, renderList
 // WRITES: queue grouping controls
@@ -75,5 +81,20 @@ let currentViewMode = (function() {
     if (stored === 'dense') return 'list';
     if (stored === 'relaxed') return 'grid';
     return _VIEW_MODES.includes(stored) ? stored : 'inbox';
+})();
+
+// STATE: queueGroupCollapseState
+// READS: grouped queue rendering and persistence
+// WRITES: queue group toggle helpers
+// EXTRACT WITH: currentGroupBy, filteredItems
+// WORKSTREAM 3 RISK: Medium
+let queueGroupCollapseState = (function() {
+    try {
+        let raw = sessionStorage.getItem(GROUP_COLLAPSE_SESSION_KEY);
+        let parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (e) {
+        return {};
+    }
 })();
 </script>

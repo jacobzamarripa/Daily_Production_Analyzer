@@ -55,7 +55,9 @@
                   let ws = getEl('welcome-screen'); if (ws) ws.style.display = 'none';
                   let dl = getEl('detail-layout'); if (dl) dl.style.display = 'flex';
               }
+              return false;
           }
+          return true;
       }
 
       // ── Toast helper ──────────────────────────────────────────────────────

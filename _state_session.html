@@ -35,4 +35,13 @@ let globalRefDataDate = "";
 // EXTRACT WITH: preferredPresentationCardTheme, preTheaterThemeWasDark, deckIdleTimer
 // WORKSTREAM 3 RISK: Medium
 let isPresentationMode = false; // Controls Theater blackout
+
+// ── SESSION STORAGE KEYS (CRITICAL PERSISTENCE) ──
+const CHANGELOG_PULSE_SESSION_KEY = 'changelogPulseSeen';
+const STAGED_REVIEW_SESSION_KEY = 'dpa.stagedReviewItems.v1';
+const STAGED_REVIEW_COLLAPSED_SESSION_KEY = 'dpa.stagedReviewCollapsed.v1';
+const GANTT_VIEW_SCROLL_SESSION_KEY = 'dpa.ganttScroll.v1';
+const GANTT_VIEW_FOCUS_SESSION_KEY = 'dpa.ganttFocus.v1';
+const GROUP_BY_SESSION_KEY = 'dpa.queueGroupBy.v1';
+const GROUP_COLLAPSE_SESSION_KEY = 'dpa.queueGroupCollapse.v1';
 </script>

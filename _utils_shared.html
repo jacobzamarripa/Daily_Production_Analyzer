@@ -129,4 +129,11 @@
           if (isOverdue || st === "NOT IN QB REFERENCE" || st === "-") return 'g-color-red';
           return 'g-color-yellow';
       }
+
+      // ── DOM HELPERS (Shorthand) ──
+      const getEl = (id) => document.getElementById(id);
+      const setHtml = (id, val) => { let el = getEl(id); if(el) el.innerHTML = val; };
+      const setTxt = (id, val) => { let el = getEl(id); if(el) el.innerText = val; };
+      const setStyle = (id, prop, val) => { let el = getEl(id); if(el) el.style[prop] = val; };
+      const setVal = (id, val) => { let el = getEl(id); if(el) el.value = val; };
 </script>

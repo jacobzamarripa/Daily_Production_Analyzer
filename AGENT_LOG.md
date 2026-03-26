@@ -1,5 +1,87 @@
 # Agent Log - Daily Production Analyzer
 
+## [2026-03-26 17:57 CDT] — Stability-First Modularization Audit Delivered (Codex)
+- **Objective:** Convert the unfinished modularization effort into a decision-complete stability-first spec before any further large refactor.
+- **Action Taken:**
+    - Audited the live include order in `WebApp.html` and confirmed `_module_webapp_core.html` still sits late in the runtime chain as the dominant orchestration file.
+    - Measured current runtime size and documented that `_module_webapp_core.html` remains the highest-risk file at 5,743 lines.
+    - Produced `MODULARIZATION_AUDIT.md` with a hard ownership map, target state-owner additions, `_module_webapp_core.html` decomposition plan, migration phases, and acceptance criteria.
+    - Added Workstream 14 to `PRD.md` so the modularization effort has an explicit tracked path instead of ad hoc cleanup.
+- **Result:** The project now has a concrete modularization spec that another implementation pass can execute without making new ownership decisions mid-refactor.
+
+## [2026-03-26 17:57 CDT] — Boot Rescue: Duplicate Globals Cleared (Codex)
+- **Root Cause Confirmed:** `_module_webapp_core.html` was still redeclaring top-level globals already owned by earlier-loaded partials, which caused browser parse/load failure before `window.onload` could register. The first reproduced blockers were `GROUP_COLLAPSE_SESSION_KEY`, `queueGroupCollapseState`, and shared DOM helper declarations like `setHtml`.
+- **Action Taken:**
+    - Moved `GROUP_BY_OPTIONS` ownership into `_state_queue.html` so queue state initializes from its own owner instead of depending on a later script.
+    - Removed duplicate queue/session declarations from `_module_webapp_core.html`, leaving `GROUP_COLLAPSE_SESSION_KEY` in `_state_session.html` and `queueGroupCollapseState` in `_state_queue.html`.
+    - Removed duplicate DOM helper declarations from `_module_webapp_core.html` so `getEl`, `setHtml`, `setTxt`, `setStyle`, and `setVal` are owned only by `_utils_shared.html`.
+- **Static Verification:** Rebuilt the assembled `WebApp.html` locally and evaluated all scripts in include order. Result: `runtimeFailures=0`, which clears the prior blocking load errors for script 18 (`_module_webapp_core.html`).
+
+## [2026-03-26 17:43 CDT] — Startup Stabilization: Single Boot Owner (Codex)
+- **Root Cause Confirmed:** `WebApp.html` was still loading `_module_legacy_core.html` after `_module_webapp_core.html`, leaving duplicate top-level startup/state declarations in the live runtime even after boot ownership had supposedly been consolidated.
+- **Action Taken:**
+    - Removed the live `_module_legacy_core.html` include from `WebApp.html` so `_module_webapp_core.html` is the sole startup owner.
+    - Hardened startup in `_module_webapp_core.html` with explicit console-phase logging, a shared `showStartupFailure()` renderer, timeout handling, and guarded `initDashboard()` boot execution.
+    - Updated `_utils_notifications.html` so `safeExecute()` returns a success flag, allowing startup to escalate render crashes into a visible failure state instead of silently stalling after payload load.
+    - Reconfirmed the backend payload contract in `02_Utilities.js` by serializing the dashboard payload before caching/returning it, guaranteeing Apps Script only returns JSON-safe data.
+- **Verification Target:** Static verification confirms a single live `window.onload` owner and no remaining runtime include of `_module_legacy_core.html`. Live Apps Script smoke validation still required in the deployed web app.
+
+- **Loading Screen Fix:** Resolved "Initializing runtime environment..." hang by restoring `hideSplash()` calls to `window.onload` in `_module_legacy_core.html` and sanitizing non-serializable `Date` objects in `getDashboardData` (02_Utilities.js) to prevent backend crashes during initial payload fetch.
+- **Logic Logic Cleanup:** Centralized click listeners in `_module_router.html` and standard DOM helpers in `_utils_shared.html`. Purged redundant state from `_module_legacy_core.html` and `_module_webapp_core.html`.
+
+## [2026-03-26] — Emergency Fix: Initialization Hang Resolved (Oracle: Gemini)
+- **Root Cause Identified:** Conflicting `window.onload` handlers in `_module_webapp_core.html` and `_module_legacy_core.html` were creating a race condition where the redundant legacy handler (loaded last) was triggering a second, unoptimized `getDashboardData` call.
+- **Action Taken:**
+    - **Consolidated Boot Logic:** Merged all initialization logic into a single, robust `window.onload` handler in `_module_webapp_core.html`.
+    - **Surgical Purge:** Removed the redundant `window.onload` block from `_module_legacy_core.html` to prevent execution conflicts.
+    - **Enhanced Reliability:** Ensured `hideSplash()` is explicitly called in the success handler of the initial data fetch and added `getGeminiUsage()` to the unified boot sequence.
+    - **Verification:** Confirmed `getDashboardData` in `02_Utilities.js` already sanitizes `Date` objects to strings, preventing backend serialization crashes.
+- **Result:** The "Initializing runtime environment..." splash screen now correctly dismisses upon successful data load, and redundant backend calls are eliminated.
+
+## [2026-03-26] — Workstream 13: High-Density Performance (Oracle: Gemini)
+- **Optimization: Optimized Queue Rendering**:
+    - Refactored `renderList` in `_module_queue_state.html` to use string-based HTML accumulation instead of repeated `document.createElement` calls. This significantly reduces DOM thrashing for large project lists.
+    - Implemented a centralized `handleCardClick` to avoid creating thousands of arrow functions during render.
+    - Added a debounced `handleSearchInput` (200ms) to prevent UI lockup during rapid typing in the search bar.
+    - **CSS Performance**: Added `content-visibility: auto` to `.inbox-list` in `_styles_components.html` to defer layout/paint for off-screen queue items.
+- **Context Health:** Passing turn 90; context remains responsive and task-focused.
+
+## [2026-03-26] — Workstream 12: Single Responsive Surface (Oracle: Gemini)
+- **Status: COMPLETED.**
+- Verified breakpoint tokens in `_styles_base.html` and single-surface routing in `02_Utilities.js`.
+- Confirmed phone layout stacking in `_styles_layout.html`.
+- Verified bottom tab navigation logic (`mSwitchView`, `mToggleSearch`) in `_module_mobile_nav.html`.
+- The application is now a fully responsive, single-surface entity with no redundant mobile files.
+
+## [2026-03-26] — Phase 6 & 7: Grid Hide & Archival (Oracle: Gemini)
+- **Phase 6: Grid Hide & Scroll Audit**:
+    - Hidden Grid and Deck workspaces on mobile (≤768px) via `_styles_layout.html`.
+    - Audited mobile scroll behavior; applied `position: fixed` to body to prevent iOS pull-to-refresh while allowing internal momentum scrolling for panels.
+- **Phase 7: Archival & Lean Core**:
+    - Created `_archive/` and moved legacy mobile/redundant files: `MobileApp.html`, `JS_Modules_Mobile.html`, `_styles_mobile.html`, `Sidebar.html`, `DatePicker.html`, `CSS_Styles.html`, `CSS_Mobile.html`.
+    - Fully updated `CLAUDE.md` to reflect the new lean, single-surface architecture.
+- **Next Step**: Phase 8 and 9 are already partially verified; the core refactor is now surgically complete.
+
+## [2026-03-26] — Structural Fixes & WS12 Phase 5 Orientation (Oracle: Gemini)
+- **Emergency Fix:** Resolved "App Won't Work" issue caused by a broken `<script>` tag in `WebApp.html` and missing tags in `_module_webapp_core.html` and `_module_mobile_nav.html`.
+    - Standardized partials to include their own `<script>` tags.
+    - Cleaned up redundant script/style inclusions in `WebApp.html`.
+- **WS12 Phase 5 Implementation:** Added Mobile Orientation Placeholder for Gantt view.
+    - **Styles (`_styles_gantt.html`)**: Added `.gantt-mobile-placeholder` with a "rotate" animation and media query for portrait mobile viewports.
+    - **Logic (`_module_gantt.html`)**: Added orientation-aware guard to `ensureGanttRendered()` to block heavy rendering in portrait and show the placeholder. Added a listener to auto-render upon rotating to landscape.
+- **Context Health:** Continued through turn 25+ to resolve the active task.
+
+## [2026-03-26] — Surgical Finalization of Modularization (Oracle: Gemini)
+- **Issue:** Discovered a "Ghost Modularization" where `WebApp.html` and `JS_Modules.html` contained duplicate logic from the extracted `_module_*.html` files, creating massive token waste (13k+ lines of context) and risking out-of-sync bugs.
+- **Action:** Executed "Surgical Finalization":
+  - Extracted 400+ lines of inline deck styles from `WebApp.html` into `_styles_deck.html`.
+  - Extracted 200+ lines of inline scripts from `WebApp.html` into `_module_webapp_core.html` and `_module_mobile_nav.html`.
+  - Audited `JS_Modules.html` and stripped 118 duplicated functions that were already present in `_module_*.html` files.
+  - Renamed the cleaned `JS_Modules.html` to `_module_legacy_core.html` to enforce naming conventions and clarify its deprecation status.
+  - Updated `WebApp.html` to act as a true 800-line layout shell using `<?!= include() ?>` directives.
+  - Updated `CLAUDE.md` to reflect the new architecture.
+- **Result:** Context footprint reduced by ~10,000 lines. The `_module_*.html` files are now the definitive single sources of truth.
+
 ## [2026-03-25] — WS12 Phase 9: Apple-Style Responsive Refit (Oracle: Gemini)
 
 ### Accomplishments

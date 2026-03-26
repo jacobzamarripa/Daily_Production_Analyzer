@@ -358,7 +358,15 @@ function getDashboardData() {
          
          // 🧠 FIX: Ensure no Date objects make it into the raw row
          let safeRawRow = data[i]
-             .map((cell, idx) => ({ h: headers[idx], v: (cell instanceof Date) ? cell.toISOString() : String(cell || "") }))
+             .map((cell, idx) => {
+                 let val = cell;
+                 if (cell instanceof Date) {
+                     val = (!isNaN(cell.getTime())) ? cell.toISOString() : "";
+                 } else {
+                     val = String(cell || "");
+                 }
+                 return { h: headers[idx], v: val };
+             })
              .filter(({ v }) => v !== '');
 
          let vendorName = vendorIdx > -1 ? String(data[i][vendorIdx] || "").trim() : "";
@@ -430,8 +438,9 @@ function getDashboardData() {
     allFdhIds: Object.keys(refDict),
     fiberStats: fiberStats
   };
-  try { cache.put(CACHE_KEY, JSON.stringify(payload), 1800); } catch(e) {}
-  return payload;
+  const serializedPayload = JSON.stringify(payload);
+  try { cache.put(CACHE_KEY, serializedPayload, 1800); } catch(e) {}
+  return JSON.parse(serializedPayload);
 }
 
 function getVendorDailyGoals() {

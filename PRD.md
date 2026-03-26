@@ -20,17 +20,36 @@
 
 ---
 
-## Workstream 12 — Responsive Retrofit (Next)
+## Workstream 13 — High-Density Performance & Animation Audit (Active)
 
-- [ ] Phase 1: Breakpoint tokens + routing cleanup (`_styles_base.html`, `02_Utilities.js`)
-- [ ] Phase 2: Phone layout stacking (`_styles_layout.html`)
-- [ ] Phase 3: Bottom tab navigation (`WebApp.html`, `_styles_layout.html`, `_module_router.html`)
+- [x] Optimized string-based rendering for Project Queue
+- [x] Debounced search handlers for high-frequency input
+- [x] CSS `content-visibility` for off-screen list performance
+- [ ] Animation frame audit (prevent layout shifts during transitions)
+- [ ] Virtual scroll evaluation for 500+ items
+- [ ] Canvas-based sparkline evaluation for Grid mode
+
+
+- [x] Phase 1: Breakpoint tokens + routing cleanup (`_styles_base.html`, `02_Utilities.js`)
+- [x] Phase 2: Phone layout stacking (`_styles_layout.html`)
+- [x] Phase 3: Bottom tab navigation (`WebApp.html`, `_styles_layout.html`, `_module_router.html`)
 - [x] Phase 4: Touch targets + compact header (`_styles_components.html`, `_styles_layout.html`)
-- [ ] Phase 5: Gantt landscape / portrait placeholder (`_styles_gantt.html`, `_module_gantt.html`)
-- [ ] Phase 6: Grid hide + detail/admin scroll audit
-- [ ] Phase 7: Archive mobile files + routing cleanup (`02_Utilities.js`, CLAUDE.md)
+- [x] Phase 5: Gantt landscape / portrait placeholder (`_styles_gantt.html`, `_module_gantt.html`)
+- [x] Phase 6: Grid hide + detail/admin scroll audit
+- [x] Phase 7: Archive mobile files + routing cleanup (`02_Utilities.js`, CLAUDE.md)
 - [x] Phase 8: Executive Glass & Spring Transition Refit (Mobile) (`_styles_mobile.html`, `JS_Modules_Mobile.html`)
 - [x] Phase 9: Apple-Style Responsive Refit (Floating Header, Polymorphic Dock, Standalone Panels)
+
+---
+
+## Workstream 14 — Stability-First Modularization (Active)
+
+- [x] Phase 0 — Audit + ownership map (`MODULARIZATION_AUDIT.md`)
+- [ ] Phase 1 — Complete state ownership (`_state_payload.html`, `_state_analytics.html`, `_state_ui_shell.html`)
+- [ ] Phase 2 — Shared helper/token ownership (`_utils_ui_tokens.html`, helper remnant purge)
+- [ ] Phase 3 — Feature island extraction (`_module_critical_hub.html`, `_module_grid.html`, `_module_review_actions.html`, quick-peek ownership`)
+- [ ] Phase 4 — Reduce `_module_webapp_core.html` to bootstrap/app-shell orchestration
+- [ ] Phase 5 — Purge ghost modularization remnants and finalize docs
 
 ## Workstream 11 — Visual Redesign Pass (Complete)
 

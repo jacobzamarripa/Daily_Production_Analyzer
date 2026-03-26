@@ -1,5 +1,5 @@
-    <script>
-      // 🚀 BOOT SEQUENCE CONTROLLER
+<script>
+// 🚀 BOOT SEQUENCE CONTROLLER
       // STATE: bootInterval
       // READS: startup
       // WRITES: startup
@@ -38,6 +38,7 @@
           clearInterval(bootInterval);
           let barEl = document.getElementById('boot-progress');
           let textEl = document.getElementById('boot-text');
+          reportStartupPhase('hide-splash');
           if (barEl) barEl.style.width = '100%';
           if (textEl) textEl.innerText = "Data loaded. Initializing UI...";
           setTimeout(() => {
@@ -46,19 +47,27 @@
           }, 300);
       }
 
+      function reportStartupPhase(phase, meta) {
+          const logger = phase.includes('failure') || phase.includes('timeout') ? console.error : console.info;
+          if (typeof meta === 'undefined') logger(`[startup] ${phase}`);
+          else logger(`[startup] ${phase}`, meta);
+      }
+
+      function showStartupFailure(title, message, detail) {
+          reportStartupPhase('startup-failure-ui', { title, message, detail });
+          hideSplash();
+          let ws = getEl('welcome-screen'); if (ws) ws.style.display = 'none';
+          let dl = getEl('detail-layout'); if (dl) dl.style.display = 'flex';
+          let pc = getEl('pane-content');
+          if (!pc) return;
+          const safeTitle = esc(title || 'Startup Failure');
+          const safeMessage = esc(message || 'The dashboard could not finish initializing.');
+          const safeDetail = detail ? `<br/><br/><pre style="white-space:pre-wrap; font-size:10px; color:var(--text-muted);">${esc(detail)}</pre>` : '';
+          pc.innerHTML = `<div class="error-msg" style="color:var(--color-critical); padding:20px; font-family:monospace; text-align:left;"><b>${safeTitle}</b><br/>${safeMessage}${safeDetail}</div>`;
+          pc.style.display = 'flex';
+      }
+
       // ── GLOBAL STATE VARIABLES (CRITICAL SCOPE) ──
-      // STATE: isGridMode
-      // READS: workspace-router, detail, grid
-      // WRITES: workspace-router
-      // EXTRACT WITH: currentGridPivot, currentWorkspaceView
-      // WORKSTREAM 3 RISK: Medium
-      let isGridMode = false;
-      // STATE: currentGridPivot
-      // READS: bootstrap, grid, queue chrome
-      // WRITES: bootstrap, grid, workspace-router
-      // EXTRACT WITH: isGridMode, currentViewMode, allGlobalLogs
-      // WORKSTREAM 3 RISK: High
-      let currentGridPivot = 'velocity';
       // TODO: HIGH RISK - central state owner. Must be isolated
       // before any dependent module can be extracted.
       // STATE: isDeckEditing
@@ -100,49 +109,38 @@
       // WRITES: none
       // EXTRACT WITH: initDashboard, switchPanelTab
       // WORKSTREAM 3 RISK: Low
-      const CHANGELOG_PULSE_SESSION_KEY = 'changelogPulseSeen';
+      
       // STATE: STAGED_REVIEW_SESSION_KEY
       // READS: reviewed tray persistence helpers
       // WRITES: none
       // EXTRACT WITH: persistStagedReviewSession, loadStagedReviewSession
       // WORKSTREAM 3 RISK: Low
-      const STAGED_REVIEW_SESSION_KEY = 'dpa.stagedReviewItems.v1';
+      
       // STATE: STAGED_REVIEW_COLLAPSED_SESSION_KEY
       // READS: reviewed tray persistence helpers
       // WRITES: none
       // EXTRACT WITH: persistStagedReviewSession, loadStagedReviewSession
       // WORKSTREAM 3 RISK: Low
-      const STAGED_REVIEW_COLLAPSED_SESSION_KEY = 'dpa.stagedReviewCollapsed.v1';
+      
       // STATE: GANTT_VIEW_SCROLL_SESSION_KEY
       // READS: gantt session persistence
       // WRITES: none
       // EXTRACT WITH: persistGanttViewSession, restoreGanttViewSession
       // WORKSTREAM 3 RISK: Low
-      const GANTT_VIEW_SCROLL_SESSION_KEY = 'dpa.ganttScroll.v1';
+      
       // STATE: GANTT_VIEW_FOCUS_SESSION_KEY
       // READS: gantt session persistence
       // WRITES: none
       // EXTRACT WITH: persistGanttViewSession, restoreGanttViewSession
       // WORKSTREAM 3 RISK: Low
-      const GANTT_VIEW_FOCUS_SESSION_KEY = 'dpa.ganttFocus.v1';
+      
       // STATE: GROUP_BY_SESSION_KEY
       // READS: queue grouping persistence
       // WRITES: none
       // EXTRACT WITH: persistQueueGroupingSession, currentGroupBy
       // WORKSTREAM 3 RISK: Low
-      const GROUP_BY_SESSION_KEY = 'dpa.queueGroupBy.v1';
-      // STATE: GROUP_COLLAPSE_SESSION_KEY
-      // READS: queue grouping persistence
-      // WRITES: none
-      // EXTRACT WITH: persistQueueGroupingSession, queueGroupCollapseState
-      // WORKSTREAM 3 RISK: Low
-      const GROUP_COLLAPSE_SESSION_KEY = 'dpa.queueGroupCollapse.v1';
-      // STATE: GROUP_BY_OPTIONS
-      // READS: queue grouping controls
-      // WRITES: none
-      // EXTRACT WITH: currentGroupBy, setGroupBy
-      // WORKSTREAM 3 RISK: Low
-      const GROUP_BY_OPTIONS = ['none', 'vendor', 'city', 'health', 'stage', 'status'];
+      
+      // Queue/session constants are owned by _state_queue.html and _state_session.html
       // Queue state owner extracted to _state_queue.html
       // Workspace router state owner extracted to _state_router.html
       // Session and deck state owner extracted to _state_session.html
@@ -198,20 +196,7 @@
       // WORKSTREAM 3 RISK: Medium
       let ganttHasVisited = false;
       */
-      // STATE: queueGroupCollapseState
-      // READS: grouped queue rendering and persistence
-      // WRITES: queue group toggle helpers
-      // EXTRACT WITH: currentGroupBy, filteredItems
-      // WORKSTREAM 3 RISK: Medium
-      let queueGroupCollapseState = (function() {
-          try {
-              let raw = sessionStorage.getItem(GROUP_COLLAPSE_SESSION_KEY);
-              let parsed = raw ? JSON.parse(raw) : {};
-              return parsed && typeof parsed === 'object' ? parsed : {};
-          } catch (e) {
-              return {};
-          }
-      })();
+      // queueGroupCollapseState is owned by _state_queue.html
       function isSlideFaceActive() {
           return currentWorkspaceView === 'detail' && currentDetailFace === 'slide';
       }
@@ -503,36 +488,7 @@
           return stageName;
       }
 
-      // STATE: setHtml
-      // READS: bootstrap, queue, detail, gantt
-      // WRITES: none
-      // EXTRACT WITH: DOM helper bundle
-      // WORKSTREAM 3 RISK: Low
-      const setHtml = (id, val) => { let el = document.getElementById(id); if(el) el.innerHTML = val; };
-      // STATE: setTxt
-      // READS: queue, admin, outbox
-      // WRITES: none
-      // EXTRACT WITH: DOM helper bundle
-      // WORKSTREAM 3 RISK: Low
-      const setTxt = (id, val) => { let el = document.getElementById(id); if(el) el.innerText = val; };
-      // STATE: setStyle
-      // READS: bootstrap, detail
-      // WRITES: none
-      // EXTRACT WITH: DOM helper bundle
-      // WORKSTREAM 3 RISK: Low
-      const setStyle = (id, prop, val) => { let el = document.getElementById(id); if(el) el.style[prop] = val; };
-      // STATE: setVal
-      // READS: form/reset helpers
-      // WRITES: none
-      // EXTRACT WITH: DOM helper bundle
-      // WORKSTREAM 3 RISK: Low
-      const setVal = (id, val) => { let el = document.getElementById(id); if(el) el.value = val; };
-      // STATE: getEl
-      // READS: nearly every desktop module
-      // WRITES: none
-      // EXTRACT WITH: DOM helper bundle
-      // WORKSTREAM 3 RISK: Low
-      const getEl = (id) => document.getElementById(id);
+      // DOM helper bundle is owned by _utils_shared.html
       /* GANTT INLINE COPY DISABLED: extracted to _module_gantt.html
       function persistGanttViewSession() {
           try {
@@ -3280,6 +3236,7 @@
       }
       // BOOTSTRAP ANCHOR: owns first payload fetch, viewport handoff, splash timeout, and startup error UI
       window.onload = function() {
+          reportStartupPhase('window-onload');
           if (checkViewportHandOff()) return;
 
           /* Keyboard avoidance: float dock above iOS software keyboard */
@@ -3290,36 +3247,54 @@
           }
           let bootTimeoutId = setTimeout(() => {
               bootTimeoutId = null;
-              hideSplash();
-              let dl = getEl('detail-layout'); if (dl) dl.style.display = 'flex';
-              let pc = getEl('pane-content');
-              if (pc) {
-                  pc.innerHTML = `<div class="error-msg" style="color:#ef4444; padding:24px; font-family:monospace; text-align:center;"><b>Connection timeout.</b><br/><span style="font-size:11px; color:#94a3b8;">Apps Script did not respond. Please refresh the page.</span></div>`;
-                  pc.style.display = 'flex';
-              }
+              reportStartupPhase('dashboard-payload-timeout');
+              showStartupFailure(
+                  'Connection timeout.',
+                  'Apps Script did not respond. Please refresh the page.',
+                  null
+              );
           }, 20000);
 
           // DATA CALL: window.onload initial dashboard load
           // COUPLED TO: boot timeout state, splash/welcome/detail panes, initDashboard bootstrap, pane-content error UI
           // EXTRACT BLOCKER: bootstrap contract for all views must be isolated before moving the initial payload call
           google.script.run
-              .withSuccessHandler(data => { clearTimeout(bootTimeoutId); initDashboard(data); })
-              .withFailureHandler(err => {
-                  clearTimeout(bootTimeoutId);
+              .withSuccessHandler(data => { 
+                  if (bootTimeoutId) clearTimeout(bootTimeoutId);
+                  reportStartupPhase('dashboard-payload-success', { actionItems: data && data.actionItems ? data.actionItems.length : 0 });
                   hideSplash();
-                  let ws = getEl('welcome-screen'); if (ws) ws.style.display = 'none';
-                  let dl = getEl('detail-layout'); if (dl) dl.style.display = 'flex';
-                  let pc = getEl('pane-content');
-                  if (pc) {
-                      pc.innerHTML = `<div class="error-msg" style="color:#ef4444; padding:20px; font-family:monospace; text-align:left;"><b>Backend Crash:</b><br/>${err.message}</div>`;
-                      pc.style.display = 'flex';
+                  try {
+                      initDashboard(data);
+                  } catch (err) {
+                      reportStartupPhase('dashboard-init-failure', err && err.stack ? err.stack : err);
+                      showStartupFailure(
+                          'Frontend Initialization Crash',
+                          'Dashboard data loaded, but the UI failed while initializing.',
+                          err && err.stack ? err.stack : (err && err.message ? err.message : String(err))
+                      );
                   }
               })
+              .withFailureHandler(err => {
+                  if (bootTimeoutId) clearTimeout(bootTimeoutId);
+                  reportStartupPhase('dashboard-payload-failure', err && err.stack ? err.stack : err);
+                  showStartupFailure(
+                      'Backend Crash',
+                      err && err.message ? err.message : 'Dashboard data could not be loaded from Apps Script.',
+                      err && err.stack ? err.stack : null
+                  );
+              })
               .getDashboardData();
+          
           // DATA CALL: window.onload Gemini usage badge load
-          // COUPLED TO: gemini-badge DOM, updateGeminiBadge helper, startup load flow
-          // EXTRACT BLOCKER: badge DOM ownership remains embedded in the shared bootstrap/runtime layer
-          google.script.run.withSuccessHandler(updateGeminiBadge).getGeminiUsage();
+          google.script.run
+              .withSuccessHandler(usage => {
+                  reportStartupPhase('gemini-usage-success');
+                  updateGeminiBadge(usage);
+              })
+              .withFailureHandler(err => {
+                  reportStartupPhase('gemini-usage-failure', err && err.message ? err.message : err);
+              })
+              .getGeminiUsage();
       };
 
       function updateCityDropdown() {
@@ -3342,7 +3317,7 @@
       // BOOTSTRAP ANCHOR: hydrates allActionItems/global payload state and fans out to every major desktop surface
       function initDashboard(data) {
         window._lastDashboardPayload = data;
-        safeExecute('initDashboard', () => {
+        const initOk = safeExecute('initDashboard', () => {
             hideSplash();
             restoreGanttViewSession();
             if (data && data.allFdhIds) {
@@ -3418,6 +3393,16 @@
                 applyTheme(_sysDark && _sysDark.matches);
             }
         });
+        if (!initOk) {
+            reportStartupPhase('dashboard-init-failure', 'safeExecute(initDashboard) reported a UI crash');
+            showStartupFailure(
+                'Frontend Initialization Crash',
+                'Dashboard data loaded, but the UI failed while rendering startup state.',
+                'Check the console for the original stack trace from safeExecute(initDashboard).'
+            );
+            return;
+        }
+        reportStartupPhase('dashboard-init-complete');
       }
 
       function updateRefDataIndicator() {
@@ -5756,52 +5741,3 @@ ${item.comment || 'No notes provided.'}
           }
       });
     </script>
-<!-- Append second block -->
-                                <script>
-                                // WS12 Mobile view switcher
-                                function mSwitchView(view, btn) {
-                                    if (window.innerWidth > 480) return;
-                                    // Active tab state
-                                    document.querySelectorAll('.m-tab-btn').forEach(function(b) {
-                                        b.classList.remove('active');
-                                    });
-                                    if (btn) btn.classList.add('active');
-                                    document.body.setAttribute('data-mview', view);
-                                    // Get real panel elements
-                                    var inbox   = document.querySelector('.inbox-sidebar');
-                                    var reading = document.querySelector('.reading-pane');
-                                    var gantt   = document.getElementById('gantt-panel');
-                                    // Reset all
-                                    [inbox, reading, gantt].forEach(function(el) {
-                                        if (el) el.style.setProperty('display', 'none', 'important');
-                                    });
-                                    // Show correct panel + wire router
-                                    if (view === 'queue') {
-                                        if (inbox) inbox.style.setProperty('display', 'flex', 'important');
-                                    } else if (view === 'gantt') {
-                                        if (gantt) gantt.style.setProperty('display', 'flex', 'important');
-                                        if (typeof switchWorkspaceView === 'function') switchWorkspaceView('gantt');
-                                    } else if (view === 'admin') {
-                                        if (reading) reading.style.setProperty('display', 'flex', 'important');
-                                        if (typeof switchWorkspaceView === 'function') switchWorkspaceView('detail');
-                                        setTimeout(function() {
-                                            if (typeof setAdminPanelOpen === 'function') setAdminPanelOpen(true);
-                                        }, 80);
-                                    } else if (view === 'digest') {
-                                        if (reading) reading.style.setProperty('display', 'flex', 'important');
-                                        if (typeof switchWorkspaceView === 'function') switchWorkspaceView('digest');
-                                    } else {
-                                        // detail
-                                        if (reading) reading.style.setProperty('display', 'flex', 'important');
-                                        if (typeof switchWorkspaceView === 'function') switchWorkspaceView('detail');
-                                    }
-                                }
-
-                                // Init: show queue panel on mobile load
-                                (function() {
-                                    if (window.innerWidth <= 480) {
-                                        var inbox = document.querySelector('.inbox-sidebar');
-                                        if (inbox) inbox.style.setProperty('display', 'flex', 'important');
-                                    }
-                                })();
-                                </script>

@@ -42,4 +42,17 @@ let deckIndex = 0;
 let currentDockPlacement = 'top';
 // Panel tab state — owned here, written by switchPanelTab()
 let currentPanelTab = 'admin';
+
+// STATE: isGridMode
+// READS: workspace-router, detail, grid
+// WRITES: workspace-router
+// EXTRACT WITH: currentGridPivot, currentWorkspaceView
+// WORKSTREAM 3 RISK: Medium
+let isGridMode = false;
+// STATE: currentGridPivot
+// READS: bootstrap, grid, queue chrome
+// WRITES: bootstrap, grid, workspace-router
+// EXTRACT WITH: isGridMode, currentViewMode, allGlobalLogs
+// WORKSTREAM 3 RISK: High
+let currentGridPivot = 'velocity';
 </script>
