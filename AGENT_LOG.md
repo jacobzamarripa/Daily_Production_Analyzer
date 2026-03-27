@@ -98,3 +98,13 @@
 - **Validation:** no errors on `WebApp.html`, `_module_queue_state.html`, `_styles_badges.html`.
 - **Next:** Phase 6 — Native detail layout (hero + stacked sections, dock/strip minimization).
 
+> [!info] 2026-03-27: WS16 Phase 6 — Native detail layout
+- **`_styles_responsive.html`:** detail pane spacing shifted to mobile tokens (`--m-gutter`) and tightened top rhythm (`.pane-content` top 8px).
+- **Hero hierarchy:** `.qb-proj-id` enlarged to 24px/800, `.qb-proj-meta` increased to 14px/500 for stronger project identity on phone.
+- **Schedule card header flow:** `#project-schedule-card .qb-proj-title` now stacks vertically; status pill fills full width for thumb-friendly readability.
+- **Section treatment:** phone `.qb-module` now renders as standalone rounded cards (14px radius, bordered, 14px padding) with stronger section headers (`.qb-module-header` 12px/800).
+- **Stacking enforced:** `.qb-top-row` border removed on phone, `.interaction-split` gap normalized to 12px while preserving single-column behavior.
+- **Clutter reduction:** `#welcome-screen` hidden on phone; `.raw-data-strip` forced hidden at `<=480px` in `_styles_panels.html`.
+- **Validation:** no diagnostics errors on `_styles_responsive.html` and `_styles_panels.html`.
+- **Next:** Phase 7 — Admin bottom-sheet pattern for `.outbox-pane` on phone.
+
