@@ -261,18 +261,16 @@ On `≤480px`, the workspace chooser modal should be skipped entirely. Phone aut
 ### ✅ Phase 1 — Shell Contract (complete — mechanical contract kept; design augmented here)
 ### ✅ Phase 2 — Legacy Deletion + Rail Scaffold (complete)
 ### ✅ Phase 3 — Queue↔Detail Switching Mechanism (complete)
+### ✅ Phases 4–15 — Token system, rail, push-pop, back nav, filter sheet, dock, spacing (complete — see AGENT_LOG.md)
+### ✅ Phase 16 — Polymorphic Dock + Full-Width Panel Polish (complete 2026-03-27)
+- Replaced dual-layer system (dock pill + rail tab bar) with single floating polymorphic dock
+- `#mobile-rail` eliminated entirely; `#mobile-dock` redesigned as sole mobile nav
+- Three dock contexts: Queue / Detail / Deck — driven by `syncMobileDockContext()`
+- Active button = filled accent square; inactive = ghost icon (native iOS convention)
+- Sort moved from dock select → `#mobile-sf-sheet` row
+- Full-width panel overrides added; stale 56px clearance refs updated; header re-enabled
 
 ---
-
-### Phase 4 — Mobile Token System + Rail Polish
-**Scope:** CSS only. No JS, no markup (except `#mobile-back-btn` markup refinement).
-**Files:** `_styles_layout.html`, `_styles_base.html`
-- Define `--m-*` token block inside `@media (max-width: 480px)` `:root {}`
-- Remove text labels from `#mobile-rail` via CSS (`display:none` on `.rail-btn span`)
-- Active state: accent color + 3px bottom dot on active rail button
-- `#mobile-back-btn`: transform into full-width 52px nav bar (markup replacement in `WebApp.html`)
-- Top nav: `display:none` for brand-title when queue/detail are active on phone
-- Startup overlay: `display:none` at `≤480px` + auto-start into queue via `_module_startup_refdata.html` init
 
 ### Phase 5 — Native Queue List
 **Scope:** CSS redesign of `.email-card` and `.inbox-header` at `≤480px`.

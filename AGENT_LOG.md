@@ -2,6 +2,19 @@
 > Full execution history moved to `_docs_archive/AGENT_LOG_archive.md` (2026-03-26, after WS14 closeout).
 > Current state: WS13 complete (2026-03-27). All 6 performance items closed. No open workstreams. See PRD.md.
 
+> [!info] 2026-03-27: WS16 Phase 16 — Polymorphic dock + full-width panel polish
+> - **Direction pivot:** Replaced dual-layer system (`#mobile-dock` pill + `#mobile-rail` tab bar) with a single floating polymorphic dock per reference design (Centric Ops native app pattern).
+> - **`#mobile-rail` eliminated:** Removed all HTML markup and CSS (`#mobile-rail`, `.rail-btn`, 80+ lines). No more edge-to-edge chrome at screen bottom.
+> - **`#mobile-dock` redesigned:** Floating pill (`border-radius: 20px`, shadow, 64px tall, 16px side margins). Three contexts driven by `syncMobileDockContext()`: Queue (Search · Filter · **Queue-active** · Deck), Detail (Back · **Detail-active** · Prev · Next · Review), Deck (Queue · **Deck-active** · Filter).
+> - **Active button pattern:** Filled `var(--accent)` background + white icon (`border-radius: 14px`) — matches native iOS tab bar convention.
+> - **Sort moved to filter sheet:** Removed `#m-dock-sort` select from dock. Added `#m-sf-sort-select` to `#mobile-sf-sheet` with `syncMobileSFSort()`. `syncMobileSFFilterChips()` now syncs sort to sheet.
+> - **Token bump:** `--m-section: 28px`, `--m-card-pad: 20px`, `--m-touch: 56px`, `--m-dock-h: 64px` (replaces `--m-rail-h`).
+> - **Full-width panel fix:** Added `left: 0; right: 0; border-radius: 0; box-shadow: none` overrides to `.inbox-sidebar` and `.reading-pane` in WS16 ≤480px block — old layout block had `left: 12px; right: 12px` leaking through.
+> - **Header restored:** Re-enabled `nav-brand-title` at ≤480px (was hidden pending Phase 5 large-title implementation; looked blank in interim).
+> - **Stale clearance refs fixed:** `body.admin-panel-open .reading-pane` inset, `#gantt-panel` bottom updated from `56px` (old rail) to `var(--m-dock-h, 64px) + 12px`.
+> - **~84px real estate reclaimed** vs. prior dual-dock (was 124px combined).
+> - **Smoke test:** Queue full-width ✓, push-pop transitions ✓, polymorphic dock context switches ✓, filter sheet Sort row ✓, admin sheet clears dock ✓.
+
 > [!info] 2026-03-27: WS16 Phases 12-15 — Mobile dock + unified search/filter sheet
 > - **Phase 12 (Queue-first + rail simplification):** Removed Grid action from `#mobile-rail` and reindexed phone rail active-state CSS (Queue/Deck/Filter).
 > - **Phase 13 (Polymorphic mobile dock):** Added `#mobile-dock` with queue context (Search, Filter, Sort) and detail context (Prev/Next, position counter, Review Hub). Added JS runtime: `openMobileSFSheet`, `closeMobileSFSheet`, `navigateMobileQueue`, `syncMobileDockSort`, `syncMobileDockContext`.

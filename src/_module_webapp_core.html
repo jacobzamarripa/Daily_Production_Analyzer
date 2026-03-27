@@ -353,29 +353,27 @@
           centerQueueCardByFdh(nextItem.fdh, 'smooth');
       }
 
-      function syncMobileDockSort() {
-          const dockSort = getEl('m-dock-sort');
+      function syncMobileSFSort() {
+          const sfSort = getEl('m-sf-sort-select');
           const desktopSort = getEl('sort-queue');
-          if (!dockSort || !desktopSort) return;
-          desktopSort.value = dockSort.value;
+          if (!sfSort || !desktopSort) return;
+          desktopSort.value = sfSort.value;
           applyFilters();
       }
 
       function syncMobileDockContext() {
           const queueCtx = getEl('m-dock-queue');
           const detailCtx = getEl('m-dock-detail');
+          const deckCtx = getEl('m-dock-deck');
           if (!queueCtx || !detailCtx) return;
 
           const isPhone = window.innerWidth <= 480;
           const isDetail = isPhone && document.body.classList.contains('mobile-detail-open');
-          queueCtx.style.display = isDetail ? 'none' : 'flex';
-          detailCtx.style.display = isDetail ? 'flex' : 'none';
+          const isDeck = isPhone && document.body.classList.contains('deck-mode-active');
 
-          if (isDetail && Array.isArray(filteredItems) && filteredItems.length > 0 && typeof currentQueueIndex === 'number' && currentQueueIndex >= 0) {
-              setTxt('m-dock-counter', (currentQueueIndex + 1) + ' / ' + filteredItems.length);
-          } else {
-              setTxt('m-dock-counter', '');
-          }
+          queueCtx.style.display = (!isDetail && !isDeck) ? 'flex' : 'none';
+          detailCtx.style.display = isDetail ? 'flex' : 'none';
+          if (deckCtx) deckCtx.style.display = isDeck ? 'flex' : 'none';
       }
 
       function syncMobileSFFilterChips() {
@@ -401,7 +399,7 @@
           if (srcSearch && dstSearch) dstSearch.value = srcSearch.value;
 
           const srcSort = getEl('sort-queue');
-          const dstSort = getEl('m-dock-sort');
+          const dstSort = getEl('m-sf-sort-select');
           if (srcSort && dstSort) dstSort.value = srcSort.value;
       }
 
