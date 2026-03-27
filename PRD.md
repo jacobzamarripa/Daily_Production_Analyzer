@@ -68,3 +68,9 @@
 - [x] Phase 6 — Live orchestration extraction (`applyFilters`, `openPane`, HUD renderers)
 - [x] Phase 7 — Residual orchestration split (`updateRefDataIndicator`, startup UI handlers, remaining core-only UI plumbing)
 - [x] Phase 8 — Post-modularization hardening (runtime smoke + ownership audit + dead-code trim)
+
+---
+
+## Workstream 15 — Naming Realignment (Active)
+
+- [ ] Phase 1 — TBD

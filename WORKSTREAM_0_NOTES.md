@@ -8,8 +8,8 @@
 // ============================================================
 
 # Workstream 0 Checkpoint (condensed 2026-03-26)
-> WS14 complete (2026-03-26). WS13 active — 3 open items (animation frame audit, virtual scroll, canvas sparkline). See PRD.md.
-> Resume point: WS13 — pick up next open item in PRD.md.
+> WS14 complete (2026-03-26). WS15 (Naming Realignment) starting next. WS13 performance items deferred.
+> Resume point: WS15 — define scope and begin Phase 1.
 
 ---
 
