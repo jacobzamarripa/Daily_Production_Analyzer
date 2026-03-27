@@ -102,7 +102,7 @@ function handleSearchInput(e) {
     const sourceEl = e && e.target ? e.target : null;
     const nextValue = sourceEl ? sourceEl.value : '';
     const desktopSearch = getEl('search-input');
-    const mobileSearch = getEl('mobile-queue-search');
+    const mobileSearch = getEl('m-sf-search-input');
     if (desktopSearch && sourceEl !== desktopSearch && desktopSearch.value !== nextValue) desktopSearch.value = nextValue;
     if (mobileSearch && sourceEl !== mobileSearch && mobileSearch.value !== nextValue) mobileSearch.value = nextValue;
 
@@ -564,7 +564,10 @@ function openPane(item, cardEl) {
 
         setStyle('welcome-screen', 'display', 'none');
         setStyle('detail-layout', 'display', 'flex');
-        if (window.innerWidth <= 480) document.body.classList.add('mobile-detail-open');
+        if (window.innerWidth <= 480) {
+            document.body.classList.add('mobile-detail-open');
+            if (typeof syncMobileDockContext === 'function') syncMobileDockContext();
+        }
 
         if (!isGridMode && !isDeckMode) {
             setStyle('pane-content', 'display', 'flex');
@@ -987,12 +990,12 @@ function applyFilters() {
     safeExecute('applyFilters', () => {
         const sortVal = getActiveSortValue();
         const desktopSearchValue = getEl('search-input')?.value || '';
-        const mobileSearchValue = getEl('mobile-queue-search')?.value || '';
+        const mobileSearchValue = getEl('m-sf-search-input')?.value || '';
         const searchTerm = (desktopSearchValue || mobileSearchValue).toLowerCase();
         const activeQueueItems = getActiveQueueItems();
         let searchEl = getEl('search-input');
         if (searchEl) searchEl.classList.toggle('is-active', searchEl.value.trim() !== '');
-        let mobileSearchEl = getEl('mobile-queue-search');
+        let mobileSearchEl = getEl('m-sf-search-input');
         if (mobileSearchEl) mobileSearchEl.classList.toggle('is-active', mobileSearchEl.value.trim() !== '');
 
         let today = new Date();
@@ -1044,6 +1047,7 @@ function applyFilters() {
         renderMultiSelect('wrap-filter-city', 'city', 'All Cities', validCit.map(v => ({ val: v, label: v })));
         renderMultiSelect('wrap-filter-ofs', 'ofs', 'All OFS Dates', ofsOpts);
         renderMultiSelect('wrap-filter-status', 'status', 'All Statuses', validStatus.map(v => ({ val: v, label: v })));
+        if (typeof syncMobileSFFilterChips === 'function') syncMobileSFFilterChips();
 
         // Base filter: vendor/city/OFS/severity/search — NO admin filter
         // Used for badge counts so Crossings & QB Status always show correct totals
@@ -1217,6 +1221,7 @@ function applyFilters() {
             groupSelect.classList.toggle('is-active', currentGroupBy !== 'none');
         }
         filteredItems = displayFiltered;
+        if (typeof syncMobileDockContext === 'function') syncMobileDockContext();
         ganttNeedsRender = true;
         if (currentWorkspaceView === 'gantt' && !ganttFocusedFdh && ganttHasVisited) captureGanttScrollState();
         renderList(displayFiltered);
@@ -1234,7 +1239,9 @@ function applyFilters() {
 
 function clearAllFilters() {
     let s = getEl('search-input');
+    let ms = getEl('m-sf-search-input');
     if (s) s.value = '';
+    if (ms) ms.value = '';
     activeFilters = { sev: [], vendor: [], city: [], ofs: [], status: [] };
     activeAdminFilter = null;
     activePieStageFilter = null;

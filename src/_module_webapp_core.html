@@ -310,6 +310,99 @@
       function closeMobileDetail() {
           document.body.classList.remove('mobile-detail-open');
           setTxt('mobile-back-title', 'Project');
+          if (typeof syncMobileDockContext === 'function') syncMobileDockContext();
+      }
+
+      function openMobileSFSheet(tab) {
+          const sheet = getEl('mobile-sf-sheet');
+          const overlay = getEl('mobile-sf-overlay');
+          const title = getEl('m-sf-title');
+          if (!sheet || !overlay) return;
+
+          if (title) title.textContent = tab === 'filter' ? 'Filter' : 'Search';
+          if (typeof syncMobileSFFilterChips === 'function') syncMobileSFFilterChips();
+          sheet.classList.add('open');
+          overlay.classList.add('open');
+          document.body.classList.add('mobile-sf-open');
+
+          if (tab === 'search') {
+              setTimeout(function() {
+                  const inp = getEl('m-sf-search-input');
+                  if (inp) inp.focus();
+              }, 240);
+          }
+      }
+
+      function closeMobileSFSheet() {
+          const sheet = getEl('mobile-sf-sheet');
+          const overlay = getEl('mobile-sf-overlay');
+          if (sheet) sheet.classList.remove('open');
+          if (overlay) overlay.classList.remove('open');
+          document.body.classList.remove('mobile-sf-open');
+      }
+
+      function navigateMobileQueue(dir) {
+          if (!Array.isArray(filteredItems) || filteredItems.length === 0) return;
+          if (typeof currentQueueIndex !== 'number' || currentQueueIndex < 0) currentQueueIndex = 0;
+          const nextIdx = (currentQueueIndex + dir + filteredItems.length) % filteredItems.length;
+          const nextItem = filteredItems[nextIdx];
+          if (!nextItem) return;
+
+          const cardEl = getEl('card-' + nextItem.fdh);
+          openPane(nextItem, cardEl);
+          centerQueueCardByFdh(nextItem.fdh, 'smooth');
+      }
+
+      function syncMobileDockSort() {
+          const dockSort = getEl('m-dock-sort');
+          const desktopSort = getEl('sort-queue');
+          if (!dockSort || !desktopSort) return;
+          desktopSort.value = dockSort.value;
+          applyFilters();
+      }
+
+      function syncMobileDockContext() {
+          const queueCtx = getEl('m-dock-queue');
+          const detailCtx = getEl('m-dock-detail');
+          if (!queueCtx || !detailCtx) return;
+
+          const isPhone = window.innerWidth <= 480;
+          const isDetail = isPhone && document.body.classList.contains('mobile-detail-open');
+          queueCtx.style.display = isDetail ? 'none' : 'flex';
+          detailCtx.style.display = isDetail ? 'flex' : 'none';
+
+          if (isDetail && Array.isArray(filteredItems) && filteredItems.length > 0 && typeof currentQueueIndex === 'number' && currentQueueIndex >= 0) {
+              setTxt('m-dock-counter', (currentQueueIndex + 1) + ' / ' + filteredItems.length);
+          } else {
+              setTxt('m-dock-counter', '');
+          }
+      }
+
+      function syncMobileSFFilterChips() {
+          const mappings = [
+              ['wrap-filter-severity', 'm-sf-wrap-severity'],
+              ['wrap-filter-vendor', 'm-sf-wrap-vendor'],
+              ['wrap-filter-city', 'm-sf-wrap-city'],
+              ['wrap-filter-status', 'm-sf-wrap-status']
+          ];
+
+          mappings.forEach(function(pair) {
+              const src = getEl(pair[0]);
+              const dst = getEl(pair[1]);
+              if (src && dst) dst.innerHTML = src.innerHTML;
+          });
+
+          const srcGroup = getEl('group-by-select');
+          const dstGroup = getEl('m-sf-group-select');
+          if (srcGroup && dstGroup) dstGroup.value = srcGroup.value;
+
+          const srcSearch = getEl('search-input');
+          const dstSearch = getEl('m-sf-search-input');
+          if (srcSearch && dstSearch) dstSearch.value = srcSearch.value;
+
+          const srcSort = getEl('sort-queue');
+          const dstSort = getEl('m-dock-sort');
+          if (srcSort && dstSort) dstSort.value = srcSort.value;
       }
 
       document.addEventListener('click', function(e) {
@@ -336,6 +429,7 @@
           }
       });
       window.addEventListener('resize', syncDockClearanceState);
+    window.addEventListener('resize', syncMobileDockContext);
 
       // WS16 Phase 10: auto-show Gantt on phone landscape; restore on portrait
       let _phonePreGanttView = 'detail';
@@ -356,6 +450,9 @@
       }
       window.addEventListener('resize', _handleGanttLandscape);
       window.addEventListener('orientationchange', function() { setTimeout(_handleGanttLandscape, 100); });
+      document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') closeMobileSFSheet();
+      });
 
       function exitTheaterMode(e) {
           if (e && e.target.closest('.gantt-quick-peek')) return;

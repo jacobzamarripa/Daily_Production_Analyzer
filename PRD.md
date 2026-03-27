@@ -94,3 +94,8 @@
 - [x] Phase 9 — View transitions (CSS push/pop animation for queue↔detail; fixes queue auto-open bug)
 - [x] Phase 10 — Gantt mobile (auto-show full-screen in landscape; no rail button; restore on portrait)
 - [ ] Phase 11 — Cross-device validation matrix
+- [ ] Phase 11 — Cross-device validation matrix
+- [x] Phase 12 — Remove Grid from mobile; queue-first startup hardening
+- [x] Phase 13 — Mobile contextual floating dock (`#mobile-dock`)
+- [x] Phase 14 — Mobile detail breathing room + action migration to dock
+- [x] Phase 15 — Search/Filter unified slide-up sheet (`#mobile-sf-sheet`)

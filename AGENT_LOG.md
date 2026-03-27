@@ -2,6 +2,14 @@
 > Full execution history moved to `_docs_archive/AGENT_LOG_archive.md` (2026-03-26, after WS14 closeout).
 > Current state: WS13 complete (2026-03-27). All 6 performance items closed. No open workstreams. See PRD.md.
 
+> [!info] 2026-03-27: WS16 Phases 12-15 — Mobile dock + unified search/filter sheet
+> - **Phase 12 (Queue-first + rail simplification):** Removed Grid action from `#mobile-rail` and reindexed phone rail active-state CSS (Queue/Deck/Filter).
+> - **Phase 13 (Polymorphic mobile dock):** Added `#mobile-dock` with queue context (Search, Filter, Sort) and detail context (Prev/Next, position counter, Review Hub). Added JS runtime: `openMobileSFSheet`, `closeMobileSFSheet`, `navigateMobileQueue`, `syncMobileDockSort`, `syncMobileDockContext`.
+> - **Phase 14 (Detail breathing room):** Hid legacy floating deck/admin controls on phone, increased card/hero spacing and hierarchy, and reserved scroll clearance above dock + rail.
+> - **Phase 15 (Search/Filter sheet):** Added `#mobile-sf-sheet` + `#mobile-sf-overlay` slide-up dialog, mirrored desktop filter chips/group/search into mobile sheet via `syncMobileSFFilterChips`, and wired shared search debounce/filter pipeline to `#m-sf-search-input`.
+> - **Stability hardening:** Removed leftover legacy `mobile-queue-search` markup and fixed malformed header markup in `WebApp.html`.
+> - **Validation:** VS Code diagnostics report no errors in `WebApp.html`, `_styles_layout.html`, `_module_webapp_core.html`, and `_module_queue_state.html`.
+
 > [!info] 2026-03-27: WS13 Complete — Performance & Animation Audit
 > - **Animation audit:** Removed layout-shifting `width` transitions from `.qb-time-fill` + `.qb-vel-fill`; replaced `.mobile-menu-panel` `max-height` transition with compositor-only `opacity + transform` — `_styles_components.html`
 > - **Virtual scroll:** Moved `content-visibility: auto` from container (wrong) to individual `.email-card` (80px intrinsic) + `.grid-card` (200px intrinsic) — browser now skips off-screen card paint/layout
