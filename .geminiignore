@@ -1,0 +1,6 @@
+# Ignore archive documentation from AI searches to prevent context poisoning
+_docs_archive/**
+# Ignore large system/build files
+node_modules/**
+.DS_Store
+package-lock.json
