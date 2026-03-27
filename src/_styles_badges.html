@@ -98,6 +98,7 @@
       .inbox-title-stack { display: flex; flex-direction: column; gap: 1px; line-height: 0.92; letter-spacing: 0.04em; font-size: 10px; }
       .inbox-title-stack span:last-child { color: var(--text-main); }
       .inbox-count { background: var(--border); padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 900; color: var(--text-main);}
+      .mobile-queue-search-wrap { display: none; }
       .inbox-list { 
           overflow-y: auto !important; 
           flex-grow: 1; 
@@ -538,4 +539,121 @@
       .action-box.ghost { border-left-color: #94a3b8; background: rgba(148,163,184,0.05); }
       .tag-ghost        { background: rgba(241,245,249,0.8); color: #64748b; border-color: #cbd5e1; }
       .dark-mode .tag-ghost { background: rgba(148,163,184,0.15); color: #cbd5e1; border-color: #94a3b8; }
+
+      @media (max-width: 480px) {
+          .inbox-header {
+              padding: var(--m-gutter, 16px) var(--m-gutter, 16px) 12px !important;
+              display: flex !important;
+              flex-wrap: wrap !important;
+              align-items: flex-start !important;
+              gap: 10px !important;
+              border-bottom: 1px solid var(--border) !important;
+              background: color-mix(in srgb, var(--card-bg) 94%, transparent) !important;
+          }
+
+          .inbox-title-stack {
+              line-height: 1 !important;
+              gap: 0 !important;
+          }
+          .inbox-title-stack span:first-child { display: none !important; }
+          .inbox-title-stack span:last-child {
+              font-size: 28px !important;
+              font-weight: 800 !important;
+              letter-spacing: -0.4px !important;
+              text-transform: none !important;
+              color: var(--text-main) !important;
+          }
+          .inbox-count {
+              align-self: center !important;
+              margin-top: 2px !important;
+              padding: 4px 10px !important;
+              font-size: 12px !important;
+              font-weight: 800 !important;
+          }
+
+          #view-toggle-btn,
+          #sort-queue,
+          #sidebar-pivot-select {
+              display: none !important;
+          }
+
+          .mobile-queue-search-wrap {
+              display: block !important;
+              width: 100%;
+          }
+          #mobile-queue-search {
+              width: 100%;
+              box-sizing: border-box;
+              min-height: var(--m-touch, 52px);
+              border-radius: 14px;
+              border: 1px solid var(--border);
+              background: var(--bg);
+              color: var(--text-main);
+              padding: 0 14px;
+              font-size: 16px;
+              outline: none;
+          }
+          #mobile-queue-search.is-active {
+              border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+              box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 14%, transparent);
+          }
+
+          .queue-group-header { display: none !important; }
+
+          .email-card {
+              min-height: var(--m-touch, 52px);
+              padding: 10px var(--m-row-pad, 16px) !important;
+              border-left-width: 5px !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+              transform: none !important;
+          }
+          .email-card:hover {
+              transform: none !important;
+              box-shadow: none !important;
+          }
+          .em-header {
+              align-items: center !important;
+              gap: 10px !important;
+          }
+          .em-fdh {
+              font-size: 16px !important;
+              font-weight: 700 !important;
+              letter-spacing: -0.2px !important;
+              line-height: 1.2 !important;
+          }
+          .em-vendor {
+              font-size: 13px !important;
+              font-weight: 500 !important;
+              text-transform: none !important;
+              line-height: 1.25 !important;
+              max-width: 100%;
+          }
+          .em-pill-stack {
+              flex-wrap: nowrap !important;
+              align-items: center !important;
+              gap: 8px !important;
+              margin-left: 10px !important;
+              flex-shrink: 0;
+          }
+          .em-pill-stack .glass-pill {
+              font-size: 10px !important;
+              padding: 3px 7px !important;
+              max-width: 118px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+          }
+          .em-chevron {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              color: var(--text-muted);
+              font-size: 18px;
+              line-height: 1;
+              width: 16px;
+          }
+          .em-tags {
+              display: none !important;
+          }
+      }
 </style>

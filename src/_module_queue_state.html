@@ -99,6 +99,13 @@ function flattenGroupedSections(sections) {
 // ── DEBOUNCED SEARCH ──
 let searchTimeout;
 function handleSearchInput(e) {
+    const sourceEl = e && e.target ? e.target : null;
+    const nextValue = sourceEl ? sourceEl.value : '';
+    const desktopSearch = getEl('search-input');
+    const mobileSearch = getEl('mobile-queue-search');
+    if (desktopSearch && sourceEl !== desktopSearch && desktopSearch.value !== nextValue) desktopSearch.value = nextValue;
+    if (mobileSearch && sourceEl !== mobileSearch && mobileSearch.value !== nextValue) mobileSearch.value = nextValue;
+
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         applyFilters();
@@ -183,6 +190,9 @@ function cycleViewMode() {
 }
 
 function applyViewMode() {
+    if (window.innerWidth <= 480 && currentViewMode === 'grid') {
+        currentViewMode = 'inbox';
+    }
     let list = getEl('inbox-list');
     let btn = getEl('view-toggle-btn');
     if (list) {
@@ -244,17 +254,19 @@ function renderList(items) {
 
         let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
         let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'selected' : '';
+        let cityVendor = [item.city, item.vendor].filter(Boolean).join(' · ');
 
         // Note: Using onclick string instead of arrow function for batch performance
         return `
            <div class="email-card ${highestSev} ${isSelected}" id="card-${item.fdh}" data-fdh="${item.fdh}" onclick="handleCardClick('${item.fdh}')">
               <div class="em-header">
-                 <div style="display: flex; align-items: baseline; gap: 8px; min-width: 0;">
+                 <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; flex: 1 1 auto;">
                      <div class="em-fdh" style="flex-shrink: 0;">${item.fdh}</div>
-                     <div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.vendor}</div>
+                     <div class="em-vendor" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${cityVendor || 'Unknown City \u00b7 Unknown Vendor'}</div>
                  </div>
                  <div class="em-pill-stack">
                      <span class="glass-pill ${pillCls}" style="flex-shrink: 0;">${combinedPill}</span>
+                     <span class="em-chevron" aria-hidden="true">&#8250;</span>
                  </div>
               </div>
               <div class="em-tags">${tagParts.join('')}</div>
@@ -974,10 +986,14 @@ function advanceAfterAction() {
 function applyFilters() {
     safeExecute('applyFilters', () => {
         const sortVal = getActiveSortValue();
-        const searchTerm = (getEl('search-input')?.value || '').toLowerCase();
+        const desktopSearchValue = getEl('search-input')?.value || '';
+        const mobileSearchValue = getEl('mobile-queue-search')?.value || '';
+        const searchTerm = (desktopSearchValue || mobileSearchValue).toLowerCase();
         const activeQueueItems = getActiveQueueItems();
         let searchEl = getEl('search-input');
         if (searchEl) searchEl.classList.toggle('is-active', searchEl.value.trim() !== '');
+        let mobileSearchEl = getEl('mobile-queue-search');
+        if (mobileSearchEl) mobileSearchEl.classList.toggle('is-active', mobileSearchEl.value.trim() !== '');
 
         let today = new Date();
         today.setHours(0, 0, 0, 0);
