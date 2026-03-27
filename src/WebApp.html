@@ -717,115 +717,28 @@
     <?!= include('_module_mini_sld') ?>
     <?!= include('_module_webapp_core') ?>
 
-                <!-- WS12 Mobile Bottom Nav — polymorphic dock -->
-                <nav class="m-bottom-nav" id="m-bottom-nav">
-                    <!-- Standard nav tabs — all views direct in dock (Centric-Ops pattern) -->
-                    <div class="m-dock-nav" id="m-dock-nav">
-                        <button class="m-tab-btn active" data-mview="queue" onclick="mSwitchView('queue',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                            <span>Queue</span>
-                        </button>
-                        <button class="m-tab-btn" data-mview="detail" onclick="mSwitchView('detail',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-                            <span>Detail</span>
-                        </button>
-                        <button class="m-tab-btn" data-mview="gantt" onclick="mSwitchView('gantt',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="13" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="15" y2="18"/></svg>
-                            <span>Gantt</span>
-                        </button>
-                        <button class="m-tab-btn" data-mview="digest" onclick="mSwitchView('digest',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            <span>Digest</span>
-                        </button>
-                        <button class="m-tab-btn" data-mview="admin" onclick="mSwitchView('admin',this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                            <span>Admin</span>
-                        </button>
-                        <button class="m-tab-btn m-tab-search" id="m-search-toggle" onclick="mToggleSearch()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                            <span>Search</span>
-                        </button>
-                    </div>
-                    <!-- Detail context dock: Back / Skip / Commit -->
-                    <div class="m-dock-ctx m-dock-detail" id="m-dock-detail">
-                        <button class="m-ctx-btn m-ctx-back" onclick="mSwitchView('queue',null)" title="Back to Queue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-                        <button class="m-ctx-btn m-ctx-skip" onclick="mCtxSkip()">Skip</button>
-                        <button class="m-ctx-btn m-ctx-commit" onclick="mCtxCommit()">Commit</button>
-                    </div>
-                    <!-- Gantt zoom dock: Back / Month / Week -->
-                    <div class="m-dock-ctx m-dock-gantt" id="m-dock-gantt">
-                        <button class="m-ctx-btn m-ctx-back" onclick="mSwitchView('queue',null)" title="Back to Queue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-                        <button class="m-ctx-btn m-ctx-zoom active-zoom" id="m-gantt-month" onclick="mGanttZoom('month')">Month</button>
-                        <button class="m-ctx-btn m-ctx-zoom" id="m-gantt-week" onclick="mGanttZoom('week')">Week</button>
-                    </div>
+                <!-- WS16 Mobile Action Rail -->
+                <nav id="mobile-rail" aria-label="Primary navigation">
+                    <button class="rail-btn" onclick="switchWorkspaceView('detail')" aria-label="Queue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        <span>Queue</span>
+                    </button>
+                    <button class="rail-btn" onclick="switchWorkspaceView('grid')" aria-label="Grid">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        <span>Grid</span>
+                    </button>
+                    <button class="rail-btn" onclick="switchWorkspaceView('gantt')" aria-label="Gantt">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="13" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="15" y2="18"/></svg>
+                        <span>Gantt</span>
+                    </button>
+                    <button class="rail-btn" onclick="switchWorkspaceView('deck')" aria-label="Deck">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <span>Deck</span>
+                    </button>
+                    <button class="rail-btn rail-btn--filter" onclick="toggleMobileFilter()" aria-label="Filters">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                        <span>Filter</span>
+                    </button>
                 </nav>
-
-                <!-- WS12 Mobile Menu Bottom Sheet -->
-                <div class="m-menu-sheet" id="m-menu-sheet" aria-modal="true" role="dialog">
-                    <div class="m-sheet-handle-bar"><div class="m-sheet-handle"></div></div>
-                    <div class="m-sheet-header">
-                        <span class="m-sheet-title">Main Menu</span>
-                        <button class="m-sheet-close-btn" onclick="mToggleMenu()" aria-label="Close">&#x2715;</button>
-                    </div>
-                    <div class="m-sheet-body">
-                        <div class="m-menu-grid">
-                            <button class="m-menu-item" onclick="mSelectView('queue')">
-                                <div class="m-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg></div>
-                                <span>Queue</span>
-                            </button>
-                            <button class="m-menu-item" onclick="mSelectView('detail')">
-                                <div class="m-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></div>
-                                <span>Detail View</span>
-                            </button>
-                            <button class="m-menu-item" onclick="mSelectView('gantt')">
-                                <div class="m-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></div>
-                                <span>Gantt</span>
-                            </button>
-                            <button class="m-menu-item" onclick="mSelectView('digest')">
-                                <div class="m-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-                                <span>Digest</span>
-                            </button>
-                            <button class="m-menu-item" onclick="mSelectView('admin')">
-                                <div class="m-menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-                                <span>Admin</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="m-sheet-backdrop m-menu-backdrop" id="m-menu-backdrop" onclick="mToggleMenu()"></div>
-
-                <!-- WS12 Mobile Admin Bottom Sheet -->
-                <div class="m-admin-sheet" id="m-admin-sheet" aria-modal="true" role="dialog">
-                    <div class="m-sheet-handle-bar"><div class="m-sheet-handle"></div></div>
-                    <div class="m-sheet-header">
-                        <span class="m-sheet-title">Admin / Review Hub</span>
-                        <button class="m-sheet-close-btn" onclick="mHideAdminSheet()" aria-label="Close">&#x2715;</button>
-                    </div>
-                    <div class="m-sheet-body" id="m-admin-sheet-body"></div>
-                </div>
-                <div class="m-sheet-backdrop" id="m-admin-backdrop" onclick="mHideAdminSheet()"></div>
-
-                <!-- WS12 Mobile Search/Filter Bottom Sheet -->
-                <div class="m-search-sheet" id="m-search-sheet" aria-modal="true" role="dialog">
-                    <div class="m-sheet-handle-bar"><div class="m-sheet-handle"></div></div>
-                    <div class="m-search-filters" id="m-search-filters">
-                        <div class="m-search-filter-row" id="m-wrap-filter-severity"></div>
-                        <div class="m-search-filter-row" id="m-wrap-filter-vendor"></div>
-                        <div class="m-search-filter-row" id="m-wrap-filter-city"></div>
-                        <div class="m-search-filter-row" id="m-wrap-filter-ofs"></div>
-                        <div class="m-search-filter-row" id="m-wrap-filter-status"></div>
-                    </div>
-                    <div class="m-search-bar-zone">
-                        <div class="m-search-input-wrap">
-                            <svg class="m-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                            <input type="text" id="m-search-input" class="m-search-input" placeholder="Search projects..." autocomplete="off" oninput="mSearchInput(this.value)">
-                            <button class="m-search-clear" id="m-search-clear" onclick="mClearSearch()" style="display:none;" aria-label="Clear search">&#x2715;</button>
-                        </div>
-                        <button class="m-search-done-btn" onclick="mToggleSearch()">Done</button>
-                    </div>
-                </div>
-                <div class="m-sheet-backdrop m-search-backdrop" id="m-search-backdrop" onclick="mToggleSearch()"></div>
-
-                                <?!= include('_module_mobile_nav') ?>
   </body>
 </html>

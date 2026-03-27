@@ -299,6 +299,13 @@
           panel.classList.toggle('open');
       }
 
+      // WS16: single filter toggle — operates on the shared .smart-dock, no DOM cloning
+      function toggleMobileFilter() {
+          const isOpen = document.body.classList.toggle('mobile-filter-open');
+          const dock = document.querySelector('.smart-dock');
+          if (dock) dock.classList.toggle('mobile-filter-expanded', isOpen);
+      }
+
       document.addEventListener('click', function(e) {
           let panel = getEl('mobile-menu-panel');
           if (!panel || !panel.classList.contains('open')) return;

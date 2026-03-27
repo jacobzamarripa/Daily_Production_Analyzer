@@ -38,15 +38,6 @@
 
       .btn-icon.mobile-menu-toggle { display: none; }
 
-      .mobile-outbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 290; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-      .mobile-outbox-overlay.open { display: block; }
-      .mobile-outbox-sheet { display: none; position: fixed; bottom: 0; left: 0; right: 0; max-height: 65vh; background: var(--card-bg); border-radius: 18px 18px 0 0; border-top: 1px solid var(--border); z-index: 300; flex-direction: column; box-shadow: 0 -8px 32px rgba(0,0,0,0.2); transition: background 0.3s, border-color 0.3s; }
-      .mobile-outbox-sheet.open { display: flex; }
-      .mob-sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 10px auto 0; flex-shrink: 0; }
-      .mob-sheet-header { padding: 10px 16px 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-      .mob-sheet-list { overflow-y: auto; flex-grow: 1; -webkit-overflow-scrolling: touch; }
-      .mob-sheet-footer { padding: 10px 16px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); flex-shrink: 0; }
-
       /* 📱 TABLET (touch devices: iPad portrait + landscape; min-height excludes iPhones in landscape ~390px) */
       @media screen and (pointer: coarse) and (min-width: 769px) and (min-height: 600px) {
           :root { --inbox-panel-width: 280px; }
@@ -341,7 +332,7 @@
                                                                                                                                                                                                         top: 60px !important;
                                                                                                                                                                                                         left: 12px !important;
                                                                                                                                                                                                         right: 12px !important;
-                                                                                                                                                                                                        bottom: 96px !important;
+                                                                                                                                                                                                        bottom: calc(56px + env(safe-area-inset-bottom) + 8px) !important;
                                                                                                                                                                                                         width: auto !important;
                                                                                                                                                                                                         max-width: unset !important;
                                                                                                                                                                                                         border-right: none !important;
@@ -364,7 +355,7 @@
                                                                                                                                                                                                         top: 60px !important;
                                                                                                                                                                                                         left: 12px !important;
                                                                                                                                                                                                         right: 12px !important;
-                                                                                                                                                                                                        bottom: 96px !important;
+                                                                                                                                                                                                        bottom: calc(56px + env(safe-area-inset-bottom) + 8px) !important;
                                                                                                                                                                                                         width: auto !important;
                                                                                                                                                                                                         overflow: hidden !important;
                                                                                                                                                                                                         display: none !important;
@@ -389,361 +380,88 @@
                                                                                                                                                                                                         top: 52px !important;
                                                                                                                                                                                                         left: 0 !important;
                                                                                                                                                                                                         right: 0 !important;
-                                                                                                                                                                                                        bottom: 80px !important;
+                                                                                                                                                                                                        bottom: calc(56px + env(safe-area-inset-bottom)) !important;
                                                                                                                                                                                                         width: 100vw !important;
                                                                                                                                                                                                         z-index: 200 !important;
                                                                                                                                                                                                         overflow: auto !important;
                                                                                                                                                                                                         display: none !important;
                                                                                                                                                                                                     }
 
-                                                                                                                                                                                                    /* ── Floating glassmorphism dock (Apple Native Refit) ── */
-                                                                                                                                                                                                    @media (max-width: 768px) {
-                                                                                                                                                                                                        .m-bottom-nav {
-                                                                                                                                                                                                            display: flex !important;
-                                                                                                                                                                                                            position: fixed !important;
-                                                                                                                                                                                                            bottom: 24px !important;
-                                                                                                                                                                                                            left: 50% !important;
-                                                                                                                                                                                                            transform: translateX(-50%) !important;
-                                                                                                                                                                                                            width: calc(100% - 32px) !important;
-                                                                                                                                                                                                            max-width: 420px !important;
-                                                                                                                                                                                                            height: 64px !important;
-                                                                                                                                                                                                            background: rgba(255, 255, 255, 0.72) !important;
-                                                                                                                                                                                                            backdrop-filter: blur(40px) saturate(210%) brightness(1.02) !important;
-                                                                                                                                                                                                            -webkit-backdrop-filter: blur(40px) saturate(210%) brightness(1.02) !important;
-                                                                                                                                                                                                            border-radius: 32px !important;
-                                                                                                                                                                                                            box-shadow: 
-                                                                                                                                                                                                                0 0 0 1px rgba(0, 0, 0, 0.04),
-                                                                                                                                                                                                                0 8px 30px rgba(0, 0, 0, 0.08) !important;
-                                                                                                                                                                                                            align-items: center !important;
-                                                                                                                                                                                                            justify-content: center !important;
-                                                                                                                                                                                                            padding: 0 16px !important;
-                                                                                                                                                                                                            z-index: 3000 !important;
-                                                                                                                                                                                                            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease !important;
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        .m-tab-btn {
-                                                                                                                                                                                                            flex: 1 !important;
-                                                                                                                                                                                                            display: flex !important;
-                                                                                                                                                                                                            flex-direction: column !important;
-                                                                                                                                                                                                            align-items: center !important;
-                                                                                                                                                                                                            justify-content: center !important;
-                                                                                                                                                                                                            gap: 2px !important;
-                                                                                                                                                                                                            background: none !important;
-                                                                                                                                                                                                            border: none !important;
-                                                                                                                                                                                                            color: var(--text-muted) !important;
-                                                                                                                                                                                                            font-size: 10px !important;
-                                                                                                                                                                                                            font-weight: 600 !important;
-                                                                                                                                                                                                            cursor: pointer !important;
-                                                                                                                                                                                                            padding: 8px 0 !important;
-                                                                                                                                                                                                            border-radius: 20px !important;
-                                                                                                                                                                                                            min-height: 48px !important;
-                                                                                                                                                                                                            transition: color 0.15s, background 0.15s !important;
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        .m-tab-btn svg { width: 22px !important; height: 22px !important; }
-                                                                                                                                                                                                        .m-tab-btn.active {
-                                                                                                                                                                                                            color: var(--accent) !important;
-                                                                                                                                                                                                        }
-                                                                                                                                                                                                        .m-tab-menu { font-weight: 800 !important; }
                                                                                                                                                                                                     }
-                                                                                                                                                                                                }
 
-                                                                                                                                                                                                /* ── Gantt tab hidden in portrait ───────────────────────────── */
-                                                                                                                                                                                                @media (max-width: 768px) and (orientation: portrait) {
-                                                                                                                                                                                                    .m-tab-btn[data-mview="gantt"] { display: none !important; }
-                                                                                                                                                                                                }
+/* -- WS16 #mobile-rail (phone-only action bar, <=480px) -- */
+#mobile-rail { display: none; }
 
-                                                                                                                                                                                                /* ── Grid/Deck hidden on mobile ─────────────────────────────── */
-                                                                                                                                                                                                @media (max-width: 768px) {
-                                                                                                                                                                                                    /* Hide workspace surfaces */
-                                                                                                                                                                                                    #grid-content, #deck-stage, .startup-card:nth-child(2), .startup-card:nth-child(4) { 
-                                                                                                                                                                                                        display: none !important; 
-                                                                                                                                                                                                    }
-                                                                                                                                                                                                    /* Note: #startup-overlay cards are nth-child indexed: 1=detail, 2=grid, 3=gantt, 4=slide */
-                                                                                                                                                                                                }
-
-                                                                                                                                                                                                /* ── Dark mode dock ─────────────────────────────────────────── */
-                                                                                                                                                                                                @media (max-width: 768px) {
-                                                                                                                                                                                                    body.dark-mode .m-bottom-nav {
-                                                                                                                                                                                                        background: rgba(18, 18, 22, 0.82) !important;
-                                                                                                                                                                                                        backdrop-filter: blur(48px) saturate(180%) !important;
-                                                                                                                                                                                                        -webkit-backdrop-filter: blur(48px) saturate(180%) !important;
-                                                                                                                                                                                                        border: none !important;
-                                                                                                                                                                                                        outline: 1px solid rgba(255, 255, 255, 0.08) !important;
-                                                                                                                                                                                                        box-shadow:
-                                                                                                                                                                                                            0 2px 0 0 rgba(255, 255, 255, 0.07) inset,
-                                                                                                                                                                                                            0 -1px 0 0 rgba(0, 0, 0, 0.3) inset,
-                                                                                                                                                                                                            0 8px 24px rgba(0, 0, 0, 0.5),
-                                                                                                                                                                                                            0 24px 56px rgba(0, 0, 0, 0.35) !important;
-                                                                                                                                                                                                    }
-                                                                                                                                                                                                    body.dark-mode .m-tab-btn { color: rgba(148, 163, 184, 0.7) !important; }
-                                                                                                                                                                                                    body.dark-mode .m-tab-btn.active {
-                                                                                                                                                                                                        color: var(--accent) !important;
-                                                                                                                                                                                                        background: rgba(56, 189, 248, 0.12) !important;
-                                                                                                                                                                                                    }
-                                                                                                                                                                                                }
-
-                                                                                                                                                                                                /* Mobile-only surfaces hidden on desktop */
-                                                                                                                                                                                                .m-bottom-nav { display: none; }
-
-@media (min-width: 769px) {
-    /* Mobile bottom sheets must not render on desktop */
-    .m-admin-sheet, .m-search-sheet, .m-sheet-backdrop, .mobile-menu-panel,
-    .m-menu-sheet, .m-menu-backdrop { display: none !important; }
-}
-
-/* ── Polymorphic dock — context variants ─────────────────────── */
-@media (max-width: 768px) {
-    /* Wrapper divs inside the dock pill */
-    .m-dock-nav  {
-        display: flex; width: 100%; align-items: center; justify-content: space-around;
-        transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.4,0,0.2,1);
-        transform-origin: center;
-    }
-    .m-dock-ctx  {
-        display: none; width: 100%; align-items: center; gap: 10px; padding: 0 8px;
-        opacity: 0; transform: translateX(-12px);
-        transition: opacity 0.2s ease 0.06s, transform 0.22s cubic-bezier(0.34,1.56,0.64,1) 0.06s;
-    }
-
-    /* Detail view: swap nav for action bar */
-    body[data-mview="detail"] .m-dock-nav {
-        opacity: 0 !important; transform: scale(0.85) !important; pointer-events: none !important;
-    }
-    body[data-mview="detail"] .m-dock-ctx.m-dock-detail {
-        display: flex !important; opacity: 1 !important; transform: translateX(0) !important;
-    }
-
-    /* Gantt view: swap nav for zoom controls */
-    body[data-mview="gantt"] .m-dock-nav {
-        opacity: 0 !important; transform: scale(0.85) !important; pointer-events: none !important;
-    }
-    body[data-mview="gantt"] .m-dock-ctx.m-dock-gantt {
-        display: flex !important; opacity: 1 !important; transform: translateX(0) !important;
-    }
-
-    /* Detail dock: left-aligned layout */
-    .m-dock-detail { justify-content: flex-start !important; }
-
-    /* Context button base */
-    .m-ctx-btn {
-        flex: 1;
-        height: 44px;
-        border-radius: 14px;
-        border: none;
-        background: transparent;
-        color: rgba(71,85,105,0.9);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
+@media (max-width: 480px) {
+    #mobile-rail {
         display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: calc(56px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        background: var(--card-bg);
+        border-top: 1px solid var(--border);
+        z-index: 4000;
+        align-items: center;
+        justify-content: space-around;
+        pointer-events: none;
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        transition: background 0.3s, border-color 0.3s;
+    }
+    body.dark-mode #mobile-rail {
+        background: rgba(18, 18, 22, 0.92);
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+    .rail-btn {
+        display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 4px;
+        gap: 3px;
+        min-width: 44px;
+        min-height: 44px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        padding: 4px 10px;
+        border-radius: 10px;
+        pointer-events: auto;
+        touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
-        transition: background 0.12s, transform 0.08s;
+        transition: color 0.15s, background 0.15s;
     }
-    .m-ctx-btn:active { background: rgba(0,0,0,0.06); transform: scale(0.96); }
+    .rail-btn svg { width: 20px; height: 20px; stroke-width: 1.8; flex-shrink: 0; }
+    .rail-btn span { line-height: 1; }
+    .rail-btn:active { background: rgba(59,130,246,0.08); color: var(--accent); }
 
-    /* ── WS12 Mobile-Only Components (Strictly 768px or below) ── */
-    @media (max-width: 768px) {
-        /* ── Mobile Menu Bottom Sheet (Apple Notes style) ── */
-        .m-menu-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: 24px 24px 0 0;
-            border-top: 1px solid var(--border-glass);
-            z-index: 4000;
-            transform: translateY(100%);
-            transition: transform 0.4s var(--spring-easing);
-            padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-        }
-        .m-menu-sheet.open { transform: translateY(0); }
+    /* Active state driven by body class -- zero JS in the rail */
+    #mobile-rail .rail-btn:nth-child(1) { color: var(--accent); }
+    body.grid-mode-active   #mobile-rail .rail-btn:nth-child(1) { color: var(--text-muted); }
+    body.grid-mode-active   #mobile-rail .rail-btn:nth-child(2) { color: var(--accent); }
+    body.gantt-view-active  #mobile-rail .rail-btn:nth-child(1) { color: var(--text-muted); }
+    body.gantt-view-active  #mobile-rail .rail-btn:nth-child(3) { color: var(--accent); }
+    body.deck-mode-active   #mobile-rail .rail-btn:nth-child(1) { color: var(--text-muted); }
+    body.deck-mode-active   #mobile-rail .rail-btn:nth-child(4) { color: var(--accent); }
+    body.mobile-filter-open #mobile-rail .rail-btn--filter { color: var(--accent); }
 
-        .m-menu-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            padding: 24px;
-        }
-        .m-menu-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            background: transparent;
-            border: none;
-            padding: 12px;
-            border-radius: 16px;
-            color: var(--text-main);
-            font-size: 11px;
-            font-weight: 700;
-            transition: background 0.2s, transform 0.1s;
-        }
-        .m-menu-item:active { background: rgba(0,0,0,0.05); transform: scale(0.95); }
-        .m-menu-icon {
-            width: 52px;
-            height: 52px;
-            background: var(--card-bg);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-glass);
-        }
-        .m-menu-icon svg { width: 28px; height: 28px; }
-
-        .m-menu-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
-            z-index: 3999;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .m-menu-backdrop.open { display: block; opacity: 1; }
-
-        /* ── Apple TV back button ── */
-        .m-ctx-btn.m-ctx-back {
-            flex: none !important;
-            width: 40px !important;
-            height: 40px !important;
-            border-radius: 20px !important;
-            background: rgba(100,116,139,0.1) !important;
-            color: var(--text-main, #0f172a) !important;
-            font-size: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            transition: background 0.12s, transform 0.08s !important;
-        }
-        .m-ctx-btn.m-ctx-back:active {
-            background: rgba(100,116,139,0.2) !important;
-            transform: scale(0.92) !important;
-        }
-        body.dark-mode .m-ctx-btn.m-ctx-back {
-            background: rgba(148,163,184,0.12) !important;
-            color: var(--text-main, #fafafa) !important;
-        }
-
-        /* ── Smaller Skip / Commit pills ── */
-        .m-ctx-btn.m-ctx-commit {
-            flex: none !important;
-            padding: 0 18px !important;
-            height: 36px !important;
-            background: #0ea5e9 !important;
-            color: #fff !important;
-            border-radius: 18px !important;
-            font-size: 12px !important;
-            font-weight: 700 !important;
-            box-shadow: 0 2px 8px rgba(14,165,233,0.3) !important;
-            min-width: 70px !important;
-        }
-        .m-ctx-btn.m-ctx-commit:active { transform: scale(0.97) !important; }
-        .m-ctx-btn.m-ctx-skip {
-            flex: none !important;
-            padding: 0 14px !important;
-            height: 36px !important;
-            background: rgba(245,158,11,0.1) !important;
-            color: #b45309 !important;
-            border-radius: 18px !important;
-            font-size: 12px !important;
-            font-weight: 700 !important;
-            min-width: 56px !important;
-        }
-        .m-ctx-btn.m-ctx-zoom.active-zoom { font-weight: 800; color: #0ea5e9; }
-
-        body.dark-mode .m-ctx-btn { color: rgba(148,163,184,0.85); }
-        body.dark-mode .m-ctx-btn.m-ctx-commit { color: #fff; }
-        body.dark-mode .m-ctx-btn.m-ctx-skip { background: rgba(245,158,11,0.08) !important; color: #fbbf24 !important; }
-
-        /* ── Admin Bottom Sheet ── */
-        .m-admin-sheet {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: 60vh; min-height: 320px; max-height: 85vh;
-            background: var(--card-bg); border-radius: 20px 20px 0 0;
-            border-top: 1px solid var(--border);
-            box-shadow: 0 -12px 48px rgba(15,23,42,0.22), 0 -2px 8px rgba(15,23,42,0.08);
-            z-index: 3500; display: flex; flex-direction: column;
-            overflow: hidden; transform: translateY(100%);
-            transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
-            padding-bottom: env(safe-area-inset-bottom); will-change: transform;
-        }
-        .m-admin-sheet.open { transform: translateY(0); }
-        .m-sheet-handle-bar {
-            display: flex; justify-content: center; padding: 10px 0 6px;
-            flex-shrink: 0; cursor: grab;
-        }
-        .m-sheet-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; }
-        .m-sheet-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 4px 16px 12px; flex-shrink: 0; border-bottom: 1px solid var(--border);
-        }
-        .m-sheet-title { font-size: 13px; font-weight: 900; color: var(--text-main); letter-spacing: -0.2px; }
-        .m-sheet-close-btn {
-            background: transparent; border: 1px solid var(--border); border-radius: 8px;
-            color: var(--text-muted); font-size: 14px; width: 30px; height: 30px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-        }
-        .m-sheet-body { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .m-sheet-backdrop {
-            display: none; position: fixed; inset: 0;
-            background: rgba(15,23,42,0.35); z-index: 3490;
-            backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
-        }
-        .m-sheet-backdrop.open { display: block; }
-        body.dark-mode .m-admin-sheet { box-shadow: 0 -12px 48px rgba(0,0,0,0.55), 0 -2px 8px rgba(0,0,0,0.3); }
-
-        /* ── Search/Filter Bottom Sheet ── */
-        .m-search-sheet {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: 55vh; min-height: 280px; max-height: 80vh;
-            background: var(--card-bg); border-radius: 20px 20px 0 0;
-            border-top: 1px solid var(--border);
-            box-shadow: 0 -12px 48px rgba(15,23,42,0.2); z-index: 3400;
-            display: flex; flex-direction: column; overflow: hidden;
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-            padding-bottom: env(safe-area-inset-bottom); will-change: transform;
-        }
-        .m-search-sheet.open { transform: translateY(0); }
-        .m-search-filters {
-            flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch;
-            padding: 12px 16px 8px; display: flex; flex-direction: column; gap: 10px;
-        }
-        .m-search-filter-row { width: 100%; }
-        .m-search-bar-zone {
-            flex-shrink: 0; padding: 10px 16px 14px; border-top: 1px solid var(--border);
-            background: var(--card-bg); display: flex; align-items: center; gap: 10px;
-        }
-        .m-search-input-wrap {
-            flex: 1 1 auto; display: flex; align-items: center; gap: 8px;
-            background: var(--bg); border: 1px solid var(--border);
-            border-radius: 14px; padding: 0 12px; height: 44px;
-            transition: border-color 0.15s, box-shadow 0.15s;
-        }
-        .m-search-input-wrap:focus-within { border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
-        .m-search-icon { flex-shrink: 0; color: var(--text-muted); }
-        .m-search-input {
-            flex: 1 1 auto; border: none; background: transparent;
-            font-size: 15px; font-weight: 500; color: var(--text-main); outline: none; min-width: 0;
-        }
-        .m-search-input::placeholder { color: var(--text-muted); }
-        .m-search-clear { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 4px; }
-        .m-search-done-btn {
-            flex-shrink: 0; height: 44px; padding: 0 18px; background: #0ea5e9; color: #fff;
-            border: none; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer;
-        }
-        .m-tab-btn.m-tab-search.search-open { color: #0ea5e9 !important; background: rgba(14,165,233,0.1) !important; }
-        body.dark-mode .m-search-sheet { box-shadow: 0 -12px 48px rgba(0,0,0,0.5); }
-        body.dark-mode .m-search-input-wrap { background: rgba(255,255,255,0.05); }
+    /* Admin full-screen overlay on phone (no reparenting) */
+    body.admin-panel-open .reading-pane {
+        position: fixed !important;
+        inset: 52px 0 calc(56px + env(safe-area-inset-bottom)) 0 !important;
+        width: auto !important;
+        height: auto !important;
+        z-index: 3500 !important;
+        background: var(--card-bg) !important;
+        border-radius: 0 !important;
+        display: flex !important;
     }
 }
+
 </style>
