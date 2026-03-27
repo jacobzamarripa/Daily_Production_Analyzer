@@ -86,7 +86,7 @@
 - [x] Phase 1 — Shell contract reset (viewport zones, nav model, z-index) → `WORKSTREAM_16_PHASE1_CONTRACT.md`
 - [x] Phase 2 — Remove WS12 legacy surfaces; scaffold `#mobile-rail`
 - [x] Phase 3 — Queue↔detail switching mechanism (`body.mobile-detail-open` CSS pattern)
-- [ ] Phase 4 — Mobile design tokens + rail polish (icon-only rail, `--m-*` tokens, `#mobile-back-btn` nav bar, startup skip)
+- [x] Phase 4 — Mobile design tokens + rail polish (icon-only rail, `--m-*` tokens, `#mobile-back-btn` nav bar, startup skip)
 - [ ] Phase 5 — Native queue list (iOS 2-line rows, large nav title, hidden density elements)
 - [ ] Phase 6 — Native detail layout (hero header, stacked sections, hidden dock/strip)
 - [ ] Phase 7 — Admin bottom sheet (`.outbox-pane` as sliding sheet at `≤480px`)

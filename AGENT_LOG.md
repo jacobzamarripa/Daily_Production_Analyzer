@@ -72,3 +72,15 @@
 - **Touch targets:** 44×44px minimum. No hover-only affordances. `:active` states required.
 - **Next:** Phase 2 — delete mobile-only debt, add `#mobile-rail` markup + CSS to shell.
 
+> [!info] 2026-03-27: WS16 Phase 4 — Mobile design tokens + rail polish
+- **`_styles_base.html`:** added phone token block (`--m-gutter`, `--m-row-pad`, `--m-section`, `--m-card-pad`, `--m-touch`, `--m-nav-h`, `--m-rail-h`) under `@media (max-width: 480px)`.
+- **`_styles_layout.html`:** rail converted to icon-only at phone (`.rail-btn span { display:none; }`), active-dot indicator added via `.rail-btn::after`, and active dot/color now follows body mode classes (`grid-mode-active`, `gantt-view-active`, `deck-mode-active`, `mobile-filter-open`).
+- **`_styles_layout.html`:** `#mobile-back-btn` upgraded from simple row button to native nav-bar pattern (left chevron+Queue label + right-aligned project title).
+- **`WebApp.html`:** `#mobile-back-btn` markup split into `.mobile-back-left` + dynamic `#mobile-back-title` region.
+- **`_module_queue_state.html`:** `openPane()` now syncs selected FDH into `#mobile-back-title`.
+- **`_module_webapp_core.html`:** `closeMobileDetail()` resets back-title to default.
+- **`_module_startup_refdata.html`:** `showStartupSelector()` now bypasses modal on phone (`<=480`), clears `mobile-detail-open`, and auto-continues to shared detail workspace (queue default state).
+- **`_styles_loaders.html`:** startup overlay hard-hidden on phone (`display:none !important`).
+- **Validation:** no errors reported by VS Code diagnostics on changed files.
+- **Next:** Phase 5 — Native queue list (large title, two-line row treatment, hidden density controls).
+
