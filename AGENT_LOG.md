@@ -43,7 +43,17 @@
 - **Delete-first candidates:** `src/_module_mobile_nav.html`, WS12 mobile bottom-nav and bottom-sheet markup in `src/WebApp.html`, and the mobile search/admin sheet orchestration that clones desktop filters into separate mobile containers.
 - **Salvage-first candidates:** viewport meta handling, coarse-pointer/touch heuristics, shared router/state ownership, and any token-level spacing/breakpoint definitions that survive the shell reset.
 
-> [!info] 2026-03-27: WS16 Phase 1 — Shell contract complete
+> [!info] 2026-03-27: WS16 Phase 2 — Mobile shell deletion + #mobile-rail scaffold
+- **Deleted:** `src/_module_mobile_nav.html` — WS12 parallel runtime with `mSwitchView()`, DOM reparenting, and duplicate search/admin sheets
+- **Removed from WebApp.html:** `#m-bottom-nav`, `#m-menu-sheet`, `#m-admin-sheet`, `#m-search-sheet`, 3 backdrops, `include(_module_mobile_nav)` (137 lines)
+- **Added to WebApp.html:** `#mobile-rail` with 5 buttons calling `switchWorkspaceView()` and `toggleMobileFilter()` directly
+- **CSS pruned from `_styles_layout.html`:** `.mobile-outbox-overlay`, `.mobile-outbox-sheet` (pre-WS12 dead weight), glassmorphism dock block, `.m-tab-btn`, dark mode dock, portrait gantt rule, polymorphic dock context system, all `.m-sheet-*` component CSS (350 lines removed)
+- **CSS added to `_styles_layout.html`:** `#mobile-rail` layout at `@media (max-width: 480px)`, `body.admin-panel-open .reading-pane` as fixed overlay
+- **`_styles_responsive.html`:** replaced WS12 `@media (max-width: 768px)` block (with `.m-*` rules) with clean `@media (max-width: 480px)` block
+- **`_module_webapp_core.html`:** added `toggleMobileFilter()` — toggles `.smart-dock` via `body.mobile-filter-open` class, no DOM cloning
+- **Bottom offsets updated:** `.inbox-sidebar`, `.reading-pane` bottom: `calc(56px + env(safe-area-inset-bottom) + 8px)`; `#gantt-panel` bottom: `calc(56px + env(safe-area-inset-bottom))`
+- **Net change:** 114 insertions, 703 deletions. Commit `37203ae`
+- **Next:** Phase 3 — rebuild queue + detail mobile flow on shared primitives
 - **Deliverable:** `WORKSTREAM_16_PHASE1_CONTRACT.md` — authoritative pre-code constraints for the mobile rebuild.
 - **Navigation model:** `switchWorkspaceView()` is the single router on all viewports. `mSwitchView()` is deleted. New `#mobile-rail` markup calls shared router functions directly.
 - **Admin model:** `.reading-pane` never reparented. Admin opened via `setAdminPanelOpen(true)`. On phone, reading-pane goes full-screen via CSS (`position: fixed; inset: 0`).

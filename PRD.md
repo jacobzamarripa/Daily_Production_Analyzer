@@ -81,7 +81,7 @@
 
 - [x] Phase 0 — Mobile debt audit + salvage map (`src/_styles_responsive.html`, `src/_module_mobile_nav.html`, `src/WebApp.html`)
 - [x] Phase 1 — Mobile shell contract reset (viewport zones, nav model, z-index, touch targets) → `WORKSTREAM_16_PHASE1_CONTRACT.md`
-- [ ] Phase 2 — Remove mobile-exclusive legacy surfaces (bottom sheets / polymorphic dock / duplicate mobile menu paths)
+- [x] Phase 2 — Remove mobile-exclusive legacy surfaces (bottom sheets / polymorphic dock / duplicate mobile menu paths)
 - [ ] Phase 3 — Rebuild queue + detail mobile flow on shared primitives
 - [ ] Phase 4 — Rebuild review/admin interactions for mobile (no panel collisions, no blocked dock actions)
 - [ ] Phase 5 — Rebuild Gantt + deck mobile behavior with explicit orientation rules
