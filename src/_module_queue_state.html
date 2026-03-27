@@ -385,7 +385,7 @@ function renderList(items) {
 
     list.innerHTML = html;
 
-    if (items.length > 0 && !currentActiveItem) {
+    if (items.length > 0 && !currentActiveItem && window.innerWidth > 480) {
         handleCardClick(items[0].fdh);
     }
 }

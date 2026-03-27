@@ -337,6 +337,26 @@
       });
       window.addEventListener('resize', syncDockClearanceState);
 
+      // WS16 Phase 10: auto-show Gantt on phone landscape; restore on portrait
+      let _phonePreGanttView = 'detail';
+      let _ganttLandscapeTimer = null;
+      function _handleGanttLandscape() {
+          clearTimeout(_ganttLandscapeTimer);
+          _ganttLandscapeTimer = setTimeout(function() {
+              const isPhone = Math.min(window.innerWidth, window.innerHeight) <= 480;
+              if (!isPhone) return;
+              const isLandscape = window.innerWidth > window.innerHeight;
+              if (isLandscape && currentWorkspaceView !== 'gantt') {
+                  _phonePreGanttView = currentWorkspaceView || 'detail';
+                  if (typeof openGanttView === 'function') openGanttView();
+              } else if (!isLandscape && currentWorkspaceView === 'gantt') {
+                  switchWorkspaceView(_phonePreGanttView || 'detail');
+              }
+          }, 150);
+      }
+      window.addEventListener('resize', _handleGanttLandscape);
+      window.addEventListener('orientationchange', function() { setTimeout(_handleGanttLandscape, 100); });
+
       function exitTheaterMode(e) {
           if (e && e.target.closest('.gantt-quick-peek')) return;
           if (e && e.target.closest('.gantt-row')) return;
