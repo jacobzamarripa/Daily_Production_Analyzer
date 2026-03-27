@@ -32,7 +32,7 @@ Handoff — DPA WS[N+1], resuming at Phase 1
 Resume DPA WS[N+1]. Check memory and WORKSTREAM_0_NOTES.md for resume point.
 
 Project: Daily_Production_Analyzer
-Path: /Users/jacobzamarripa.omni/Library/Mobile Documents/com~apple~CloudDocs/App Script/Daily_Production_Analyzer
+Path: /Users/jacobzamarripa.omni/App-Projects/Daily_Production_Analyzer
 
 WS[N+1] scope: [one-line goal]
 
