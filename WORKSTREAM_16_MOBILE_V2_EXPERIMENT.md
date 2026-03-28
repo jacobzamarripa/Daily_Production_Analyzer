@@ -63,7 +63,9 @@ Before starting Phase B work, you must do **both** of the following:
 
 | Variant Name | File | Agent / Session | Status |
 |---|---|---|---|
-| *(first agent claims here)* | `v2_shell_[Name].html` | — | Proposed |
+| RailView | `v2_shell_RailView.html` | Claude Code / 2026-03-28 | In Progress |
+| GlassFlow | `v2_shell_GlassFlow.html` | Gemini CLI / 2026-03-28 | In Progress |
+| FlexStack | `v2_shell_FlexStack.html` | Claude Code / 2026-03-28 | In Progress |
 
 **Each shell file must call `setV2Variant('[YourVariantName]')` during its init** so the shared state knows which experiment is running.
 
