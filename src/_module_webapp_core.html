@@ -50,10 +50,15 @@
           let anchor = null;
           const slideDeck = getEl('slide-action-deck');
           const filterStrip = getEl('filter-strip');
+          const filtersPanel = getEl('dock-filters-panel');
 
-          if (slideDeck && isElementVisiblyRendered(slideDeck) && slideDeck.classList.contains('visible')) {
+          if (filtersPanel && filtersPanel.classList.contains('is-open') && isElementVisiblyRendered(filtersPanel)) {
+              anchor = filtersPanel;
+          }
+
+          if (!anchor && slideDeck && isElementVisiblyRendered(slideDeck) && slideDeck.classList.contains('visible')) {
               anchor = slideDeck;
-          } else if (filterStrip && isElementVisiblyRendered(filterStrip)) {
+          } else if (!anchor && filterStrip && isElementVisiblyRendered(filterStrip)) {
               anchor = filterStrip;
           }
 
@@ -69,9 +74,11 @@
 
           if (anchorIsBottomDock) {
               container.style.top = 'auto';
-              container.style.bottom = `${Math.max(8, window.innerHeight - rect.top + gap)}px`;
+              const bottomPx = Math.max(8, window.innerHeight - rect.top + gap);
+              container.style.bottom = `${Math.min(bottomPx, Math.max(8, window.innerHeight - 72))}px`;
           } else {
-              container.style.top = `${Math.max(8, rect.bottom + gap)}px`;
+              const topPx = Math.max(8, rect.bottom + gap);
+              container.style.top = `${Math.min(topPx, Math.max(8, window.innerHeight - 96))}px`;
               container.style.bottom = 'auto';
           }
       }
@@ -110,7 +117,19 @@
           if (dock && workspace) {
               let workspaceRect = workspace.getBoundingClientRect();
               let dockRect = dock.getBoundingClientRect();
-              let clearBottom = dockRect.bottom;
+              let panel = getEl('dock-filters-panel');
+              let panelRect = (panel && panel.classList.contains('is-open') && isElementVisiblyRendered(panel)) ? panel.getBoundingClientRect() : null;
+              let collisionRect = dockRect;
+              if (panelRect) {
+                  collisionRect = {
+                      left: Math.min(dockRect.left, panelRect.left),
+                      right: Math.max(dockRect.right, panelRect.right),
+                      top: Math.min(dockRect.top, panelRect.top),
+                      bottom: Math.max(dockRect.bottom, panelRect.bottom),
+                      width: Math.max(dockRect.right, panelRect.right) - Math.min(dockRect.left, panelRect.left)
+                  };
+              }
+              let clearBottom = collisionRect.bottom;
               let leftRail = workspace.querySelector('.inbox-sidebar');
               let detailMain = workspace.querySelector('.detail-main');
               let outboxPane = getEl('outbox-pane');
@@ -137,18 +156,40 @@
               };
 
               let dockBottomInWorkspace = Math.max(0, clearBottom - workspaceRect.top);
-              let leftOverlap = overlapX(dockRect, leftRect);
-              let rightOverlap = overlapX(dockRect, rightRect);
-              let detailCompression = detailRect ? dockRect.width >= Math.max(0, detailRect.width - 72) : false;
+              let leftOverlap = overlapX(collisionRect, leftRect);
+              let rightOverlap = overlapX(collisionRect, rightRect);
+              let detailCompression = detailRect ? collisionRect.width >= Math.max(0, detailRect.width - 72) : false;
               let navSideCrowded = false;
               let centerCrowded = false;
+              let topNavOverlap = false;
+
+              let overlapY = function(a, b) {
+                  if (!a || !b) return 0;
+                  return Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+              };
+
+              let overlapXY = function(a, b) {
+                  return overlapX(a, b) > 0 && overlapY(a, b) > 0;
+              };
+
+              if (navRect) {
+                  const navCollisionBand = {
+                      left: navRect.left,
+                      right: navRect.right,
+                      top: navRect.top,
+                      bottom: navRect.bottom + 12
+                  };
+                  topNavOverlap = overlapXY(collisionRect, navCollisionBand);
+              }
 
               if (navCenterRect) {
-                  centerCrowded = dockRect.width >= Math.max(0, navCenterRect.width - 24);
+                  centerCrowded = overlapXY(collisionRect, navCenterRect);
               }
-              if (navLeftRect && navRightRect) {
-                  let navCorridorWidth = Math.max(0, navRightRect.left - navLeftRect.right - 28);
-                  navSideCrowded = dockRect.width >= Math.max(0, navCorridorWidth);
+              if (navLeftRect) {
+                  navSideCrowded = overlapXY(collisionRect, navLeftRect);
+              }
+              if (!navSideCrowded && navRightRect) {
+                  navSideCrowded = overlapXY(collisionRect, navRightRect);
               }
 
               shouldShift = dockBottomInWorkspace > 0 && (
@@ -157,7 +198,7 @@
                   detailCompression ||
                   navSideCrowded ||
                   centerCrowded ||
-                  dockRect.width >= Math.max(1020, window.innerWidth - 620)
+                  topNavOverlap
               );
 
               if (shouldShift) {
@@ -187,6 +228,90 @@
           const effectiveSort = getActiveSortValue();
           const ganttSort = getEl('gantt-sort-select');
           if (ganttSort) ganttSort.value = effectiveSort;
+      }
+
+      let desktopFiltersPanelCloseTimer = null;
+
+      function getDesktopFiltersActiveCount() {
+          const counts = ['sev', 'vendor', 'city', 'ofs', 'status'].reduce((sum, key) => {
+              return sum + ((activeFilters && Array.isArray(activeFilters[key])) ? activeFilters[key].length : 0);
+          }, 0);
+          const grouped = currentGroupBy && currentGroupBy !== 'none' ? 1 : 0;
+          const pie = activePieStageFilter ? 1 : 0;
+          const admin = activeAdminFilter ? 1 : 0;
+          return counts + grouped + pie + admin;
+      }
+
+      function syncDesktopFiltersLauncherState() {
+          const launcher = getEl('dock-btn-filters-launcher');
+          const badge = getEl('dock-filters-badge');
+          if (!launcher || !badge) return;
+          const count = getDesktopFiltersActiveCount();
+          badge.textContent = String(count);
+          badge.style.display = count > 0 ? 'inline-flex' : 'none';
+      }
+
+      function setDesktopPanelLaunchVector(panel, launcher) {
+          if (!panel || !launcher) return;
+          const launcherRect = launcher.getBoundingClientRect();
+          const dockRect = panel.parentElement ? panel.parentElement.getBoundingClientRect() : null;
+          if (!dockRect) return;
+
+          const launcherCenterX = launcherRect.left + (launcherRect.width / 2);
+          const dockCenterX = dockRect.left + (dockRect.width / 2);
+          let shiftX = Math.max(-220, Math.min(220, launcherCenterX - dockCenterX));
+
+          const panelWidth = Math.max(panel.offsetWidth || 0, panel.scrollWidth || 0, 420);
+          const half = Math.ceil(panelWidth / 2);
+          const viewportMargin = 14;
+          const minCenterX = viewportMargin + half;
+          const maxCenterX = Math.max(minCenterX, window.innerWidth - viewportMargin - half);
+          const unclampedCenterX = dockCenterX + shiftX;
+          const clampedCenterX = Math.max(minCenterX, Math.min(maxCenterX, unclampedCenterX));
+          shiftX = clampedCenterX - dockCenterX;
+
+          const isGanttDock = document.body.classList.contains('gantt-view-active');
+          panel.style.setProperty('--dock-panel-shift-x', `${Math.round(shiftX)}px`);
+          panel.style.setProperty('--dock-panel-shift-y', isGanttDock ? '14px' : '-14px');
+      }
+
+      function toggleDesktopFiltersPanel(forceOpen) {
+          const panel = getEl('dock-filters-panel');
+          const launcher = getEl('dock-btn-filters-launcher');
+          if (!panel || !launcher) return;
+
+          const currentlyOpen = panel.classList.contains('is-open');
+          const nextOpen = typeof forceOpen === 'boolean' ? forceOpen : !currentlyOpen;
+
+          if (desktopFiltersPanelCloseTimer) {
+              clearTimeout(desktopFiltersPanelCloseTimer);
+              desktopFiltersPanelCloseTimer = null;
+          }
+
+          setDesktopPanelLaunchVector(panel, launcher);
+
+          if (nextOpen) {
+              panel.classList.remove('is-closing');
+              panel.classList.add('is-open');
+              launcher.classList.add('is-launching');
+              setTimeout(() => launcher.classList.remove('is-launching'), 430);
+              requestAnimationFrame(() => setDesktopPanelLaunchVector(panel, launcher));
+          } else {
+              panel.classList.add('is-closing');
+              panel.classList.remove('is-open');
+              desktopFiltersPanelCloseTimer = setTimeout(() => {
+                  panel.classList.remove('is-closing');
+              }, 230);
+          }
+
+          panel.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
+          launcher.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+          launcher.classList.toggle('is-active', nextOpen);
+
+          syncDockLayoutSpacing();
+          updateFloatingPillsPosition();
+          syncDockClearanceState();
+          syncDesktopFiltersLauncherState();
       }
 
       // Dynamic Island State Memory
@@ -411,6 +536,14 @@
           if (!panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) panel.classList.remove('open');
       });
 
+      document.addEventListener('click', function(e) {
+          const panel = getEl('dock-filters-panel');
+          const launcher = getEl('dock-btn-filters-launcher');
+          if (!panel || !launcher || !panel.classList.contains('is-open')) return;
+          if (panel.contains(e.target) || launcher.contains(e.target)) return;
+          toggleDesktopFiltersPanel(false);
+      });
+
       function isIPadLike() {
           if (window.matchMedia('(pointer: coarse) and (min-width: 769px) and (min-height: 600px)').matches) return true;
           let ua = navigator.userAgent;
@@ -425,6 +558,14 @@
           } else if (isIPadLike()) {
               setAdminPanelOpen(false);
           }
+      });
+      window.addEventListener('resize', () => {
+          const panel = getEl('dock-filters-panel');
+          const launcher = getEl('dock-btn-filters-launcher');
+          if (!panel || !launcher || !panel.classList.contains('is-open')) return;
+          setDesktopPanelLaunchVector(panel, launcher);
+          updateFloatingPillsPosition();
+          syncDockClearanceState();
       });
       window.addEventListener('resize', syncDockClearanceState);
     window.addEventListener('resize', syncMobileDockContext);
@@ -449,7 +590,13 @@
       window.addEventListener('resize', _handleGanttLandscape);
       window.addEventListener('orientationchange', function() { setTimeout(_handleGanttLandscape, 100); });
       document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape') closeMobileSFSheet();
+          if (e.key === 'Escape') {
+              closeMobileSFSheet();
+              if (getEl('dock-filters-panel')?.classList.contains('is-open')) {
+                  toggleDesktopFiltersPanel(false);
+                  getEl('dock-btn-filters-launcher')?.focus();
+              }
+          }
       });
 
       function exitTheaterMode(e) {
@@ -486,6 +633,7 @@
 
       function openGanttForCurrentProject() {
           if (!currentActiveItem || !currentActiveItem.fdh) return;
+          if (typeof primeDockMotionOrigin === 'function') primeDockMotionOrigin(getEl('project-schedule-card'), 'gantt');
           openGanttView(currentActiveItem.fdh);
       }
 

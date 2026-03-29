@@ -1220,6 +1220,7 @@ function applyFilters() {
             groupSelect.value = currentGroupBy;
             groupSelect.classList.toggle('is-active', currentGroupBy !== 'none');
         }
+        if (typeof syncDesktopFiltersLauncherState === 'function') syncDesktopFiltersLauncherState();
         filteredItems = displayFiltered;
         if (typeof syncMobileDockContext === 'function') syncMobileDockContext();
         ganttNeedsRender = true;
@@ -1263,6 +1264,7 @@ function clearAllFilters() {
         strip.classList.add('hidden');
         if (btn) btn.classList.remove('btn-filters-active');
     }
+    if (typeof syncDesktopFiltersLauncherState === 'function') syncDesktopFiltersLauncherState();
 }
 
 // ── FILTER / DROPDOWN / PILL BEHAVIOR ──

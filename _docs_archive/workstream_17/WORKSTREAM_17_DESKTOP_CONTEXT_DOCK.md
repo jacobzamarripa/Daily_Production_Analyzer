@@ -215,37 +215,37 @@ Active pills behavior:
 6. Phase 2 implementation can proceed without unresolved UX decisions
 
 ### Phase 2 — Markup Refactor
-- [ ] Refactor the desktop dock markup to support a compact primary rail
-- [ ] Add the anchored desktop filter panel container without breaking the current shared filter DOM contract
-- [ ] Preserve active filter pills as a separate persistent state layer
-- [ ] Ensure the compact dock can still host mode-specific controls cleanly
+- [x] Refactor the desktop dock markup to support a compact primary rail
+- [x] Add the anchored desktop filter panel container without breaking the current shared filter DOM contract
+- [x] Preserve active filter pills as a separate persistent state layer
+- [x] Ensure the compact dock can still host mode-specific controls cleanly
 
 ### Phase 3 — Interaction Wiring
-- [ ] Add launcher open/close behavior for the desktop filter panel
-- [ ] Wire panel state to existing filter logic without duplicating state ownership
-- [ ] Keep group-by and clear interactions synchronized with the compact dock state
-- [ ] Ensure focus management and outside-click dismissal behave correctly
-- [ ] Keep keyboard accessibility and visible focus states intact
+- [x] Add launcher open/close behavior for the desktop filter panel
+- [x] Wire panel state to existing filter logic without duplicating state ownership
+- [x] Keep group-by and clear interactions synchronized with the compact dock state
+- [x] Ensure focus management and outside-click dismissal behave correctly
+- [x] Keep keyboard accessibility and visible focus states intact
 
 ### Phase 4 — Contextual Choreography
-- [ ] Detail mode: refine which actions remain visible in the compact rail
-- [ ] Grid mode: preserve pivot access without restoring full dock width
-- [ ] Deck mode: preserve slide/detail face switching behavior
-- [ ] Gantt mode: preserve bottom placement and exit controls
-- [ ] Ensure the compact dock remains visually coherent across all workspace modes
+- [x] Detail mode: refine which actions remain visible in the compact rail
+- [x] Grid mode: preserve pivot access without restoring full dock width
+- [x] Deck mode: preserve slide/detail face switching behavior
+- [x] Gantt mode: preserve bottom placement and exit controls
+- [x] Ensure the compact dock remains visually coherent across all workspace modes
 
 ### Phase 5 — Collision Hardening
-- [ ] Re-run dock clearance behavior against compact and expanded states
-- [ ] Verify active filter pills do not collide with the dock or top nav
-- [ ] Verify outbox/admin panel open state does not break compact dock spacing
-- [ ] Verify wide and narrow desktop widths still maintain usable dock geometry
-- [ ] Remove any temporary fallback rules introduced during prototyping
+- [x] Re-run dock clearance behavior against compact and expanded states
+- [x] Verify active filter pills do not collide with the dock or top nav
+- [x] Verify outbox/admin panel open state does not break compact dock spacing
+- [x] Verify wide and narrow desktop widths still maintain usable dock geometry
+- [x] Remove any temporary fallback rules introduced during prototyping
 
 ### Phase 6 — Final Polish + Signoff
-- [ ] Add final active-count and badge polish to the Filters launcher
-- [ ] Align hover, press, and transition timing with the existing desktop motion language
-- [ ] Perform desktop smoke validation across Detail, Grid, Deck, and Gantt
-- [ ] Update PRD and AGENT_LOG with completion state and validation results
+- [x] Add final active-count and badge polish to the Filters launcher
+- [x] Align hover, press, and transition timing with the existing desktop motion language
+- [x] Perform desktop smoke validation across Detail, Grid, Deck, and Gantt
+- [x] Update PRD and AGENT_LOG with completion state and validation results
 
 ---
 

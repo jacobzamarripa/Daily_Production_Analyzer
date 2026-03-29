@@ -252,12 +252,17 @@
           transform: translateY(0) !important;
       }
       #group-by-select {
-          width: 104px !important;
-          min-width: 104px !important;
-          font-size: 10px !important;
+          width: auto !important;
+          min-width: 13ch !important;
+          max-width: none !important;
+          font-size: 11px !important;
           text-transform: none !important;
           letter-spacing: normal !important;
+          padding-left: 12px !important;
           padding-right: 30px !important;
+      }
+      body.gantt-view-active #dock-group-zone #group-by-select {
+          min-width: 14ch !important;
       }
       .filter-strip .btn,
       .filter-strip select,
@@ -298,6 +303,236 @@
       .dock-zone > * {
           flex-shrink: 0;
           transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .dock-zone.is-emerging {
+          transform-origin: center center;
+          animation: dock-zone-emerge var(--dock-zone-duration, 460ms) cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .dock-zone.is-emerging > * {
+          animation: dock-zone-child-emerge var(--dock-zone-child-duration, 480ms) cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .dock-zone.dock-zone-context-active {
+          padding: 3px 4px;
+          border-radius: 22px;
+          background: color-mix(in srgb, var(--card-bg) 88%, rgba(59, 130, 246, 0.12));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 6px 16px rgba(15, 23, 42, 0.08);
+      }
+      body.grid-mode-active .dock-zone.dock-zone-context-active {
+          background: color-mix(in srgb, #0f172a 10%, var(--card-bg) 90%);
+      }
+      body.gantt-view-active .dock-zone.dock-zone-context-active {
+          background: color-mix(in srgb, var(--text-main) 12%, var(--card-bg) 88%);
+      }
+      body.dark-mode .dock-zone.dock-zone-context-active {
+          background: color-mix(in srgb, var(--card-bg) 82%, rgba(59, 130, 246, 0.16));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 20px rgba(0, 0, 0, 0.24);
+      }
+
+      #dock-focus-zone .dock-divider,
+      #dock-pivot-zone .dock-divider,
+      #dock-gantt-actions-zone .dock-divider {
+          display: none !important;
+      }
+
+      #dock-gantt-actions-zone.dock-zone-context-active {
+          padding: 0 !important;
+          border-radius: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
+      }
+
+      #dock-gantt-actions-zone #gantt-sort-select {
+          width: auto !important;
+          min-width: 15ch !important;
+          max-width: none !important;
+          padding-left: 12px !important;
+          padding-right: 34px !important;
+          font-size: 11px !important;
+          text-overflow: clip !important;
+          overflow: visible !important;
+      }
+      body.gantt-view-active #dock-gantt-actions-zone #gantt-sort-select {
+          min-width: 16ch !important;
+      }
+
+      #dock-gantt-actions-zone {
+          max-width: none !important;
+          overflow: visible !important;
+          gap: 8px;
+      }
+      body.gantt-view-active #dock-gantt-actions-zone {
+          gap: 4px !important;
+      }
+
+      #dock-launcher-zone .btn {
+          height: 34px !important;
+          padding: 0 14px !important;
+          font-weight: 800;
+      }
+      #dock-btn-filters-launcher.is-active {
+          background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+          color: #fff !important;
+          border-color: #1d4ed8 !important;
+          box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24) !important;
+      }
+      #dock-btn-filters-launcher.is-launching {
+          animation: dock-launcher-pop 420ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .dock-filters-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 5px;
+          margin-left: 6px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 900;
+          line-height: 1;
+          background: color-mix(in srgb, var(--accent) 82%, #1d4ed8);
+          color: #fff;
+          box-shadow: 0 6px 12px rgba(37, 99, 235, 0.25);
+      }
+      .dock-context-panel {
+          position: absolute;
+          top: calc(100% + 10px);
+          left: 50%;
+          max-width: min(calc(100vw - 28px), 980px);
+          max-height: min(56vh, 420px);
+          --dock-panel-shift-x: 0px;
+          --dock-panel-shift-y: -12px;
+          transform: translateX(calc(-50% + var(--dock-panel-shift-x))) translateY(var(--dock-panel-shift-y)) scale(0.88);
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 10px;
+          overflow-x: auto;
+          overflow-y: auto;
+          scrollbar-width: none;
+          border-radius: 24px;
+          background: rgba(255, 255, 255, 0.68);
+          backdrop-filter: blur(26px) saturate(185%);
+          -webkit-backdrop-filter: blur(26px) saturate(185%);
+          border: 1px solid rgba(255, 255, 255, 0.82);
+          box-shadow: 0 14px 36px rgba(15, 23, 42, 0.14), inset 0 1px 1px rgba(255,255,255,1);
+          z-index: 4010;
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          transform-origin: top center;
+          transition:
+              transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 220ms ease,
+              visibility 0ms linear 320ms;
+      }
+              .dock-context-panel::-webkit-scrollbar { display: none; }
+      .dock-context-panel.is-open {
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+          transform: translateX(-50%) translateY(0) scale(1);
+          transition:
+              transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 240ms ease,
+              visibility 0ms linear 0ms;
+          animation: dock-panel-bounce-in 420ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      body.gantt-view-active .dock-context-panel {
+          top: auto;
+          bottom: calc(100% + 10px);
+      }
+      body.dark-mode .dock-context-panel {
+          background: rgba(24, 24, 27, 0.74);
+          border-color: rgba(255, 255, 255, 0.12);
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.42), inset 0 1px 1px rgba(255,255,255,0.05);
+      }
+      .dock-context-panel.is-closing {
+          animation: dock-panel-bounce-out 220ms ease;
+      }
+      @keyframes dock-panel-bounce-in {
+          0% {
+              opacity: 0;
+              transform: translateX(calc(-50% + var(--dock-panel-shift-x))) translateY(var(--dock-panel-shift-y)) scale(0.82);
+          }
+          62% {
+              opacity: 1;
+              transform: translateX(-50%) translateY(0) scale(1.04);
+          }
+          100% {
+              opacity: 1;
+              transform: translateX(-50%) translateY(0) scale(1);
+          }
+      }
+      @keyframes dock-panel-bounce-out {
+          0% {
+              opacity: 1;
+              transform: translateX(-50%) translateY(0) scale(1);
+          }
+          100% {
+              opacity: 0;
+              transform: translateX(calc(-50% + var(--dock-panel-shift-x))) translateY(var(--dock-panel-shift-y)) scale(0.9);
+          }
+      }
+      @keyframes dock-launcher-pop {
+          0% { transform: scale(1); }
+          50% { transform: scale(0.92); }
+          100% { transform: scale(1); }
+      }
+      @keyframes dock-zone-emerge {
+          0% {
+              opacity: 0;
+              transform: translate(var(--dock-zone-origin-x, 0px), var(--dock-zone-origin-y, -18px)) scale(var(--dock-zone-start-scale, 0.84));
+              filter: blur(var(--dock-zone-start-blur, 7px));
+          }
+          68% {
+              opacity: 1;
+              transform: translate(0, 0) scale(var(--dock-zone-overshoot-scale, 1.03));
+              filter: blur(0);
+          }
+          100% {
+              opacity: 1;
+              transform: translate(0, 0) scale(1);
+              filter: blur(0);
+          }
+      }
+      @keyframes dock-zone-child-emerge {
+          0% {
+              opacity: 0;
+              transform: translate(calc(var(--dock-zone-origin-x, 0px) * 0.16), calc(var(--dock-zone-origin-y, -18px) * 0.16)) scale(0.92);
+          }
+          100% {
+              opacity: 1;
+              transform: translate(0, 0) scale(1);
+          }
+      }
+      .view-segment-btn.is-dock-origin-tap,
+      .smart-dock .btn.is-dock-origin-tap {
+          animation: dock-origin-tap 380ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes dock-origin-tap {
+          0% { transform: scale(1); }
+          42% { transform: scale(0.9); }
+          82% { transform: scale(1.06); }
+          100% { transform: scale(1); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+          .dock-zone,
+          .dock-zone > *,
+          .dock-context-panel,
+          .slide-action-deck,
+          #dock-btn-filters-launcher,
+          .view-segment-btn,
+          .smart-dock .btn {
+              animation: none !important;
+              transition-duration: 1ms !important;
+          }
+          .dock-zone.is-emerging,
+          .dock-zone.is-emerging > *,
+          .slide-action-deck.is-emerging,
+          .slide-action-deck.is-emerging > * {
+              animation: none !important;
+          }
       }
       #dock-filters-zone {
           display: inline-flex;
@@ -365,6 +600,18 @@
           opacity: 1;
           pointer-events: auto;
           transform: translateY(0) scale(1);
+      }
+      .slide-action-deck.is-emerging {
+          animation: dock-zone-emerge var(--dock-zone-duration, 520ms) cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .slide-action-deck.is-emerging > * {
+          animation: dock-zone-child-emerge var(--dock-zone-child-duration, 540ms) cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .slide-action-deck.dock-zone-context-active {
+          box-shadow: 0 16px 42px rgba(15, 23, 42, 0.2), inset 0 1px 1px rgba(255,255,255,1), 0 0 0 2px color-mix(in srgb, var(--accent) 24%, transparent);
+      }
+      body.dark-mode .slide-action-deck.dock-zone-context-active {
+          box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42), inset 0 1px 1px rgba(255,255,255,0.08), 0 0 0 2px color-mix(in srgb, var(--accent) 32%, transparent);
       }
       .slide-action-deck.dock-idle {
           opacity: 0.05;

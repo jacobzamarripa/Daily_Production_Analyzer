@@ -7,6 +7,106 @@
 // STATE: _SLIDE_SVG — slide face icon for workspace chrome
 const _SLIDE_SVG = `<span class="dock-face-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 18v3"></path><path d="M15 9l-4 3 4 3"></path></svg></span>`;
 
+let pendingDockMotionOrigin = null;
+let lastDockContextZoneId = null;
+
+function primeDockMotionOrigin(el, context) {
+    if (!el || typeof el.getBoundingClientRect !== 'function') return;
+    const rect = el.getBoundingClientRect();
+    pendingDockMotionOrigin = {
+        x: rect.left + (rect.width / 2),
+        y: rect.top + (rect.height / 2),
+        context: context || null,
+        ts: Date.now()
+    };
+    el.classList.remove('is-dock-origin-tap');
+    void el.offsetWidth;
+    el.classList.add('is-dock-origin-tap');
+    setTimeout(() => el.classList.remove('is-dock-origin-tap'), 420);
+}
+
+function getActiveDockContextZone() {
+    if (currentWorkspaceView === 'gantt') return getEl('dock-gantt-actions-zone');
+    if (currentWorkspaceView === 'grid') return getEl('dock-pivot-zone');
+    if (currentWorkspaceView === 'detail' && isDeckMode) {
+        const slideDeck = getEl('slide-action-deck');
+        if (slideDeck && slideDeck.classList.contains('visible')) return slideDeck;
+    }
+    if (currentWorkspaceView === 'detail') return getEl('dock-focus-zone');
+    return null;
+}
+
+function animateDockZoneEmergence(zone) {
+    if (!zone) return;
+    const zoneRect = zone.getBoundingClientRect();
+    let shiftX = 0;
+    let shiftY = currentWorkspaceView === 'gantt' ? 18 : -18;
+    const origin = pendingDockMotionOrigin;
+
+    let profile = {
+        duration: '460ms',
+        childDuration: '480ms',
+        startScale: '0.84',
+        overshootScale: '1.03',
+        startBlur: '7px'
+    };
+
+    if (currentWorkspaceView === 'grid') {
+        profile = {
+            duration: '390ms',
+            childDuration: '420ms',
+            startScale: '0.90',
+            overshootScale: '1.02',
+            startBlur: '4px'
+        };
+    } else if (currentWorkspaceView === 'gantt') {
+        profile = {
+            duration: '520ms',
+            childDuration: '540ms',
+            startScale: '0.80',
+            overshootScale: '1.06',
+            startBlur: '8px'
+        };
+        shiftY = 26;
+    } else if (currentWorkspaceView === 'detail' && isDeckMode) {
+        profile = {
+            duration: '560ms',
+            childDuration: '580ms',
+            startScale: '0.78',
+            overshootScale: '1.08',
+            startBlur: '9px'
+        };
+    }
+
+    if (origin && (Date.now() - origin.ts) < 1200) {
+        const zoneCenterX = zoneRect.left + (zoneRect.width / 2);
+        const zoneCenterY = zoneRect.top + (zoneRect.height / 2);
+        shiftX = Math.max(-180, Math.min(180, origin.x - zoneCenterX));
+        shiftY = Math.max(-90, Math.min(90, origin.y - zoneCenterY));
+    }
+
+    zone.style.setProperty('--dock-zone-duration', profile.duration);
+    zone.style.setProperty('--dock-zone-child-duration', profile.childDuration);
+    zone.style.setProperty('--dock-zone-start-scale', profile.startScale);
+    zone.style.setProperty('--dock-zone-overshoot-scale', profile.overshootScale);
+    zone.style.setProperty('--dock-zone-start-blur', profile.startBlur);
+    zone.style.setProperty('--dock-zone-origin-x', `${Math.round(shiftX)}px`);
+    zone.style.setProperty('--dock-zone-origin-y', `${Math.round(shiftY)}px`);
+    zone.classList.remove('is-emerging');
+    void zone.offsetWidth;
+    zone.classList.add('is-emerging');
+    setTimeout(() => zone.classList.remove('is-emerging'), 480);
+    pendingDockMotionOrigin = null;
+}
+
+function syncDockContextChoreography() {
+    const activeZone = getActiveDockContextZone();
+    const nextZoneId = activeZone && !activeZone.classList.contains('collapsed') ? activeZone.id : null;
+    const shouldAnimate = nextZoneId && (nextZoneId !== lastDockContextZoneId || pendingDockMotionOrigin);
+    lastDockContextZoneId = nextZoneId;
+    if (shouldAnimate) animateDockZoneEmergence(activeZone);
+}
+
 function syncWorkspaceModeState() {
     isGridMode = (currentWorkspaceView === 'grid');
     isDeckMode = isSlideFaceActive();
@@ -41,7 +141,12 @@ function syncWorkspaceChrome() {
     if (pivotZone) pivotZone.classList.toggle('collapsed', !isGridModeView);
     if (focusZone) focusZone.classList.toggle('collapsed', !isDetailMode);
     if (clearZone) clearZone.classList.toggle('collapsed', getEl('btn-clear-filters')?.classList.contains('collapsed') !== false);
+    if (pivotZone) pivotZone.classList.toggle('dock-zone-context-active', isGridModeView);
+    if (focusZone) focusZone.classList.toggle('dock-zone-context-active', isDetailMode && !isDeckMode);
+    const ganttZone = getEl('dock-gantt-actions-zone');
+    if (ganttZone) ganttZone.classList.toggle('dock-zone-context-active', isGanttView);
     if (slideDeck) slideDeck.classList.toggle('visible', showSlideDeck && !isGanttView);
+    if (slideDeck) slideDeck.classList.toggle('dock-zone-context-active', !!(isDetailMode && isDeckMode));
     if (groupSelect) {
         groupSelect.value = currentGroupBy;
         groupSelect.classList.toggle('is-active', currentGroupBy !== 'none');
@@ -73,6 +178,7 @@ function syncWorkspaceChrome() {
     syncDockLayoutSpacing();
     updateFloatingPillsPosition();
     syncDockClearanceState();
+    syncDockContextChoreography();
 }
 
 function syncDockPlacementState() {
@@ -113,6 +219,10 @@ function syncGanttViewportLayout() {
 function switchWorkspaceView(mode) {
     const requestedMode = mode;
     const normalizedMode = (requestedMode === 'deck' || requestedMode === 'slide' || requestedMode === 'digest') ? 'detail' : requestedMode;
+    if (typeof toggleDesktopFiltersPanel === 'function') {
+        const panel = getEl('dock-filters-panel');
+        if (panel && panel.classList.contains('is-open')) toggleDesktopFiltersPanel(false);
+    }
     if (isDeckMode && normalizedMode !== 'detail') saveCurrentCardState();
     if (currentWorkspaceView === 'gantt' && normalizedMode !== 'gantt') captureGanttScrollState();
 
@@ -254,6 +364,7 @@ function switchPanelTab(tab) {
         renderChangeLog();
     }
     syncOutboxPanelMode();
+    if (typeof syncReviewHubControlState === 'function') syncReviewHubControlState();
 }
 
 // ── DETAIL-FACE ORCHESTRATION ──

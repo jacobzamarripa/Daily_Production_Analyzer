@@ -233,6 +233,9 @@ function syncGanttIslandState() {
     if (btnFs) btnFs.classList.add('collapsed');
     if (btnFocus) btnFocus.classList.toggle('collapsed', !(isFs && hasFocus));
     if (ganttZone) ganttZone.classList.toggle('collapsed', !(isFs || hasFocus));
+    if (ganttZone) ganttZone.classList.toggle('dock-zone-context-active', !!(isFs || hasFocus));
+    if (pivotZone) pivotZone.classList.toggle('dock-zone-context-active', !!isGrid);
+    if (focusZone) focusZone.classList.toggle('dock-zone-context-active', !!showFocusZone);
     const btnFocusPill = document.getElementById('btn-exit-theater');
     if (btnFocusPill) btnFocusPill.style.display = (!isFs && hasFocus) ? 'inline-flex' : 'none';
 
@@ -265,6 +268,7 @@ function syncGanttIslandState() {
     syncDockLayoutSpacing();
     updateFloatingPillsPosition();
     syncDockClearanceState();
+    if (typeof syncDockContextChoreography === 'function') syncDockContextChoreography();
 }
 
 function handleGanttClick(fdh) {
