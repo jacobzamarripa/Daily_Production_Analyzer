@@ -1,5 +1,11 @@
 # Agent Log — Omni PMO App
 
+> [!info] 2026-03-30: Restore DatePicker.html from git history
+- **Action:** Surgically restored `DatePicker.html` from commit `b4a2517` using `git checkout b4a2517 -- DatePicker.html`.
+- **Reason:** File was deleted during WS12 modularization archival pass (commit `4dad151`).
+- **Content:** 127-line GAS HtmlService dialog with smart weekend-aware default date logic and Friday→Sat/Sun bundling for Run Review.
+- **Validation:** File present at repo root, staged for commit.
+
 > [!info] 2026-03-29: WS18 Phases 4-5 Wrap-up — Gantt, Filter & Executive Glass
 - **Phase 4 & 5 Gantt & Filter Refinement — Full Sign-off:**
   - **Gantt Contextual Dock:** Unified Gantt controls (Zoom Out, Zoom In, Today, Filter) into the top-right of the screen for optimal thumb reach in landscape mode.
@@ -92,3 +98,8 @@
 - **State Hardening:** 
     - Fixed logo visibility logic and hardened `syncMobileDockContext` for zero state-drift.
 - **Workstream Complete:** Workstream 18 is now fully signed off. The "GlassFlow" shell is the production standard for mobile.
+
+> [!info] 2026-03-29: Session Wrap — WS18 Sign-off & WS19 Definition
+- **Final Achievement:** Delivered a high-performance, thumb-optimized mobile shell featuring a "Breathing Dock" and "Executive Glass" aesthetic. 
+- **System Stability:** Resolved legacy Gantt styling conflicts and overlay issues, ensuring a seamless landscape experience.
+- **Handoff:** PRD updated with Workstream 19 focus: **Visual Parity & Desktop Glass Upgrade**.
