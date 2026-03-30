@@ -47,22 +47,26 @@ function renderChangeLog() {
 
     let html = '';
     logsToRender.forEach(log => {
-        let navArg = JSON.stringify(String(log.fdh || ''));
+        let typeIcon = '📝';
+        let t = String(log.type || '').toUpperCase();
+        if (t.includes('REVIEW')) typeIcon = '👁️';
+        if (t.includes('SYNC')) typeIcon = '🔄';
+        if (t.includes('UPDATE')) typeIcon = '🛠️';
+        if (t.includes('COMMIT')) typeIcon = '✅';
+        if (t.includes('FLAG')) typeIcon = '🚩';
+
         let cleanVal = String(log.val ?? '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
         html += `
-        <div class="log-card">
-            <div class="log-header">
-                <div style="font-size:12px; font-weight:900; color:var(--text-main);">${esc(log.fdh)}</div>
-                <div style="font-size:9px; font-weight:700; color:var(--text-muted);">${formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true)}</div>
+        <div class="log-row-dense" onclick="selectItemForNav('${escJs(String(log.fdh || ''))}')">
+            <div class="log-row-type">${typeIcon}</div>
+            <div class="log-row-main">
+                <div class="log-row-top">
+                    <span class="log-row-fdh">${esc(log.fdh)}</span>
+                    <span class="log-row-time">${formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true)}</span>
+                </div>
+                <div class="log-row-val">${esc(cleanVal)}</div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:2px;">
-                <span class="log-type">${esc(log.type)}</span>
-                <span style="font-size:10px; font-weight:800; color:var(--text-muted);">By: <span style="color:var(--text-main);">${esc(log.user)}</span></span>
-            </div>
-            <div style="font-size:11px; color:var(--text-main); font-weight:600; margin-top:4px; padding:6px; background:var(--bg); border-radius:6px; border:1px solid var(--border);">
-                &#8594; ${esc(cleanVal)}
-            </div>
-            <button class="btn" style="margin-top:6px; align-self:flex-start; padding:4px 10px;" onclick='selectItemForNav(${navArg})'>Go to Project</button>
+            <div class="log-row-user">${esc(String(log.user || '').split(' ')[0])}</div>
         </div>`;
     });
 

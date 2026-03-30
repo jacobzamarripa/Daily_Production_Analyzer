@@ -176,16 +176,16 @@ function renderAdminPane(items) {
     if (!activeAdminFilter || activeAdminFilter === 'boms') {
         html += _adminSection('BOMs to Input', bomInput, function(item) {
             return `<div class="admin-list-card" onclick="selectItemForNav('${item.fdh}')">
-                <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.city} · ${item.vendor} · ${item.stage}</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:3px; font-style:italic;">Enter BOM data in QuickBase, then re-sync reference data.</div>
+                <div class="admin-card-title">${item.fdh}</div>
+                <div class="admin-card-meta">${item.city} · ${item.vendor} · ${item.stage}</div>
+                <div class="admin-card-hint">Enter BOM data in QuickBase, then re-sync reference data.</div>
             </div>`;
         });
         html += _adminSection('BOMs to Check — UG/AE', bomCheck, function(item) {
             return `<div class="admin-list-card" onclick="selectItemForNav('${item.fdh}')">
-                <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.city} · ${item.vendor} · ${item.stage}</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:3px; font-style:italic;">UG and AE BOM quantities are 0 in QB. Verify main phase BOM setup.</div>
+                <div class="admin-card-title">${item.fdh}</div>
+                <div class="admin-card-meta">${item.city} · ${item.vendor} · ${item.stage}</div>
+                <div class="admin-card-hint">UG and AE BOM quantities are 0 in QB. Verify main phase BOM setup.</div>
             </div>`;
         });
     }
@@ -193,13 +193,13 @@ function renderAdminPane(items) {
     if ((!activeAdminFilter || activeAdminFilter === 'status') && status.length > 0) {
         html += _adminSection('Status Mismatches', status, function(item) {
             return `<div class="admin-list-card" onclick="selectItemForNav('${item.fdh}')">
-                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-                    <div>
-                        <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.city} · ${item.vendor}</div>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">QB Status: <span style="font-weight:bold; color:var(--text-main);">${item.status}</span></div>
+                <div class="admin-card-split">
+                    <div class="admin-card-content">
+                        <div class="admin-card-title">${item.fdh}</div>
+                        <div class="admin-card-meta">${item.city} · ${item.vendor}</div>
+                        <div class="admin-card-status">QB Status: <span>${item.status}</span></div>
                     </div>
-                    <button class="btn" onclick="event.stopPropagation(); markQbUpdatedFromAdmin('${item.fdh}', this)" style="padding:5px 10px; font-size:10px; font-weight:900; background:#2563eb; color:#fff; border-color:#1d4ed8; white-space:nowrap; flex-shrink:0;">🛠 Updated</button>
+                    <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); markQbUpdatedFromAdmin('${item.fdh}', this)">🛠 Updated</button>
                 </div>
             </div>`;
         });
@@ -300,8 +300,8 @@ function renderOutbox() {
         if (type === 'staged') section.style.borderBottom = '1px solid var(--border)';
 
         let header = document.createElement('div');
-        header.className = 'ob-header';
-        header.style.padding = '10px 16px';
+        header.className = 'ob-header-sticky';
+        header.style.cssText = 'padding:12px 16px; background:color-mix(in srgb, var(--accent) 12%, var(--bg)); border-bottom:1px solid var(--border); border-left:4px solid var(--accent); position:sticky; top:0; z-index:5;';
         if (isCollapsible) {
             header.style.cursor = 'pointer';
             header.onclick = function() { toggleStagedReviewSection(); };
@@ -344,12 +344,12 @@ function renderOutbox() {
             card.className = 'ob-card';
             card.onclick = function() { openPane(item, null); };
             card.innerHTML = `
-                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-                    <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
+                <div class="admin-card-split">
+                    <div class="admin-card-title">${esc(item.fdh)}</div>
                     <span class="tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}">${type === 'staged' ? 'STAGED' : 'REVIEWED'}</span>
                 </div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${esc(item.vendor || item.city || 'Unknown')}</div>
-                <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; overflow:visible;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
+                <div class="admin-card-meta">${esc(item.vendor || item.city || 'Unknown')}</div>
+                <div class="admin-card-hint">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
             body.appendChild(card);
         });
 
@@ -365,6 +365,10 @@ function renderOutbox() {
     list.appendChild(createSection('Reviewed', reviewedItems.length, [
         { label: '↑ Export', onClick: function() { promptEmailExport(); } },
         { label: 'Clear', onClick: function() { clearReviewedTray(); } }
+    ], reviewedItems, 'reviewed'));
+}
+</script>
+n() { clearReviewedTray(); } }
     ], reviewedItems, 'reviewed'));
 }
 </script>

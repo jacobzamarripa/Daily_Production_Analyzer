@@ -233,7 +233,7 @@ body.mobile-admin-open .v2-shell-glassflow-dock {
   opacity: 0.85;
 }
 .m-dock-badge {
-  padding: 2px 6px !important;
+  padding: 0 6px !important;
   border-radius: 999px !important; /* Full pill shape */
   font-size: 10px !important;
   font-weight: 900 !important;
@@ -243,16 +243,19 @@ body.mobile-admin-open .v2-shell-glassflow-dock {
   align-items: center;
   justify-content: center;
   line-height: 1;
+  letter-spacing: -0.2px;
 }
 #admin-fab-badge {
-  left: -6px !important;
+  left: -8px !important;
   right: auto !important;
-  top: -6px !important;
+  top: -8px !important;
   width: auto !important;
   min-width: 22px !important;
+  padding: 0 7px !important;
   height: 22px !important;
-  border: 2px solid var(--card-bg);
-  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+  border-radius: 11px !important;
+  border: none !important;
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.45);
 }
 
 /* Hide FABs when expanded views are open to clear airspace */
@@ -1487,117 +1490,239 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
   border-radius: 999px !important;
 }
 
-/* Admin Panel — Inner Scroll Fix */
-#ob-panel-admin { overflow: visible; }
-#admin-pane-content { overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 120px !important; }
-#outbox-list { overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 120px !important; }
-#changelog-list { overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 120px !important; }
-
-/* Admin Panel — KPI Strip Polish (WS18 P3) */
-.v2-shell-glassflow .admin-strip {
-  display: flex;
-  padding: 16px 20px 12px;
-  gap: 10px;
-  flex-shrink: 0;
-  background: transparent;
-  overflow: visible !important;
-}
-.v2-shell-glassflow .admin-kpi {
-  flex: 1;
-  min-height: 58px !important;
-  padding: 6px !important;
-  border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-  background: color-mix(in srgb, var(--card-bg) 95%, #fff);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-.v2-shell-glassflow.dark-mode .admin-kpi {
-  background: color-mix(in srgb, var(--card-bg) 95%, #000);
-}
-.v2-shell-glassflow .admin-kpi svg {
-  width: 16px !important;
-  height: 16px !important;
-  margin-bottom: 1px;
-  color: var(--text-muted);
-  transition: color 0.2s ease;
-}
-.v2-shell-glassflow .admin-kpi:active {
-  transform: scale(0.96);
-  opacity: 0.8;
-}
-.v2-shell-glassflow .admin-kpi.active {
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.1);
-}
-.v2-shell-glassflow .admin-kpi.crossings.active {
-  border-color: #f59e0b;
-  background: rgba(245, 158, 11, 0.1);
-}
-.v2-shell-glassflow .admin-kpi.crossings.active svg,
-.v2-shell-glassflow .admin-kpi.crossings.active .admin-kpi-val { color: #f59e0b; }
-
-.v2-shell-glassflow .admin-kpi.status.active {
-  border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-}
-.v2-shell-glassflow .admin-kpi.status.active svg,
-.v2-shell-glassflow .admin-kpi.status.active .admin-kpi-val { color: #ef4444; }
-
-.v2-shell-glassflow .admin-kpi.boms.active {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-}
-.v2-shell-glassflow .admin-kpi.boms.active svg,
-.v2-shell-glassflow .admin-kpi.boms.active .admin-kpi-val { color: #3b82f6; }
-
-.v2-shell-glassflow .admin-kpi-val {
-  font-size: 20px !important;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  color: var(--text-main);
-}
-.v2-shell-glassflow .admin-kpi-label {
-  font-size: 9px !important;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-}
-
-/* Admin Panel — Card List Refinement (WS18 P3) */
-.v2-shell-glassflow .admin-list-card,
-.v2-shell-glassflow .ob-card,
-.v2-shell-glassflow .log-card {
-  margin: 12px 0 !important;
-  padding: 16px !important;
-  border-radius: 20px !important;
+/* ============================================================
+   REVIEW HUB: Integrated Station (WS19)
+   ============================================================ */
+.v2-shell-glassflow .outbox-pane {
+  position: fixed !important;
+  top: var(--v2-shell-inset) !important;
+  right: var(--v2-shell-inset) !important;
+  bottom: calc(var(--v2-shell-inset) + 10px) !important;
+  width: calc(100% - (var(--v2-shell-inset) * 2)) !important;
+  max-width: 440px !important; /* Cap width on larger viewports */
+  margin: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  border-radius: var(--v2-shell-radius) !important;
   background: var(--card-bg) !important;
   border: 1px solid var(--border) !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.04) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  z-index: 100010 !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.3) !important;
+  display: none;
+  flex-direction: column;
+  overflow: hidden !important;
+  
+  /* Physical Motion */
+  opacity: 0;
+  transform: translateX(30px) scale(0.98);
+  transition: opacity 0.22s ease-out, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.v2-shell-glassflow .outbox-pane.open {
   display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-  overflow: visible !important;
+  opacity: 1 !important;
+  transform: translateX(0) scale(1) !important;
+  pointer-events: auto !important;
 }
-.v2-shell-glassflow .admin-list-card:active,
-.v2-shell-glassflow .ob-card:active,
-.v2-shell-glassflow .log-card:active {
-  transform: scale(0.98);
-  background: color-mix(in srgb, var(--bg) 50%, var(--card-bg)) !important;
+
+/* Fix: Internal Padding & Container Masking */
+.v2-shell-glassflow #admin-pane-content,
+.v2-shell-glassflow #outbox-list,
+.v2-shell-glassflow #changelog-list {
+  flex: 1 1 0%;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 20px 100px !important; /* Increased padding for breathing room */
+  margin: 0 !important;
+  background: transparent !important;
 }
-.v2-shell-glassflow .admin-list-card div[style*="font-size:12px"],
-.v2-shell-glassflow .ob-card div[style*="font-size:12px"],
-.v2-shell-glassflow .log-card div[style*="font-size:12px"] {
-  font-size: 16px !important;
+
+/* Header Integration */
+.v2-shell-glassflow .inbox-header {
+  padding: 20px 20px 16px !important;
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border) !important;
+  flex-shrink: 0;
+}
+
+/* Admin Panel — Inner Scroll Fix */
+#ob-panel-admin, #ob-panel-reviewed, #ob-panel-changelog { 
+  overflow: hidden !important; 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+}
+
+/* Tab-Specific Visibility */
+#review-hub-main-header:not(.is-admin-tab) #admin-kpi-header-wrap,
+#review-hub-main-header:not(.is-admin-tab) #persistent-crossings-area {
+    display: none !important;
+}
+
+/* Admin Mini-KPIs in Header */
+.admin-kpi-mini-wrap {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.admin-kpi-mini {
+    min-width: 44px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 900;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.admin-kpi-mini svg {
+    width: 14px !important;
+    height: 14px !important;
+    color: inherit;
+    opacity: 0.8;
+}
+.admin-kpi-mini.active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.admin-kpi-mini.crossings { color: #f59e0b; }
+.admin-kpi-mini.crossings.active { background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; }
+.admin-kpi-mini.status { color: #ef4444; }
+.admin-kpi-mini.status.active { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
+.admin-kpi-mini.boms { color: #3b82f6; }
+.admin-kpi-mini.boms.active { background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; }
+
+/* Persistent Crossings Row */
+.persistent-crossings-row {
+    padding: 0 12px;
+    max-height: 120px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--accent) 3%, transparent);
+}
+.persistent-crossings-row .admin-section-header { display: none; }
+.persistent-crossings-row .admin-list-card { margin: 8px 0 !important; }
+
+/* Compact Activity Tab (WS19) */
+.v2-shell-glassflow .log-row-dense {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.v2-shell-glassflow .log-row-dense:active {
+    background: color-mix(in srgb, var(--bg) 95%, transparent);
+}
+.v2-shell-glassflow .log-row-type {
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.v2-shell-glassflow .log-row-main {
+    flex: 1;
+    min-width: 0;
+}
+.v2-shell-glassflow .log-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+}
+.v2-shell-glassflow .log-row-fdh {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--text-main);
+}
+.v2-shell-glassflow .log-row-time {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.v2-shell-glassflow .log-row-val {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: monospace;
+    opacity: 0.8;
+}
+.v2-shell-glassflow .log-row-user {
+    font-size: 9px;
+    font-weight: 900;
+    color: var(--accent);
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    padding: 3px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+}
+
+/* Card Sub-elements */
+.v2-shell-glassflow .admin-card-title {
+  font-size: 14px !important;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+.v2-shell-glassflow .admin-card-meta {
+  font-size: 10px !important;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.v2-shell-glassflow .admin-card-hint {
+  font-size: 11px !important;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+.v2-shell-glassflow .admin-card-split {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.v2-shell-glassflow .admin-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.v2-shell-glassflow .admin-card-status {
+  font-size: 10px !important;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.v2-shell-glassflow .admin-card-status span {
+  font-weight: 800;
+  color: var(--text-main);
+}
+.v2-shell-glassflow .btn-primary {
+  background: #2563eb !important;
+  color: #fff !important;
+  border-color: #1d4ed8 !important;
+}
+.v2-shell-glassflow .btn-sm {
+  padding: 4px 10px !important;
+  font-size: 10px !important;
+  min-height: 28px !important;
+}
   font-weight: 900 !important;
   letter-spacing: -0.02em !important;
 }
@@ -1807,10 +1932,13 @@ body.mobile-admin-open #review-hub-main-header .glassflow-queue-kicker {
   border-bottom: 1px solid var(--border);
 }
 body.mobile-admin-open #review-hub-main-header .glassflow-queue-count {
-  min-width: 46px;
-  height: 36px;
-  border-radius: 18px;
+  min-width: 44px;
+  height: 32px;
+  border-radius: 16px;
   font-size: 14px;
+  padding: 0 10px;
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
 body.mobile-admin-open .panel-tab-bar {
   display: flex !important;

@@ -223,30 +223,30 @@
   <!-- Review Hub (Admin Panel) -->
   <div id="outbox-overlay" onclick="toggleAdminPanel()"></div>
   <div class="outbox-pane" id="outbox-pane">
-     <div id="review-hub-main-header" class="inbox-header" style="justify-content:space-between;">
-        <div class="glassflow-queue-title">
-           <div class="glassflow-queue-kicker"><span>Review</span><span>Hub</span></div>
-           <div class="glassflow-queue-count" id="ob-header-count">0</div>
+     <div id="review-hub-main-header" class="inbox-header is-admin-tab" style="flex-direction:column; align-items:stretch; gap:12px; padding-bottom:12px !important;">
+        <div style="display:flex; justify-content:flex-start; align-items:center; width:100%; gap:12px;">
+            <div class="admin-kpi-mini-wrap" id="admin-kpi-header-wrap">
+                <div class="admin-kpi-mini crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v8H2z"></path><line x1="6" y1="8" x2="6" y2="16"></line><line x1="10" y1="8" x2="10" y2="16"></line></svg>
+                    <div class="admin-kpi-mini-val" id="kpi-crossings-val">0</div>
+                </div>
+                <div class="admin-kpi-mini status" id="kpi-admin-status" onclick="toggleAdminFilter('status')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <div class="admin-kpi-mini-val" id="kpi-status-val">0</div>
+                </div>
+                <div class="admin-kpi-mini boms" id="kpi-admin-boms" onclick="toggleAdminFilter('boms')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    <div class="admin-kpi-mini-val" id="kpi-boms-val">0</div>
+                </div>
+            </div>
+            <div class="glassflow-queue-title" style="margin-left:auto;">
+               <div class="glassflow-queue-kicker"><span>Review</span><span>Hub</span></div>
+               <div class="glassflow-queue-count" id="ob-header-count">0</div>
+            </div>
         </div>
+        <div id="persistent-crossings-area" class="persistent-crossings-row"></div>
      </div>
-     <div id="ob-panel-admin" style="display:flex; flex-direction:column; flex:1; overflow:visible;">
-          <div class="admin-strip">
-            <div class="admin-kpi crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v8H2z"></path><line x1="6" y1="8" x2="6" y2="16"></line><line x1="10" y1="8" x2="10" y2="16"></line></svg>
-              <div class="admin-kpi-val" id="kpi-crossings-val">0</div>
-              <div class="admin-kpi-label">Crossings</div>
-           </div>
-            <div class="admin-kpi status" id="kpi-admin-status" onclick="toggleAdminFilter('status')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              <div class="admin-kpi-val" id="kpi-status-val">0</div>
-              <div class="admin-kpi-label">Status</div>
-           </div>
-            <div class="admin-kpi boms" id="kpi-admin-boms" onclick="toggleAdminFilter('boms')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-              <div class="admin-kpi-val" id="kpi-boms-val">0</div>
-              <div class="admin-kpi-label">BOMs</div>
-           </div>
-        </div>
+     <div id="ob-panel-admin" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
         <div id="admin-pane-content" style="flex:1; overflow-y:auto;"></div>
      </div>
      <div id="ob-panel-reviewed" style="display:none; flex-direction:column; flex:1; overflow:visible;"><div id="outbox-list" style="flex:1; overflow-y:auto;"></div></div>
@@ -533,6 +533,32 @@
             if (touchEndX - touchStartX > 80) { // Swipe Right (Close)
                 if (helpPanel.classList.contains('open')) {
                     if (typeof toggleHelpPanel === 'function') toggleHelpPanel();
+                }
+            }
+        }
+    })();
+
+    // Review Hub Swipe Logic
+    (function() {
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const pane = document.getElementById('outbox-pane');
+        if (!pane) return;
+
+        pane.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        pane.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            // Swipe Right to Close (consistent with Help Panel)
+            if (touchEndX - touchStartX > 80) {
+                if (pane.classList.contains('open')) {
+                    if (typeof setAdminPanelOpen === 'function') setAdminPanelOpen(false);
                 }
             }
         }
@@ -1186,10 +1212,8 @@
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
       </svg>
-    </div>
-    <span id="fab-filter-badge" class="m-dock-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:var(--color-critical); z-index:10;">0</span>
-  </button>
-
+      </div>
+      </button>
   <!-- 🛠️ ADMIN HUB FAB (Stack below Search) -->
   <button id="admin-hub-fab" class="unified-fab fab-bottom-right" onclick="toggleAdminPanel()" title="Review Hub">
     <div class="fab-icon-wrap">

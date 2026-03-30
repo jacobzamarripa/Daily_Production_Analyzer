@@ -173,11 +173,11 @@ After each phase, verify on mobile viewport (≤480px):
 - [x] SF Sheet dropdowns open/close correctly and filter data
 ---
 
-### Phase 7: Review Hub Rework (Upcoming)
+### Phase 7: Review Hub Rework ✅
 **Goal:** Fix scrolling issues and optimize the layout for the Review Hub panel.
 
-- [ ] Diagnose and fix scrolling blockage in `#admin-pane-content` and `#outbox-list`
-- [ ] Rework KPI strip for better interaction and visual hierarchy
-- [ ] Standardize card layouts within the hub
-- [ ] Ensure swipe-to-dismiss consistency across all sheets
-- [ ] Refine notification badge shape and placement (iOS-style pill)
+- [x] Diagnose and fix scrolling blockage in `#admin-pane-content` and `#outbox-list` (Container overflow constraint fixed)
+- [x] Rework KPI strip for better interaction and visual hierarchy (Premium card style with active states)
+- [x] Standardize card layouts within the hub (Class-based system with consistent spacing/radius)
+- [x] Ensure swipe-to-dismiss consistency across all sheets (Right-swipe added to outbox-pane)
+- [x] Refine notification badge shape and placement (iOS-style pill implementation)
