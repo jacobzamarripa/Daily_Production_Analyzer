@@ -51,7 +51,12 @@ const checks = [
   {
     label: 'Phone-only layout rules drive queue/detail push-pop and legacy shell visibility',
     file: 'src/_styles_layout.html',
-    patterns: [/#mobile-dock \{ display: none; \}/, /#mobile-sf-overlay \{\s*display: none;/, /#mobile-sf-sheet \{\s*display: flex !important;/, /@media \(max-width: 480px\)/, /body\.mobile-detail-open \.inbox-sidebar \{ transform: translateX\(-100%\); \}/, /body\.mobile-detail-open \.reading-pane  \{ transform: translateX\(0\); \}/, /left: 12px !important;/, /right: 12px !important;/, /overflow-y: auto !important;/, /touch-action: pan-y !important;/],
+    patterns: [/#mobile-dock \{ display: none; \}/, /#mobile-sf-overlay \{\s*display: none;/, /#mobile-sf-sheet \{\s*display: none;/, /@media \(max-width: 480px\)/, /#mobile-sf-sheet \{\s*display: flex;/, /body\.mobile-detail-open \.inbox-sidebar \{ transform: translateX\(-100%\); \}/, /body\.mobile-detail-open \.reading-pane  \{ transform: translateX\(0\); \}/, /left: 12px !important;/, /right: 12px !important;/, /overflow-y: auto !important;/, /touch-action: pan-y !important;/],
+  },
+  {
+    label: 'Desktop Review Hub header uses the unified count and KPI strip',
+    file: 'src/WebApp.html',
+    patterns: [/id="ob-header-count"/, /review-hub-desktop-row-top/, /review-hub-desktop-row-tabs/, /review-hub-desktop-row-kpis/, /review-hub-kpi-strip/],
   },
   {
     label: 'Phone filter presentation stays sheet-based behind the shared smart dock',

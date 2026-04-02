@@ -394,6 +394,7 @@ function switchPanelTab(tab) {
         if (clBadge) clBadge.style.display = 'none';
         renderChangeLog();
     }
+    if (typeof syncReviewHubHeaderCount === 'function') syncReviewHubHeaderCount();
     syncOutboxPanelMode();
     if (typeof syncReviewHubControlState === 'function') syncReviewHubControlState();
 }

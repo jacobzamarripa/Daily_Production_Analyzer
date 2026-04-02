@@ -36,21 +36,62 @@ function getExistingKeys() {
   return keys;
 }
 
-function processIncomingForQuickBase(isSilent = false) {
-  setupSheets();
+function processIncomingForQuickBase(isSilent = false, isContinuation = false) {
+  const startTime = new Date().getTime();
+  const props = PropertiesService.getScriptProperties();
+
+  if (!isContinuation) {
+    // 🛡️ Lock to prevent overlapping manual runs
+    if (props.getProperty("INGESTION_IN_PROGRESS") === "true") {
+      if (!isSilent) SpreadsheetApp.getUi().alert("⚠️ Ingestion is already running in the background. Please wait.");
+      return;
+    }
+    props.setProperty("INGESTION_IN_PROGRESS", "true");
+    setupSheets();
+    logMsg("🚀 STARTING: Folder Ingestion (Auto-Scan)");
+  }
+
   const keys = getExistingKeys(); 
   const refDict = getReferenceDictionary(); 
   let newRowsAppended = []; 
   let allProcessedDates = [];
   let allParsedRowsForQB = [];
   
-  processFolderRecursive(DriveApp.getFolderById(INCOMING_FOLDER_ID), keys, refDict, "", false, newRowsAppended, allProcessedDates, false, allParsedRowsForQB);
-  populateQuickBaseTabDirectly(allParsedRowsForQB);
-  autoArchiveProcessedFiles();
+  // 🔄 Execute recursive scan with time budget
+  let status = processFolderRecursive(DriveApp.getFolderById(INCOMING_FOLDER_ID), keys, refDict, "", false, newRowsAppended, allProcessedDates, false, allParsedRowsForQB, startTime);
+  
+  if (status.completed === false) {
+    // ⏰ TIMEOUT: Schedule resume
+    logMsg(`⌛ TIMEOUT REACHED: Processed partial batch (${newRowsAppended.length} rows). Scheduling resume...`);
+    ScriptApp.newTrigger('processIncomingResume')
+      .timeBased()
+      .after(60000) // 1 minute delay
+      .create();
+  } else {
+    // ✅ COMPLETE
+    props.setProperty("INGESTION_IN_PROGRESS", "false");
+    populateQuickBaseTabDirectly(allParsedRowsForQB);
+    autoArchiveProcessedFiles();
+    logMsg(`✅ INGESTION COMPLETE: Added ${newRowsAppended.length} rows to Archive.`);
 
-  if (!isSilent) {
+    if (!isSilent && !isContinuation) {
       SpreadsheetApp.getUi().alert(`Done scanning.\n\nFiltered duplicates and appended ${newRowsAppended.length} new rows to the Archive.\nQuickBase Upload tab refreshed with ${allParsedRowsForQB.length} row(s).\n\n📁 All processed files have been moved to the Master Archive.`);
+    }
   }
+}
+
+/**
+ * ⚡ Resumption stub called by the time-based trigger
+ */
+function processIncomingResume() {
+  // Clean up the trigger first
+  const triggers = ScriptApp.getProjectTriggers();
+  for (let i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'processIncomingResume') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  processIncomingForQuickBase(true, true);
 }
 
 function normalizeDateString(value) {
@@ -140,26 +181,45 @@ function applyQuickBaseTabStyling(qbSheet) {
   }
 }
 
-function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArchive, newRowsAppended = null, allProcessedDates = null, forceReprocess = false, allParsedRowsForQB = null) {
+function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArchive, newRowsAppended = null, allProcessedDates = null, forceReprocess = false, allParsedRowsForQB = null, startTime = null) {
   let resolvedFolderDate = extractDateFromName(folder.getName());
   if (resolvedFolderDate) folderDate = resolvedFolderDate;
+  
   const files = folder.getFiles();
   while (files.hasNext()) {
+    // ⏰ Time Budget Check: Exit if over 5 minutes (300,000ms)
+    if (startTime && (new Date().getTime() - startTime > 300000)) {
+      return { completed: false };
+    }
+
     let file = files.next();
     if (!file.getName().toLowerCase().endsWith(".xlsx")) continue;
+    if (file.getDescription() === "PROCESSED" && !forceReprocess) continue;
     
     let fDate = folderDate || extractDateFromName(file.getName()) || deriveFallbackTargetDate(file);
     if (fDate && allProcessedDates !== null) allProcessedDates.push(fDate);
     
     try { 
-        parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppended, allProcessedDates, allParsedRowsForQB); 
+        let rows = parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppended, allProcessedDates, allParsedRowsForQB); 
+        if (rows && rows.length > 0) {
+            const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HISTORY_SHEET);
+            const trueLastRow = getTrueLastDataRow(sh);
+            ensureCapacity(sh, trueLastRow + rows.length, HISTORY_HEADERS.length);
+            sh.getRange(trueLastRow + 1, 1, rows.length, HISTORY_HEADERS.length).setValues(rows);
+            SpreadsheetApp.flush(); // Commit each file's data to avoid loss on unexpected crash
+        }
         file.setDescription("PROCESSED"); 
     } catch (e) {
         logMsg(`Failed to process file ${file.getName()}: ${e.message}`);
     }
   }
+
   const subfolders = folder.getFolders();
-  while (subfolders.hasNext()) processFolderRecursive(subfolders.next(), existingKeys, refDict, folderDate, isArchive, newRowsAppended, allProcessedDates, forceReprocess, allParsedRowsForQB);
+  while (subfolders.hasNext()) {
+    let result = processFolderRecursive(subfolders.next(), existingKeys, refDict, folderDate, isArchive, newRowsAppended, allProcessedDates, forceReprocess, allParsedRowsForQB, startTime);
+    if (result && result.completed === false) return result;
+  }
+  return { completed: true };
 }
 
 function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppended, allProcessedDates, allParsedRowsForQB = null) {
@@ -233,14 +293,8 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
     }
   });
 
-  if (dataToAppend.length > 0) {
-    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HISTORY_SHEET);
-    const trueLastRow = getTrueLastDataRow(sh);
-    ensureCapacity(sh, trueLastRow + dataToAppend.length, HISTORY_HEADERS.length);
-    sh.getRange(trueLastRow + 1, 1, dataToAppend.length, HISTORY_HEADERS.length).setValues(dataToAppend);
-    SpreadsheetApp.flush(); 
-  }
   Drive.Files.remove(tempFile.id);
+  return dataToAppend;
 }
 
 function populateQuickBaseTabDirectly(parsedRows) {
