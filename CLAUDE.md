@@ -8,7 +8,7 @@
 
 ## Architecture Rules
 1. **No Node.js:** Use `UrlFetchApp`, `SpreadsheetApp`, and `CacheService`.
-2. **Single Responsive Surface (OmniSight):** The app uses `WebApp.html` for ALL devices. Desktop is branded as **OmniSight** (Oversight/Intelligence); Mobile is branded as **OmniFlow** (Field Flow). CSS breakpoints in `_styles_layout.html` and `_styles_components.html` handle responsiveness.
+2. **Single Responsive Surface (WS12):** The app uses `WebApp.html` for ALL devices. CSS breakpoints in `_styles_layout.html` and `_styles_components.html` handle responsiveness.
 3. **Logic Modularization:**
     - State: `_state_queue.html`, `_state_router.html`, `_state_session.html`.
     - Modules: `_module_*.html` files (Gantt, Deck, Digest, etc.).
@@ -18,11 +18,7 @@
 4. **HtmlService Routing:** `doGet()` MUST use `createTemplateFromFile('WebApp').evaluate()`.
 5. **Surgical Logic Changes:** Edit the specific `_module_*.html` file, not the main shell. Standardize by including `<script>` tags within the partial itself.
 6. **Mobile GAS Viewport:** Set viewport via `addMetaTag()` in `doGet()`. Use `width=device-width, initial-scale=1, viewport-fit=cover`.
-7. No Massive Inline CSS: Never put more than 500 lines of CSS inline in an HTML shell file. GAS `HtmlService` often sanitizes or completely ignores large inline `<style>` blocks. Move core shell styles to a partial like `_styles_glassflow_core.html` and use `<?!= include() ?>`.
-8. **Folder Deletion Safety (WS21):** NEVER use `sub.setTrashed(true)` in recursive folder sweeps without explicit multi-factor user confirmation. This logic is prone to accidental mass-deletion if folder IDs are misconfigured.
-9. **Archiver Optimization (WS21):** When sweeping thousands of files across Drive folders, implement a **Folder Cache Map** (`{dateStr: FolderObject}`) first. O(N*M) lookups inside recursive loops will cause 6-minute script timeouts.
-10. **Staging Workflow Pattern:** For manual-to-automated transitions (like QuickBase uploads), use a `01_Pending` -> `02_Uploaded` subfolder structure. Automations should only sweep `02_Uploaded` to ensure data integrity.
-
+7. **No Massive Inline CSS:** Never put more than 500 lines of CSS inline in an HTML shell file. GAS `HtmlService` often sanitizes or completely ignores large inline `<style>` blocks. Move core shell styles to a partial like `_styles_glassflow_core.html` and use `<?!= include() ?>`.
 
 ## Autonomous Web Automation (Agent Loop Pattern)
 To perform multi-step, loop-until-completion web tasks (especially testing the GAS UI or scraping the deployed app):
@@ -65,7 +61,6 @@ To perform multi-step, loop-until-completion web tasks (especially testing the G
 | `_module_gantt.html` | Gantt render engine and focus helpers. |
 | `_module_deck.html` | Deck/slide workspace and presentation runtime. |
 | `_module_digest.html` | Digest workspace and analytics summaries. |
-| `_module_command_view.html` | Command Center workspace, audit feed, and inspector panel. |
 | `_module_admin.html` | Admin pane and reviewed tray persistence. |
 | `_module_tabs.html` | Review Hub tab UI and badge handlers. |
 | `_module_webapp_core.html` | Extracted WebApp script bundle. |
@@ -82,11 +77,6 @@ To perform multi-step, loop-until-completion web tasks (especially testing the G
 | `_styles_glassflow_core.html` | Core mobile shell styles (extracted from v2_shell_GlassFlow). |
 | `_utils_shared.html` | Pure helpers (escaping, dates) + DOM shorthand (`getEl`, `setHtml`). |
 | `_utils_notifications.html` | Shared toasts and status wrapper helpers. |
-
-### Payload Extensions
-| File | Role |
-|---|---|
-| `_state_payload.html` | Shared payload owners including `allGlobalLogs` and `allSystemLogs` for audit workspaces. |
 
 ### Archived
 - `_archive/`: Contains `MobileApp.html`, `JS_Modules_Mobile.html`, `_styles_mobile.html`, `Sidebar.html`, `DatePicker.html`, `CSS_Styles.html`, `CSS_Mobile.html`.

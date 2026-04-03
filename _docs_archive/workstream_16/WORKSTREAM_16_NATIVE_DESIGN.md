@@ -1,6 +1,6 @@
 # WORKSTREAM 16 — Native Mobile Design Specification
 
-> **Archive note:** Historical WS16 design document. The surviving mobile shell implementation history is recorded in `_docs_archive/workstream_18/WORKSTREAM_18_GLASSFLOW_PANEL_REFINEMENT.md`.
+> **Archive note:** Historical WS16 design document. Active mobile shell implementation moved forward under `WORKSTREAM_18_GLASSFLOW_PANEL_REFINEMENT.md`.
 
 > **Status:** Active — Phase 11 validation and runtime signoff
 > **Date:** 2026-03-27
