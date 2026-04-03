@@ -41,7 +41,6 @@
       /* WS20: Desktop shell container geometry — workspace as framed card */
       @media (min-width: 769px) {
         .workspace {
-          margin: 0 var(--desktop-shell-inset) var(--desktop-shell-inset);
           border: 1px solid var(--border);
           border-top: none;
           border-radius: 0 0 var(--desktop-shell-radius) var(--desktop-shell-radius);
@@ -51,10 +50,6 @@
         }
         /* Suppress empty workspace card when Gantt panel takes over */
         body.gantt-view-active .workspace {
-          display: none !important;
-        }
-        /* WS20 Phase 4: hide floating admin-fab on desktop — Review Hub accessed via nav header button */
-        .admin-fab-anchor {
           display: none !important;
         }
         /* Ensure outbox-pane bottom clears the workspace border-radius corner (overflow:hidden) */
@@ -111,6 +106,22 @@
         /* KPI mini chips: full-width 3-col on the panel width */
         .outbox-pane .admin-kpi-mini-wrap {
           width: 100%;
+        }
+        /* Compact KPI chips on desktop — reduce height, horizontal layout */
+        .outbox-pane .admin-kpi-mini {
+          min-height: 36px;
+          flex-direction: row;
+          justify-content: flex-start;
+          gap: 6px;
+          padding: 6px 10px;
+          border-radius: 10px;
+        }
+        .outbox-pane .admin-kpi-mini-label {
+          font-size: 9px;
+        }
+        .outbox-pane .admin-kpi-mini-val {
+          font-size: 13px;
+          margin-left: auto;
         }
         /* Header: hide KPI wrap when not on admin tab */
         #review-hub-main-header:not(.is-admin-tab) #admin-kpi-header-wrap {
