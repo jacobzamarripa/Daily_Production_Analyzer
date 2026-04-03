@@ -546,8 +546,21 @@
                       <button class="ob-desktop-tab" id="panel-tab-reviewed" onclick="switchPanelTab('reviewed')">Reviewed <span id="ob-count" class="ob-tab-badge ob-tab-badge-green" style="display:none;">0</span></button>
                       <button class="ob-desktop-tab" id="panel-tab-changelog" onclick="switchPanelTab('changelog')">Activity <span id="changelog-badge" class="ob-tab-badge ob-tab-badge-purple" style="display:none;">0</span></button>
                    </div>
-                   <!-- Row 3: KPI chips placeholder (injected in future workstream) -->
-                   <div id="admin-kpi-header-wrap" style="display:none;"></div>
+                   <!-- Row 3: KPI chips -->
+                   <div id="admin-kpi-header-wrap" class="review-hub-kpi-row">
+                      <div class="admin-kpi-mini crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')" title="Filter: Crossings to verify">
+                         <div class="admin-kpi-mini-label">Crossings</div>
+                         <div class="admin-kpi-mini-val" id="kpi-crossings-val">0</div>
+                      </div>
+                      <div class="admin-kpi-mini status" id="kpi-admin-status" onclick="toggleAdminFilter('status')" title="Filter: Status issues">
+                         <div class="admin-kpi-mini-label">Status</div>
+                         <div class="admin-kpi-mini-val" id="kpi-status-val">0</div>
+                      </div>
+                      <div class="admin-kpi-mini boms" id="kpi-admin-boms" onclick="toggleAdminFilter('boms')" title="Filter: BOM reviews needed">
+                         <div class="admin-kpi-mini-label">BOMs</div>
+                         <div class="admin-kpi-mini-val" id="kpi-boms-val">0</div>
+                      </div>
+                   </div>
 
                    <div id="deck-action-panel" style="display:none; flex-direction:column; flex-grow:1; overflow-y:auto; padding:20px; gap:16px;"></div>
 
