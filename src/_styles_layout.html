@@ -281,6 +281,11 @@
         .outbox-pane .ob-card:last-child {
           border-bottom: none !important;
         }
+        /* Show full text — override inline max-height:30px clamp */
+        .outbox-pane .ob-card div {
+          max-height: none !important;
+          overflow: visible !important;
+        }
         /* Header count badge */
         .review-hub-header-count {
           font-size: 11px;
