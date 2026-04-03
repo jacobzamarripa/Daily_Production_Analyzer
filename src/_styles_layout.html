@@ -111,6 +111,33 @@
         .outbox-pane .review-hub-scroll-area {
           padding-bottom: 20px !important;
         }
+        /* ── Activity tab: desktop filter bar ── */
+        /* Hide mobile FAB trigger */
+        .outbox-pane .activity-filter-fab {
+          display: none !important;
+        }
+        /* Make filter bar static, always visible, flush inline */
+        .outbox-pane .review-hub-filter-bar {
+          position: static !important;
+          transform: none !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
+          width: 100% !important;
+          max-width: none !important;
+          border-radius: 0 !important;
+          border: none !important;
+          border-bottom: 1px solid var(--border) !important;
+          box-shadow: none !important;
+          padding: 12px 14px !important;
+          background: var(--card-bg) !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          flex-shrink: 0;
+        }
+        /* Remove mobile dock-clearance bottom padding from activity list */
+        .outbox-pane .review-hub-activity-list {
+          padding-bottom: 20px !important;
+        }
         /* Stylized sticky section headers — desktop panel */
         .outbox-pane .review-hub-section-header {
           position: sticky !important;
