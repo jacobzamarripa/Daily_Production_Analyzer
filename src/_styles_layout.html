@@ -116,7 +116,7 @@
         .outbox-pane .activity-filter-fab {
           display: none !important;
         }
-        /* Filter bar: mobile card aesthetic, statically placed in panel flow */
+        /* Filter bar: single horizontal row, statically placed in panel flow */
         .outbox-pane .review-hub-filter-bar {
           position: static !important;
           transform: none !important;
@@ -128,14 +128,36 @@
           left: auto !important;
           right: auto !important;
           margin: 10px 12px !important;
-          padding: 12px 14px !important;
-          border-radius: 16px !important;
+          padding: 10px 12px !important;
+          border-radius: 12px !important;
           border: 1px solid var(--border) !important;
           background: color-mix(in srgb, var(--card-bg) 98%, #fff) !important;
           backdrop-filter: blur(8px) saturate(160%) !important;
           -webkit-backdrop-filter: blur(8px) saturate(160%) !important;
           box-shadow: 0 4px 16px rgba(0,0,0,0.07) !important;
           flex-shrink: 0;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: 8px !important;
+        }
+        /* Search input — equal flex column */
+        .outbox-pane .review-hub-filter-bar .review-hub-filter-input {
+          flex: 1 !important;
+          min-width: 0 !important;
+        }
+        /* Select row — equal flex, stretch to match search */
+        .outbox-pane .review-hub-filter-bar .review-hub-filter-row {
+          flex: 1 !important;
+          min-width: 0 !important;
+          margin: 0 !important;
+        }
+        .outbox-pane .review-hub-filter-bar .review-hub-filter-select {
+          min-width: 0 !important;
+        }
+        /* Hide mobile-only toggle and footer actions */
+        .outbox-pane .review-hub-filter-bar .review-hub-filter-toggle,
+        .outbox-pane .review-hub-filter-bar > div:last-child {
+          display: none !important;
         }
         /* Remove mobile dock-clearance bottom padding from activity list */
         .outbox-pane .review-hub-activity-list {
@@ -276,45 +298,6 @@
         .review-hub-kpi-row .admin-kpi-mini.boms.active {
           background: rgba(59, 130, 246, 0.16);
           border-color: rgba(59, 130, 246, 0.5);
-        }
-        /* ── Reviewed tab: section headers ── */
-        .outbox-pane .ob-header {
-          position: sticky !important;
-          top: 0 !important;
-          z-index: 20 !important;
-          display: flex !important;
-          flex-direction: row !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          gap: 8px !important;
-          background: var(--card-bg) !important;
-          border-left: 3px solid var(--accent) !important;
-          padding: 10px 14px 10px 11px !important;
-          border-bottom: 1px solid var(--border) !important;
-        }
-        /* ── Reviewed tab: item cards — match admin-list-card exactly ── */
-        .outbox-pane .ob-card {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          padding: 14px 16px 12px !important;
-          border-bottom: 1px solid var(--border) !important;
-          border-top: none !important;
-          background: color-mix(in srgb, var(--card-bg) 92%, transparent) !important;
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-        .outbox-pane .ob-card:hover {
-          background: var(--bg) !important;
-          transform: translateY(-1px);
-        }
-        .outbox-pane .ob-card:last-child {
-          border-bottom: none !important;
-        }
-        /* Show full text — override inline max-height:30px clamp */
-        .outbox-pane .ob-card div {
-          max-height: none !important;
-          overflow: visible !important;
         }
         /* Header count badge */
         .review-hub-header-count {
@@ -689,12 +672,11 @@
           display: none;
       }
 
-      /* Hide FAB when panel is open — close lives in the panel header */
+      /* FAB always accessible — it's a toggle; close is also in the panel header */
       .reading-pane.admin-open #admin-fab {
-          opacity: 0 !important;
-          pointer-events: none !important;
-          transform: scale(0.85) !important;
-          transition: opacity 0.18s ease, transform 0.18s ease;
+          opacity: 1;
+          transform: none;
+          pointer-events: auto;
       }
       /* FAB SVG icon sizing */
       .admin-fab-icon svg {
