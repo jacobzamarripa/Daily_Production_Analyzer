@@ -116,6 +116,16 @@
         #review-hub-main-header:not(.is-admin-tab) #admin-kpi-header-wrap {
           display: none;
         }
+        /* WS20 Phase 5: Gantt panel — match workspace shell geometry when active */
+        body.gantt-view-active #gantt-panel {
+          left: var(--desktop-shell-inset, 16px) !important;
+          right: var(--desktop-shell-inset, 16px) !important;
+          bottom: var(--desktop-shell-inset, 16px) !important;
+          border: 1px solid var(--border) !important;
+          border-top: none !important;
+          border-radius: 0 0 var(--desktop-shell-radius, 16px) var(--desktop-shell-radius, 16px) !important;
+          box-shadow: var(--desktop-shell-shadow) !important;
+        }
       }
 
       /* 📱 TABLET (touch devices: iPad portrait + landscape; min-height excludes iPhones in landscape ~390px) */

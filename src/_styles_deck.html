@@ -402,4 +402,9 @@
         min-height: min-content !important;
       }
 
+      /* WS20 Phase 5: Deck stage — token-aligned top padding on desktop */
+      @media (min-width: 769px) {
+        .deck-stage { padding: calc(var(--desktop-header-height, 56px) + 16px) 32px 32px; }
+      }
+
     </style>
