@@ -1,9 +1,10 @@
 # WORKSTREAM 18 — GlassFlow Panel-by-Panel Refinement
 
-> **Status:** Workstream Complete — High-Performance Mobile Shell Finalized
+> **Status:** Completed and retired as an active planning document
 > **Started:** 2026-03-28
 > **Completed:** 2026-03-29
 > **Philosophy:** "Contextual dock, creative interior. One panel at a time to completion before moving on."
+> **Record note:** Historical implementation record only. Do not use this file for current direction. Active planning now lives in `PRD.md` and the current workstream execution notes.
 
 ---
 

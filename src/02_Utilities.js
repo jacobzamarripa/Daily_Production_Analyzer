@@ -181,7 +181,7 @@ function doGet(e) {
 
   const variant = (e && e.parameter && e.parameter.v) ? e.parameter.v : null;
   const templateFile = (variant && MOBILE_SHELLS[variant]) ? MOBILE_SHELLS[variant] : 'WebApp';
-  const title = variant ? 'Omni PMO — Mobile: ' + variant : 'Omni PMO App';
+  const title = variant ? 'OmniFlow — ' + variant : 'OmniSight — Desktop';
 
   return HtmlService.createTemplateFromFile(templateFile)
     .evaluate()
@@ -603,36 +603,7 @@ function processDateSelection(dateStr, actionName) {
 }
 function importArchiveFolder() { const keys = getExistingKeys(); const refDict = getReferenceDictionary(); processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null); SpreadsheetApp.getUi().alert("✅ Master Archive Updated."); }
 function setupDailyTrigger() { const triggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < triggers.length; i++) ScriptApp.deleteTrigger(triggers[i]); ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(12).everyDays(1).create(); ScriptApp.newTrigger('moveIncomingFoldersToArchive').timeBased().atHour(0).everyDays(1).create(); SpreadsheetApp.getUi().alert("✅ Daily Automations Enabled."); }
-function runMiddayAutomation() {
-  logMsg("🤖 STARTING MIDDAY AUTOMATION...");
-  setupSheets();
-  
-  // 1. Run the resumable ingestion
-  processIncomingForQuickBase(true); // Silent run
-  
-  // 2. Identify the target date for review (latest date in archive for today)
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const histSheet = ss.getSheetByName(HISTORY_SHEET);
-  const histData = histSheet.getRange("A:A").getValues();
-  let latestDate = new Date(0);
-  let targetDateStr = Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd");
-
-  for (let i = histData.length - 1; i >= Math.max(0, histData.length - 100); i--) {
-    let d = histData[i][0];
-    if (d instanceof Date && d > latestDate) {
-      latestDate = d;
-      targetDateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd");
-    }
-  }
-
-  // 3. Finalize automation steps
-  const refDict = getReferenceDictionary();
-  generateDailyReviewCore(targetDateStr, refDict, true);
-  exportDirectorReviewXLSX(true);
-  exportVendorCorrectionsXLSX(true);
-  
-  logMsg(`✅ MIDDAY AUTOMATION COMPLETE for Date: ${targetDateStr}`);
-}
+function runMiddayAutomation() { logMsg("🤖 STARTING MIDDAY AUTOMATION..."); setupSheets(); const keys = getExistingKeys(); const refDict = getReferenceDictionary(); let newRowsAppended = []; let allProcessedDates = []; let rowCollector = []; processFolderRecursive(DriveApp.getFolderById(INCOMING_FOLDER_ID), keys, refDict, "", false, newRowsAppended, allProcessedDates, false, rowCollector); let targetDateStr = Utilities.formatDate(new Date(), "GMT-5", "yyyy-MM-dd"); if (rowCollector.length > 0) { let maxTime = 0; rowCollector.forEach(row => { let d = new Date(row[0]); if (d.getTime() > maxTime) { maxTime = d.getTime(); targetDateStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd"); } }); } populateQuickBaseTabDirectly(rowCollector); generateDailyReviewCore(targetDateStr, refDict, true); exportDirectorReviewXLSX(true); exportVendorCorrectionsXLSX(true); logMsg(`✅ MIDDAY AUTOMATION COMPLETE for Date: ${targetDateStr}`); }
 function moveIncomingFoldersToArchive() { logMsg("🧹 STARTING MIDNIGHT SWEEP..."); let inc = DriveApp.getFolderById(INCOMING_FOLDER_ID), arch = DriveApp.getFolderById(ARCHIVE_FOLDER_ID); let folders = inc.getFolders(); let count = 0; while (folders.hasNext()) { folders.next().moveTo(arch); count++; } logMsg(`✅ MIDNIGHT SWEEP COMPLETE: Moved ${count} folders.`); }
 function setupSheets() { const ss = SpreadsheetApp.getActiveSpreadsheet(); const sheets = [{n: QB_UPLOAD_SHEET, h: QB_HEADERS}, {n: HISTORY_SHEET, h: HISTORY_HEADERS}, {n: MIRROR_SHEET, h: HISTORY_HEADERS}]; sheets.forEach(s => { let sh = ss.getSheetByName(s.n) || ss.insertSheet(s.n); if (sh.getLastRow() === 0) sh.appendRow(s.h); }); }
 

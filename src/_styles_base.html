@@ -39,6 +39,36 @@
         --desktop-header-height: 56px;
       }
 
+      /* 🧠 BRANDING RE-ALIGNMENT (OMNISIGHT) */
+      .nav-logo-mark {
+        font-weight: 900;
+        letter-spacing: -1.2px;
+        font-size: 21px;
+        line-height: 1;
+        white-space: nowrap;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 0;
+        user-select: none;
+        text-transform: uppercase;
+      }
+      .nav-logo-mark span { color: var(--accent); }
+
+      .two-tone-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        font-size: 13px;
+        line-height: 0.98;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+        color: var(--text-main);
+      }
+      .two-tone-header span:first-child { color: var(--text-muted); }
+      .two-tone-header span:last-child { color: var(--accent); }
+
       /* 🧠 ENHANCED OBSIDIAN ZINC DARK MODE */
       body.dark-mode {
         --bg: #09090b; --card-bg: #1e1e24; --border: #333338; --text-main: #fafafa; --text-muted: #a1a1aa;

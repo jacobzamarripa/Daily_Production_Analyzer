@@ -1,5 +1,8 @@
 # PRD.md — Omni PMO App
 
+> [!CAUTION] **CRITICAL FEATURE LOCK ACTIVE**
+> Features marked as `[x]` are locked. Agents are strictly FORBIDDEN from reverting these components or their underlying logic without explicit, multi-turn user confirmation. Any "surgical restoration" or "revert" MUST be preceded by a `git commit -m "Checkpoint before revert"`.
+
 > Workstream progress tracker. Update checkboxes as phases complete.
 > Mirror to Obsidian at: 01_Projects/Omni PMO App/OmniPMO_PRD.md
 
