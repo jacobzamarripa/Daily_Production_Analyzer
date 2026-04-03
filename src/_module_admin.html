@@ -80,9 +80,7 @@ function syncReviewHubControlState(open) {
         fab.classList.toggle('is-open', isOpen);
     }
 
-    if (fabIcon) {
-        fabIcon.textContent = isOpen ? '×' : '☰';
-    }
+    /* icon is SVG — no text swap needed; visibility controlled by CSS */
 
     if (closeBtn) {
         closeBtn.setAttribute('aria-label', `Close ${tabLabel} panel`);
