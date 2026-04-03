@@ -625,10 +625,10 @@ function exportCommittedQueueToCSV() {
   let fileName = "Special_Crossings_Export_" + dateStamp + ".csv";
 
   let blob = Utilities.newBlob(csvContent, "text/csv", fileName);
-  DriveApp.createFile(blob);
+  DriveApp.getFolderById(COMPILED_FOLDER_ID).createFile(blob);
 
   logMsg("Crossings queue exported: " + fileName);
-  ui.alert("\u2705 Exported to Google Drive:\n" + fileName);
+  ui.alert("\u2705 Exported to Google Drive (Compiled Reports):\n" + fileName);
 }
 
 function writebackQBDirect() {

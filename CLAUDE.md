@@ -19,8 +19,6 @@
 5. **Surgical Logic Changes:** Edit the specific `_module_*.html` file, not the main shell. Standardize by including `<script>` tags within the partial itself.
 6. **Mobile GAS Viewport:** Set viewport via `addMetaTag()` in `doGet()`. Use `width=device-width, initial-scale=1, viewport-fit=cover`.
 7. **No Massive Inline CSS:** Never put more than 500 lines of CSS inline in an HTML shell file. GAS `HtmlService` often sanitizes or completely ignores large inline `<style>` blocks. Move core shell styles to a partial like `_styles_glassflow_core.html` and use `<?!= include() ?>`.
-8. **Ship-Safe Protocol (MANDATORY):** Every session MUST end with `clasp push` to sync the local environment with the Google cloud editor. The agent MUST verify `git status` is clean before sign-off.
-9. **Critical Feature Lock:** Features marked as `[x]` in `PRD.md` are locked. The agent is strictly FORBIDDEN from reverting these components or their underlying logic without explicit, multi-turn user confirmation. Any "surgical restoration" or "revert" MUST be preceded by a `git commit -m "Checkpoint before revert"`.
 
 ## Autonomous Web Automation (Agent Loop Pattern)
 To perform multi-step, loop-until-completion web tasks (especially testing the GAS UI or scraping the deployed app):

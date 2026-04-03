@@ -22,6 +22,7 @@
 // WRITES: admin toggle helpers and applyFilters
 // EXTRACT WITH: filteredItems, allActionItems, currentActiveItem
 let activeAdminFilter = null;
+
 function toggleAdminFilter(type) {
     activeAdminFilter = (activeAdminFilter === type) ? null : type;
     let kpiC = getEl('kpi-admin-crossings'), kpiS = getEl('kpi-admin-status'), kpiB = getEl('kpi-admin-boms');
@@ -36,11 +37,6 @@ function toggleAdminPanel() {
     let pane = getEl('outbox-pane');
     let isOpen = pane && pane.classList.contains('open');
     setAdminPanelOpen(!isOpen);
-    
-    // GlassFlow Shell specific: sync logo visibility
-    if (typeof syncGlassFlowLogoVisibility === 'function') {
-        syncGlassFlowLogoVisibility();
-    }
 }
 
 function shouldAutoOpenAdminPanel() {
@@ -157,8 +153,30 @@ function openAdminPanelByDefault() {
     syncAdminFabAnchorToPanel();
 }
 
-function renderAdminEmptyState(message) {
-    return `<div class="empty-msg" style="padding:40px 20px;">${message}</div>`;
+function syncReviewHubHeaderCount() {
+    let headerBadge = getEl('ob-header-count');
+    if (!headerBadge) return;
+
+    let activeTab = typeof currentPanelTab !== 'undefined' ? currentPanelTab : 'admin';
+    let total = 0;
+
+    if (activeTab === 'admin') {
+        let items = getActiveQueueItems() || [];
+        let crossings = items.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS")).length;
+        let bomInput = items.filter(i => i.flags.includes("PLEASE INPUT BOM")).length;
+        let bomCheck = items.filter(i => i.flags.includes("CHECK BOM (UG/AE)")).length;
+        let status = items.filter(i => i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS")).length;
+        total = crossings + bomInput + bomCheck + status;
+    } else if (activeTab === 'reviewed') {
+        let stagedCount = typeof stagedDeckItems !== 'undefined' ? stagedDeckItems.length : 0;
+        let reviewedCount = typeof committedItems !== 'undefined' ? committedItems.length : 0;
+        total = stagedCount + reviewedCount;
+    } else {
+        return;
+    }
+
+    headerBadge.textContent = String(total);
+    headerBadge.style.display = 'inline-flex';
 }
 
 // TODO: MODULE CANDIDATE - admin module still mutates reviewed tray, currentActiveItem, queue filters, and shared queue state.
@@ -166,7 +184,8 @@ function renderAdminPane(items) {
     let pane = getEl('admin-pane-content');
     if (!pane) return;
     if (!items || items.length === 0) {
-        pane.innerHTML = renderAdminEmptyState('No admin tasks.');
+        syncReviewHubHeaderCount();
+        pane.innerHTML = '<div class="empty-msg" style="padding:40px 20px;">No admin tasks.</div>';
         return;
     }
 
@@ -179,7 +198,7 @@ function renderAdminPane(items) {
     let totalAdmin = crossings.length + bomsTotal + status.length;
     let badge = getEl('admin-badge');
     if (badge) { badge.textContent = totalAdmin; badge.style.display = totalAdmin > 0 ? 'inline-flex' : 'none'; }
-    setTxt('ob-header-count', totalAdmin);
+    syncReviewHubHeaderCount();
 
     let kpiCv = getEl('kpi-crossings-val'), kpiSv = getEl('kpi-status-val'), kpiBv = getEl('kpi-boms-val');
     if (kpiCv) kpiCv.textContent = crossings.length;
@@ -188,23 +207,23 @@ function renderAdminPane(items) {
 
     let html = '';
 
-    if (!activeAdminFilter || activeAdminFilter === 'crossings') {
+    if ((!activeAdminFilter || activeAdminFilter === 'crossings') && crossings.length > 0) {
         html += renderSpecialCrossingsAdminSection(crossings);
     }
 
     if (!activeAdminFilter || activeAdminFilter === 'boms') {
         html += _adminSection('BOMs to Input', bomInput, function(item) {
             return `<div class="admin-list-card" onclick="selectItemForNav('${item.fdh}')">
-                <div class="admin-card-title">${item.fdh}</div>
-                <div class="admin-card-meta">${item.city} · ${item.vendor} · ${item.stage}</div>
-                <div class="admin-card-hint">Enter BOM data in QuickBase, then re-sync reference data.</div>
+                <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.city} · ${item.vendor} · ${item.stage}</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:3px; font-style:italic;">Enter BOM data in QuickBase, then re-sync reference data.</div>
             </div>`;
         });
         html += _adminSection('BOMs to Check — UG/AE', bomCheck, function(item) {
             return `<div class="admin-list-card" onclick="selectItemForNav('${item.fdh}')">
-                <div class="admin-card-title">${item.fdh}</div>
-                <div class="admin-card-meta">${item.city} · ${item.vendor} · ${item.stage}</div>
-                <div class="admin-card-hint">UG and AE BOM quantities are 0 in QB. Verify main phase BOM setup.</div>
+                <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.city} · ${item.vendor} · ${item.stage}</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:3px; font-style:italic;">UG and AE BOM quantities are 0 in QB. Verify main phase BOM setup.</div>
             </div>`;
         });
     }
@@ -212,19 +231,19 @@ function renderAdminPane(items) {
     if ((!activeAdminFilter || activeAdminFilter === 'status') && status.length > 0) {
         html += _adminSection('Status Mismatches', status, function(item) {
             return `<div class="admin-list-card" onclick="selectItemForNav('${item.fdh}')">
-                <div class="admin-card-split">
-                    <div class="admin-card-content">
-                        <div class="admin-card-title">${item.fdh}</div>
-                        <div class="admin-card-meta">${item.city} · ${item.vendor}</div>
-                        <div class="admin-card-status">QB Status: <span>${item.status}</span></div>
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                    <div>
+                        <div style="font-size:12px; font-weight:900; color:var(--text-main);">${item.fdh}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${item.city} · ${item.vendor}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">QB Status: <span style="font-weight:bold; color:var(--text-main);">${item.status}</span></div>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); markQbUpdatedFromAdmin('${item.fdh}', this)">🛠 Updated</button>
+                    <button class="btn" onclick="event.stopPropagation(); markQbUpdatedFromAdmin('${item.fdh}', this)" style="padding:5px 10px; font-size:10px; font-weight:900; background:#2563eb; color:#fff; border-color:#1d4ed8; white-space:nowrap; flex-shrink:0;">🛠 Updated</button>
                 </div>
             </div>`;
         });
     }
 
-    if (html === '') html = renderAdminEmptyState('No items in this category.');
+    if (html === '') html = '<div class="empty-msg" style="padding:40px 20px;">No items in this category.</div>';
     pane.innerHTML = html;
 }
 
@@ -300,7 +319,7 @@ function renderOutbox() {
     const reviewedItems = committedItems || [];
     const totalCount = stagedItems.length + reviewedItems.length;
     setTxt('ob-count', totalCount);
-    setTxt('ob-header-count', totalCount);
+    syncReviewHubHeaderCount();
     let tabBadge = getEl('ob-count');
     if (tabBadge) {
         tabBadge.innerText = totalCount;
@@ -317,26 +336,24 @@ function renderOutbox() {
         let isCollapsible = !!opts.collapsible;
         let isCollapsed = !!opts.collapsed;
         let section = document.createElement('div');
-        section.className = `review-hub-section review-hub-section-${type}`;
+        if (type === 'staged') section.style.borderBottom = '1px solid var(--border)';
 
         let header = document.createElement('div');
-        header.className = 'review-hub-section-header';
+        header.className = 'ob-header';
+        header.style.padding = '10px 16px';
         if (isCollapsible) {
             header.style.cursor = 'pointer';
             header.onclick = function() { toggleStagedReviewSection(); };
         }
         let titleEl = document.createElement('div');
-        titleEl.className = 'review-hub-section-title';
-        titleEl.innerHTML = `
-            <div class="review-hub-section-label">${type === 'staged' ? 'Export Queue' : 'Completed Reviews'}</div>
-            <div class="review-hub-section-name">${isCollapsible ? `${isCollapsed ? '&#9656;' : '&#9662;'} ` : ''}${title}</div>
-            <div class="review-hub-section-count">${count}</div>
-        `;
+        titleEl.style.cssText = 'font-size:11px; font-weight:900; text-transform:uppercase; color:var(--text-muted); display:flex; align-items:center; gap:8px;';
+        titleEl.innerHTML = `${isCollapsible ? `<span style="display:inline-flex; align-items:center; justify-content:center; width:14px; color:var(--text-main); font-size:11px;">${isCollapsed ? '&#9656;' : '&#9662;'}</span>` : ''}<span>${title} <span style="margin-left:6px; color:var(--text-main);">${count}</span></span>`;
         let actionWrap = document.createElement('div');
-        actionWrap.className = 'review-hub-section-actions';
+        actionWrap.style.cssText = 'display:flex; gap:6px;';
         actions.forEach(function(def) {
             let btn = document.createElement('button');
-            btn.className = 'btn review-hub-strip-btn';
+            btn.className = 'btn';
+            btn.style.cssText = 'font-size:10px; padding:3px 8px;';
             btn.textContent = def.label;
             btn.onclick = function(event) {
                 event.stopPropagation();
@@ -349,13 +366,12 @@ function renderOutbox() {
         section.appendChild(header);
 
         let body = document.createElement('div');
-        body.className = 'review-hub-section-body';
         body.style.display = isCollapsed ? 'none' : '';
 
         if (!items.length) {
             let empty = document.createElement('div');
             empty.className = 'empty-msg';
-            empty.style.cssText = 'padding:20px 0; margin:0; font-size:11px; min-height:0;';
+            empty.style.cssText = 'padding:14px 16px; margin:0; font-size:11px;';
             empty.textContent = type === 'staged' ? 'No staged items.' : 'No reviewed items.';
             body.appendChild(empty);
             section.appendChild(body);
@@ -367,14 +383,12 @@ function renderOutbox() {
             card.className = 'ob-card';
             card.onclick = function() { openPane(item, null); };
             card.innerHTML = `
-                <div class="admin-card-split">
-                    <div>
-                        <div class="admin-card-title">${esc(item.fdh)}</div>
-                        <div class="admin-card-meta">${esc(item.vendor || item.city || 'Unknown')}</div>
-                    </div>
-                    <span class="tag review-row-tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}">${type === 'staged' ? 'STAGED' : 'FINAL'}</span>
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                    <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
+                    <span class="tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}">${type === 'staged' ? 'STAGED' : 'REVIEWED'}</span>
                 </div>
-                <div class="admin-card-hint">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
+                <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${esc(item.vendor || item.city || 'Unknown')}</div>
+                <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; max-height:30px; overflow:hidden;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
             body.appendChild(card);
         });
 

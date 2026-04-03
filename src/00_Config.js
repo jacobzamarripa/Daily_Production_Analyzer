@@ -3,10 +3,10 @@
  * PURPOSE: Configuration, Constants, Colors, and SHARED HELPER FUNCTIONS
  */
 
-const ARCHIVE_FOLDER_ID   = "1EqGpR7HYlMfTezGXol2kNZ9vVvGTtP4-"; 
-const INCOMING_FOLDER_ID  = "1KBFJ5SWrTgRnU5zWUmcDOZtOiTNLonRk"; 
-const COMPILED_FOLDER_ID  = "1Wd9yx8VCgnAY76EIuo_dkFO4mF7yy7vN"; 
-const REFERENCE_FOLDER_ID = "14_pVws2NJ7i5GCiqxTpx2RN6HHDCNjOm"; 
+const ARCHIVE_FOLDER_ID   = "1EqGpR7HYlMfTezGXol2kNZ9vVvGTtP4-"; // Production_Archive
+const INCOMING_FOLDER_ID  = "1ofH6CIxjeoazZqxZ1EBulmwY02_WdieG"; // Daily_Production_Reports
+const COMPILED_FOLDER_ID  = "1Wd9yx8VCgnAY76EIuo_dkFO4mF7yy7vN"; // Complied_Daily_Production_Reports
+const REFERENCE_FOLDER_ID = "1SZ6VaMfNwKxTj23m4v32aFHQnfLYqlrh"; // Production_Incoming
 const VENDOR_TRACKER_ID   = "1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0"; 
 const DEFAULT_VENDOR_DAILY_GOALS = {
   "Bucyrus": 18000,
