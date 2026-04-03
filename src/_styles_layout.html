@@ -71,22 +71,25 @@
         /* Desktop tab strip — replaces bottom-dock tab context */
         .ob-desktop-tab-strip {
           display: flex;
-          gap: 4px;
+          gap: 6px;
+          padding: 10px 14px;
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
         }
         .ob-desktop-tab {
           flex: 1;
-          padding: 6px 8px;
+          position: relative;
+          padding: 8px 10px;
           border-radius: 10px;
           border: none;
           background: transparent;
           color: var(--text-muted);
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 900;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 5px;
           white-space: nowrap;
           transition: background var(--transition-spring), color var(--transition-spring);
         }
@@ -98,6 +101,12 @@
           background: color-mix(in srgb, var(--accent) 10%, transparent);
           color: var(--accent);
         }
+        /* Pills: absolute top-right corner of each tab */
+        .ob-desktop-tab .ob-tab-badge {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+        }
         /* Override mobile 96px dock-clearance padding on desktop scroll areas */
         .outbox-pane .review-hub-scroll-area {
           padding-bottom: 20px !important;
@@ -106,25 +115,15 @@
         .outbox-pane .admin-kpi-mini-wrap {
           width: 100%;
         }
-        /* Compact KPI chips on desktop — reduce height, horizontal layout */
-        .outbox-pane .admin-kpi-mini {
-          min-height: 36px;
-          flex-direction: row;
-          justify-content: flex-start;
-          gap: 6px;
-          padding: 6px 10px;
-          border-radius: 10px;
-        }
-        .outbox-pane .admin-kpi-mini-label {
-          font-size: 9px;
-        }
-        .outbox-pane .admin-kpi-mini-val {
-          font-size: 13px;
-          margin-left: auto;
-        }
-        /* Header: hide KPI wrap when not on admin tab */
-        #review-hub-main-header:not(.is-admin-tab) #admin-kpi-header-wrap {
-          display: none;
+        /* Header count badge */
+        .review-hub-header-count {
+          font-size: 11px;
+          font-weight: 900;
+          color: var(--text-muted);
+          background: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 2px 7px;
         }
         /* WS20 Phase 5: Gantt panel — match workspace shell geometry when active */
         body.gantt-view-active #gantt-panel {

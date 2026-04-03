@@ -534,20 +534,20 @@
             <div class="raw-data-strip" id="raw-data-strip"></div>
             </div>
                 <div class="outbox-pane" id="outbox-pane">
-                   <!-- Header: GlassFlow-parity — title + count + KPI chips + tab strip -->
-                   <div id="review-hub-main-header" class="inbox-header is-admin-tab" style="flex-direction:column; align-items:stretch; padding-bottom:12px !important;">
-                      <div style="display:flex; align-items:center; gap:10px; width:100%;">
-                         <div class="inbox-title inbox-title-stack" id="review-hub-title"><span>Review</span><span>Hub</span></div>
-                         <span class="glassflow-queue-count" id="ob-header-count" style="font-size:11px; font-weight:900; color:var(--text-muted); background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:2px 7px;">0</span>
-                         <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel" style="margin-left:auto; flex-shrink:0;">✕</button>
-                      </div>
-                      <!-- Desktop tab strip (replaces bottom-dock tab context) -->
-                      <div class="ob-desktop-tab-strip" style="margin-top:10px;">
-                         <button class="ob-desktop-tab active" id="panel-tab-admin" onclick="switchPanelTab('admin')">Admin <span id="admin-badge" class="ob-tab-badge ob-tab-badge-crit" style="display:none;">0</span></button>
-                         <button class="ob-desktop-tab" id="panel-tab-reviewed" onclick="switchPanelTab('reviewed')">Reviewed <span id="ob-count" class="ob-tab-badge ob-tab-badge-green" style="display:none;">0</span></button>
-                         <button class="ob-desktop-tab" id="panel-tab-changelog" onclick="switchPanelTab('changelog')">Activity <span id="changelog-badge" class="ob-tab-badge ob-tab-badge-purple" style="display:none;">0</span></button>
-                      </div>
+                   <!-- Row 1: Header — title + count + close -->
+                   <div id="review-hub-main-header" class="inbox-header is-admin-tab">
+                      <div class="inbox-title inbox-title-stack" id="review-hub-title"><span>Review</span><span>Hub</span></div>
+                      <span class="review-hub-header-count" id="ob-header-count">0</span>
+                      <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel" style="margin-left:auto; flex-shrink:0;">✕</button>
                    </div>
+                   <!-- Row 2: Tab strip -->
+                   <div class="ob-desktop-tab-strip">
+                      <button class="ob-desktop-tab active" id="panel-tab-admin" onclick="switchPanelTab('admin')">Admin <span id="admin-badge" class="ob-tab-badge ob-tab-badge-crit" style="display:none;">0</span></button>
+                      <button class="ob-desktop-tab" id="panel-tab-reviewed" onclick="switchPanelTab('reviewed')">Reviewed <span id="ob-count" class="ob-tab-badge ob-tab-badge-green" style="display:none;">0</span></button>
+                      <button class="ob-desktop-tab" id="panel-tab-changelog" onclick="switchPanelTab('changelog')">Activity <span id="changelog-badge" class="ob-tab-badge ob-tab-badge-purple" style="display:none;">0</span></button>
+                   </div>
+                   <!-- Row 3: KPI chips placeholder (injected in future workstream) -->
+                   <div id="admin-kpi-header-wrap" style="display:none;"></div>
 
                    <div id="deck-action-panel" style="display:none; flex-direction:column; flex-grow:1; overflow-y:auto; padding:20px; gap:16px;"></div>
 
