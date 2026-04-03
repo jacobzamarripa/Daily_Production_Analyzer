@@ -124,38 +124,42 @@
           border-bottom: 1px solid var(--border);
           flex-shrink: 0;
         }
-        /* Chip icon — hard-constrain size */
-        .review-hub-kpi-row .admin-kpi-mini svg {
-          width: 14px !important;
-          height: 14px !important;
-          flex-shrink: 0;
-        }
-        /* Chip base — centered column */
+        /* Chip base */
         .review-hub-kpi-row .admin-kpi-mini {
+          display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 52px;
-          gap: 4px;
-          padding: 8px 6px;
+          text-align: center;
+          min-height: 64px;
+          gap: 3px;
+          padding: 10px 6px;
           border-radius: 14px;
           border: 1px solid transparent;
         }
-        .review-hub-kpi-row .admin-kpi-mini-val {
-          font-size: 18px;
-          font-weight: 900;
-          line-height: 1;
+        /* Icon */
+        .review-hub-kpi-row .admin-kpi-mini svg {
+          width: 16px !important;
+          height: 16px !important;
+          flex-shrink: 0;
+          opacity: 0.85;
+          margin-bottom: 2px;
         }
+        /* Label — subordinate */
         .review-hub-kpi-row .admin-kpi-mini-label {
           font-size: 9px;
+          font-weight: 900;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.06em;
           color: inherit;
-          opacity: 0.72;
-          text-align: center;
+          opacity: 0.65;
         }
+        /* Value — dominant */
         .review-hub-kpi-row .admin-kpi-mini-val {
-          text-align: center;
+          font-size: 20px;
+          font-weight: 900;
+          line-height: 1;
+          color: inherit;
         }
         /* Per-type coloring — always-on container tint */
         .review-hub-kpi-row .admin-kpi-mini.crossings {
