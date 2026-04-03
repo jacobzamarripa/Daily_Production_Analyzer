@@ -1,0 +1,2608 @@
+- table [ref=e2]:
+  - rowgroup [ref=e3]:
+    - row [ref=e22]:
+      - cell [ref=e23]
+    - row [ref=e19]:
+      - cell [ref=e20]:
+        - iframe [ref=e21]:
+          - iframe [ref=f6e2]:
+            - generic [active] [ref=f7e1]:
+              - generic [ref=f7e13]:
+                - generic [ref=f7e14]:
+                  - generic [ref=f7e15]:
+                    - generic [ref=f7e16]: Omni PMO Operations Intelligence Hub
+                    - generic [ref=f7e17]: Crafted by Jacob Zamarripa
+                  - generic [ref=f7e19]:
+                    - generic [ref=f7e20]: Pipeline
+                    - generic [ref=f7e21] [cursor=pointer]:
+                      - generic [ref=f7e22]:
+                        - generic [ref=f7e23]: "109"
+                        - generic [ref=f7e24]: Projects
+                      - generic [ref=f7e228]:
+                        - generic [ref=f7e229]: 92 Field CX
+                        - generic [ref=f7e230]: •
+                        - generic [ref=f7e231]: 8 OFS
+                    - generic [ref=f7e25] [cursor=pointer]:
+                      - generic [ref=f7e26]:
+                        - generic [ref=f7e27]: 44,471
+                        - generic [ref=f7e28]: BSLs
+                      - generic [ref=f7e232]:
+                        - generic [ref=f7e233]: APR 12,260
+                        - generic [ref=f7e234]: •
+                        - generic [ref=f7e235]: TBD 10,408
+                    - generic [ref=f7e30] [cursor=pointer]:
+                      - generic [ref=f7e31]: "94"
+                      - generic [ref=f7e32]: Critical
+                - generic [ref=f7e33]:
+                  - generic [ref=f7e34]:
+                    - button "Detail View" [ref=f7e35] [cursor=pointer]:
+                      - img [ref=f7e36]
+                    - button "Grid View" [ref=f7e38] [cursor=pointer]:
+                      - img [ref=f7e39]
+                    - button "Gantt View" [ref=f7e45] [cursor=pointer]:
+                      - img [ref=f7e46]
+                  - generic [ref=f7e47]:
+                    - button "Morning Brief" [ref=f7e48] [cursor=pointer]:
+                      - img [ref=f7e49]
+                    - button "Benny Calculator" [ref=f7e52] [cursor=pointer]:
+                      - img [ref=f7e53]
+                    - button "Project Calendar" [ref=f7e55] [cursor=pointer]:
+                      - img [ref=f7e56]
+                - generic [ref=f7e58]:
+                  - generic [ref=f7e236]: "REF DATA: FRESH"
+                  - generic "Gemini API calls used today" [ref=f7e227]: "AI: ready"
+                  - generic [ref=f7e59]:
+                    - button "⟳ Sync QB" [ref=f7e60] [cursor=pointer]
+                    - button "▶ Run Review" [ref=f7e61] [cursor=pointer]
+                    - button "↻ Refresh" [ref=f7e62] [cursor=pointer]
+                  - button "Toggle dark mode" [ref=f7e63] [cursor=pointer]:
+                    - img [ref=f7e237]
+                  - button "?" [ref=f7e70] [cursor=pointer]
+              - generic:
+                - button "⟳ Sync QB"
+                - button "▶ Run Review"
+                - button "↻ Refresh"
+                - button "☰ Review Hub"
+                - button "Dark Mode"
+                - button "? Help"
+              - generic [ref=f7e71]:
+                - generic [ref=f7e72]:
+                  - generic [ref=f7e73]:
+                    - generic [ref=f7e74]:
+                      - generic [ref=f7e75]:
+                        - generic [ref=f7e76]: Diagnostics
+                        - generic [ref=f7e77]: Queue
+                      - generic [ref=f7e78]: "109"
+                    - generic [ref=f7e79]:
+                      - button "⊟" [ref=f7e80] [cursor=pointer]
+                      - combobox [ref=f7e81] [cursor=pointer]:
+                        - option "Default" [selected]
+                        - option "Admin Check"
+                        - option "Target Date"
+                        - option "CX Start"
+                        - option "CX Complete"
+                        - option "OFS Date"
+                        - option "Report Date"
+                  - generic [ref=f7e82]:
+                    - generic [ref=f7e243] [cursor=pointer]:
+                      - generic [ref=f7e244]:
+                        - generic [ref=f7e245]:
+                          - generic [ref=f7e246]: CON01-F04
+                          - generic [ref=f7e247]: Connellsville · Utilities One
+                        - generic [ref=f7e248]:
+                          - generic [ref=f7e249]: OFS | Open for Sale
+                          - generic [ref=f7e250]: ›
+                      - generic [ref=f7e251]:
+                        - generic [ref=f7e252]: LIGHTING RISK
+                        - generic [ref=f7e253]: PLEASE INPUT BOM
+                        - generic [ref=f7e254]: OFS
+                        - generic [ref=f7e255]: "+1"
+                    - generic [ref=f7e256] [cursor=pointer]:
+                      - generic [ref=f7e257]:
+                        - generic [ref=f7e258]:
+                          - generic [ref=f7e259]: CON01-F06
+                          - generic [ref=f7e260]: Connellsville · Utilities One
+                        - generic [ref=f7e261]:
+                          - generic [ref=f7e262]: Field CX | In Progress
+                          - generic [ref=f7e263]: ›
+                      - generic [ref=f7e264]:
+                        - generic [ref=f7e265]: LIGHTING RISK
+                        - generic [ref=f7e266]: GHOST FIBER
+                        - generic [ref=f7e267]: PLEASE INPUT BOM
+                        - generic [ref=f7e268]: "+1"
+                    - generic [ref=f7e269] [cursor=pointer]:
+                      - generic [ref=f7e270]:
+                        - generic [ref=f7e271]:
+                          - generic [ref=f7e272]: CON01-F05
+                          - generic [ref=f7e273]: Connellsville · Utilities One
+                        - generic [ref=f7e274]:
+                          - generic [ref=f7e275]: Field CX | In Progress
+                          - generic [ref=f7e276]: ›
+                      - generic [ref=f7e277]:
+                        - generic [ref=f7e278]: LIGHTING RISK
+                        - generic [ref=f7e279]: GHOST FIBER
+                        - generic [ref=f7e280]: PLEASE INPUT BOM
+                        - generic [ref=f7e281]: "+1"
+                    - generic [ref=f7e282] [cursor=pointer]:
+                      - generic [ref=f7e283]:
+                        - generic [ref=f7e284]:
+                          - generic [ref=f7e285]: CON01-F08
+                          - generic [ref=f7e286]: Connellsville · Utilities One
+                        - generic [ref=f7e287]:
+                          - generic [ref=f7e288]: Field CX | In Progress
+                          - generic [ref=f7e289]: ›
+                      - generic [ref=f7e290]:
+                        - generic [ref=f7e291]: LIGHTING RISK
+                        - generic [ref=f7e292]: PLEASE INPUT BOM
+                        - generic [ref=f7e293]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e294] [cursor=pointer]:
+                      - generic [ref=f7e295]:
+                        - generic [ref=f7e296]:
+                          - generic [ref=f7e297]: NWC01-F07
+                          - generic [ref=f7e298]: New Castle · Utilities One
+                        - generic [ref=f7e299]:
+                          - generic [ref=f7e300]: OFS | Open for Sale
+                          - generic [ref=f7e301]: ›
+                      - generic [ref=f7e302]:
+                        - link "Tracker Linked" [ref=f7e303]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e304]: LIGHTING RISK
+                        - generic [ref=f7e305]: PLEASE INPUT BOM
+                        - generic [ref=f7e306]: "+1"
+                    - generic [ref=f7e307] [cursor=pointer]:
+                      - generic [ref=f7e308]:
+                        - generic [ref=f7e309]:
+                          - generic [ref=f7e310]: NWC01-F09
+                          - generic [ref=f7e311]: New Castle · Utilities One
+                        - generic [ref=f7e312]:
+                          - generic [ref=f7e313]: OFS | Open for Sale
+                          - generic [ref=f7e314]: ›
+                      - generic [ref=f7e315]:
+                        - link "Tracker Linked" [ref=f7e316]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e317]: LIGHTING RISK
+                        - generic [ref=f7e318]: PLEASE INPUT BOM
+                        - generic [ref=f7e319]: "+1"
+                    - generic [ref=f7e320] [cursor=pointer]:
+                      - generic [ref=f7e321]:
+                        - generic [ref=f7e322]:
+                          - generic [ref=f7e323]: NWC02-F38
+                          - generic [ref=f7e324]: New Castle · Utilities One
+                        - generic [ref=f7e325]:
+                          - generic [ref=f7e326]: Field CX | In Progress
+                          - generic [ref=f7e327]: ›
+                      - generic [ref=f7e328]:
+                        - generic [ref=f7e329]: LIGHTING RISK
+                        - generic [ref=f7e330]: PLEASE INPUT BOM
+                        - generic [ref=f7e331]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e332] [cursor=pointer]:
+                      - generic [ref=f7e333]:
+                        - generic [ref=f7e334]:
+                          - generic [ref=f7e335]: NWC02-F19
+                          - generic [ref=f7e336]: New Castle · Utilities One
+                        - generic [ref=f7e337]:
+                          - generic [ref=f7e338]: Field CX | In Progress
+                          - generic [ref=f7e339]: ›
+                      - generic [ref=f7e340]:
+                        - generic [ref=f7e341]: LIGHTING RISK
+                        - generic [ref=f7e342]: PLEASE INPUT BOM
+                        - generic [ref=f7e343]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e344] [cursor=pointer]:
+                      - generic [ref=f7e345]:
+                        - generic [ref=f7e346]:
+                          - generic [ref=f7e347]: NWC02-F20
+                          - generic [ref=f7e348]: New Castle · Utilities One
+                        - generic [ref=f7e349]:
+                          - generic [ref=f7e350]: Field CX | In Progress
+                          - generic [ref=f7e351]: ›
+                      - generic [ref=f7e352]:
+                        - generic [ref=f7e353]: LIGHTING RISK
+                        - generic [ref=f7e354]: GHOST FIBER
+                        - generic [ref=f7e355]: PLEASE INPUT BOM
+                        - generic [ref=f7e356]: "+1"
+                    - generic [ref=f7e357] [cursor=pointer]:
+                      - generic [ref=f7e358]:
+                        - generic [ref=f7e359]:
+                          - generic [ref=f7e360]: NWC02-F21
+                          - generic [ref=f7e361]: New Castle · Utilities One
+                        - generic [ref=f7e362]:
+                          - generic [ref=f7e363]: Field CX | In Progress
+                          - generic [ref=f7e364]: ›
+                      - generic [ref=f7e365]:
+                        - generic [ref=f7e366]: LIGHTING RISK
+                        - generic [ref=f7e367]: PLEASE INPUT BOM
+                        - generic [ref=f7e368]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e369] [cursor=pointer]:
+                      - generic [ref=f7e370]:
+                        - generic [ref=f7e371]:
+                          - generic [ref=f7e372]: BRO04-F67
+                          - generic [ref=f7e373]: Brownsville · G&A
+                        - generic [ref=f7e374]:
+                          - generic [ref=f7e375]: Field CX | Complete
+                          - generic [ref=f7e376]: ›
+                      - generic [ref=f7e377]:
+                        - generic [ref=f7e378]: COMPLETE
+                        - generic [ref=f7e379]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e380] [cursor=pointer]:
+                      - generic [ref=f7e381]:
+                        - generic [ref=f7e382]:
+                          - generic [ref=f7e383]: BRO04-F59
+                          - generic [ref=f7e384]: Brownsville · G&A
+                        - generic [ref=f7e385]:
+                          - generic [ref=f7e386]: Field CX | In Progress
+                          - generic [ref=f7e387]: ›
+                      - generic [ref=f7e388]:
+                        - generic [ref=f7e389]: PLEASE INPUT BOM
+                        - generic [ref=f7e390]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e391] [cursor=pointer]:
+                      - generic [ref=f7e392]:
+                        - generic [ref=f7e393]:
+                          - generic [ref=f7e394]: BRO02-F33
+                          - generic [ref=f7e395]: Brownsville · G&A
+                        - generic [ref=f7e396]:
+                          - generic [ref=f7e397]: Field CX | In Progress
+                          - generic [ref=f7e398]: ›
+                      - generic [ref=f7e399]: PLEASE INPUT BOM
+                    - generic [ref=f7e400] [cursor=pointer]:
+                      - generic [ref=f7e401]:
+                        - generic [ref=f7e402]:
+                          - generic [ref=f7e403]: BRO02-F39
+                          - generic [ref=f7e404]: Brownsville · G&A
+                        - generic [ref=f7e405]:
+                          - generic [ref=f7e406]: Field CX | In Progress
+                          - generic [ref=f7e407]: ›
+                      - generic:
+                        - generic [ref=f7e408]: PLEASE INPUT BOM
+                        - generic [ref=f7e409]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e410] [cursor=pointer]:
+                      - generic [ref=f7e411]:
+                        - generic [ref=f7e412]:
+                          - generic [ref=f7e413]: BRO02-F12
+                          - generic [ref=f7e414]: Brownsville · G&A
+                        - generic [ref=f7e415]:
+                          - generic [ref=f7e416]: Field CX | In Progress
+                          - generic [ref=f7e417]: ›
+                      - generic:
+                        - generic [ref=f7e418]: GHOST UG
+                        - generic [ref=f7e419]: GHOST FIBER
+                        - generic [ref=f7e420]: GHOST SPLICING
+                        - generic [ref=f7e421]: "+2"
+                    - generic [ref=f7e422] [cursor=pointer]:
+                      - generic [ref=f7e423]:
+                        - generic [ref=f7e424]:
+                          - generic [ref=f7e425]: BRO02-F34
+                          - generic [ref=f7e426]: Brownsville · G&A
+                        - generic [ref=f7e427]:
+                          - generic [ref=f7e428]: Field CX | In Progress
+                          - generic [ref=f7e429]: ›
+                      - generic:
+                        - generic [ref=f7e430]: GHOST UG
+                        - generic [ref=f7e431]: PLEASE INPUT BOM
+                        - generic [ref=f7e432]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e433] [cursor=pointer]:
+                      - generic [ref=f7e434]:
+                        - generic [ref=f7e435]:
+                          - generic [ref=f7e436]: BRO04-F61
+                          - generic [ref=f7e437]: Brownsville · G&A
+                        - generic [ref=f7e438]:
+                          - generic [ref=f7e439]: Field CX | In Progress
+                          - generic [ref=f7e440]: ›
+                      - generic:
+                        - generic [ref=f7e441]: GHOST UG
+                        - generic [ref=f7e442]: PLEASE INPUT BOM
+                        - generic [ref=f7e443]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e444] [cursor=pointer]:
+                      - generic [ref=f7e445]:
+                        - generic [ref=f7e446]:
+                          - generic [ref=f7e447]: BRO02-F36
+                          - generic [ref=f7e448]: Brownsville · G&A
+                        - generic [ref=f7e449]:
+                          - generic [ref=f7e450]: Field CX | In Progress
+                          - generic [ref=f7e451]: ›
+                      - generic:
+                        - generic [ref=f7e452]: PLEASE INPUT BOM
+                        - generic [ref=f7e453]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e454] [cursor=pointer]:
+                      - generic [ref=f7e455]:
+                        - generic [ref=f7e456]:
+                          - generic [ref=f7e457]: BRO02-F11
+                          - generic [ref=f7e458]: Brownsville · G&A
+                        - generic [ref=f7e459]:
+                          - generic [ref=f7e460]: Field CX | In Progress
+                          - generic [ref=f7e461]: ›
+                      - generic:
+                        - generic [ref=f7e462]: PLEASE INPUT BOM
+                        - generic [ref=f7e463]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e464] [cursor=pointer]:
+                      - generic [ref=f7e465]:
+                        - generic [ref=f7e466]:
+                          - generic [ref=f7e467]: BRO02-F35
+                          - generic [ref=f7e468]: Brownsville · G&A
+                        - generic [ref=f7e469]:
+                          - generic [ref=f7e470]: Field CX | In Progress
+                          - generic [ref=f7e471]: ›
+                      - generic:
+                        - generic [ref=f7e472]: PLEASE INPUT BOM
+                        - generic [ref=f7e473]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e474] [cursor=pointer]:
+                      - generic [ref=f7e475]:
+                        - generic [ref=f7e476]:
+                          - generic [ref=f7e477]: BRO02-F40
+                          - generic [ref=f7e478]: Brownsville · G&A
+                        - generic [ref=f7e479]:
+                          - generic [ref=f7e480]: Field CX | In Progress
+                          - generic [ref=f7e481]: ›
+                      - generic:
+                        - generic [ref=f7e482]: PLEASE INPUT BOM
+                        - generic [ref=f7e483]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e484] [cursor=pointer]:
+                      - generic [ref=f7e485]:
+                        - generic [ref=f7e486]:
+                          - generic [ref=f7e487]: BRO02-F41
+                          - generic [ref=f7e488]: Brownsville · G&A
+                        - generic [ref=f7e489]:
+                          - generic [ref=f7e490]: Vendor Assignment | Vendors Assigned
+                          - generic [ref=f7e491]: ›
+                      - generic:
+                        - generic [ref=f7e492]: GHOST UG
+                        - generic [ref=f7e493]: PLEASE INPUT BOM
+                        - generic [ref=f7e494]: "ADMIN: CHECK CROSSINGS"
+                        - generic [ref=f7e495]: "+1"
+                    - generic [ref=f7e496] [cursor=pointer]:
+                      - generic [ref=f7e497]:
+                        - generic [ref=f7e498]:
+                          - generic [ref=f7e499]: BRO19-248
+                          - generic [ref=f7e500]: "- · G&A"
+                        - generic [ref=f7e501]:
+                          - generic [ref=f7e502]: "- | -"
+                          - generic [ref=f7e503]: ›
+                      - generic:
+                        - generic [ref=f7e504]: FORMAT ERROR
+                        - generic [ref=f7e505]: GHOST UG
+                    - generic [ref=f7e506] [cursor=pointer]:
+                      - generic [ref=f7e507]:
+                        - generic [ref=f7e508]:
+                          - generic [ref=f7e509]: KEN01-F21
+                          - generic [ref=f7e510]: Kent · DRG
+                        - generic [ref=f7e511]:
+                          - generic [ref=f7e512]: Field CX | Complete
+                          - generic [ref=f7e513]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e514]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e515]: COMPLETE
+                        - generic [ref=f7e516]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e517] [cursor=pointer]:
+                      - generic [ref=f7e518]:
+                        - generic [ref=f7e519]:
+                          - generic [ref=f7e520]: KEN02-F05
+                          - generic [ref=f7e521]: Kent · DRG
+                        - generic [ref=f7e522]:
+                          - generic [ref=f7e523]: Field CX | Complete
+                          - generic [ref=f7e524]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e525]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e526]: COMPLETE
+                        - generic [ref=f7e527]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e528] [cursor=pointer]:
+                      - generic [ref=f7e529]:
+                        - generic [ref=f7e530]:
+                          - generic [ref=f7e531]: KEN02-F03
+                          - generic [ref=f7e532]: Kent · DRG
+                        - generic [ref=f7e533]:
+                          - generic [ref=f7e534]: Field CX | Complete
+                          - generic [ref=f7e535]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e536]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e537]: COMPLETE
+                        - generic [ref=f7e538]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e539] [cursor=pointer]:
+                      - generic [ref=f7e540]:
+                        - generic [ref=f7e541]:
+                          - generic [ref=f7e542]: KEN01-F20
+                          - generic [ref=f7e543]: Kent · DRG
+                        - generic [ref=f7e544]:
+                          - generic [ref=f7e545]: Field CX | In Progress
+                          - generic [ref=f7e546]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e547]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e548]: LIGHTING RISK
+                        - generic [ref=f7e549]: PLEASE INPUT BOM
+                    - generic [ref=f7e550] [cursor=pointer]:
+                      - generic [ref=f7e551]:
+                        - generic [ref=f7e552]:
+                          - generic [ref=f7e553]: KEN02-F08
+                          - generic [ref=f7e554]: Kent · DRG
+                        - generic [ref=f7e555]:
+                          - generic [ref=f7e556]: Field CX | In Progress
+                          - generic [ref=f7e557]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e558]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e559]: PLEASE INPUT BOM
+                    - generic [ref=f7e560] [cursor=pointer]:
+                      - generic [ref=f7e561]:
+                        - generic [ref=f7e562]:
+                          - generic [ref=f7e563]: KEN02-F09
+                          - generic [ref=f7e564]: Kent · DRG
+                        - generic [ref=f7e565]:
+                          - generic [ref=f7e566]: Field CX | In Progress
+                          - generic [ref=f7e567]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e568]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e569]: ID AUTO-CORRECTED
+                        - generic [ref=f7e570]: PLEASE INPUT BOM
+                    - generic [ref=f7e571] [cursor=pointer]:
+                      - generic [ref=f7e572]:
+                        - generic [ref=f7e573]:
+                          - generic [ref=f7e574]: KEN01-F19
+                          - generic [ref=f7e575]: Kent · DRG
+                        - generic [ref=f7e576]:
+                          - generic [ref=f7e577]: Field CX | In Progress
+                          - generic [ref=f7e578]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e579]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e580]: PLEASE INPUT BOM
+                    - generic [ref=f7e581] [cursor=pointer]:
+                      - generic [ref=f7e582]:
+                        - generic [ref=f7e583]:
+                          - generic [ref=f7e584]: LSV01-F25
+                          - generic [ref=f7e585]: Louisville · DRG
+                        - generic [ref=f7e586]:
+                          - generic [ref=f7e587]: OFS | Open for Sale
+                          - generic [ref=f7e588]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e589]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e590]: PLEASE INPUT BOM
+                        - generic [ref=f7e591]: OFS
+                        - generic [ref=f7e592]: "+2"
+                    - generic [ref=f7e593] [cursor=pointer]:
+                      - generic [ref=f7e594]:
+                        - generic [ref=f7e595]:
+                          - generic [ref=f7e596]: LSV01-F01
+                          - generic [ref=f7e597]: Louisville · DRG
+                        - generic [ref=f7e598]:
+                          - generic [ref=f7e599]: Field CX | In Progress
+                          - generic [ref=f7e600]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e601]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e602]: LIGHTING RISK
+                        - generic [ref=f7e603]: PLEASE INPUT BOM
+                    - generic [ref=f7e604] [cursor=pointer]:
+                      - generic [ref=f7e605]:
+                        - generic [ref=f7e606]:
+                          - generic [ref=f7e607]: BUC01-F14
+                          - generic [ref=f7e608]: Bucyrus · DRG
+                        - generic [ref=f7e609]:
+                          - generic [ref=f7e610]: Field CX | Complete
+                          - generic [ref=f7e611]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e612]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e613]: COMPLETE
+                    - generic [ref=f7e614] [cursor=pointer]:
+                      - generic [ref=f7e615]:
+                        - generic [ref=f7e616]:
+                          - generic [ref=f7e617]: GIR01-F15
+                          - generic [ref=f7e618]: Girard · DRG
+                        - generic [ref=f7e619]:
+                          - generic [ref=f7e620]: Field CX | In Progress
+                          - generic [ref=f7e621]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e622]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e623]: LIGHTING RISK
+                        - generic [ref=f7e624]: PLEASE INPUT BOM
+                    - generic [ref=f7e625] [cursor=pointer]:
+                      - generic [ref=f7e626]:
+                        - generic [ref=f7e627]:
+                          - generic [ref=f7e628]: PAN01-F13
+                          - generic [ref=f7e629]: Painesville · DRG
+                        - generic [ref=f7e630]:
+                          - generic [ref=f7e631]: Field CX | Complete
+                          - generic [ref=f7e632]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e633]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e634]: COMPLETE
+                        - generic [ref=f7e635]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e636] [cursor=pointer]:
+                      - generic [ref=f7e637]:
+                        - generic [ref=f7e638]:
+                          - generic [ref=f7e639]: PAN03-F47
+                          - generic [ref=f7e640]: Painesville · DRG
+                        - generic [ref=f7e641]:
+                          - generic [ref=f7e642]: Field CX | In Progress
+                          - generic [ref=f7e643]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e644]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e645]: LIGHTING RISK
+                        - generic [ref=f7e646]: GHOST FIBER
+                        - generic [ref=f7e647]: "+1"
+                    - generic [ref=f7e648] [cursor=pointer]:
+                      - generic [ref=f7e649]:
+                        - generic [ref=f7e650]:
+                          - generic [ref=f7e651]: PAN01-F01
+                          - generic [ref=f7e652]: Painesville · DRG
+                        - generic [ref=f7e653]:
+                          - generic [ref=f7e654]: Field CX | In Progress
+                          - generic [ref=f7e655]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e656]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e657]: LIGHTING RISK
+                        - generic [ref=f7e658]: GHOST UG
+                        - generic [ref=f7e659]: "+2"
+                    - generic [ref=f7e660] [cursor=pointer]:
+                      - generic [ref=f7e661]:
+                        - generic [ref=f7e662]:
+                          - generic [ref=f7e663]: PAN03-F64
+                          - generic [ref=f7e664]: Painesville · DRG
+                        - generic [ref=f7e665]:
+                          - generic [ref=f7e666]: Field CX | In Progress
+                          - generic [ref=f7e667]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e668]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e669]: LIGHTING RISK
+                        - generic [ref=f7e670]: GHOST FIBER
+                        - generic [ref=f7e671]: "+1"
+                    - generic [ref=f7e672] [cursor=pointer]:
+                      - generic [ref=f7e673]:
+                        - generic [ref=f7e674]:
+                          - generic [ref=f7e675]: PAN03-F52
+                          - generic [ref=f7e676]: Painesville · DRG
+                        - generic [ref=f7e677]:
+                          - generic [ref=f7e678]: Field CX | In Progress
+                          - generic [ref=f7e679]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e680]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e681]: LIGHTING RISK
+                        - generic [ref=f7e682]: GHOST FIBER
+                        - generic [ref=f7e683]: "+1"
+                    - generic [ref=f7e684] [cursor=pointer]:
+                      - generic [ref=f7e685]:
+                        - generic [ref=f7e686]:
+                          - generic [ref=f7e687]: PAN03-F46
+                          - generic [ref=f7e688]: Painesville · DRG
+                        - generic [ref=f7e689]:
+                          - generic [ref=f7e690]: Field CX | In Progress
+                          - generic [ref=f7e691]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e692]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e693]: LIGHTING RISK
+                        - generic [ref=f7e694]: PLEASE INPUT BOM
+                    - generic [ref=f7e695] [cursor=pointer]:
+                      - generic [ref=f7e696]:
+                        - generic [ref=f7e697]:
+                          - generic [ref=f7e698]: PAN03-F43
+                          - generic [ref=f7e699]: Painesville · DRG
+                        - generic [ref=f7e700]:
+                          - generic [ref=f7e701]: Field CX | In Progress
+                          - generic [ref=f7e702]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e703]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e704]: PLEASE INPUT BOM
+                        - generic [ref=f7e705]: "CD: MAJOR CROSSING RISK"
+                        - generic [ref=f7e706]: "+1"
+                    - generic [ref=f7e707] [cursor=pointer]:
+                      - generic [ref=f7e708]:
+                        - generic [ref=f7e709]:
+                          - generic [ref=f7e710]: PAN03-F07
+                          - generic [ref=f7e711]: Painesville · DRG
+                        - generic [ref=f7e712]:
+                          - generic [ref=f7e713]: Field CX | In Progress
+                          - generic [ref=f7e714]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e715]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e716]: GHOST FIBER
+                        - generic [ref=f7e717]: PLEASE INPUT BOM
+                    - generic [ref=f7e718] [cursor=pointer]:
+                      - generic [ref=f7e719]:
+                        - generic [ref=f7e720]:
+                          - generic [ref=f7e721]: PAN03-F62
+                          - generic [ref=f7e722]: Painesville · DRG
+                        - generic [ref=f7e723]:
+                          - generic [ref=f7e724]: Field CX | In Progress
+                          - generic [ref=f7e725]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e726]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e727]: GHOST UG
+                        - generic [ref=f7e728]: PLEASE INPUT BOM
+                        - generic [ref=f7e729]: "+1"
+                    - generic [ref=f7e730] [cursor=pointer]:
+                      - generic [ref=f7e731]:
+                        - generic [ref=f7e732]:
+                          - generic [ref=f7e733]: PAN03-F58
+                          - generic [ref=f7e734]: Painesville · DRG
+                        - generic [ref=f7e735]:
+                          - generic [ref=f7e736]: Field CX | In Progress
+                          - generic [ref=f7e737]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e738]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e739]: PLEASE INPUT BOM
+                        - generic [ref=f7e740]: "CD: MAJOR CROSSING RISK"
+                        - generic [ref=f7e741]: "+1"
+                    - generic [ref=f7e742] [cursor=pointer]:
+                      - generic [ref=f7e743]:
+                        - generic [ref=f7e744]:
+                          - generic [ref=f7e745]: PAN03-F50
+                          - generic [ref=f7e746]: Painesville · DRG
+                        - generic [ref=f7e747]:
+                          - generic [ref=f7e748]: Field CX | In Progress
+                          - generic [ref=f7e749]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e750]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e751]: PLEASE INPUT BOM
+                    - generic [ref=f7e752] [cursor=pointer]:
+                      - generic [ref=f7e753]:
+                        - generic [ref=f7e754]:
+                          - generic [ref=f7e755]: PAN01-F12
+                          - generic [ref=f7e756]: Painesville · DRG
+                        - generic [ref=f7e757]:
+                          - generic [ref=f7e758]: Field CX | Complete
+                          - generic [ref=f7e759]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e760]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e761]: ID AUTO-CORRECTED
+                        - generic [ref=f7e762]: GHOST FIBER
+                        - generic [ref=f7e763]: "+1"
+                    - generic [ref=f7e764] [cursor=pointer]:
+                      - generic [ref=f7e765]:
+                        - generic [ref=f7e766]:
+                          - generic [ref=f7e767]: PAN03-F48
+                          - generic [ref=f7e768]: Painesville · DRG
+                        - generic [ref=f7e769]:
+                          - generic [ref=f7e770]: Field CX | In Progress
+                          - generic [ref=f7e771]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e772]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e773]: PLEASE INPUT BOM
+                        - generic [ref=f7e774]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e775] [cursor=pointer]:
+                      - generic [ref=f7e776]:
+                        - generic [ref=f7e777]:
+                          - generic [ref=f7e778]: PAN03-F61
+                          - generic [ref=f7e779]: Painesville · DRG
+                        - generic [ref=f7e780]:
+                          - generic [ref=f7e781]: Vendor Assignment | Vendors Assigned
+                          - generic [ref=f7e782]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e783]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e784]: PLEASE INPUT BOM
+                        - generic [ref=f7e785]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e786] [cursor=pointer]:
+                      - generic [ref=f7e787]:
+                        - generic [ref=f7e788]:
+                          - generic [ref=f7e789]: PAN03-F60
+                          - generic [ref=f7e790]: Painesville · DRG
+                        - generic [ref=f7e791]:
+                          - generic [ref=f7e792]: Field CX | In Progress
+                          - generic [ref=f7e793]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e794]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e795]: PLEASE INPUT BOM
+                        - generic [ref=f7e796]: "CD: MAJOR CROSSING RISK"
+                        - generic [ref=f7e797]: "+1"
+                    - generic [ref=f7e798] [cursor=pointer]:
+                      - generic [ref=f7e799]:
+                        - generic [ref=f7e800]:
+                          - generic [ref=f7e801]: PAN03-F59
+                          - generic [ref=f7e802]: Painesville · DRG
+                        - generic [ref=f7e803]:
+                          - generic [ref=f7e804]: Vendor Assignment | Vendors Assigned
+                          - generic [ref=f7e805]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e806]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e807]: PLEASE INPUT BOM
+                        - generic [ref=f7e808]: "CD: MAJOR CROSSING RISK"
+                        - generic [ref=f7e809]: "+1"
+                    - generic [ref=f7e810] [cursor=pointer]:
+                      - generic [ref=f7e811]:
+                        - generic [ref=f7e812]:
+                          - generic [ref=f7e813]: PAN02-F19
+                          - generic [ref=f7e814]: Painesville · DRG
+                        - generic [ref=f7e815]:
+                          - generic [ref=f7e816]: Field CX | In Progress
+                          - generic [ref=f7e817]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e818]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e819]: ID AUTO-CORRECTED
+                        - generic [ref=f7e820]: PLEASE INPUT BOM
+                        - generic [ref=f7e821]: "+1"
+                    - generic [ref=f7e822] [cursor=pointer]:
+                      - generic [ref=f7e823]:
+                        - generic [ref=f7e824]:
+                          - generic [ref=f7e825]: PAN02-F38
+                          - generic [ref=f7e826]: Painesville · DRG
+                        - generic [ref=f7e827]:
+                          - generic [ref=f7e828]: Field CX | In Progress
+                          - generic [ref=f7e829]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e830]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e831]: ID AUTO-CORRECTED
+                        - generic [ref=f7e832]: PLEASE INPUT BOM
+                        - generic [ref=f7e833]: "+1"
+                    - generic [ref=f7e834] [cursor=pointer]:
+                      - generic [ref=f7e835]:
+                        - generic [ref=f7e836]:
+                          - generic [ref=f7e837]: PAN02-F23
+                          - generic [ref=f7e838]: Painesville · DRG
+                        - generic [ref=f7e839]:
+                          - generic [ref=f7e840]: Field CX | In Progress
+                          - generic [ref=f7e841]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e842]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e843]: ID AUTO-CORRECTED
+                        - generic [ref=f7e844]: PLEASE INPUT BOM
+                    - generic [ref=f7e845] [cursor=pointer]:
+                      - generic [ref=f7e846]:
+                        - generic [ref=f7e847]:
+                          - generic [ref=f7e848]: PAN03-F56
+                          - generic [ref=f7e849]: Painesville · DRG
+                        - generic [ref=f7e850]:
+                          - generic [ref=f7e851]: Field CX | In Progress
+                          - generic [ref=f7e852]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e853]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e854]: UG PACE ANOMALY
+                        - generic [ref=f7e855]: GHOST FIBER
+                        - generic [ref=f7e856]: "+2"
+                    - generic [ref=f7e857] [cursor=pointer]:
+                      - generic [ref=f7e858]:
+                        - generic [ref=f7e859]:
+                          - generic [ref=f7e860]: PAN01-F09
+                          - generic [ref=f7e861]: Painesville · DRG
+                        - generic [ref=f7e862]:
+                          - generic [ref=f7e863]: Field CX | In Progress
+                          - generic [ref=f7e864]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e865]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e866]: PLEASE INPUT BOM
+                    - generic [ref=f7e867] [cursor=pointer]:
+                      - generic [ref=f7e868]:
+                        - generic [ref=f7e869]:
+                          - generic [ref=f7e870]: PAINESVILLE STRAND
+                          - generic [ref=f7e871]: "- · DRG"
+                        - generic [ref=f7e872]:
+                          - generic [ref=f7e873]: "- | -"
+                          - generic [ref=f7e874]: ›
+                      - generic [ref=f7e875]: FORMAT ERROR
+                    - generic [ref=f7e876] [cursor=pointer]:
+                      - generic [ref=f7e877]:
+                        - generic [ref=f7e878]:
+                          - generic [ref=f7e879]: ASH01-F13
+                          - generic [ref=f7e880]: Ashland · DRG
+                        - generic [ref=f7e881]:
+                          - generic [ref=f7e882]: Field CX | In Progress
+                          - generic [ref=f7e883]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e884]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e885]: PLEASE INPUT BOM
+                        - generic [ref=f7e886]: "CD: MAJOR CROSSING RISK"
+                        - generic [ref=f7e887]: "+1"
+                    - generic [ref=f7e888] [cursor=pointer]:
+                      - generic [ref=f7e889]:
+                        - generic [ref=f7e890]:
+                          - generic [ref=f7e891]: ASH01-F14
+                          - generic [ref=f7e892]: Ashland · DRG
+                        - generic [ref=f7e893]:
+                          - generic [ref=f7e894]: Field CX | In Progress
+                          - generic [ref=f7e895]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e896]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e897]: GHOST UG
+                        - generic [ref=f7e898]: PLEASE INPUT BOM
+                        - generic [ref=f7e899]: "+1"
+                    - generic [ref=f7e900] [cursor=pointer]:
+                      - generic [ref=f7e901]:
+                        - generic [ref=f7e902]:
+                          - generic [ref=f7e903]: ASH01-F16
+                          - generic [ref=f7e904]: Ashland · DRG
+                        - generic [ref=f7e905]:
+                          - generic [ref=f7e906]: Field CX | In Progress
+                          - generic [ref=f7e907]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e908]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e909]: PLEASE INPUT BOM
+                        - generic [ref=f7e910]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e911] [cursor=pointer]:
+                      - generic [ref=f7e912]:
+                        - generic [ref=f7e913]:
+                          - generic [ref=f7e914]: ASH01-F05
+                          - generic [ref=f7e915]: Ashland · DRG
+                        - generic [ref=f7e916]:
+                          - generic [ref=f7e917]: Field CX | Pending Start
+                          - generic [ref=f7e918]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e919]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e920]: PLEASE INPUT BOM
+                        - generic [ref=f7e921]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e922] [cursor=pointer]:
+                      - generic [ref=f7e923]:
+                        - generic [ref=f7e924]:
+                          - generic [ref=f7e925]: ASH01-F03
+                          - generic [ref=f7e926]: Ashland · DRG
+                        - generic [ref=f7e927]:
+                          - generic [ref=f7e928]: Field CX | Pending Start
+                          - generic [ref=f7e929]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e930]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e931]: PLEASE INPUT BOM
+                        - generic [ref=f7e932]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e933] [cursor=pointer]:
+                      - generic [ref=f7e934]:
+                        - generic [ref=f7e935]:
+                          - generic [ref=f7e936]: ASH01-F11
+                          - generic [ref=f7e937]: Ashland · DRG
+                        - generic [ref=f7e938]:
+                          - generic [ref=f7e939]: Field CX | In Progress
+                          - generic [ref=f7e940]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e941]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e942]: PLEASE INPUT BOM
+                        - generic [ref=f7e943]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e944] [cursor=pointer]:
+                      - generic [ref=f7e945]:
+                        - generic [ref=f7e946]:
+                          - generic [ref=f7e947]: GSB01-F01
+                          - generic [ref=f7e948]: Gibsonburg · DRG
+                        - generic [ref=f7e949]:
+                          - generic [ref=f7e950]: Field CX | Pending Start
+                          - generic [ref=f7e951]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e952]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e953]: PLEASE INPUT BOM
+                        - generic [ref=f7e954]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e955] [cursor=pointer]:
+                      - generic [ref=f7e956]:
+                        - generic [ref=f7e957]:
+                          - generic [ref=f7e958]: CRE01-F06
+                          - generic [ref=f7e959]: Crestline · DRG
+                        - generic [ref=f7e960]:
+                          - generic [ref=f7e961]: Field CX | Pending Start
+                          - generic [ref=f7e962]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e963]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e964]: PLEASE INPUT BOM
+                    - generic [ref=f7e965] [cursor=pointer]:
+                      - generic [ref=f7e966]:
+                        - generic [ref=f7e967]:
+                          - generic [ref=f7e968]: SEB01-F03
+                          - generic [ref=f7e969]: Sebring · DRG
+                        - generic [ref=f7e970]:
+                          - generic [ref=f7e971]: Field CX | In Progress
+                          - generic [ref=f7e972]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e973]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e974]: PLEASE INPUT BOM
+                        - generic [ref=f7e975]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e976] [cursor=pointer]:
+                      - generic [ref=f7e977]:
+                        - generic [ref=f7e978]:
+                          - generic [ref=f7e979]: SEB01-F02
+                          - generic [ref=f7e980]: Sebring · DRG
+                        - generic [ref=f7e981]:
+                          - generic [ref=f7e982]: Field CX | Pending Start
+                          - generic [ref=f7e983]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e984]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e985]: PLEASE INPUT BOM
+                        - generic [ref=f7e986]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e987] [cursor=pointer]:
+                      - generic [ref=f7e988]:
+                        - generic [ref=f7e989]:
+                          - generic [ref=f7e990]: SEB01-F04
+                          - generic [ref=f7e991]: Sebring · DRG
+                        - generic [ref=f7e992]:
+                          - generic [ref=f7e993]: Field CX | Pending Start
+                          - generic [ref=f7e994]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e995]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e996]: UG PACE ANOMALY
+                        - generic [ref=f7e997]: PLEASE INPUT BOM
+                        - generic [ref=f7e998]: "+1"
+                    - generic [ref=f7e999] [cursor=pointer]:
+                      - generic [ref=f7e1000]:
+                        - generic [ref=f7e1001]:
+                          - generic [ref=f7e1002]: SHV01-F14
+                          - generic [ref=f7e1003]: Shenango Valley · DRG
+                        - generic [ref=f7e1004]:
+                          - generic [ref=f7e1005]: Field CX | In Progress
+                          - generic [ref=f7e1006]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e1007]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e1008]: PLEASE INPUT BOM
+                        - generic [ref=f7e1009]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1010] [cursor=pointer]:
+                      - generic [ref=f7e1011]:
+                        - generic [ref=f7e1012]:
+                          - generic [ref=f7e1013]: WOO01-F01
+                          - generic [ref=f7e1014]: Wooster · DRG
+                        - generic [ref=f7e1015]:
+                          - generic [ref=f7e1016]: OFS | Open for Sale
+                          - generic [ref=f7e1017]: ›
+                      - generic:
+                        - link "Tracker Linked" [ref=f7e1018]:
+                          - /url: https://docs.google.com/spreadsheets/d/1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0/edit
+                        - generic [ref=f7e1019]: PLEASE INPUT BOM
+                        - generic [ref=f7e1020]: OFS
+                    - generic [ref=f7e1021] [cursor=pointer]:
+                      - generic [ref=f7e1022]:
+                        - generic [ref=f7e1023]:
+                          - generic [ref=f7e1024]: NIL01-F25
+                          - generic [ref=f7e1025]: Niles · DRG
+                        - generic [ref=f7e1026]:
+                          - generic [ref=f7e1027]: Field CX | In Progress
+                          - generic [ref=f7e1028]: ›
+                      - generic:
+                        - generic [ref=f7e1029]: PLEASE INPUT BOM
+                        - generic [ref=f7e1030]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1031] [cursor=pointer]:
+                      - generic [ref=f7e1032]:
+                        - generic [ref=f7e1033]:
+                          - generic [ref=f7e1034]: TDO05-F50
+                          - generic [ref=f7e1035]: Toledo · DRG
+                        - generic [ref=f7e1036]:
+                          - generic [ref=f7e1037]: Field CX | Complete
+                          - generic [ref=f7e1038]: ›
+                      - generic:
+                        - generic [ref=f7e1039]: ID AUTO-CORRECTED
+                        - generic [ref=f7e1040]: COMPLETE
+                    - generic [ref=f7e1041] [cursor=pointer]:
+                      - generic [ref=f7e1042]:
+                        - generic [ref=f7e1043]:
+                          - generic [ref=f7e1044]: TDO05-F28
+                          - generic [ref=f7e1045]: Toledo · LECOM
+                        - generic [ref=f7e1046]:
+                          - generic [ref=f7e1047]: OFS | Open for Sale
+                          - generic [ref=f7e1048]: ›
+                      - generic:
+                        - generic [ref=f7e1049]: LIGHTING RISK
+                        - generic [ref=f7e1050]: PLEASE INPUT BOM
+                        - generic [ref=f7e1051]: OFS
+                        - generic [ref=f7e1052]: "+2"
+                    - generic [ref=f7e1053] [cursor=pointer]:
+                      - generic [ref=f7e1054]:
+                        - generic [ref=f7e1055]:
+                          - generic [ref=f7e1056]: TDO05-F71
+                          - generic [ref=f7e1057]: Toledo · LECOM
+                        - generic [ref=f7e1058]:
+                          - generic [ref=f7e1059]: OFS | Open for Sale
+                          - generic [ref=f7e1060]: ›
+                      - generic:
+                        - generic [ref=f7e1061]: LIGHTING RISK
+                        - generic [ref=f7e1062]: PLEASE INPUT BOM
+                        - generic [ref=f7e1063]: OFS
+                        - generic [ref=f7e1064]: "+2"
+                    - generic [ref=f7e1065] [cursor=pointer]:
+                      - generic [ref=f7e1066]:
+                        - generic [ref=f7e1067]:
+                          - generic [ref=f7e1068]: TDO04-F96
+                          - generic [ref=f7e1069]: Toledo · LECOM
+                        - generic [ref=f7e1070]:
+                          - generic [ref=f7e1071]: Field CX | Complete
+                          - generic [ref=f7e1072]: ›
+                      - generic:
+                        - generic [ref=f7e1073]: COMPLETE
+                        - generic [ref=f7e1074]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1075] [cursor=pointer]:
+                      - generic [ref=f7e1076]:
+                        - generic [ref=f7e1077]:
+                          - generic [ref=f7e1078]: TDO04-F124
+                          - generic [ref=f7e1079]: Toledo · LECOM
+                        - generic [ref=f7e1080]:
+                          - generic [ref=f7e1081]: Field CX | Complete
+                          - generic [ref=f7e1082]: ›
+                      - generic:
+                        - generic [ref=f7e1083]: COMPLETE
+                        - generic [ref=f7e1084]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1085] [cursor=pointer]:
+                      - generic [ref=f7e1086]:
+                        - generic [ref=f7e1087]:
+                          - generic [ref=f7e1088]: TDO05-F64
+                          - generic [ref=f7e1089]: Toledo · LECOM
+                        - generic [ref=f7e1090]:
+                          - generic [ref=f7e1091]: Field CX | Complete
+                          - generic [ref=f7e1092]: ›
+                      - generic:
+                        - generic [ref=f7e1093]: COMPLETE
+                        - generic [ref=f7e1094]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1095] [cursor=pointer]:
+                      - generic [ref=f7e1096]:
+                        - generic [ref=f7e1097]:
+                          - generic [ref=f7e1098]: TDO08-F169
+                          - generic [ref=f7e1099]: Toledo · LECOM
+                        - generic [ref=f7e1100]:
+                          - generic [ref=f7e1101]: Field CX | Complete
+                          - generic [ref=f7e1102]: ›
+                      - generic [ref=f7e1103]: COMPLETE
+                    - generic [ref=f7e1104] [cursor=pointer]:
+                      - generic [ref=f7e1105]:
+                        - generic [ref=f7e1106]:
+                          - generic [ref=f7e1107]: TDO04-F04
+                          - generic [ref=f7e1108]: Toledo · LECOM
+                        - generic [ref=f7e1109]:
+                          - generic [ref=f7e1110]: Field CX | Complete
+                          - generic [ref=f7e1111]: ›
+                      - generic [ref=f7e1112]: COMPLETE
+                    - generic [ref=f7e1113] [cursor=pointer]:
+                      - generic [ref=f7e1114]:
+                        - generic [ref=f7e1115]:
+                          - generic [ref=f7e1116]: TDO10-F235
+                          - generic [ref=f7e1117]: Toledo · LECOM
+                        - generic [ref=f7e1118]:
+                          - generic [ref=f7e1119]: Field CX | In Progress
+                          - generic [ref=f7e1120]: ›
+                      - generic:
+                        - generic [ref=f7e1121]: LIGHTING RISK
+                        - generic [ref=f7e1122]: PLEASE INPUT BOM
+                    - generic [ref=f7e1123] [cursor=pointer]:
+                      - generic [ref=f7e1124]:
+                        - generic [ref=f7e1125]:
+                          - generic [ref=f7e1126]: TDO08-F92
+                          - generic [ref=f7e1127]: Toledo · LECOM
+                        - generic [ref=f7e1128]:
+                          - generic [ref=f7e1129]: Field CX | In Progress
+                          - generic [ref=f7e1130]: ›
+                      - generic [ref=f7e1131]: PLEASE INPUT BOM
+                    - generic [ref=f7e1132] [cursor=pointer]:
+                      - generic [ref=f7e1133]:
+                        - generic [ref=f7e1134]:
+                          - generic [ref=f7e1135]: TDO04-F208
+                          - generic [ref=f7e1136]: Toledo · LECOM
+                        - generic [ref=f7e1137]:
+                          - generic [ref=f7e1138]: Field CX | In Progress
+                          - generic [ref=f7e1139]: ›
+                      - generic:
+                        - generic [ref=f7e1140]: LIGHTING RISK
+                        - generic [ref=f7e1141]: PLEASE INPUT BOM
+                    - generic [ref=f7e1142] [cursor=pointer]:
+                      - generic [ref=f7e1143]:
+                        - generic [ref=f7e1144]:
+                          - generic [ref=f7e1145]: TDO05-F46
+                          - generic [ref=f7e1146]: Toledo · LECOM
+                        - generic [ref=f7e1147]:
+                          - generic [ref=f7e1148]: Field CX | In Progress
+                          - generic [ref=f7e1149]: ›
+                      - generic:
+                        - generic [ref=f7e1150]: LIGHTING RISK
+                        - generic [ref=f7e1151]: PLEASE INPUT BOM
+                    - generic [ref=f7e1152] [cursor=pointer]:
+                      - generic [ref=f7e1153]:
+                        - generic [ref=f7e1154]:
+                          - generic [ref=f7e1155]: TDO10-F245
+                          - generic [ref=f7e1156]: Toledo · LECOM
+                        - generic [ref=f7e1157]:
+                          - generic [ref=f7e1158]: Permitting | Approved
+                          - generic [ref=f7e1159]: ›
+                      - generic:
+                        - generic [ref=f7e1160]: PLEASE INPUT BOM
+                        - generic [ref=f7e1161]: PERMITTING
+                        - generic [ref=f7e1162]: "ADMIN: CHECK CROSSINGS"
+                        - generic [ref=f7e1163]: "+1"
+                    - generic [ref=f7e1164] [cursor=pointer]:
+                      - generic [ref=f7e1165]:
+                        - generic [ref=f7e1166]:
+                          - generic [ref=f7e1167]: TDO10-F236
+                          - generic [ref=f7e1168]: Toledo · LECOM
+                        - generic [ref=f7e1169]:
+                          - generic [ref=f7e1170]: Field CX | In Progress
+                          - generic [ref=f7e1171]: ›
+                      - generic:
+                        - generic [ref=f7e1172]: PLEASE INPUT BOM
+                        - generic [ref=f7e1173]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1174] [cursor=pointer]:
+                      - generic [ref=f7e1175]:
+                        - generic [ref=f7e1176]:
+                          - generic [ref=f7e1177]: TDO10-F286
+                          - generic [ref=f7e1178]: Toledo · LECOM
+                        - generic [ref=f7e1179]:
+                          - generic [ref=f7e1180]: Field CX | Pending Start
+                          - generic [ref=f7e1181]: ›
+                      - generic:
+                        - generic [ref=f7e1182]: PLEASE INPUT BOM
+                        - generic [ref=f7e1183]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1184] [cursor=pointer]:
+                      - generic [ref=f7e1185]:
+                        - generic [ref=f7e1186]:
+                          - generic [ref=f7e1187]: SGW06-F42
+                          - generic [ref=f7e1188]: Saginaw · LECOM
+                        - generic [ref=f7e1189]:
+                          - generic [ref=f7e1190]: Field CX | In Progress
+                          - generic [ref=f7e1191]: ›
+                      - generic:
+                        - generic [ref=f7e1192]: LIGHTING RISK
+                        - generic [ref=f7e1193]: PLEASE INPUT BOM
+                    - generic [ref=f7e1194] [cursor=pointer]:
+                      - generic [ref=f7e1195]:
+                        - generic [ref=f7e1196]:
+                          - generic [ref=f7e1197]: BCT01-F32
+                          - generic [ref=f7e1198]: Bay City · LECOM
+                        - generic [ref=f7e1199]:
+                          - generic [ref=f7e1200]: Field CX | In Progress
+                          - generic [ref=f7e1201]: ›
+                      - generic:
+                        - generic [ref=f7e1202]: LIGHTING RISK
+                        - generic [ref=f7e1203]: PLEASE INPUT BOM
+                    - generic [ref=f7e1204] [cursor=pointer]:
+                      - generic [ref=f7e1205]:
+                        - generic [ref=f7e1206]:
+                          - generic [ref=f7e1207]: BCT01-F31
+                          - generic [ref=f7e1208]: Bay City · LECOM
+                        - generic [ref=f7e1209]:
+                          - generic [ref=f7e1210]: Field CX | In Progress
+                          - generic [ref=f7e1211]: ›
+                      - generic:
+                        - generic [ref=f7e1212]: LIGHTING RISK
+                        - generic [ref=f7e1213]: PLEASE INPUT BOM
+                        - generic [ref=f7e1214]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1215] [cursor=pointer]:
+                      - generic [ref=f7e1216]:
+                        - generic [ref=f7e1217]:
+                          - generic [ref=f7e1218]: BCT01-F33
+                          - generic [ref=f7e1219]: Bay City · LECOM
+                        - generic [ref=f7e1220]:
+                          - generic [ref=f7e1221]: Field CX | In Progress
+                          - generic [ref=f7e1222]: ›
+                      - generic:
+                        - generic [ref=f7e1223]: LIGHTING RISK
+                        - generic [ref=f7e1224]: PLEASE INPUT BOM
+                    - generic [ref=f7e1225] [cursor=pointer]:
+                      - generic [ref=f7e1226]:
+                        - generic [ref=f7e1227]:
+                          - generic [ref=f7e1228]: SGW06-F05
+                          - generic [ref=f7e1229]: Saginaw · LECOM
+                        - generic [ref=f7e1230]:
+                          - generic [ref=f7e1231]: Field CX | In Progress
+                          - generic [ref=f7e1232]: ›
+                      - generic:
+                        - generic [ref=f7e1233]: LIGHTING RISK
+                        - generic [ref=f7e1234]: PLEASE INPUT BOM
+                    - generic [ref=f7e1235] [cursor=pointer]:
+                      - generic [ref=f7e1236]:
+                        - generic [ref=f7e1237]:
+                          - generic [ref=f7e1238]: BCT01-F43
+                          - generic [ref=f7e1239]: Bay City · LECOM
+                        - generic [ref=f7e1240]:
+                          - generic [ref=f7e1241]: Field CX | In Progress
+                          - generic [ref=f7e1242]: ›
+                      - generic:
+                        - generic [ref=f7e1243]: LIGHTING RISK
+                        - generic [ref=f7e1244]: PLEASE INPUT BOM
+                    - generic [ref=f7e1245] [cursor=pointer]:
+                      - generic [ref=f7e1246]:
+                        - generic [ref=f7e1247]:
+                          - generic [ref=f7e1248]: SGW05-F53
+                          - generic [ref=f7e1249]: Saginaw · LECOM
+                        - generic [ref=f7e1250]:
+                          - generic [ref=f7e1251]: Field CX | In Progress
+                          - generic [ref=f7e1252]: ›
+                      - generic:
+                        - generic [ref=f7e1253]: LIGHTING RISK
+                        - generic [ref=f7e1254]: PLEASE INPUT BOM
+                    - generic [ref=f7e1255] [cursor=pointer]:
+                      - generic [ref=f7e1256]:
+                        - generic [ref=f7e1257]:
+                          - generic [ref=f7e1258]: SGW05-F15
+                          - generic [ref=f7e1259]: Saginaw · LECOM
+                        - generic [ref=f7e1260]:
+                          - generic [ref=f7e1261]: Vendor Assignment | Vendors Assigned
+                          - generic [ref=f7e1262]: ›
+                      - generic:
+                        - generic [ref=f7e1263]: LIGHTING RISK
+                        - generic [ref=f7e1264]: PLEASE INPUT BOM
+                        - generic [ref=f7e1265]: "ADMIN: CHECK CROSSINGS"
+                        - generic [ref=f7e1266]: "+1"
+                    - generic [ref=f7e1267] [cursor=pointer]:
+                      - generic [ref=f7e1268]:
+                        - generic [ref=f7e1269]:
+                          - generic [ref=f7e1270]: BCT01-F14
+                          - generic [ref=f7e1271]: Bay City · LECOM
+                        - generic [ref=f7e1272]:
+                          - generic [ref=f7e1273]: Field CX | In Progress
+                          - generic [ref=f7e1274]: ›
+                      - generic:
+                        - generic [ref=f7e1275]: LIGHTING RISK
+                        - generic [ref=f7e1276]: SPLICE PACE
+                        - generic [ref=f7e1277]: PLEASE INPUT BOM
+                    - generic [ref=f7e1278] [cursor=pointer]:
+                      - generic [ref=f7e1279]:
+                        - generic [ref=f7e1280]:
+                          - generic [ref=f7e1281]: BCT01-F60
+                          - generic [ref=f7e1282]: Bay City · LECOM
+                        - generic [ref=f7e1283]:
+                          - generic [ref=f7e1284]: Field CX | In Progress
+                          - generic [ref=f7e1285]: ›
+                      - generic:
+                        - generic [ref=f7e1286]: LIGHTING RISK
+                        - generic [ref=f7e1287]: PLEASE INPUT BOM
+                        - generic [ref=f7e1288]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1289] [cursor=pointer]:
+                      - generic [ref=f7e1290]:
+                        - generic [ref=f7e1291]:
+                          - generic [ref=f7e1292]: SGW03-F93
+                          - generic [ref=f7e1293]: Saginaw · LECOM
+                        - generic [ref=f7e1294]:
+                          - generic [ref=f7e1295]: OFS | Open for Sale
+                          - generic [ref=f7e1296]: ›
+                      - generic:
+                        - generic [ref=f7e1297]: PLEASE INPUT BOM
+                        - generic [ref=f7e1298]: OFS
+                        - generic [ref=f7e1299]: STATUS MISMATCH
+                    - generic [ref=f7e1300] [cursor=pointer]:
+                      - generic [ref=f7e1301]:
+                        - generic [ref=f7e1302]:
+                          - generic [ref=f7e1303]: BCT01-F45
+                          - generic [ref=f7e1304]: Bay City · LECOM
+                        - generic [ref=f7e1305]:
+                          - generic [ref=f7e1306]: Field CX | In Progress
+                          - generic [ref=f7e1307]: ›
+                      - generic:
+                        - generic [ref=f7e1308]: PLEASE INPUT BOM
+                        - generic [ref=f7e1309]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1310] [cursor=pointer]:
+                      - generic [ref=f7e1311]:
+                        - generic [ref=f7e1312]:
+                          - generic [ref=f7e1313]: SGW05-F99
+                          - generic [ref=f7e1314]: Saginaw · LECOM
+                        - generic [ref=f7e1315]:
+                          - generic [ref=f7e1316]: Permitting | Approved
+                          - generic [ref=f7e1317]: ›
+                      - generic:
+                        - generic [ref=f7e1318]: PLEASE INPUT BOM
+                        - generic [ref=f7e1319]: PERMITTING
+                        - generic [ref=f7e1320]: "ADMIN: CHECK CROSSINGS"
+                        - generic [ref=f7e1321]: "+1"
+                    - generic [ref=f7e1322] [cursor=pointer]:
+                      - generic [ref=f7e1323]:
+                        - generic [ref=f7e1324]:
+                          - generic [ref=f7e1325]: BCT01-F42
+                          - generic [ref=f7e1326]: Bay City · LECOM
+                        - generic [ref=f7e1327]:
+                          - generic [ref=f7e1328]: Field CX | In Progress
+                          - generic [ref=f7e1329]: ›
+                      - generic:
+                        - generic [ref=f7e1330]: PLEASE INPUT BOM
+                        - generic [ref=f7e1331]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1332] [cursor=pointer]:
+                      - generic [ref=f7e1333]:
+                        - generic [ref=f7e1334]:
+                          - generic [ref=f7e1335]: BCT01-F23
+                          - generic [ref=f7e1336]: Bay City · LECOM
+                        - generic [ref=f7e1337]:
+                          - generic [ref=f7e1338]: Field CX | In Progress
+                          - generic [ref=f7e1339]: ›
+                      - generic:
+                        - generic [ref=f7e1340]: GHOST FIBER
+                        - generic [ref=f7e1341]: PLEASE INPUT BOM
+                        - generic [ref=f7e1342]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1343] [cursor=pointer]:
+                      - generic [ref=f7e1344]:
+                        - generic [ref=f7e1345]:
+                          - generic [ref=f7e1346]: BCT01-F04
+                          - generic [ref=f7e1347]: "- · LECOM"
+                        - generic [ref=f7e1348]:
+                          - generic [ref=f7e1349]: NOT IN QB REFERENCE
+                          - generic [ref=f7e1350]: ›
+                      - generic [ref=f7e1351]: NOT IN QB REFERENCE
+                    - generic [ref=f7e1352] [cursor=pointer]:
+                      - generic [ref=f7e1353]:
+                        - generic [ref=f7e1354]:
+                          - generic [ref=f7e1355]: BCT01-F59
+                          - generic [ref=f7e1356]: Bay City · LECOM
+                        - generic [ref=f7e1357]:
+                          - generic [ref=f7e1358]: Field CX | In Progress
+                          - generic [ref=f7e1359]: ›
+                      - generic:
+                        - generic [ref=f7e1360]: PLEASE INPUT BOM
+                        - generic [ref=f7e1361]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1362] [cursor=pointer]:
+                      - generic [ref=f7e1363]:
+                        - generic [ref=f7e1364]:
+                          - generic [ref=f7e1365]: BCT01-F09
+                          - generic [ref=f7e1366]: Bay City · LECOM
+                        - generic [ref=f7e1367]:
+                          - generic [ref=f7e1368]: Field CX | In Progress
+                          - generic [ref=f7e1369]: ›
+                      - generic:
+                        - generic [ref=f7e1370]: PLEASE INPUT BOM
+                        - generic [ref=f7e1371]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1372] [cursor=pointer]:
+                      - generic [ref=f7e1373]:
+                        - generic [ref=f7e1374]:
+                          - generic [ref=f7e1375]: BCT01-F03
+                          - generic [ref=f7e1376]: Bay City · LECOM
+                        - generic [ref=f7e1377]:
+                          - generic [ref=f7e1378]: Field CX | In Progress
+                          - generic [ref=f7e1379]: ›
+                      - generic:
+                        - generic [ref=f7e1380]: PLEASE INPUT BOM
+                        - generic [ref=f7e1381]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1382] [cursor=pointer]:
+                      - generic [ref=f7e1383]:
+                        - generic [ref=f7e1384]:
+                          - generic [ref=f7e1385]: BCT01-F06
+                          - generic [ref=f7e1386]: Bay City · LECOM
+                        - generic [ref=f7e1387]:
+                          - generic [ref=f7e1388]: Field CX | In Progress
+                          - generic [ref=f7e1389]: ›
+                      - generic:
+                        - generic [ref=f7e1390]: PLEASE INPUT BOM
+                        - generic [ref=f7e1391]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1392] [cursor=pointer]:
+                      - generic [ref=f7e1393]:
+                        - generic [ref=f7e1394]:
+                          - generic [ref=f7e1395]: BCT01-F10
+                          - generic [ref=f7e1396]: Bay City · LECOM
+                        - generic [ref=f7e1397]:
+                          - generic [ref=f7e1398]: Field CX | In Progress
+                          - generic [ref=f7e1399]: ›
+                      - generic:
+                        - generic [ref=f7e1400]: PLEASE INPUT BOM
+                        - generic [ref=f7e1401]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1402] [cursor=pointer]:
+                      - generic [ref=f7e1403]:
+                        - generic [ref=f7e1404]:
+                          - generic [ref=f7e1405]: BCT01-F08
+                          - generic [ref=f7e1406]: Bay City · LECOM
+                        - generic [ref=f7e1407]:
+                          - generic [ref=f7e1408]: Field CX | In Progress
+                          - generic [ref=f7e1409]: ›
+                      - generic:
+                        - generic [ref=f7e1410]: PLEASE INPUT BOM
+                        - generic [ref=f7e1411]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1412] [cursor=pointer]:
+                      - generic [ref=f7e1413]:
+                        - generic [ref=f7e1414]:
+                          - generic [ref=f7e1415]: BCT01-F41
+                          - generic [ref=f7e1416]: Bay City · LECOM
+                        - generic [ref=f7e1417]:
+                          - generic [ref=f7e1418]: Field CX | In Progress
+                          - generic [ref=f7e1419]: ›
+                      - generic:
+                        - generic [ref=f7e1420]: PLEASE INPUT BOM
+                        - generic [ref=f7e1421]: "ADMIN: CHECK CROSSINGS"
+                    - generic [ref=f7e1422] [cursor=pointer]:
+                      - generic [ref=f7e1423]:
+                        - generic [ref=f7e1424]:
+                          - generic [ref=f7e1425]: BCT02-F01
+                          - generic [ref=f7e1426]: Bay City · LECOM
+                        - generic [ref=f7e1427]:
+                          - generic [ref=f7e1428]: Field CX | In Progress
+                          - generic [ref=f7e1429]: ›
+                      - generic:
+                        - generic [ref=f7e1430]: PLEASE INPUT BOM
+                        - generic [ref=f7e1431]: "ADMIN: CHECK CROSSINGS"
+                - generic [ref=f7e84]:
+                  - generic [ref=f7e85]:
+                    - generic [ref=f7e86]:
+                      - generic [ref=f7e87]:
+                        - textbox "Search projects..." [ref=f7e89] [cursor=pointer]
+                        - button "Toggle filters panel" [ref=f7e92] [cursor=pointer]: Filters
+                        - combobox [ref=f7e95] [cursor=pointer]:
+                          - option "Group By" [selected]
+                          - option "Vendor"
+                          - option "City"
+                          - option "Health"
+                          - option "Stage"
+                          - option "Status"
+                        - generic [ref=f7e1432]:
+                          - button "Slide View" [ref=f7e1433] [cursor=pointer]:
+                            - img [ref=f7e1435]
+                            - generic [ref=f7e1438]: Slide View
+                          - button "Theater Mode" [ref=f7e1439] [cursor=pointer]
+                      - generic [ref=f7e1441]:
+                        - generic [ref=f7e1442]:
+                          - generic [ref=f7e1443]:
+                            - generic [ref=f7e1444]: Project Schedule
+                            - generic [ref=f7e1445]:
+                              - generic [ref=f7e1446]:
+                                - generic [ref=f7e1447]: CON01-F04
+                                - generic [ref=f7e1448]: Connellsville
+                              - generic [ref=f7e1449]:
+                                - generic [ref=f7e1450]: OFS | Open for Sale
+                                - link "⚙ EDIT IN ENGINE" [ref=f7e1452] [cursor=pointer]:
+                                  - /url: "https://omnifiber.quickbase.com/db/bts3c49e9?a=q&qid=1000071&dlta=mog~&query={'3'.EX.'1429'}"
+                            - generic [ref=f7e1453] [cursor=pointer]:
+                              - generic:
+                                - generic: TODAY
+                            - generic [ref=f7e1455]:
+                              - generic [ref=f7e1456] [cursor=pointer]: "CX START: 03/05/26"
+                              - generic [ref=f7e1457] [cursor=pointer]: "CX COMPLETE: 03/22/26"
+                            - generic [ref=f7e1459] [cursor=pointer]:
+                              - generic [ref=f7e1460]: Target Date
+                              - generic [ref=f7e1461]: 03/13/26
+                          - generic [ref=f7e1462]:
+                            - generic [ref=f7e1463]:
+                              - generic [ref=f7e1464]: Field Velocity & Production
+                              - generic [ref=f7e1467]: LIGHT PRESENT
+                            - generic [ref=f7e1468]:
+                              - generic [ref=f7e1469]:
+                                - generic [ref=f7e1470]:
+                                  - generic [ref=f7e1471]:
+                                    - generic [ref=f7e1472]: "Aerial:"
+                                    - generic [ref=f7e1473] [cursor=pointer]: 11,306
+                                    - generic [ref=f7e1474]: /
+                                    - generic [ref=f7e1475] [cursor=pointer]: 11,306
+                                  - generic [ref=f7e1476]: 100% ★
+                                - generic [ref=f7e1479]: "PACE: 0 ft/day"
+                              - generic [ref=f7e1480]:
+                                - generic [ref=f7e1481]:
+                                  - generic [ref=f7e1482]:
+                                    - generic [ref=f7e1483]: "Fiber:"
+                                    - generic [ref=f7e1484] [cursor=pointer]: 21,872
+                                    - generic [ref=f7e1485]: /
+                                    - generic [ref=f7e1486] [cursor=pointer]: 21,872
+                                  - generic [ref=f7e1487]: 100% ★
+                                - generic [ref=f7e1490]: "PACE: 0 ft/day"
+                            - generic [ref=f7e1491]:
+                              - generic [ref=f7e1492]: "OVERDUE BY: 11 DAYS"
+                              - generic [ref=f7e1493]:
+                                - generic [ref=f7e1494] [cursor=pointer]: "BSLS: 482"
+                                - generic [ref=f7e1495] [cursor=pointer]: "OFS: TBD"
+                        - generic [ref=f7e1497]:
+                          - generic [ref=f7e1499]: Network Path
+                          - generic [ref=f7e1500]:
+                            - generic [ref=f7e1503]: Upstream Unknown
+                            - generic [ref=f7e1504]: →
+                            - generic [ref=f7e1507]: CON01-F04
+                            - generic [ref=f7e1508]: →
+                            - generic [ref=f7e1511]: Downstream Unknown
+                        - generic [ref=f7e1512]:
+                          - generic [ref=f7e1513]: Diagnostic & Manager Review
+                          - generic [ref=f7e1514]:
+                            - generic [ref=f7e1515]:
+                              - generic [ref=f7e1516]: DELIVERABLES
+                              - generic [ref=f7e1517]:
+                                - generic [ref=f7e1518]: SPLICING
+                                - generic [ref=f7e1520]: STRAND
+                                - generic [ref=f7e1522]: CD
+                                - generic [ref=f7e1524]: BOM
+                            - generic [ref=f7e1526]:
+                              - generic [ref=f7e1527]: DISTRIBUTED
+                              - generic [ref=f7e1528]:
+                                - generic [ref=f7e1529]: STRAND
+                                - generic [ref=f7e1531]: CD
+                                - generic [ref=f7e1533]: BOM/PO
+                                - generic [ref=f7e1535]: SOW
+                          - generic [ref=f7e1538]:
+                            - generic [ref=f7e1539]:
+                              - generic [ref=f7e1540]: Vendor Update
+                              - generic [ref=f7e1541]: System Diagnostics
+                              - generic [ref=f7e1542]:
+                                - generic [ref=f7e1543]:
+                                  - generic [ref=f7e1544]: LIGHTING RISK
+                                  - generic [ref=f7e1545]: PLEASE INPUT BOM
+                                  - generic [ref=f7e1546]: OFS
+                                  - generic [ref=f7e1547]: "ADMIN: CHECK CROSSINGS"
+                                - generic [ref=f7e1548]:
+                                  - generic [ref=f7e1549]: Special X-ings Data
+                                  - generic [ref=f7e1550]: Special Crossings? —
+                                - generic [ref=f7e1551]:
+                                  - text: No BOM quantities found in QB for any phase. Please verify BOM data has been entered for this project.
+                                  - text: QB shows this FDH as Open for Sale.
+                                - button "🛡️ VERIFY CROSSINGS" [ref=f7e1553] [cursor=pointer]
+                            - generic [ref=f7e1554]:
+                              - generic [ref=f7e1556]:
+                                - generic [ref=f7e1557]: PM NOTE
+                                - button "DRAFT W/GEMINI" [ref=f7e1558] [cursor=pointer]
+                              - textbox [ref=f7e1559]: "Action: None. Project is Open for Sale. Status: Tracking complete."
+                              - generic [ref=f7e1560]:
+                                - button "Skip (Clear)" [ref=f7e1561] [cursor=pointer]
+                                - button "✔ Commit" [ref=f7e1562] [cursor=pointer]
+                          - generic [ref=f7e1564]:
+                            - generic [ref=f7e1565]:
+                              - generic [ref=f7e1566] [cursor=pointer]: "REPORT DATE: 03/27/26"
+                              - generic [ref=f7e1567]: "|"
+                              - generic [ref=f7e1568] [cursor=pointer]: "LAST CHECKED: NEVER"
+                              - generic [ref=f7e1569]: "|"
+                              - generic [ref=f7e1570]: "REF DATA: 04/01/2026 17:25 (FRESH)"
+                            - link "VIEW RECORD" [ref=f7e1572] [cursor=pointer]:
+                              - /url: https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=1429
+                      - table [ref=f7e1574]:
+                        - rowgroup [ref=f7e1575]:
+                          - row "Date Contractor FDH Engineering ID Target Completion Date Total Strand Footage Complete? Total Fiber Footage Complete City Stage Status BSLs Budget OFS CX Start CX Complete Historical Milestones Health Flags Action Required Field Production QB Context & Gaps Archive_Row" [ref=f7e1576]:
+                            - columnheader "Date" [ref=f7e1577]
+                            - columnheader "Contractor" [ref=f7e1578]
+                            - columnheader "FDH Engineering ID" [ref=f7e1579]
+                            - columnheader "Target Completion Date" [ref=f7e1580]
+                            - columnheader "Total Strand Footage Complete?" [ref=f7e1581]
+                            - columnheader "Total Fiber Footage Complete" [ref=f7e1582]
+                            - columnheader "City" [ref=f7e1583]
+                            - columnheader "Stage" [ref=f7e1584]
+                            - columnheader "Status" [ref=f7e1585]
+                            - columnheader "BSLs" [ref=f7e1586]
+                            - columnheader "Budget OFS" [ref=f7e1587]
+                            - columnheader "CX Start" [ref=f7e1588]
+                            - columnheader "CX Complete" [ref=f7e1589]
+                            - columnheader "Historical Milestones" [ref=f7e1590]
+                            - columnheader "Health Flags" [ref=f7e1591]
+                            - columnheader "Action Required" [ref=f7e1592]
+                            - columnheader "Field Production" [ref=f7e1593]
+                            - columnheader "QB Context & Gaps" [ref=f7e1594]
+                            - columnheader "Archive_Row" [ref=f7e1595]
+                          - 'row "03/27/26 Utilities One CON01-F04 03/13/26 11306 21872 Connellsville OFS Open for Sale 482 - 03/05/26 03/22/26 AE: 3/4/26 -> Tracking [Possible Reroute] FIB: 3/27/26 -> Tracking [Possible Reroute] NAP: 3/20/26 -> Tracking [Possible Reroute] 🚨 LIGHTING RISK ⚠️ PLEASE INPUT BOM 🔵 OFS 🚩 ADMIN: CHECK CROSSINGS No BOM quantities found in QB for any phase. Please verify BOM data has been entered for this project. QB shows this FDH as Open for Sale. No new production reported today. [Chk: NEVER] | ✅ SOW ✅ CD ✅ BOM | 🚨 X-ING UNCHECKED 3081" [ref=f7e1596]':
+                            - cell "03/27/26" [ref=f7e1597]
+                            - cell "Utilities One" [ref=f7e1598]
+                            - cell "CON01-F04" [ref=f7e1599]
+                            - cell "03/13/26" [ref=f7e1600]
+                            - cell "11306" [ref=f7e1601]
+                            - cell "21872" [ref=f7e1602]
+                            - cell "Connellsville" [ref=f7e1603]
+                            - cell "OFS" [ref=f7e1604]
+                            - cell "Open for Sale" [ref=f7e1605]
+                            - cell "482" [ref=f7e1606]
+                            - cell "-" [ref=f7e1607]
+                            - cell "03/05/26" [ref=f7e1608]
+                            - cell "03/22/26" [ref=f7e1609]
+                            - 'cell "AE: 3/4/26 -> Tracking [Possible Reroute] FIB: 3/27/26 -> Tracking [Possible Reroute] NAP: 3/20/26 -> Tracking [Possible Reroute]" [ref=f7e1610]'
+                            - 'cell "🚨 LIGHTING RISK ⚠️ PLEASE INPUT BOM 🔵 OFS 🚩 ADMIN: CHECK CROSSINGS" [ref=f7e1611]'
+                            - cell "No BOM quantities found in QB for any phase. Please verify BOM data has been entered for this project. QB shows this FDH as Open for Sale." [ref=f7e1612]
+                            - cell "No new production reported today." [ref=f7e1613]
+                            - 'cell "[Chk: NEVER] | ✅ SOW ✅ CD ✅ BOM | 🚨 X-ING UNCHECKED" [ref=f7e1614]'
+                            - cell "3081" [ref=f7e1615]
+                    - generic [ref=f7e1616]:
+                      - generic [ref=f7e1617]:
+                        - generic [ref=f7e1618]:
+                          - generic [ref=f7e1619]: Review
+                          - generic [ref=f7e1620]: Hub
+                        - generic [ref=f7e1621]:
+                          - button "Admin 170" [ref=f7e1622] [cursor=pointer]:
+                            - text: Admin
+                            - generic: "170"
+                          - button "Reviewed" [ref=f7e1623] [cursor=pointer]
+                          - button "Activity" [ref=f7e1624] [cursor=pointer]
+                      - generic [ref=f7e1625]:
+                        - generic [ref=f7e1626]:
+                          - 'generic "Filter: Crossings to verify" [ref=f7e1627] [cursor=pointer]':
+                            - generic [ref=f7e1628]: "69"
+                            - generic [ref=f7e1629]: Check Crossings
+                          - 'generic "Filter: QB status issues" [ref=f7e1630] [cursor=pointer]':
+                            - generic [ref=f7e1631]: "8"
+                            - generic [ref=f7e1632]: QB Status
+                          - 'generic "Filter: BOM reviews needed" [ref=f7e1633] [cursor=pointer]':
+                            - generic [ref=f7e1634]: "93"
+                            - generic [ref=f7e1635]: Check BOMs
+                        - generic [ref=f7e1636]:
+                          - generic [ref=f7e1637]:
+                            - generic [ref=f7e1638]:
+                              - generic [ref=f7e1639]:
+                                - generic [ref=f7e1640]: Admin Tasks
+                                - generic [ref=f7e1641]: Crossings to Verify
+                                - generic [ref=f7e1642]: "69"
+                              - button "Commit Staged" [ref=f7e1643] [cursor=pointer]
+                            - generic [ref=f7e1644]:
+                              - generic [ref=f7e1646] [cursor=pointer]:
+                                - generic [ref=f7e1647]:
+                                  - generic [ref=f7e1648]: CON01-F04
+                                  - generic [ref=f7e1649]: Connellsville · Utilities One
+                                  - generic [ref=f7e1650]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1651]
+                              - generic [ref=f7e1653] [cursor=pointer]:
+                                - generic [ref=f7e1654]:
+                                  - generic [ref=f7e1655]: CON01-F06
+                                  - generic [ref=f7e1656]: Connellsville · Utilities One
+                                  - generic [ref=f7e1657]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1658]
+                              - generic [ref=f7e1660] [cursor=pointer]:
+                                - generic [ref=f7e1661]:
+                                  - generic [ref=f7e1662]: CON01-F05
+                                  - generic [ref=f7e1663]: Connellsville · Utilities One
+                                  - generic [ref=f7e1664]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1665]
+                              - generic [ref=f7e1667] [cursor=pointer]:
+                                - generic [ref=f7e1668]:
+                                  - generic [ref=f7e1669]: CON01-F08
+                                  - generic [ref=f7e1670]: Connellsville · Utilities One
+                                  - generic [ref=f7e1671]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1672]
+                              - generic [ref=f7e1674] [cursor=pointer]:
+                                - generic [ref=f7e1675]:
+                                  - generic [ref=f7e1676]: NWC02-F38
+                                  - generic [ref=f7e1677]: New Castle · Utilities One
+                                  - generic [ref=f7e1678]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1679]
+                              - generic [ref=f7e1681] [cursor=pointer]:
+                                - generic [ref=f7e1682]:
+                                  - generic [ref=f7e1683]: NWC02-F19
+                                  - generic [ref=f7e1684]: New Castle · Utilities One
+                                  - generic [ref=f7e1685]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1686]
+                              - generic [ref=f7e1688] [cursor=pointer]:
+                                - generic [ref=f7e1689]:
+                                  - generic [ref=f7e1690]: NWC02-F20
+                                  - generic [ref=f7e1691]: New Castle · Utilities One
+                                  - generic [ref=f7e1692]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1693]
+                              - generic [ref=f7e1695] [cursor=pointer]:
+                                - generic [ref=f7e1696]:
+                                  - generic [ref=f7e1697]: NWC02-F21
+                                  - generic [ref=f7e1698]: New Castle · Utilities One
+                                  - generic [ref=f7e1699]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1700]
+                              - generic [ref=f7e1702] [cursor=pointer]:
+                                - generic [ref=f7e1703]:
+                                  - generic [ref=f7e1704]: BRO04-F67
+                                  - generic [ref=f7e1705]: Brownsville · G&A
+                                  - generic [ref=f7e1706]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1707]
+                              - generic [ref=f7e1709] [cursor=pointer]:
+                                - generic [ref=f7e1710]:
+                                  - generic [ref=f7e1711]: BRO04-F59
+                                  - generic [ref=f7e1712]: Brownsville · G&A
+                                  - generic [ref=f7e1713]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1714]
+                              - generic [ref=f7e1716] [cursor=pointer]:
+                                - generic [ref=f7e1717]:
+                                  - generic [ref=f7e1718]: BRO02-F39
+                                  - generic [ref=f7e1719]: Brownsville · G&A
+                                  - generic [ref=f7e1720]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1721]
+                              - generic [ref=f7e1723] [cursor=pointer]:
+                                - generic [ref=f7e1724]:
+                                  - generic [ref=f7e1725]: BRO02-F12
+                                  - generic [ref=f7e1726]: Brownsville · G&A
+                                  - generic [ref=f7e1727]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1728]
+                              - generic [ref=f7e1730] [cursor=pointer]:
+                                - generic [ref=f7e1731]:
+                                  - generic [ref=f7e1732]: BRO02-F34
+                                  - generic [ref=f7e1733]: Brownsville · G&A
+                                  - generic [ref=f7e1734]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1735]
+                              - generic [ref=f7e1737] [cursor=pointer]:
+                                - generic [ref=f7e1738]:
+                                  - generic [ref=f7e1739]: BRO04-F61
+                                  - generic [ref=f7e1740]: Brownsville · G&A
+                                  - generic [ref=f7e1741]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1742]
+                              - generic [ref=f7e1744] [cursor=pointer]:
+                                - generic [ref=f7e1745]:
+                                  - generic [ref=f7e1746]: BRO02-F36
+                                  - generic [ref=f7e1747]: Brownsville · G&A
+                                  - generic [ref=f7e1748]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1749]
+                              - generic [ref=f7e1751] [cursor=pointer]:
+                                - generic [ref=f7e1752]:
+                                  - generic [ref=f7e1753]: BRO02-F11
+                                  - generic [ref=f7e1754]: Brownsville · G&A
+                                  - generic [ref=f7e1755]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1756]
+                              - generic [ref=f7e1758] [cursor=pointer]:
+                                - generic [ref=f7e1759]:
+                                  - generic [ref=f7e1760]: BRO02-F35
+                                  - generic [ref=f7e1761]: Brownsville · G&A
+                                  - generic [ref=f7e1762]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1763]
+                              - generic [ref=f7e1765] [cursor=pointer]:
+                                - generic [ref=f7e1766]:
+                                  - generic [ref=f7e1767]: BRO02-F40
+                                  - generic [ref=f7e1768]: Brownsville · G&A
+                                  - generic [ref=f7e1769]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1770]
+                              - generic [ref=f7e1772] [cursor=pointer]:
+                                - generic [ref=f7e1773]:
+                                  - generic [ref=f7e1774]: BRO02-F41
+                                  - generic [ref=f7e1775]: Brownsville · G&A
+                                  - generic [ref=f7e1776]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1777]
+                              - generic [ref=f7e1779] [cursor=pointer]:
+                                - generic [ref=f7e1780]:
+                                  - generic [ref=f7e1781]: KEN01-F21
+                                  - generic [ref=f7e1782]: Kent · DRG
+                                  - generic [ref=f7e1783]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1784]
+                              - generic [ref=f7e1786] [cursor=pointer]:
+                                - generic [ref=f7e1787]:
+                                  - generic [ref=f7e1788]: KEN02-F05
+                                  - generic [ref=f7e1789]: Kent · DRG
+                                  - generic [ref=f7e1790]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1791]
+                              - generic [ref=f7e1793] [cursor=pointer]:
+                                - generic [ref=f7e1794]:
+                                  - generic [ref=f7e1795]: KEN02-F03
+                                  - generic [ref=f7e1796]: Kent · DRG
+                                  - generic [ref=f7e1797]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1798]
+                              - generic [ref=f7e1800] [cursor=pointer]:
+                                - generic [ref=f7e1801]:
+                                  - generic [ref=f7e1802]: LSV01-F25
+                                  - generic [ref=f7e1803]: Louisville · DRG
+                                  - generic [ref=f7e1804]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1805]
+                              - generic [ref=f7e1807] [cursor=pointer]:
+                                - generic [ref=f7e1808]:
+                                  - generic [ref=f7e1809]: PAN01-F13
+                                  - generic [ref=f7e1810]: Painesville · DRG
+                                  - generic [ref=f7e1811]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1812]
+                              - generic [ref=f7e1814] [cursor=pointer]:
+                                - generic [ref=f7e1815]:
+                                  - generic [ref=f7e1816]: PAN03-F43
+                                  - generic [ref=f7e1817]: Painesville · DRG
+                                  - generic [ref=f7e1818]: "QB Crossings: —"
+                                  - generic [ref=f7e1819]: Exceptionally long continuous bores (up to 490') on Tuckmere Dr will require strict utility locates and geotechnical car…
+                                - button "✓ Verify" [ref=f7e1820]
+                              - generic [ref=f7e1822] [cursor=pointer]:
+                                - generic [ref=f7e1823]:
+                                  - generic [ref=f7e1824]: PAN03-F62
+                                  - generic [ref=f7e1825]: Painesville · DRG
+                                  - generic [ref=f7e1826]: "QB Crossings: —"
+                                  - generic [ref=f7e1827]: Another extensive 100% underground residential build relying entirely on HDD. Bores on Barrington Ridge Rd and Kingsboro…
+                                - button "✓ Verify" [ref=f7e1828]
+                              - generic [ref=f7e1830] [cursor=pointer]:
+                                - generic [ref=f7e1831]:
+                                  - generic [ref=f7e1832]: PAN03-F58
+                                  - generic [ref=f7e1833]: Painesville · DRG
+                                  - generic [ref=f7e1834]: "QB Crossings: —"
+                                  - generic [ref=f7e1835]: Massive 100% underground build requiring constant, heavy HDD deployment. Navigating continuous 400'+ bores through dense…
+                                - button "✓ Verify" [ref=f7e1836]
+                              - generic [ref=f7e1838] [cursor=pointer]:
+                                - generic [ref=f7e1839]:
+                                  - generic [ref=f7e1840]: PAN03-F48
+                                  - generic [ref=f7e1841]: Painesville · DRG
+                                  - generic [ref=f7e1842]: "QB Crossings: —"
+                                  - generic [ref=f7e1843]: This is a 100% underground residential build relying heavily on long-distance HDD. Continuous bores approaching 500' on …
+                                - button "✓ Verify" [ref=f7e1844]
+                              - generic [ref=f7e1846] [cursor=pointer]:
+                                - generic [ref=f7e1847]:
+                                  - generic [ref=f7e1848]: PAN03-F61
+                                  - generic [ref=f7e1849]: Painesville · DRG
+                                  - generic [ref=f7e1850]: "QB Crossings: —"
+                                  - generic [ref=f7e1851]: Similar to F48, this is a 100% underground HDD build in a dense residential area, though smaller in overall scope. Bores…
+                                - button "✓ Verify" [ref=f7e1852]
+                              - generic [ref=f7e1854] [cursor=pointer]:
+                                - generic [ref=f7e1855]:
+                                  - generic [ref=f7e1856]: PAN03-F60
+                                  - generic [ref=f7e1857]: Painesville · DRG
+                                  - generic [ref=f7e1858]: "QB Crossings: —"
+                                  - generic [ref=f7e1859]: Heavy underground construction utilizing continuous HDD. The major focus and primary construction hurdle is the routing …
+                                - button "✓ Verify" [ref=f7e1860]
+                              - generic [ref=f7e1862] [cursor=pointer]:
+                                - generic [ref=f7e1863]:
+                                  - generic [ref=f7e1864]: PAN03-F59
+                                  - generic [ref=f7e1865]: Painesville · DRG
+                                  - generic [ref=f7e1866]: "QB Crossings: —"
+                                  - generic [ref=f7e1867]: 100% underground build with extensive directional drilling in dense residential hardscape. Bores crossing or running par…
+                                - button "✓ Verify" [ref=f7e1868]
+                              - generic [ref=f7e1870] [cursor=pointer]:
+                                - generic [ref=f7e1871]:
+                                  - generic [ref=f7e1872]: PAN02-F19
+                                  - generic [ref=f7e1873]: Painesville · DRG
+                                  - generic [ref=f7e1874]: "QB Crossings: —"
+                                  - generic [ref=f7e1875]: This project involves a high volume of complex directional bores (>60 bores over 100') across residential streets and al…
+                                - button "✓ Verify" [ref=f7e1876]
+                              - generic [ref=f7e1878] [cursor=pointer]:
+                                - generic [ref=f7e1879]:
+                                  - generic [ref=f7e1880]: PAN02-F38
+                                  - generic [ref=f7e1881]: Painesville · DRG
+                                  - generic [ref=f7e1882]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1883]
+                              - generic [ref=f7e1885] [cursor=pointer]:
+                                - generic [ref=f7e1886]:
+                                  - generic [ref=f7e1887]: PAN03-F56
+                                  - generic [ref=f7e1888]: Painesville · DRG
+                                  - generic [ref=f7e1889]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1890]
+                              - generic [ref=f7e1892] [cursor=pointer]:
+                                - generic [ref=f7e1893]:
+                                  - generic [ref=f7e1894]: ASH01-F13
+                                  - generic [ref=f7e1895]: Ashland · DRG
+                                  - generic [ref=f7e1896]: "QB Crossings: —"
+                                  - generic [ref=f7e1897]: The project consists of standard residential fiber deployment with no major environmental or highway crossings identifie…
+                                - button "✓ Verify" [ref=f7e1898]
+                              - generic [ref=f7e1900] [cursor=pointer]:
+                                - generic [ref=f7e1901]:
+                                  - generic [ref=f7e1902]: ASH01-F14
+                                  - generic [ref=f7e1903]: Ashland · DRG
+                                  - generic [ref=f7e1904]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1905]
+                              - generic [ref=f7e1907] [cursor=pointer]:
+                                - generic [ref=f7e1908]:
+                                  - generic [ref=f7e1909]: ASH01-F16
+                                  - generic [ref=f7e1910]: Ashland · DRG
+                                  - generic [ref=f7e1911]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1912]
+                              - generic [ref=f7e1914] [cursor=pointer]:
+                                - generic [ref=f7e1915]:
+                                  - generic [ref=f7e1916]: ASH01-F05
+                                  - generic [ref=f7e1917]: Ashland · DRG
+                                  - generic [ref=f7e1918]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1919]
+                              - generic [ref=f7e1921] [cursor=pointer]:
+                                - generic [ref=f7e1922]:
+                                  - generic [ref=f7e1923]: ASH01-F03
+                                  - generic [ref=f7e1924]: Ashland · DRG
+                                  - generic [ref=f7e1925]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1926]
+                              - generic [ref=f7e1928] [cursor=pointer]:
+                                - generic [ref=f7e1929]:
+                                  - generic [ref=f7e1930]: ASH01-F11
+                                  - generic [ref=f7e1931]: Ashland · DRG
+                                  - generic [ref=f7e1932]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1933]
+                              - generic [ref=f7e1935] [cursor=pointer]:
+                                - generic [ref=f7e1936]:
+                                  - generic [ref=f7e1937]: GSB01-F01
+                                  - generic [ref=f7e1938]: Gibsonburg · DRG
+                                  - generic [ref=f7e1939]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1940]
+                              - generic [ref=f7e1942] [cursor=pointer]:
+                                - generic [ref=f7e1943]:
+                                  - generic [ref=f7e1944]: SEB01-F03
+                                  - generic [ref=f7e1945]: Sebring · DRG
+                                  - generic [ref=f7e1946]: "QB Crossings: —"
+                                  - generic [ref=f7e1947]: The project is heavily reliant on complex underground boring through alleys and residential streets, necessitating exten…
+                                - button "✓ Verify" [ref=f7e1948]
+                              - generic [ref=f7e1950] [cursor=pointer]:
+                                - generic [ref=f7e1951]:
+                                  - generic [ref=f7e1952]: SEB01-F02
+                                  - generic [ref=f7e1953]: Sebring · DRG
+                                  - generic [ref=f7e1954]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1955]
+                              - generic [ref=f7e1957] [cursor=pointer]:
+                                - generic [ref=f7e1958]:
+                                  - generic [ref=f7e1959]: SEB01-F04
+                                  - generic [ref=f7e1960]: Sebring · DRG
+                                  - generic [ref=f7e1961]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1962]
+                              - generic [ref=f7e1964] [cursor=pointer]:
+                                - generic [ref=f7e1965]:
+                                  - generic [ref=f7e1966]: SHV01-F14
+                                  - generic [ref=f7e1967]: Shenango Valley · DRG
+                                  - generic [ref=f7e1968]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1969]
+                              - generic [ref=f7e1971] [cursor=pointer]:
+                                - generic [ref=f7e1972]:
+                                  - generic [ref=f7e1973]: NIL01-F25
+                                  - generic [ref=f7e1974]: Niles · DRG
+                                  - generic [ref=f7e1975]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1976]
+                              - generic [ref=f7e1978] [cursor=pointer]:
+                                - generic [ref=f7e1979]:
+                                  - generic [ref=f7e1980]: TDO05-F28
+                                  - generic [ref=f7e1981]: Toledo · LECOM
+                                  - generic [ref=f7e1982]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1983]
+                              - generic [ref=f7e1985] [cursor=pointer]:
+                                - generic [ref=f7e1986]:
+                                  - generic [ref=f7e1987]: TDO05-F71
+                                  - generic [ref=f7e1988]: Toledo · LECOM
+                                  - generic [ref=f7e1989]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1990]
+                              - generic [ref=f7e1992] [cursor=pointer]:
+                                - generic [ref=f7e1993]:
+                                  - generic [ref=f7e1994]: TDO04-F96
+                                  - generic [ref=f7e1995]: Toledo · LECOM
+                                  - generic [ref=f7e1996]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e1997]
+                              - generic [ref=f7e1999] [cursor=pointer]:
+                                - generic [ref=f7e2000]:
+                                  - generic [ref=f7e2001]: TDO04-F124
+                                  - generic [ref=f7e2002]: Toledo · LECOM
+                                  - generic [ref=f7e2003]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2004]
+                              - generic [ref=f7e2006] [cursor=pointer]:
+                                - generic [ref=f7e2007]:
+                                  - generic [ref=f7e2008]: TDO05-F64
+                                  - generic [ref=f7e2009]: Toledo · LECOM
+                                  - generic [ref=f7e2010]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2011]
+                              - generic [ref=f7e2013] [cursor=pointer]:
+                                - generic [ref=f7e2014]:
+                                  - generic [ref=f7e2015]: TDO10-F245
+                                  - generic [ref=f7e2016]: Toledo · LECOM
+                                  - generic [ref=f7e2017]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2018]
+                              - generic [ref=f7e2020] [cursor=pointer]:
+                                - generic [ref=f7e2021]:
+                                  - generic [ref=f7e2022]: TDO10-F236
+                                  - generic [ref=f7e2023]: Toledo · LECOM
+                                  - generic [ref=f7e2024]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2025]
+                              - generic [ref=f7e2027] [cursor=pointer]:
+                                - generic [ref=f7e2028]:
+                                  - generic [ref=f7e2029]: TDO10-F286
+                                  - generic [ref=f7e2030]: Toledo · LECOM
+                                  - generic [ref=f7e2031]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2032]
+                              - generic [ref=f7e2034] [cursor=pointer]:
+                                - generic [ref=f7e2035]:
+                                  - generic [ref=f7e2036]: BCT01-F31
+                                  - generic [ref=f7e2037]: Bay City · LECOM
+                                  - generic [ref=f7e2038]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2039]
+                              - generic [ref=f7e2041] [cursor=pointer]:
+                                - generic [ref=f7e2042]:
+                                  - generic [ref=f7e2043]: SGW05-F15
+                                  - generic [ref=f7e2044]: Saginaw · LECOM
+                                  - generic [ref=f7e2045]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2046]
+                              - generic [ref=f7e2048] [cursor=pointer]:
+                                - generic [ref=f7e2049]:
+                                  - generic [ref=f7e2050]: BCT01-F60
+                                  - generic [ref=f7e2051]: Bay City · LECOM
+                                  - generic [ref=f7e2052]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2053]
+                              - generic [ref=f7e2055] [cursor=pointer]:
+                                - generic [ref=f7e2056]:
+                                  - generic [ref=f7e2057]: BCT01-F45
+                                  - generic [ref=f7e2058]: Bay City · LECOM
+                                  - generic [ref=f7e2059]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2060]
+                              - generic [ref=f7e2062] [cursor=pointer]:
+                                - generic [ref=f7e2063]:
+                                  - generic [ref=f7e2064]: SGW05-F99
+                                  - generic [ref=f7e2065]: Saginaw · LECOM
+                                  - generic [ref=f7e2066]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2067]
+                              - generic [ref=f7e2069] [cursor=pointer]:
+                                - generic [ref=f7e2070]:
+                                  - generic [ref=f7e2071]: BCT01-F42
+                                  - generic [ref=f7e2072]: Bay City · LECOM
+                                  - generic [ref=f7e2073]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2074]
+                              - generic [ref=f7e2076] [cursor=pointer]:
+                                - generic [ref=f7e2077]:
+                                  - generic [ref=f7e2078]: BCT01-F23
+                                  - generic [ref=f7e2079]: Bay City · LECOM
+                                  - generic [ref=f7e2080]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2081]
+                              - generic [ref=f7e2083] [cursor=pointer]:
+                                - generic [ref=f7e2084]:
+                                  - generic [ref=f7e2085]: BCT01-F59
+                                  - generic [ref=f7e2086]: Bay City · LECOM
+                                  - generic [ref=f7e2087]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2088]
+                              - generic [ref=f7e2090] [cursor=pointer]:
+                                - generic [ref=f7e2091]:
+                                  - generic [ref=f7e2092]: BCT01-F09
+                                  - generic [ref=f7e2093]: Bay City · LECOM
+                                  - generic [ref=f7e2094]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2095]
+                              - generic [ref=f7e2097] [cursor=pointer]:
+                                - generic [ref=f7e2098]:
+                                  - generic [ref=f7e2099]: BCT01-F03
+                                  - generic [ref=f7e2100]: Bay City · LECOM
+                                  - generic [ref=f7e2101]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2102]
+                              - generic [ref=f7e2104] [cursor=pointer]:
+                                - generic [ref=f7e2105]:
+                                  - generic [ref=f7e2106]: BCT01-F06
+                                  - generic [ref=f7e2107]: Bay City · LECOM
+                                  - generic [ref=f7e2108]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2109]
+                              - generic [ref=f7e2111] [cursor=pointer]:
+                                - generic [ref=f7e2112]:
+                                  - generic [ref=f7e2113]: BCT01-F10
+                                  - generic [ref=f7e2114]: Bay City · LECOM
+                                  - generic [ref=f7e2115]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2116]
+                              - generic [ref=f7e2118] [cursor=pointer]:
+                                - generic [ref=f7e2119]:
+                                  - generic [ref=f7e2120]: BCT01-F08
+                                  - generic [ref=f7e2121]: Bay City · LECOM
+                                  - generic [ref=f7e2122]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2123]
+                              - generic [ref=f7e2125] [cursor=pointer]:
+                                - generic [ref=f7e2126]:
+                                  - generic [ref=f7e2127]: BCT01-F41
+                                  - generic [ref=f7e2128]: Bay City · LECOM
+                                  - generic [ref=f7e2129]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2130]
+                              - generic [ref=f7e2132] [cursor=pointer]:
+                                - generic [ref=f7e2133]:
+                                  - generic [ref=f7e2134]: BCT02-F01
+                                  - generic [ref=f7e2135]: Bay City · LECOM
+                                  - generic [ref=f7e2136]: "QB Crossings: —"
+                                - button "✓ Verify" [ref=f7e2137]
+                          - generic [ref=f7e2138]:
+                            - generic [ref=f7e2140]:
+                              - generic [ref=f7e2141]: Admin Tasks
+                              - generic [ref=f7e2142]: BOMs to Input
+                              - generic [ref=f7e2143]: "93"
+                            - generic [ref=f7e2144]:
+                              - generic [ref=f7e2145] [cursor=pointer]:
+                                - generic [ref=f7e2146]: CON01-F04
+                                - generic [ref=f7e2147]: Connellsville · Utilities One · OFS
+                                - generic [ref=f7e2148]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2149] [cursor=pointer]:
+                                - generic [ref=f7e2150]: CON01-F06
+                                - generic [ref=f7e2151]: Connellsville · Utilities One · Field CX
+                                - generic [ref=f7e2152]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2153] [cursor=pointer]:
+                                - generic [ref=f7e2154]: CON01-F05
+                                - generic [ref=f7e2155]: Connellsville · Utilities One · Field CX
+                                - generic [ref=f7e2156]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2157] [cursor=pointer]:
+                                - generic [ref=f7e2158]: CON01-F08
+                                - generic [ref=f7e2159]: Connellsville · Utilities One · Field CX
+                                - generic [ref=f7e2160]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2161] [cursor=pointer]:
+                                - generic [ref=f7e2162]: NWC01-F07
+                                - generic [ref=f7e2163]: New Castle · Utilities One · OFS
+                                - generic [ref=f7e2164]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2165] [cursor=pointer]:
+                                - generic [ref=f7e2166]: NWC01-F09
+                                - generic [ref=f7e2167]: New Castle · Utilities One · OFS
+                                - generic [ref=f7e2168]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2169] [cursor=pointer]:
+                                - generic [ref=f7e2170]: NWC02-F38
+                                - generic [ref=f7e2171]: New Castle · Utilities One · Field CX
+                                - generic [ref=f7e2172]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2173] [cursor=pointer]:
+                                - generic [ref=f7e2174]: NWC02-F19
+                                - generic [ref=f7e2175]: New Castle · Utilities One · Field CX
+                                - generic [ref=f7e2176]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2177] [cursor=pointer]:
+                                - generic [ref=f7e2178]: NWC02-F20
+                                - generic [ref=f7e2179]: New Castle · Utilities One · Field CX
+                                - generic [ref=f7e2180]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2181] [cursor=pointer]:
+                                - generic [ref=f7e2182]: NWC02-F21
+                                - generic [ref=f7e2183]: New Castle · Utilities One · Field CX
+                                - generic [ref=f7e2184]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2185] [cursor=pointer]:
+                                - generic [ref=f7e2186]: BRO04-F59
+                                - generic [ref=f7e2187]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2188]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2189] [cursor=pointer]:
+                                - generic [ref=f7e2190]: BRO02-F33
+                                - generic [ref=f7e2191]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2192]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2193] [cursor=pointer]:
+                                - generic [ref=f7e2194]: BRO02-F39
+                                - generic [ref=f7e2195]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2196]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2197] [cursor=pointer]:
+                                - generic [ref=f7e2198]: BRO02-F12
+                                - generic [ref=f7e2199]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2200]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2201] [cursor=pointer]:
+                                - generic [ref=f7e2202]: BRO02-F34
+                                - generic [ref=f7e2203]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2204]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2205] [cursor=pointer]:
+                                - generic [ref=f7e2206]: BRO04-F61
+                                - generic [ref=f7e2207]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2208]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2209] [cursor=pointer]:
+                                - generic [ref=f7e2210]: BRO02-F36
+                                - generic [ref=f7e2211]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2212]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2213] [cursor=pointer]:
+                                - generic [ref=f7e2214]: BRO02-F11
+                                - generic [ref=f7e2215]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2216]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2217] [cursor=pointer]:
+                                - generic [ref=f7e2218]: BRO02-F35
+                                - generic [ref=f7e2219]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2220]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2221] [cursor=pointer]:
+                                - generic [ref=f7e2222]: BRO02-F40
+                                - generic [ref=f7e2223]: Brownsville · G&A · Field CX
+                                - generic [ref=f7e2224]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2225] [cursor=pointer]:
+                                - generic [ref=f7e2226]: BRO02-F41
+                                - generic [ref=f7e2227]: Brownsville · G&A · Vendor Assignment
+                                - generic [ref=f7e2228]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2229] [cursor=pointer]:
+                                - generic [ref=f7e2230]: KEN01-F20
+                                - generic [ref=f7e2231]: Kent · DRG · Field CX
+                                - generic [ref=f7e2232]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2233] [cursor=pointer]:
+                                - generic [ref=f7e2234]: KEN02-F08
+                                - generic [ref=f7e2235]: Kent · DRG · Field CX
+                                - generic [ref=f7e2236]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2237] [cursor=pointer]:
+                                - generic [ref=f7e2238]: KEN02-F09
+                                - generic [ref=f7e2239]: Kent · DRG · Field CX
+                                - generic [ref=f7e2240]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2241] [cursor=pointer]:
+                                - generic [ref=f7e2242]: KEN01-F19
+                                - generic [ref=f7e2243]: Kent · DRG · Field CX
+                                - generic [ref=f7e2244]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2245] [cursor=pointer]:
+                                - generic [ref=f7e2246]: LSV01-F25
+                                - generic [ref=f7e2247]: Louisville · DRG · OFS
+                                - generic [ref=f7e2248]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2249] [cursor=pointer]:
+                                - generic [ref=f7e2250]: LSV01-F01
+                                - generic [ref=f7e2251]: Louisville · DRG · Field CX
+                                - generic [ref=f7e2252]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2253] [cursor=pointer]:
+                                - generic [ref=f7e2254]: GIR01-F15
+                                - generic [ref=f7e2255]: Girard · DRG · Field CX
+                                - generic [ref=f7e2256]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2257] [cursor=pointer]:
+                                - generic [ref=f7e2258]: PAN03-F47
+                                - generic [ref=f7e2259]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2260]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2261] [cursor=pointer]:
+                                - generic [ref=f7e2262]: PAN01-F01
+                                - generic [ref=f7e2263]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2264]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2265] [cursor=pointer]:
+                                - generic [ref=f7e2266]: PAN03-F64
+                                - generic [ref=f7e2267]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2268]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2269] [cursor=pointer]:
+                                - generic [ref=f7e2270]: PAN03-F52
+                                - generic [ref=f7e2271]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2272]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2273] [cursor=pointer]:
+                                - generic [ref=f7e2274]: PAN03-F46
+                                - generic [ref=f7e2275]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2276]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2277] [cursor=pointer]:
+                                - generic [ref=f7e2278]: PAN03-F43
+                                - generic [ref=f7e2279]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2280]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2281] [cursor=pointer]:
+                                - generic [ref=f7e2282]: PAN03-F07
+                                - generic [ref=f7e2283]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2284]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2285] [cursor=pointer]:
+                                - generic [ref=f7e2286]: PAN03-F62
+                                - generic [ref=f7e2287]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2288]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2289] [cursor=pointer]:
+                                - generic [ref=f7e2290]: PAN03-F58
+                                - generic [ref=f7e2291]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2292]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2293] [cursor=pointer]:
+                                - generic [ref=f7e2294]: PAN03-F50
+                                - generic [ref=f7e2295]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2296]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2297] [cursor=pointer]:
+                                - generic [ref=f7e2298]: PAN03-F48
+                                - generic [ref=f7e2299]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2300]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2301] [cursor=pointer]:
+                                - generic [ref=f7e2302]: PAN03-F61
+                                - generic [ref=f7e2303]: Painesville · DRG · Vendor Assignment
+                                - generic [ref=f7e2304]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2305] [cursor=pointer]:
+                                - generic [ref=f7e2306]: PAN03-F60
+                                - generic [ref=f7e2307]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2308]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2309] [cursor=pointer]:
+                                - generic [ref=f7e2310]: PAN03-F59
+                                - generic [ref=f7e2311]: Painesville · DRG · Vendor Assignment
+                                - generic [ref=f7e2312]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2313] [cursor=pointer]:
+                                - generic [ref=f7e2314]: PAN02-F19
+                                - generic [ref=f7e2315]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2316]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2317] [cursor=pointer]:
+                                - generic [ref=f7e2318]: PAN02-F38
+                                - generic [ref=f7e2319]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2320]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2321] [cursor=pointer]:
+                                - generic [ref=f7e2322]: PAN02-F23
+                                - generic [ref=f7e2323]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2324]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2325] [cursor=pointer]:
+                                - generic [ref=f7e2326]: PAN03-F56
+                                - generic [ref=f7e2327]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2328]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2329] [cursor=pointer]:
+                                - generic [ref=f7e2330]: PAN01-F09
+                                - generic [ref=f7e2331]: Painesville · DRG · Field CX
+                                - generic [ref=f7e2332]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2333] [cursor=pointer]:
+                                - generic [ref=f7e2334]: ASH01-F13
+                                - generic [ref=f7e2335]: Ashland · DRG · Field CX
+                                - generic [ref=f7e2336]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2337] [cursor=pointer]:
+                                - generic [ref=f7e2338]: ASH01-F14
+                                - generic [ref=f7e2339]: Ashland · DRG · Field CX
+                                - generic [ref=f7e2340]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2341] [cursor=pointer]:
+                                - generic [ref=f7e2342]: ASH01-F16
+                                - generic [ref=f7e2343]: Ashland · DRG · Field CX
+                                - generic [ref=f7e2344]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2345] [cursor=pointer]:
+                                - generic [ref=f7e2346]: ASH01-F05
+                                - generic [ref=f7e2347]: Ashland · DRG · Field CX
+                                - generic [ref=f7e2348]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2349] [cursor=pointer]:
+                                - generic [ref=f7e2350]: ASH01-F03
+                                - generic [ref=f7e2351]: Ashland · DRG · Field CX
+                                - generic [ref=f7e2352]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2353] [cursor=pointer]:
+                                - generic [ref=f7e2354]: ASH01-F11
+                                - generic [ref=f7e2355]: Ashland · DRG · Field CX
+                                - generic [ref=f7e2356]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2357] [cursor=pointer]:
+                                - generic [ref=f7e2358]: GSB01-F01
+                                - generic [ref=f7e2359]: Gibsonburg · DRG · Field CX
+                                - generic [ref=f7e2360]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2361] [cursor=pointer]:
+                                - generic [ref=f7e2362]: CRE01-F06
+                                - generic [ref=f7e2363]: Crestline · DRG · Field CX
+                                - generic [ref=f7e2364]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2365] [cursor=pointer]:
+                                - generic [ref=f7e2366]: SEB01-F03
+                                - generic [ref=f7e2367]: Sebring · DRG · Field CX
+                                - generic [ref=f7e2368]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2369] [cursor=pointer]:
+                                - generic [ref=f7e2370]: SEB01-F02
+                                - generic [ref=f7e2371]: Sebring · DRG · Field CX
+                                - generic [ref=f7e2372]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2373] [cursor=pointer]:
+                                - generic [ref=f7e2374]: SEB01-F04
+                                - generic [ref=f7e2375]: Sebring · DRG · Field CX
+                                - generic [ref=f7e2376]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2377] [cursor=pointer]:
+                                - generic [ref=f7e2378]: SHV01-F14
+                                - generic [ref=f7e2379]: Shenango Valley · DRG · Field CX
+                                - generic [ref=f7e2380]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2381] [cursor=pointer]:
+                                - generic [ref=f7e2382]: WOO01-F01
+                                - generic [ref=f7e2383]: Wooster · DRG · OFS
+                                - generic [ref=f7e2384]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2385] [cursor=pointer]:
+                                - generic [ref=f7e2386]: NIL01-F25
+                                - generic [ref=f7e2387]: Niles · DRG · Field CX
+                                - generic [ref=f7e2388]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2389] [cursor=pointer]:
+                                - generic [ref=f7e2390]: TDO05-F28
+                                - generic [ref=f7e2391]: Toledo · LECOM · OFS
+                                - generic [ref=f7e2392]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2393] [cursor=pointer]:
+                                - generic [ref=f7e2394]: TDO05-F71
+                                - generic [ref=f7e2395]: Toledo · LECOM · OFS
+                                - generic [ref=f7e2396]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2397] [cursor=pointer]:
+                                - generic [ref=f7e2398]: TDO10-F235
+                                - generic [ref=f7e2399]: Toledo · LECOM · Field CX
+                                - generic [ref=f7e2400]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2401] [cursor=pointer]:
+                                - generic [ref=f7e2402]: TDO08-F92
+                                - generic [ref=f7e2403]: Toledo · LECOM · Field CX
+                                - generic [ref=f7e2404]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2405] [cursor=pointer]:
+                                - generic [ref=f7e2406]: TDO04-F208
+                                - generic [ref=f7e2407]: Toledo · LECOM · Field CX
+                                - generic [ref=f7e2408]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2409] [cursor=pointer]:
+                                - generic [ref=f7e2410]: TDO05-F46
+                                - generic [ref=f7e2411]: Toledo · LECOM · Field CX
+                                - generic [ref=f7e2412]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2413] [cursor=pointer]:
+                                - generic [ref=f7e2414]: TDO10-F245
+                                - generic [ref=f7e2415]: Toledo · LECOM · Permitting
+                                - generic [ref=f7e2416]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2417] [cursor=pointer]:
+                                - generic [ref=f7e2418]: TDO10-F236
+                                - generic [ref=f7e2419]: Toledo · LECOM · Field CX
+                                - generic [ref=f7e2420]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2421] [cursor=pointer]:
+                                - generic [ref=f7e2422]: TDO10-F286
+                                - generic [ref=f7e2423]: Toledo · LECOM · Field CX
+                                - generic [ref=f7e2424]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2425] [cursor=pointer]:
+                                - generic [ref=f7e2426]: SGW06-F42
+                                - generic [ref=f7e2427]: Saginaw · LECOM · Field CX
+                                - generic [ref=f7e2428]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2429] [cursor=pointer]:
+                                - generic [ref=f7e2430]: BCT01-F32
+                                - generic [ref=f7e2431]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2432]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2433] [cursor=pointer]:
+                                - generic [ref=f7e2434]: BCT01-F31
+                                - generic [ref=f7e2435]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2436]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2437] [cursor=pointer]:
+                                - generic [ref=f7e2438]: BCT01-F33
+                                - generic [ref=f7e2439]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2440]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2441] [cursor=pointer]:
+                                - generic [ref=f7e2442]: SGW06-F05
+                                - generic [ref=f7e2443]: Saginaw · LECOM · Field CX
+                                - generic [ref=f7e2444]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2445] [cursor=pointer]:
+                                - generic [ref=f7e2446]: BCT01-F43
+                                - generic [ref=f7e2447]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2448]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2449] [cursor=pointer]:
+                                - generic [ref=f7e2450]: SGW05-F53
+                                - generic [ref=f7e2451]: Saginaw · LECOM · Field CX
+                                - generic [ref=f7e2452]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2453] [cursor=pointer]:
+                                - generic [ref=f7e2454]: SGW05-F15
+                                - generic [ref=f7e2455]: Saginaw · LECOM · Vendor Assignment
+                                - generic [ref=f7e2456]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2457] [cursor=pointer]:
+                                - generic [ref=f7e2458]: BCT01-F14
+                                - generic [ref=f7e2459]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2460]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2461] [cursor=pointer]:
+                                - generic [ref=f7e2462]: BCT01-F60
+                                - generic [ref=f7e2463]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2464]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2465] [cursor=pointer]:
+                                - generic [ref=f7e2466]: SGW03-F93
+                                - generic [ref=f7e2467]: Saginaw · LECOM · OFS
+                                - generic [ref=f7e2468]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2469] [cursor=pointer]:
+                                - generic [ref=f7e2470]: BCT01-F45
+                                - generic [ref=f7e2471]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2472]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2473] [cursor=pointer]:
+                                - generic [ref=f7e2474]: SGW05-F99
+                                - generic [ref=f7e2475]: Saginaw · LECOM · Permitting
+                                - generic [ref=f7e2476]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2477] [cursor=pointer]:
+                                - generic [ref=f7e2478]: BCT01-F42
+                                - generic [ref=f7e2479]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2480]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2481] [cursor=pointer]:
+                                - generic [ref=f7e2482]: BCT01-F23
+                                - generic [ref=f7e2483]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2484]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2485] [cursor=pointer]:
+                                - generic [ref=f7e2486]: BCT01-F59
+                                - generic [ref=f7e2487]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2488]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2489] [cursor=pointer]:
+                                - generic [ref=f7e2490]: BCT01-F09
+                                - generic [ref=f7e2491]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2492]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2493] [cursor=pointer]:
+                                - generic [ref=f7e2494]: BCT01-F03
+                                - generic [ref=f7e2495]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2496]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2497] [cursor=pointer]:
+                                - generic [ref=f7e2498]: BCT01-F06
+                                - generic [ref=f7e2499]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2500]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2501] [cursor=pointer]:
+                                - generic [ref=f7e2502]: BCT01-F10
+                                - generic [ref=f7e2503]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2504]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2505] [cursor=pointer]:
+                                - generic [ref=f7e2506]: BCT01-F08
+                                - generic [ref=f7e2507]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2508]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2509] [cursor=pointer]:
+                                - generic [ref=f7e2510]: BCT01-F41
+                                - generic [ref=f7e2511]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2512]: Enter BOM data in QuickBase, then re-sync reference data.
+                              - generic [ref=f7e2513] [cursor=pointer]:
+                                - generic [ref=f7e2514]: BCT02-F01
+                                - generic [ref=f7e2515]: Bay City · LECOM · Field CX
+                                - generic [ref=f7e2516]: Enter BOM data in QuickBase, then re-sync reference data.
+                          - generic [ref=f7e2517]:
+                            - generic [ref=f7e2519]:
+                              - generic [ref=f7e2520]: Admin Tasks
+                              - generic [ref=f7e2521]: Status Mismatches
+                              - generic [ref=f7e2522]: "8"
+                            - generic [ref=f7e2523]:
+                              - generic [ref=f7e2525] [cursor=pointer]:
+                                - generic [ref=f7e2526]:
+                                  - generic [ref=f7e2527]: BRO02-F41
+                                  - generic [ref=f7e2528]: Brownsville · G&A
+                                  - generic [ref=f7e2529]: "QB Status: Vendors Assigned"
+                                - button "🛠 Updated" [ref=f7e2530]
+                              - generic [ref=f7e2532] [cursor=pointer]:
+                                - generic [ref=f7e2533]:
+                                  - generic [ref=f7e2534]: LSV01-F25
+                                  - generic [ref=f7e2535]: Louisville · DRG
+                                  - generic [ref=f7e2536]: "QB Status: Open for Sale"
+                                - button "🛠 Updated" [ref=f7e2537]
+                              - generic [ref=f7e2539] [cursor=pointer]:
+                                - generic [ref=f7e2540]:
+                                  - generic [ref=f7e2541]: TDO05-F28
+                                  - generic [ref=f7e2542]: Toledo · LECOM
+                                  - generic [ref=f7e2543]: "QB Status: Open for Sale"
+                                - button "🛠 Updated" [ref=f7e2544]
+                              - generic [ref=f7e2546] [cursor=pointer]:
+                                - generic [ref=f7e2547]:
+                                  - generic [ref=f7e2548]: TDO05-F71
+                                  - generic [ref=f7e2549]: Toledo · LECOM
+                                  - generic [ref=f7e2550]: "QB Status: Open for Sale"
+                                - button "🛠 Updated" [ref=f7e2551]
+                              - generic [ref=f7e2553] [cursor=pointer]:
+                                - generic [ref=f7e2554]:
+                                  - generic [ref=f7e2555]: TDO10-F245
+                                  - generic [ref=f7e2556]: Toledo · LECOM
+                                  - generic [ref=f7e2557]: "QB Status: Approved"
+                                - button "🛠 Updated" [ref=f7e2558]
+                              - generic [ref=f7e2560] [cursor=pointer]:
+                                - generic [ref=f7e2561]:
+                                  - generic [ref=f7e2562]: SGW05-F15
+                                  - generic [ref=f7e2563]: Saginaw · LECOM
+                                  - generic [ref=f7e2564]: "QB Status: Vendors Assigned"
+                                - button "🛠 Updated" [ref=f7e2565]
+                              - generic [ref=f7e2567] [cursor=pointer]:
+                                - generic [ref=f7e2568]:
+                                  - generic [ref=f7e2569]: SGW03-F93
+                                  - generic [ref=f7e2570]: Saginaw · LECOM
+                                  - generic [ref=f7e2571]: "QB Status: Open for Sale"
+                                - button "🛠 Updated" [ref=f7e2572]
+                              - generic [ref=f7e2574] [cursor=pointer]:
+                                - generic [ref=f7e2575]:
+                                  - generic [ref=f7e2576]: SGW05-F99
+                                  - generic [ref=f7e2577]: Saginaw · LECOM
+                                  - generic [ref=f7e2578]: "QB Status: Approved"
+                                - button "🛠 Updated" [ref=f7e2579]
+                  - button "Close Admin panel" [expanded] [ref=f7e2580] [cursor=pointer]:
+                    - generic [ref=f7e99]: ×
+                    - generic [ref=f7e2581]: 99+
+              - generic [ref=f7e100]:
+                - generic [ref=f7e101]:
+                  - generic [ref=f7e102]:
+                    - generic [ref=f7e103]: Omni PMO App — Help
+                    - generic [ref=f7e104]: Reference guide for reviewers and managers
+                  - button "✕" [ref=f7e105] [cursor=pointer]
+                - generic [ref=f7e106]:
+                  - textbox "Search topics, flags, terms..." [ref=f7e108]
+                  - generic [ref=f7e109]:
+                    - generic [ref=f7e110]: Workspaces & Views
+                    - generic [ref=f7e111]:
+                      - generic [ref=f7e112]: Detail View
+                      - generic [ref=f7e113]: The standard QA view. Focuses on one project at a time, providing full schedule, velocity, and AI diagnostic breakdowns.
+                    - generic [ref=f7e114]:
+                      - generic [ref=f7e115]: Grid View
+                      - generic [ref=f7e116]: High-density overview. Displays multiple projects at once. Use the Pivot Selector in the dock to switch between Schedule, Velocity, Notes, or Deliverables data.
+                    - generic [ref=f7e117]:
+                      - generic [ref=f7e118]: Deck Mode
+                      - generic [ref=f7e119]: Presentation mode. Formats projects into 16:9 slides. Ideal for morning meetings. Allows you to "Stage" multiple projects for batch email exports.
+                    - generic [ref=f7e120]:
+                      - generic [ref=f7e121]: Theater Mode
+                      - generic [ref=f7e122]: Available in Slide View. Blacks out the surrounding UI for distraction-free presentations. Use Arrow Keys or Spacebar to navigate slides.
+                  - generic [ref=f7e123]:
+                    - generic [ref=f7e124]: Daily Workflow
+                    - generic [ref=f7e125]:
+                      - generic [ref=f7e126]: "1"
+                      - generic [ref=f7e127]: Sync QB — Pull the latest project data from QuickBase. Do this when QB statuses or BOMs have changed.
+                    - generic [ref=f7e128]:
+                      - generic [ref=f7e129]: "2"
+                      - generic [ref=f7e130]: Run Review — Prompts for a date, processes daily vendor files, and loads anomalies into the queue.
+                    - generic [ref=f7e131]:
+                      - generic [ref=f7e132]: "3"
+                      - generic [ref=f7e133]: Admin Checks — Open the right-side Review Hub to clear Status Mismatches, verify Special Crossings, and log missing BOMs.
+                    - generic [ref=f7e134]:
+                      - generic [ref=f7e135]: "4"
+                      - generic [ref=f7e136]: Review & Note — Check the Vendor Update and System Flags. The AI (Gemini) pre-drafts a manager note. Edit it to reflect your decision.
+                    - generic [ref=f7e137]:
+                      - generic [ref=f7e138]: "5"
+                      - generic [ref=f7e139]: Commit — Saves the review and moves the project to the Reviewed drawer.
+                    - generic [ref=f7e140]:
+                      - generic [ref=f7e141]: "6"
+                      - generic [ref=f7e142]: Export — In the Reviewed drawer (or via Deck Staging), export the daily summaries to CSV or Email.
+                  - generic [ref=f7e143]:
+                    - generic [ref=f7e144]: Dynamic Filter Dock
+                    - generic [ref=f7e145]: The floating dock at the top of the screen adapts to your current workspace.
+                    - generic [ref=f7e146]:
+                      - generic [ref=f7e147]: Search
+                      - generic [ref=f7e148]: Instantly filter the queue by FDH ID, City, or Vendor.
+                    - generic [ref=f7e149]:
+                      - generic [ref=f7e150]: Filters
+                      - generic [ref=f7e151]: Narrow projects by Health (Critical/Warning), Vendor, City, or Target OFS month.
+                    - generic [ref=f7e152]:
+                      - generic [ref=f7e153]: Stage Project
+                      - generic [ref=f7e154]: (Deck Mode) Adds the current project to a batch queue. Allows you to email a combined PDF/text report for all staged projects at once.
+                  - generic [ref=f7e155]:
+                    - generic [ref=f7e156]: Network Path & Dependencies
+                    - generic [ref=f7e157]: The horizontal strip in the Detail View showing physical fiber dependencies.
+                    - generic [ref=f7e158]:
+                      - generic [ref=f7e159]: Green Dot
+                      - generic [ref=f7e160]: Node has light to cabinet confirmed (or is OFS/Complete).
+                    - generic [ref=f7e161]:
+                      - generic [ref=f7e162]: Amber Dot
+                      - generic [ref=f7e163]: Node is currently waiting on light.
+                    - generic [ref=f7e164]:
+                      - generic [ref=f7e165]: ⚡ Transport
+                      - generic [ref=f7e166]: Transport (backhaul) is ready, meaning this project bypasses upstream physical dependencies for light.
+                    - generic [ref=f7e167]:
+                      - generic [ref=f7e168]: Click to Walk
+                      - generic [ref=f7e169]: Click any upstream or downstream node to immediately jump to that project's dashboard.
+                  - generic [ref=f7e170]:
+                    - generic [ref=f7e171]: Field Velocity & Production
+                    - generic [ref=f7e172]:
+                      - generic [ref=f7e173]: Pace Tracker
+                      - generic [ref=f7e174]: Calculates the daily footage/NAPs required to hit the Target Date. Turns red if the required pace exceeds standard thresholds.
+                    - generic [ref=f7e175]:
+                      - generic [ref=f7e176]: Days Left
+                      - generic [ref=f7e177]: Calendar days remaining until the target date. Overdue projects display in red.
+                    - generic [ref=f7e178]:
+                      - generic [ref=f7e179]: + TODAY
+                      - generic [ref=f7e180]: Green badges indicate fresh production was logged in the latest daily report.
+                  - generic [ref=f7e181]:
+                    - generic [ref=f7e182]: Global Construction Timeline (Gantt)
+                    - generic [ref=f7e183]:
+                      - generic [ref=f7e184]: Bar Color
+                      - generic [ref=f7e185]: Matches the project's current stage/status. Overdue projects display in red. Hover a bar to see a summary HUD.
+                    - generic [ref=f7e186]:
+                      - generic [ref=f7e187]: Beads
+                      - generic [ref=f7e188]: "Small markers on the bar: L = Locates called, C = Cabinets set, ⚡ = Light present, ★ = Phase 100% complete."
+                    - generic [ref=f7e189]:
+                      - generic [ref=f7e190]: EOM Spike
+                      - generic [ref=f7e191]: A concentration of projects ending at or near end-of-month. Hover for a breakdown of which vendors and BSL counts are involved.
+                  - generic [ref=f7e192]:
+                    - generic [ref=f7e193]: Flag Glossary
+                    - generic [ref=f7e194]:
+                      - generic [ref=f7e195]: Status Mismatch
+                      - generic [ref=f7e196]: Project's QB status does not match the field report. Update QB.
+                    - generic [ref=f7e197]:
+                      - generic [ref=f7e198]: Check Crossings
+                      - generic [ref=f7e199]: Special crossings detected. Confirm permit status, bore depths, and restoration plan with the vendor.
+                    - generic [ref=f7e200]:
+                      - generic [ref=f7e201]: Please Input BOM
+                      - generic [ref=f7e202]: Main BOM quantities are zero. Add BOMs to QuickBase so the engine can calculate velocity.
+                    - generic [ref=f7e203]:
+                      - generic [ref=f7e204]: Blocked by Upstream
+                      - generic [ref=f7e205]: The project feeding this FDH is not yet lit, and Transport is not ready to override it.
+                    - generic [ref=f7e206]:
+                      - generic [ref=f7e207]: Delaying Downstream
+                      - generic [ref=f7e208]: This project is not lit, and is actively holding up a downstream project that lacks transport.
+                    - generic [ref=f7e209]:
+                      - generic [ref=f7e210]: Transport Override
+                      - generic [ref=f7e211]: Transport is available, bypassing the physical upstream dependency.
+                    - generic [ref=f7e212]:
+                      - generic [ref=f7e213]: Overrun
+                      - generic [ref=f7e214]: Vendor has reported total footage exceeding the QuickBase BOM by more than 5%.
+                    - generic [ref=f7e215]:
+                      - generic [ref=f7e216]: Possible Reroute
+                      - generic [ref=f7e217]: Vendor reported activity on a phase (like UG or Strand) where the BOM is 0. Indicates a possible field design change.
+                    - generic [ref=f7e218]:
+                      - generic [ref=f7e219]: BOM Discrepancy
+                      - generic [ref=f7e220]: The vendor's reported BOM total does not match QuickBase's BOM total.
+                    - generic [ref=f7e221]:
+                      - generic [ref=f7e222]: Ghost Report
+                      - generic [ref=f7e223]: A project is marked active but the vendor did not submit a daily report today.
+                    - generic [ref=f7e224]:
+                      - generic [ref=f7e225]: CD Intel
+                      - generic [ref=f7e226]: Gemini detected major crossing risks (Highways, Railroads, Rivers) in the Construction Drawing PDF.
+              - option "None" [selected]
+              - option "Vendor"
+              - option "City"
+              - option "Health"
+              - option "Stage"
+              - option "Status"
+              - option "Default" [selected]
+              - option "Admin Review"
+              - option "Target Date"
+              - option "CX Start"
+              - option "CX End"

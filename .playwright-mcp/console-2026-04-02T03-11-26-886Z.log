@@ -1,0 +1,17 @@
+[    3522ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ https://script.google.com/macros/s/AKfycby3-IXETAY0YKEIDj3mz_ZPWVKx5ArpTrcskpz71gXPRtBCO8RyPxLg5Hk7kECc-M_h/exec:10
+[    3522ms] [WARNING] Unrecognized feature: 'speaker'. @ https://script.google.com/macros/s/AKfycby3-IXETAY0YKEIDj3mz_ZPWVKx5ArpTrcskpz71gXPRtBCO8RyPxLg5Hk7kECc-M_h/exec:10
+[    3522ms] [WARNING] Unrecognized feature: 'vibrate'. @ https://script.google.com/macros/s/AKfycby3-IXETAY0YKEIDj3mz_ZPWVKx5ArpTrcskpz71gXPRtBCO8RyPxLg5Hk7kECc-M_h/exec:10
+[    3522ms] [WARNING] Unrecognized feature: 'vr'. @ https://script.google.com/macros/s/AKfycby3-IXETAY0YKEIDj3mz_ZPWVKx5ArpTrcskpz71gXPRtBCO8RyPxLg5Hk7kECc-M_h/exec:10
+[    3523ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:blank:0
+[    3750ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ https://n-xc2ojh43quwksoktvlchevclxeya6q2alonkjdi-0lu-script.googleusercontent.com/userCodeAppPanel:0
+[    3750ms] [WARNING] Unrecognized feature: 'speaker'. @ https://n-xc2ojh43quwksoktvlchevclxeya6q2alonkjdi-0lu-script.googleusercontent.com/userCodeAppPanel:0
+[    3750ms] [WARNING] Unrecognized feature: 'vibrate'. @ https://n-xc2ojh43quwksoktvlchevclxeya6q2alonkjdi-0lu-script.googleusercontent.com/userCodeAppPanel:0
+[    3750ms] [WARNING] Unrecognized feature: 'vr'. @ https://n-xc2ojh43quwksoktvlchevclxeya6q2alonkjdi-0lu-script.googleusercontent.com/userCodeAppPanel:0
+[    3799ms] [INFO] [startup] window-onload @ :49
+[    3804ms] [INFO] Net state changed from IDLE to BUSY @ https://script.google.com/static/macros/client/js/3307704832-warden_bin_i18n_warden.js:149
+[    5163ms] [INFO] [startup] gemini-usage-success @ :49
+[   15611ms] [INFO] Net state changed from BUSY to IDLE @ https://script.google.com/static/macros/client/js/3307704832-warden_bin_i18n_warden.js:149
+[   15626ms] [INFO] [startup] dashboard-payload-success {actionItems: 109} @ :50
+[   15626ms] [INFO] [startup] hide-splash @ :49
+[   15627ms] [INFO] [startup] hide-splash @ :49
+[   15868ms] [INFO] [startup] dashboard-init-complete @ :49

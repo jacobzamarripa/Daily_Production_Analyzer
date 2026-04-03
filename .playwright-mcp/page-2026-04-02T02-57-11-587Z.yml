@@ -1,0 +1,240 @@
+- table [ref=e2]:
+  - rowgroup [ref=e3]:
+    - row "This application was created by a Google Apps Script user" [ref=e4]:
+      - cell "This application was created by a Google Apps Script user" [ref=e5]:
+        - banner "This application was created by a Google Apps Script user" [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e8]:
+              - img [ref=e10]
+              - alert [ref=e12]: This application was created by a Google Apps Script user
+            - generic [ref=e13]:
+              - link "Report abuse" [ref=e14] [cursor=pointer]:
+                - /url: https://drive.google.com/abuse?id=AKkXjoyQpFiEF9Yzv4Nj0le9EJLkFknUdBAXbfT92fx7kYbfPyneUvPESn_0xeIqJxD3uQgODdDcxlodqLgOQyNOVRQODN6u6Xt-j1wI%3A0&docurl=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycby3-IXETAY0YKEIDj3mz_ZPWVKx5ArpTrcskpz71gXPRtBCO8RyPxLg5Hk7kECc-M_h%2Fexec
+              - link "Learn more" [ref=e15] [cursor=pointer]:
+                - /url: https://developers.google.com/apps-script
+          - button "Dismiss" [ref=e16]:
+            - img [ref=e17]
+    - row [ref=e19]:
+      - cell [ref=e20]:
+        - iframe [ref=e21]:
+          - iframe [ref=f6e2]:
+            - generic [active] [ref=f7e1]:
+              - generic [ref=f7e3]:
+                - heading "Omni PMO App" [level=1] [ref=f7e8]
+                - generic [ref=f7e9]: v4.2.0 // BENNY ENGINE ACTIVE
+                - generic [ref=f7e12]: ">_ Loading Master Archive records..."
+              - generic [ref=f7e13]:
+                - generic [ref=f7e14]:
+                  - generic [ref=f7e15]:
+                    - generic [ref=f7e16]: Omni PMO Operations Intelligence Hub
+                    - generic [ref=f7e17]: Crafted by Jacob Zamarripa
+                  - generic [ref=f7e19]:
+                    - generic [ref=f7e20]: Pipeline
+                    - generic [ref=f7e22] [cursor=pointer]:
+                      - generic [ref=f7e23]: "0"
+                      - generic [ref=f7e24]: Projects
+                    - generic [ref=f7e26] [cursor=pointer]:
+                      - generic [ref=f7e27]: "0"
+                      - generic [ref=f7e28]: BSLs
+                    - generic [ref=f7e30] [cursor=pointer]:
+                      - generic [ref=f7e31]: "0"
+                      - generic [ref=f7e32]: Critical
+                - generic [ref=f7e33]:
+                  - generic [ref=f7e34]:
+                    - button "Detail View" [ref=f7e35] [cursor=pointer]:
+                      - img [ref=f7e36]
+                    - button "Grid View" [ref=f7e38] [cursor=pointer]:
+                      - img [ref=f7e39]
+                    - button "Gantt View" [ref=f7e45] [cursor=pointer]:
+                      - img [ref=f7e46]
+                  - generic [ref=f7e47]:
+                    - button "Morning Brief" [ref=f7e48] [cursor=pointer]:
+                      - img [ref=f7e49]
+                    - button "Benny Calculator" [ref=f7e52] [cursor=pointer]:
+                      - img [ref=f7e53]
+                    - button "Project Calendar" [ref=f7e55] [cursor=pointer]:
+                      - img [ref=f7e56]
+                - generic [ref=f7e58]:
+                  - generic [ref=f7e59]:
+                    - button "⟳ Sync QB" [ref=f7e60] [cursor=pointer]
+                    - button "▶ Run Review" [ref=f7e61] [cursor=pointer]
+                    - button "↻ Refresh" [ref=f7e62] [cursor=pointer]
+                  - button "Toggle dark mode" [ref=f7e63] [cursor=pointer]:
+                    - img [ref=f7e64]
+                  - button "?" [ref=f7e70] [cursor=pointer]
+              - generic:
+                - button "⟳ Sync QB"
+                - button "▶ Run Review"
+                - button "↻ Refresh"
+                - button "☰ Review Hub"
+                - button "Dark Mode"
+                - button "? Help"
+              - generic [ref=f7e71]:
+                - generic [ref=f7e73]:
+                  - generic [ref=f7e74]:
+                    - generic [ref=f7e75]:
+                      - generic [ref=f7e76]: Diagnostics
+                      - generic [ref=f7e77]: Queue
+                    - generic [ref=f7e78]: "0"
+                  - generic [ref=f7e79]:
+                    - button "⊟" [ref=f7e80] [cursor=pointer]
+                    - combobox [ref=f7e81] [cursor=pointer]:
+                      - option "Default" [selected]
+                      - option "Admin Check"
+                      - option "Target Date"
+                      - option "CX Start"
+                      - option "CX Complete"
+                      - option "OFS Date"
+                      - option "Report Date"
+                - generic [ref=f7e84]:
+                  - generic [ref=f7e86]:
+                    - generic [ref=f7e87]:
+                      - textbox "Search projects..." [ref=f7e89] [cursor=pointer]
+                      - button "Toggle filters panel" [ref=f7e92] [cursor=pointer]: Filters
+                      - combobox [ref=f7e95] [cursor=pointer]:
+                        - option "Group By" [selected]
+                        - option "Vendor"
+                        - option "City"
+                        - option "Health"
+                        - option "Stage"
+                        - option "Status"
+                    - generic [ref=f7e97]: Select a Project
+                  - button "Open admin panel" [ref=f7e98] [cursor=pointer]:
+                    - generic [ref=f7e99]: ☰
+              - generic [ref=f7e100]:
+                - generic [ref=f7e101]:
+                  - generic [ref=f7e102]:
+                    - generic [ref=f7e103]: Omni PMO App — Help
+                    - generic [ref=f7e104]: Reference guide for reviewers and managers
+                  - button "✕" [ref=f7e105] [cursor=pointer]
+                - generic [ref=f7e106]:
+                  - textbox "Search topics, flags, terms..." [ref=f7e108]
+                  - generic [ref=f7e109]:
+                    - generic [ref=f7e110]: Workspaces & Views
+                    - generic [ref=f7e111]:
+                      - generic [ref=f7e112]: Detail View
+                      - generic [ref=f7e113]: The standard QA view. Focuses on one project at a time, providing full schedule, velocity, and AI diagnostic breakdowns.
+                    - generic [ref=f7e114]:
+                      - generic [ref=f7e115]: Grid View
+                      - generic [ref=f7e116]: High-density overview. Displays multiple projects at once. Use the Pivot Selector in the dock to switch between Schedule, Velocity, Notes, or Deliverables data.
+                    - generic [ref=f7e117]:
+                      - generic [ref=f7e118]: Deck Mode
+                      - generic [ref=f7e119]: Presentation mode. Formats projects into 16:9 slides. Ideal for morning meetings. Allows you to "Stage" multiple projects for batch email exports.
+                    - generic [ref=f7e120]:
+                      - generic [ref=f7e121]: Theater Mode
+                      - generic [ref=f7e122]: Available in Slide View. Blacks out the surrounding UI for distraction-free presentations. Use Arrow Keys or Spacebar to navigate slides.
+                  - generic [ref=f7e123]:
+                    - generic [ref=f7e124]: Daily Workflow
+                    - generic [ref=f7e125]:
+                      - generic [ref=f7e126]: "1"
+                      - generic [ref=f7e127]: Sync QB — Pull the latest project data from QuickBase. Do this when QB statuses or BOMs have changed.
+                    - generic [ref=f7e128]:
+                      - generic [ref=f7e129]: "2"
+                      - generic [ref=f7e130]: Run Review — Prompts for a date, processes daily vendor files, and loads anomalies into the queue.
+                    - generic [ref=f7e131]:
+                      - generic [ref=f7e132]: "3"
+                      - generic [ref=f7e133]: Admin Checks — Open the right-side Review Hub to clear Status Mismatches, verify Special Crossings, and log missing BOMs.
+                    - generic [ref=f7e134]:
+                      - generic [ref=f7e135]: "4"
+                      - generic [ref=f7e136]: Review & Note — Check the Vendor Update and System Flags. The AI (Gemini) pre-drafts a manager note. Edit it to reflect your decision.
+                    - generic [ref=f7e137]:
+                      - generic [ref=f7e138]: "5"
+                      - generic [ref=f7e139]: Commit — Saves the review and moves the project to the Reviewed drawer.
+                    - generic [ref=f7e140]:
+                      - generic [ref=f7e141]: "6"
+                      - generic [ref=f7e142]: Export — In the Reviewed drawer (or via Deck Staging), export the daily summaries to CSV or Email.
+                  - generic [ref=f7e143]:
+                    - generic [ref=f7e144]: Dynamic Filter Dock
+                    - generic [ref=f7e145]: The floating dock at the top of the screen adapts to your current workspace.
+                    - generic [ref=f7e146]:
+                      - generic [ref=f7e147]: Search
+                      - generic [ref=f7e148]: Instantly filter the queue by FDH ID, City, or Vendor.
+                    - generic [ref=f7e149]:
+                      - generic [ref=f7e150]: Filters
+                      - generic [ref=f7e151]: Narrow projects by Health (Critical/Warning), Vendor, City, or Target OFS month.
+                    - generic [ref=f7e152]:
+                      - generic [ref=f7e153]: Stage Project
+                      - generic [ref=f7e154]: (Deck Mode) Adds the current project to a batch queue. Allows you to email a combined PDF/text report for all staged projects at once.
+                  - generic [ref=f7e155]:
+                    - generic [ref=f7e156]: Network Path & Dependencies
+                    - generic [ref=f7e157]: The horizontal strip in the Detail View showing physical fiber dependencies.
+                    - generic [ref=f7e158]:
+                      - generic [ref=f7e159]: Green Dot
+                      - generic [ref=f7e160]: Node has light to cabinet confirmed (or is OFS/Complete).
+                    - generic [ref=f7e161]:
+                      - generic [ref=f7e162]: Amber Dot
+                      - generic [ref=f7e163]: Node is currently waiting on light.
+                    - generic [ref=f7e164]:
+                      - generic [ref=f7e165]: ⚡ Transport
+                      - generic [ref=f7e166]: Transport (backhaul) is ready, meaning this project bypasses upstream physical dependencies for light.
+                    - generic [ref=f7e167]:
+                      - generic [ref=f7e168]: Click to Walk
+                      - generic [ref=f7e169]: Click any upstream or downstream node to immediately jump to that project's dashboard.
+                  - generic [ref=f7e170]:
+                    - generic [ref=f7e171]: Field Velocity & Production
+                    - generic [ref=f7e172]:
+                      - generic [ref=f7e173]: Pace Tracker
+                      - generic [ref=f7e174]: Calculates the daily footage/NAPs required to hit the Target Date. Turns red if the required pace exceeds standard thresholds.
+                    - generic [ref=f7e175]:
+                      - generic [ref=f7e176]: Days Left
+                      - generic [ref=f7e177]: Calendar days remaining until the target date. Overdue projects display in red.
+                    - generic [ref=f7e178]:
+                      - generic [ref=f7e179]: + TODAY
+                      - generic [ref=f7e180]: Green badges indicate fresh production was logged in the latest daily report.
+                  - generic [ref=f7e181]:
+                    - generic [ref=f7e182]: Global Construction Timeline (Gantt)
+                    - generic [ref=f7e183]:
+                      - generic [ref=f7e184]: Bar Color
+                      - generic [ref=f7e185]: Matches the project's current stage/status. Overdue projects display in red. Hover a bar to see a summary HUD.
+                    - generic [ref=f7e186]:
+                      - generic [ref=f7e187]: Beads
+                      - generic [ref=f7e188]: "Small markers on the bar: L = Locates called, C = Cabinets set, ⚡ = Light present, ★ = Phase 100% complete."
+                    - generic [ref=f7e189]:
+                      - generic [ref=f7e190]: EOM Spike
+                      - generic [ref=f7e191]: A concentration of projects ending at or near end-of-month. Hover for a breakdown of which vendors and BSL counts are involved.
+                  - generic [ref=f7e192]:
+                    - generic [ref=f7e193]: Flag Glossary
+                    - generic [ref=f7e194]:
+                      - generic [ref=f7e195]: Status Mismatch
+                      - generic [ref=f7e196]: Project's QB status does not match the field report. Update QB.
+                    - generic [ref=f7e197]:
+                      - generic [ref=f7e198]: Check Crossings
+                      - generic [ref=f7e199]: Special crossings detected. Confirm permit status, bore depths, and restoration plan with the vendor.
+                    - generic [ref=f7e200]:
+                      - generic [ref=f7e201]: Please Input BOM
+                      - generic [ref=f7e202]: Main BOM quantities are zero. Add BOMs to QuickBase so the engine can calculate velocity.
+                    - generic [ref=f7e203]:
+                      - generic [ref=f7e204]: Blocked by Upstream
+                      - generic [ref=f7e205]: The project feeding this FDH is not yet lit, and Transport is not ready to override it.
+                    - generic [ref=f7e206]:
+                      - generic [ref=f7e207]: Delaying Downstream
+                      - generic [ref=f7e208]: This project is not lit, and is actively holding up a downstream project that lacks transport.
+                    - generic [ref=f7e209]:
+                      - generic [ref=f7e210]: Transport Override
+                      - generic [ref=f7e211]: Transport is available, bypassing the physical upstream dependency.
+                    - generic [ref=f7e212]:
+                      - generic [ref=f7e213]: Overrun
+                      - generic [ref=f7e214]: Vendor has reported total footage exceeding the QuickBase BOM by more than 5%.
+                    - generic [ref=f7e215]:
+                      - generic [ref=f7e216]: Possible Reroute
+                      - generic [ref=f7e217]: Vendor reported activity on a phase (like UG or Strand) where the BOM is 0. Indicates a possible field design change.
+                    - generic [ref=f7e218]:
+                      - generic [ref=f7e219]: BOM Discrepancy
+                      - generic [ref=f7e220]: The vendor's reported BOM total does not match QuickBase's BOM total.
+                    - generic [ref=f7e221]:
+                      - generic [ref=f7e222]: Ghost Report
+                      - generic [ref=f7e223]: A project is marked active but the vendor did not submit a daily report today.
+                    - generic [ref=f7e224]:
+                      - generic [ref=f7e225]: CD Intel
+                      - generic [ref=f7e226]: Gemini detected major crossing risks (Highways, Railroads, Rivers) in the Construction Drawing PDF.
+              - option "None" [selected]
+              - option "Vendor"
+              - option "City"
+              - option "Health"
+              - option "Stage"
+              - option "Status"
+              - option "Default" [selected]
+              - option "Admin Review"
+              - option "Target Date"
+              - option "CX Start"
+              - option "CX End"

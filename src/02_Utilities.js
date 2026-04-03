@@ -181,7 +181,7 @@ function doGet(e) {
 
   const variant = (e && e.parameter && e.parameter.v) ? e.parameter.v : null;
   const templateFile = (variant && MOBILE_SHELLS[variant]) ? MOBILE_SHELLS[variant] : 'WebApp';
-  const title = variant ? 'Omni PMO — Mobile: ' + variant : 'Omni PMO App';
+  const title = variant ? 'OmniFlow — ' + variant : 'OmniSight — Desktop';
 
   return HtmlService.createTemplateFromFile(templateFile)
     .evaluate()
