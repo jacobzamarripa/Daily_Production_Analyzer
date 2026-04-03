@@ -1,5 +1,12 @@
 # Agent Log — Omni PMO App
 
+> [!info] 2026-04-03 (Session Wrap): Recovery & Reconstruction of "Lost" Night Work
+- **Command Center Restored:** Re-injected the `command-view` container and router paths that were wiped in the previous revert.
+- **Production Leaderboard Re-integrated:** Confirmed the new Leaderboard widget is active in the Command Center shoulder and hydrated by `fiberStats`.
+- **Branding Standardized:** OmniSight (Desktop) and OmniFlow (Mobile) branding restored across title, loader, and CSS tokens.
+- **Admin Hub Restructuring Verified:** Confirmed the new KPI chips and tab-strip layout in the Admin Review Hub are present and functional.
+- **Safety Lock Implemented:** Added "Critical Feature Lock" to `PRD.md` and "Ship-Safe Protocol" to `CLAUDE.md` to prevent future accidental reverts of [x] completed work.
+
 > [!success] 2026-04-02: WS20 Phase 4 COMPLETE — Desktop Review Hub GlassFlow Parity
 - **Review Hub nav button:** Replaced floating `position:fixed` admin-fab badge with a proper icon button in `.nav-actions` (`#btn-review-hub`, `class="desktop-hub-btn"`). Calls `toggleAdminPanel()`, shows `#nav-hub-badge` count, toggles `.is-active` accent style when panel is open. Hidden on mobile via `@media (max-width:768px)`.
 - **Floating admin-fab removed on desktop:** `.admin-fab-anchor { display: none !important }` in `@media (min-width:769px)` block. `syncAdminFabAnchorToPanel()` still runs harmlessly.

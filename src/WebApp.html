@@ -172,6 +172,10 @@
               <button class="view-segment-btn" id="view-btn-gantt" onclick="primeDockMotionOrigin(this, 'gantt'); openGanttView()" title="Gantt View">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="15" y2="12"></line><line x1="3" y1="18" x2="18" y2="18"></line></svg>
               </button>
+              <div style="width: 1px; height: 14px; background: var(--border); margin: 0 4px;"></div>
+              <button class="view-segment-btn" id="view-btn-command" onclick="primeDockMotionOrigin(this, 'command'); switchWorkspaceView('command')" title="Command Center (Console)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+              </button>
           </div>
           <div class="view-segment-group view-tools">
               <button class="view-segment-btn" onclick="toggleWidget('brief-widget', event)" title="Morning Brief">
@@ -394,6 +398,7 @@
         <div id="active-filter-pills"></div>
                  <div id="welcome-screen" class="empty-msg"><div style="font-size:32px; margin-bottom:12px;">Select a Project</div></div>
                  <div id="grid-content" style="display:none; width:100%; flex:1; overflow-y:auto; padding:20px; align-content:flex-start; gap:16px; box-sizing:border-box;"></div>
+                 <div id="command-view" style="display:none; width:100%; flex:1; flex-direction:column; overflow:hidden; background:var(--bg);"></div>
 	              <div class="pane-content" id="pane-content">
                  <div class="qb-grid" id="main-qb-grid">
                <div class="qb-top-row">
@@ -743,6 +748,7 @@
     <?!= include('_module_theme_controls') ?>
     <?!= include('_module_queue_state') ?>
     <?!= include('_module_digest') ?>
+    <?!= include('_module_command_view') ?>
     <?!= include('_module_admin') ?>
     <?!= include('_module_special_crossings') ?>
     <?!= include('_module_gantt') ?>
