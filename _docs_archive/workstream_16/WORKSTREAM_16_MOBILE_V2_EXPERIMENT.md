@@ -1,6 +1,6 @@
 # WORKSTREAM 16 — Mobile V2 Experiment Brief
 
-> **Archive note:** Historical WS16 experiment brief. `GlassFlow` was selected as the surviving shell; follow-on work is tracked in `WORKSTREAM_18_GLASSFLOW_PANEL_REFINEMENT.md`.
+> **Archive note:** Historical WS16 experiment brief. `GlassFlow` was selected as the surviving shell; follow-on work is recorded in `_docs_archive/workstream_18/WORKSTREAM_18_GLASSFLOW_PANEL_REFINEMENT.md`.
 
 > **Status:** Proposed
 > **Date:** 2026-03-28

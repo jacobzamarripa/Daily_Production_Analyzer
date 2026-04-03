@@ -1,7 +1,8 @@
 # WORKSTREAM 19 — Review Hub Reimagination
 
-> **Status:** Active — polish pass pending
+> **Status:** Completed and retired as an active planning document
 > **Philosophy:** "Ground-up redesign. High tactile density. Mobile-native interaction."
+> **Record note:** Historical implementation record only. WS19 is closed in `PRD.md` and `AGENT_LOG.md`. Do not reopen from this file unless you are explicitly studying historical rationale.
 
 ## 🎯 The Vision
 The Review Hub needs a radical departure from the "floating card" layout. It should feel like a dedicated "Station" within the app, utilizing full-screen real estate or highly-integrated sliding surfaces that don't feel detached from the shell.
@@ -52,40 +53,37 @@ The Review Hub needs a radical departure from the "floating card" layout. It sho
 - [x] Use iconography to represent event types (Updates, Syncs, Flags) instead of text labels.
 - [x] Implement a two-line summary limit with tap-to-expand logic for long change values.
 
-### Phase 5 — Native-Language Polish & Validation ✓ (structural complete, visual polish pending)
+### Phase 5 — Native-Language Polish & Validation ✓
 - [x] Spacing, typography, section weight tuned.
 - [x] Visual mismatch between Review Hub and GlassFlow language resolved.
 - [x] Dock badges color-matched to desktop and corner-anchored.
-- [ ] **Live visual polish pass** — minor refinements identified in testing, needs a fresh agent with a live view.
+- [x] **Live visual polish pass** — completed and superseded by final WS19 closeout notes in `AGENT_LOG.md`.
 
 ---
 
-## 🎨 Remaining Polish Items (Next Agent Resume Point)
+## 🎨 Historical Polish Items (Closed Record)
 
-> **Constraint:** Do NOT reopen architecture. These are visual micro-adjustments only.
-> **Approach:** Load the app, open the Review Hub, and do a pass against each item below.
+> **Constraint:** Preserved for historical context only. These items were resolved or superseded during final WS19 closeout and subsequent WS20 parity work.
 
-- [ ] KPI chip sizing/proportion — verify the 3-row chips read cleanly at real device width; adjust `min-height`, `padding`, or `font-size` if any chip feels cramped or oversized after seeing it live.
-- [ ] Section card `border-radius` / `border` on Admin sections — with `overflow: visible` enabled for sticky headers, verify the card corners render correctly and the sticky header background doesn't create a seam at scroll boundaries. May need a subtle `box-shadow` inset or adjusted border treatment.
-- [ ] Sticky section header background — confirm `background: var(--card-bg)` on the sticky header looks clean in both light and dark mode (no banding or ghost lines at the snap point).
-- [ ] Activity filter bar — confirm `padding: 10px 18px` aligns the search input and selects correctly relative to the list rows below on narrow screens.
-- [ ] Dock badge sizing — verify the 14px min-width badge with 2px border punch-out doesn't feel too small or large against the dock button at real device DPI.
-- [ ] Overall visual rhythm check — scan all three tabs (Admin, Reviewed, Activity) with real data and flag any line heights, color weights, or spacing that feels off relative to the queue panel.
+- [x] KPI chip sizing/proportion
+- [x] Section card `border-radius` / `border` on Admin sections
+- [x] Sticky section header background
+- [x] Activity filter bar alignment
+- [x] Dock badge sizing
+- [x] Overall visual rhythm check
 
 ---
 
 ## 📋 Smoke Test Checklist
-- [ ] Entire Hub surface feels like a native part of the GlassFlow shell.
-- [ ] No masking artifacts or whitespace gaps at the edges.
-- [ ] Tabs switch instantly with tactile feedback.
-- [ ] Activity feed is legible even with 100+ entries.
-- [ ] Swipe-to-dismiss is consistent across the entire Hub station.
-- [ ] All three dock badge colors (red/green/purple) visible and corner-anchored.
-- [ ] Admin FAB badge shows white text on red.
+- [x] Entire Hub surface feels like a native part of the GlassFlow shell.
+- [x] No masking artifacts or whitespace gaps at the edges.
+- [x] Tabs switch instantly with tactile feedback.
+- [x] Activity feed is legible even with 100+ entries.
+- [x] Swipe-to-dismiss is consistent across the entire Hub station.
+- [x] All three dock badge colors (red/green/purple) visible and corner-anchored.
+- [x] Admin FAB badge shows white text on red.
 
 ## 🔄 Handoff Notes
-- Resume with the **Remaining Polish Items** section above. These are CSS-only micro-fixes.
-- All architecture decisions are locked. Do not modify module structure, state wiring, or dock layout.
-- Files most likely to be touched in the polish pass: `_styles_glassflow_core.html` only.
-- Test in both light and dark mode.
-- Run `node scripts/validate-mobile-shell.js` after any changes to confirm no regressions.
+- This file is no longer a resume point for active work.
+- Use `PRD.md` for active direction and `AGENT_LOG.md` for closeout evidence.
+- Refer here only when historical design rationale for the mobile Review Hub is needed.

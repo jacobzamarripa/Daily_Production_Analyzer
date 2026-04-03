@@ -1,6 +1,29 @@
 # Agent Log — Omni PMO App
 
-> [!success] 2026-04-02: WS20 Phase 4 COMPLETE — Desktop Review Hub GlassFlow Parity
+> [!info] 2026-04-03 (Session Wrap): Cleanup handoff, regression fix, and tomorrow-start state
+- **Archive / planning work completed:** WS18 and WS19 planning artifacts were retired from the project root and moved into `_docs_archive/workstream_18/` and `_docs_archive/workstream_19/`. Historical references in `_docs_archive/workstream_16/` were updated to follow the archive move.
+- **Dead-code cleanup completed:** Removed the orphaned desktop Review Hub button compatibility path (`#btn-review-hub` / `#nav-hub-badge`) and removed the detached Morning Brief widget CSS residue from `_styles_responsive.html`. The live floating `admin-fab` and active digest/command briefing surfaces were preserved.
+- **Critical regression fixed:** All workspace views broke after the in-flight router/Command Center refactor introduced undeclared identifiers in `syncWorkspaceChrome()` inside `src/_module_router.html`. Fixed by resolving `slideDeck`, `groupSelect`, `faceBtn`, and `showSlideDeck` locally inside the function, and by making the face-toggle lookup tolerant to both `dock-btn-face` and `dock-btn-face-toggle`.
+- **Validation outcome:** User confirmed that detail/grid/gantt views were restored after the router fix.
+- **Current active product work observed in tree:** Command Center / leaderboard work is active in `src/_module_command_view.html`, `src/WebApp.html`, `src/_module_router.html`, `src/02_Utilities.js`, `src/_state_payload.html`, and `src/_state_session.html`. Backend ingestion/reporting work remains active in `src/02_Utilities.js`.
+- **Tracker drift to reconcile next session:** The local `PRD.md` no longer matches the cleaned active-workstream structure prepared earlier in the session; treat the PRD as needing reconciliation before using it as sole source of truth. Reconfirm WS20, WS21, and WS22 tracking before additional cleanup.
+- **Recommended resume order for tomorrow:**
+  1. Reconcile `PRD.md` with the actual active workstreams (`WS20`, `WS21`, `WS22`).
+  2. Re-sync `PRD.md` and `AGENT_LOG.md` to Obsidian.
+  3. Continue only low-risk cleanup unless Command Center/router work is fully stable.
+  # Agent Log — Omni PMO App
+
+  > [!success] 2026-04-02: Focused Branding Realignment & Surgical Revert (OMNISIGHT)
+  - **Surgical Admin Hub Revert:** Successfully reverted the `outbox-pane` HTML block in `src/WebApp.html` precisely to the state in commit `5712583` (from Wed Apr 1, ~5:30 PM), restoring the "perfect" Admin Review Hub Panel that was signed off on.
+  - **Header Redundancy Fix:** Removed the unwanted `#btn-review-hub` button and the redundant mobile hamburger toggle from the desktop header. 
+  - **Floating FAB Restored:** Re-activated the floating Admin FAB by retaining the original HTML structure and ensuring its CSS suppression rule (`.admin-fab-anchor { display:none!important }`) remained removed.
+  - **Rebranding (OmniSight):** Standardized desktop identity as **OMNISIGHT** across the loader (`src/WebApp.html`), header, and browser title (`src/02_Utilities.js`).
+  - **Typography & Geometry Parity:** 
+      - Applied the mobile-parity blue/black `.two-tone-header` style to top-level section headers outside of cards (Diagnostics Queue and Review Hub titles).
+      - Surgically updated `--desktop-shell-radius` to **24px** in `src/_styles_base.html` for 1:1 curvature parity with the mobile shell.
+  - **Button Parity:** Standardized nav header buttons (`#btn-theme`, `#btn-help`, `#btn-nav-fab`) to 42x42px with a 14px radius and glassy backgrounds in `src/_styles_badges.html`.
+
+  > [!success] 2026-04-02: WS20 Phase 4 COMPLETE — Desktop Review Hub GlassFlow Parity
 - **Review Hub nav button:** Replaced floating `position:fixed` admin-fab badge with a proper icon button in `.nav-actions` (`#btn-review-hub`, `class="desktop-hub-btn"`). Calls `toggleAdminPanel()`, shows `#nav-hub-badge` count, toggles `.is-active` accent style when panel is open. Hidden on mobile via `@media (max-width:768px)`.
 - **Floating admin-fab removed on desktop:** `.admin-fab-anchor { display: none !important }` in `@media (min-width:769px)` block. `syncAdminFabAnchorToPanel()` still runs harmlessly.
 - **Review Hub panel HTML rewrite (`WebApp.html` lines ~540–609):** Replaced legacy `admin-strip` + `panel-tab-bar` structure with GlassFlow-parity layout:

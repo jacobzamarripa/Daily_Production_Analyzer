@@ -86,5 +86,6 @@
 - [x] Phase 2 — Desktop Header, Dock, and Action Zoning Refactor
 - [x] Phase 3 — Queue/Detail Spatial Recomposition
 - [x] Phase 4 — Desktop Review Hub & Overlay Modernization
+- [x] Focused Branding Realignment (OmniSight) — Complete 2026-04-02
 - [ ] Phase 5 — Gantt / Grid / Deck Visual Consistency Sweep
 - [ ] Phase 6 — Desktop Motion, Density, and Regression Validation
