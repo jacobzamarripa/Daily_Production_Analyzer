@@ -729,7 +729,7 @@
           const msg = "Sync reference data from QuickBase?\n\n" +
               "⚠️  This will overwrite 5-Reference_Data with live QB data.\n\n" +
               (queueCount > 0
-                  ? `You have ${queueCount} item(s) still in the queue.\nHave you reviewed today's flagged projects before syncing?`
+                  ? `You have ${queueCount} item(s) still in the queue.\nHave you reviewed the current flagged projects before syncing?`
                   : "Queue is clear — safe to sync.");
           if (!confirm(msg)) return;
           const btn = getEl('btn-qb-sync');

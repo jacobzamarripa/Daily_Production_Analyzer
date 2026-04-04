@@ -442,7 +442,7 @@ function generateSmartComment(item, daysLeft, isOverdue) {
         if (v.ae.daily > 0) todayParts.push(`${v.ae.daily.toLocaleString()} ft Strand`);
         if (v.fib.daily > 0) todayParts.push(`${v.fib.daily.toLocaleString()} ft Fiber`);
         if (v.nap.daily > 0) todayParts.push(`${v.nap.daily} NAPs`);
-        if (todayParts.length > 0) parts.push(`Vendor reported ${todayParts.join(', ')} today.`);
+        if (todayParts.length > 0) parts.push(`Vendor reported ${todayParts.join(', ')} in the current report.`);
 
         let paceAlerts = [];
         [[v.ug, 'UG', 'ft', 450], [v.ae, 'Strand', 'ft', 5000], [v.nap, 'NAPs', '', 5]].forEach(([vel, label, unit, thresh]) => {
@@ -515,7 +515,7 @@ function buildVelocityBar(name, daily, tot, bom, typeKey, daysLeft) {
     let dailyLabel = typeKey === 'NAP'
         ? 'Daily NAPs/Encl. Completed'
         : `Daily ${typeKey === 'UG' ? 'UG' : typeKey === 'AE' ? 'Strand' : 'Fiber'} Footage`;
-    let dailyBadge = dailyVal > 0 ? `<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:8px; border:1px solid #bbf7d0; display:inline-flex; align-items:center; line-height:1; white-space:nowrap; cursor:pointer;" onmouseenter="hl('${dailyLabel}')" onmouseleave="hl('')">+${dailyVal.toLocaleString()} TODAY</span>` : '';
+    let dailyBadge = dailyVal > 0 ? `<span style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:8px; border:1px solid #bbf7d0; display:inline-flex; align-items:center; line-height:1; white-space:nowrap; cursor:pointer;" onmouseenter="hl('${dailyLabel}')" onmouseleave="hl('')">+${dailyVal.toLocaleString()} CURRENT</span>` : '';
 
     let starStr = isDone ? `<span class="has-tooltip" data-tooltip="${name} 100% Complete" style="color:var(--starGold); margin-left:4px; font-size:12px; line-height:1;">★</span>` : '';
     let barTrackBg = (typeKey === 'FIB' || typeKey === 'NAP') ? 'var(--border)' : 'var(--bg)';

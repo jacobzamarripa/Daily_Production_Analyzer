@@ -1078,16 +1078,58 @@ function _isSignalMilestone(type, newVal) {
   return true;
 }
 
+function _normalizeSignalTimeframe(tf) {
+  const raw = String(tf || '').toLowerCase().trim();
+  if (raw === 'today') return 'current';
+  if (raw === 'week' || raw === 'month' || raw === 'current') return raw;
+  return 'week';
+}
+
+function _getCurrentSignalSnapshotStart(ss, now) {
+  const currentNow = now instanceof Date ? new Date(now.getTime()) : new Date();
+  let latestDate = null;
+
+  const histSheet = ss.getSheetByName(HISTORY_SHEET);
+  if (histSheet && histSheet.getLastRow() > 1) {
+    const startRow = Math.max(2, histSheet.getLastRow() - 99);
+    const histData = histSheet.getRange(startRow, 1, histSheet.getLastRow() - startRow + 1, 1).getValues();
+    for (let i = histData.length - 1; i >= 0; i--) {
+      const cell = histData[i][0];
+      if (cell instanceof Date && !isNaN(cell.getTime())) {
+        latestDate = new Date(cell.getTime());
+        break;
+      }
+    }
+  }
+
+  if (!latestDate) {
+    const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
+    if (mirrorSheet) {
+      const mirrorDate = mirrorSheet.getRange("A2").getValue();
+      if (mirrorDate instanceof Date && !isNaN(mirrorDate.getTime())) latestDate = new Date(mirrorDate.getTime());
+    }
+  }
+
+  if (!latestDate) latestDate = currentNow;
+  latestDate.setHours(0, 0, 0, 0);
+  return latestDate;
+}
+
+function _getSignalCutoff(tf, ss, now) {
+  const currentNow = now instanceof Date ? new Date(now.getTime()) : new Date();
+  const timeframe = _normalizeSignalTimeframe(tf);
+  if (timeframe === 'current') return _getCurrentSignalSnapshotStart(ss, currentNow);
+  if (timeframe === 'week') return new Date(currentNow.getTime() - 7 * 24 * 60 * 60 * 1000);
+  if (timeframe === 'month') return new Date(currentNow.getTime() - 30 * 24 * 60 * 60 * 1000);
+  return new Date(0);
+}
+
 // Fast path: sheet reads only (~1-2s). Called first so QB + Log render immediately.
 function getSignalFast(tf) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const now = new Date();
   const result = { qbChanges: [], systemLogs: [] };
-
-  let cutoff = new Date(0);
-  if (tf === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  else if (tf === 'week') cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  else if (tf === 'month') cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const cutoff = _getSignalCutoff(tf, ss, now);
 
   // QB Changes from 10-Change_Log
   const changeSheet = ss.getSheetByName(CHANGE_LOG_SHEET);
@@ -1135,7 +1177,9 @@ function getSignalFast(tf) {
 // Slow path: Drive traversal with 10-min CacheService layer.
 // Subsequent opens within 10 min return instantly from cache.
 function getSignalDrive(tf) {
-  const cacheKey = 'SIGNAL_DRIVE_' + tf;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const timeframe = _normalizeSignalTimeframe(tf);
+  const cacheKey = 'SIGNAL_DRIVE_' + timeframe;
   const cache = CacheService.getScriptCache();
   const cached = cache.get(cacheKey);
   if (cached) {
@@ -1143,10 +1187,7 @@ function getSignalDrive(tf) {
   }
 
   const now = new Date();
-  let cutoff = new Date(0);
-  if (tf === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  else if (tf === 'week') cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  else if (tf === 'month') cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const cutoff = _getSignalCutoff(timeframe, ss, now);
 
   const driveActivity = [];
   try {

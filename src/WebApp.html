@@ -116,7 +116,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             <div class="signal-tf-pills">
-              <button class="signal-tf-pill" data-tf="today" onclick="_signalSetTab(_signalActiveTab); loadSignalData('today')">Today</button>
+              <button class="signal-tf-pill" data-tf="current" onclick="_signalSetTab(_signalActiveTab); loadSignalData('current')">Current</button>
               <button class="signal-tf-pill active" data-tf="week" onclick="_signalSetTab(_signalActiveTab); loadSignalData('week')">Week</button>
               <button class="signal-tf-pill" data-tf="month" onclick="_signalSetTab(_signalActiveTab); loadSignalData('month')">Month</button>
             </div>
@@ -737,7 +737,7 @@
           <div class="help-sec-title">Field Velocity &amp; Production</div>
           <div class="help-row"><span class="hbadge hbadge-gray">Pace Tracker</span><div class="hdesc">Calculates the daily footage/NAPs required to hit the Target Date. Turns red if the required pace exceeds standard thresholds.</div></div>
           <div class="help-row"><span class="hbadge hbadge-gray">Days Left</span><div class="hdesc">Calendar days remaining until the target date. Overdue projects display in red.</div></div>
-          <div class="help-row"><span class="hbadge hbadge-green">+ TODAY</span><div class="hdesc">Green badges indicate fresh production was logged in the latest daily report.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-green">+ CURRENT</span><div class="hdesc">Green badges indicate fresh production was logged in the current reporting snapshot.</div></div>
         </div>
 
         <div class="help-sec">
@@ -758,7 +758,7 @@
           <div class="help-row"><span class="hbadge hbadge-red">Overrun</span><div class="hdesc">Vendor has reported total footage exceeding the QuickBase BOM by more than 5%.</div></div>
           <div class="help-row"><span class="hbadge hbadge-yellow">Possible Reroute</span><div class="hdesc">Vendor reported activity on a phase (like UG or Strand) where the BOM is 0. Indicates a possible field design change.</div></div>
           <div class="help-row"><span class="hbadge hbadge-yellow">BOM Discrepancy</span><div class="hdesc">The vendor's reported BOM total does not match QuickBase's BOM total.</div></div>
-          <div class="help-row"><span class="hbadge hbadge-gray">Ghost Report</span><div class="hdesc">A project is marked active but the vendor did not submit a daily report today.</div></div>
+          <div class="help-row"><span class="hbadge hbadge-gray">Ghost Report</span><div class="hdesc">A project is marked active but the vendor did not submit the current report.</div></div>
           <div class="help-row"><span class="hbadge hbadge-stripe" style="color:#fde047;">CD Intel</span><div class="hdesc">Gemini detected major crossing risks (Highways, Railroads, Rivers) in the Construction Drawing PDF.</div></div>
         </div>
 

@@ -596,7 +596,7 @@ function runBennyDiagnostics(row, refDict, vendorDict) {
   
   if (summary.length === 0) {
       let linkedStatus = vTracker ? "\n[📡 Tracker Linked]" : "";
-      summary.push("No new production reported today." + linkedStatus);
+      summary.push("No new production reported in the current report." + linkedStatus);
   } else if (vTracker) {
       summary.push("\n[📡 Tracker Linked]");
   }

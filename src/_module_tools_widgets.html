@@ -363,8 +363,9 @@
           var visibleEvents = dayEvents.slice(0, CALENDAR_MAX_VISIBLE_EVENTS);
           var overflowEvents = dayEvents.slice(CALENDAR_MAX_VISIBLE_EVENTS);
           var eventsHtml = visibleEvents.map(function(evt) {
-              var label = escapeCalendarHtml(evt.fdh + ' · ' + evt.suffix);
-              return '<button class="cal-event-pill ' + evt.pillClass + '" onclick="openCalendarProject(\'' + escapeCalendarJs(evt.fdh) + '\')" title="' + label + '">' + label + '</button>';
+              var chipLabel = escapeCalendarHtml(evt.fdh);
+              var fullLabel = escapeCalendarHtml(evt.fdh + ' · ' + evt.suffix);
+              return '<button class="cal-event-pill ' + evt.pillClass + '" onclick="openCalendarProject(\'' + escapeCalendarJs(evt.fdh) + '\')" title="' + fullLabel + '">' + chipLabel + '</button>';
           }).join('');
           if (overflowEvents.length) {
               var overflowTitle = escapeCalendarHtml(overflowEvents.map(function(evt) { return evt.fdh + ' · ' + evt.suffix; }).join(', '));

@@ -10,6 +10,22 @@ var _signalActiveTab = 'qb';
 var _signalMode = 'startup'; // 'startup' = must pick workspace | 'manual' = can dismiss freely
 var _signalCache = { fast: {}, drive: {} };
 var _signalLoadedTf = {};
+var _signalDriveRootFilter = 'all';
+
+function _signalNormalizeTf(tf) {
+  var raw = String(tf || '').toLowerCase().trim();
+  if (raw === 'today') return 'current';
+  if (raw === 'current' || raw === 'week' || raw === 'month') return raw;
+  return 'week';
+}
+
+function _signalTfLabel(tf) {
+  var normalized = _signalNormalizeTf(tf);
+  if (normalized === 'current') return 'current snapshot';
+  if (normalized === 'week') return 'weekly timeframe';
+  if (normalized === 'month') return 'monthly timeframe';
+  return 'selected timeframe';
+}
 
 function _signalShowCurrentPanel() {
   _signalSetTab(_signalActiveTab || 'qb');
@@ -27,11 +43,11 @@ function _signalPrimePanelShell() {
 function _signalRenderCached(tf) {
   var fastData = _signalCache.fast[tf];
   if (fastData) {
-    _renderSignalQB(fastData.qbChanges || []);
+    _renderSignalQB(fastData.qbChanges || [], tf);
     _renderSignalLogs(fastData.systemLogs || []);
   }
   if (Object.prototype.hasOwnProperty.call(_signalCache.drive, tf)) {
-    _renderSignalDrive(_signalCache.drive[tf] || []);
+    _renderSignalDrive(_signalCache.drive[tf] || [], tf);
   }
   _signalLoadedTf[tf] = !!(fastData && Object.prototype.hasOwnProperty.call(_signalCache.drive, tf));
 }
@@ -103,6 +119,7 @@ function _showStartupAfterSignal() {
 }
 
 function loadSignalData(tf) {
+  tf = _signalNormalizeTf(tf);
   _signalCurrentTf = tf;
   document.querySelectorAll('.signal-tf-pill').forEach(function(p) {
     p.classList.toggle('active', p.dataset.tf === tf);
@@ -119,13 +136,13 @@ function loadSignalData(tf) {
   google.script.run
     .withSuccessHandler(function(data) {
       _signalCache.fast[tf] = data || { qbChanges: [], systemLogs: [] };
-      _renderSignalQB(data.qbChanges || []);
+      _renderSignalQB(data.qbChanges || [], tf);
       _renderSignalLogs(data.systemLogs || []);
       // Call 2: Drive traversal (cached after first run)
       google.script.run
         .withSuccessHandler(function(activity) {
           _signalCache.drive[tf] = activity || [];
-          _renderSignalDrive(_signalCache.drive[tf]);
+          _renderSignalDrive(_signalCache.drive[tf], tf);
           _signalLoadedTf[tf] = true;
         })
         .withFailureHandler(function() {
@@ -146,11 +163,11 @@ function loadSignalData(tf) {
     .getSignalFast(tf);
 }
 
-function _renderSignalQB(changes) {
+function _renderSignalQB(changes, tf) {
   var el = document.getElementById('signal-panel-qb');
   if (!el) return;
   if (!changes.length) {
-    el.innerHTML = '<div class="signal-empty">No QB changes in this timeframe.</div>';
+    el.innerHTML = '<div class="signal-empty">No QB changes in the ' + _signalTfLabel(tf) + '.</div>';
     return;
   }
   var html = '';
@@ -228,11 +245,11 @@ function _renderSignalLogs(logs) {
   el.innerHTML = html;
 }
 
-function _renderSignalDrive(activity) {
+function _renderSignalDrive(activity, tf) {
   var el = document.getElementById('signal-panel-drive');
   if (!el) return;
   if (!activity.length) {
-    el.innerHTML = '<div class="signal-empty">No Drive folder activity in this timeframe.</div>';
+    el.innerHTML = '<div class="signal-empty">No Drive folder activity in the ' + _signalTfLabel(tf) + '.</div>';
     return;
   }
 
@@ -260,8 +277,31 @@ function _renderSignalDrive(activity) {
     return bMax > aMax ? 1 : -1;
   });
 
-  var html = '';
+  if (_signalDriveRootFilter !== 'all' && rootKeys.indexOf(_signalDriveRootFilter) === -1) {
+    _signalDriveRootFilter = 'all';
+  }
+
+  var folderIcon = '<svg width="46" height="46" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>';
+  var chipHtml = '<div class="signal-drive-filter-row">';
+  chipHtml += '<button class="signal-drive-filter-chip' + (_signalDriveRootFilter === 'all' ? ' active' : '') + '" type="button" onclick="_signalSetDriveRootFilter(\'all\')">'
+    + '<span class="signal-drive-filter-icon">' + folderIcon + '</span>'
+    + '<span class="signal-drive-filter-label">All Roots</span>'
+    + '<span class="signal-count">' + activity.length + '</span>'
+    + '</button>';
   rootKeys.forEach(function(rootKey) {
+    var entry = rootMap[rootKey];
+    var totalFiles = entry.subgroups.reduce(function(n, g) { return n + g.files.length; }, 0);
+    chipHtml += '<button class="signal-drive-filter-chip' + (_signalDriveRootFilter === rootKey ? ' active' : '') + '" type="button" onclick="_signalSetDriveRootFilter(' + JSON.stringify(rootKey) + ')">'
+      + '<span class="signal-drive-filter-icon">' + folderIcon + '</span>'
+      + '<span class="signal-drive-filter-label">' + _esc(rootKey) + '</span>'
+      + '<span class="signal-count">' + totalFiles + '</span>'
+      + '</button>';
+  });
+  chipHtml += '</div>';
+
+  var html = chipHtml;
+  rootKeys.forEach(function(rootKey) {
+    if (_signalDriveRootFilter !== 'all' && _signalDriveRootFilter !== rootKey) return;
     var entry = rootMap[rootKey];
     var totalFiles = entry.subgroups.reduce(function(n, g) { return n + g.files.length; }, 0);
     var rootLink = entry.rootUrl
@@ -270,7 +310,7 @@ function _renderSignalDrive(activity) {
 
     html += '<div class="signal-drive-root">'
       + '<div class="signal-drive-root-header">'
-      + '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>'
+      + '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>'
       + '<a class="signal-drive-link"' + rootLink + '>' + _esc(rootKey) + '</a>'
       + ' <span class="signal-count">' + totalFiles + '</span>'
       + '</div>';
@@ -301,6 +341,15 @@ function _renderSignalDrive(activity) {
   el.innerHTML = html;
 }
 
+function _signalSetDriveRootFilter(rootKey) {
+  _signalDriveRootFilter = rootKey || 'all';
+  if (_signalActiveTab !== 'drive') return;
+  var tf = _signalNormalizeTf(_signalCurrentTf);
+  if (Object.prototype.hasOwnProperty.call(_signalCache.drive, tf)) {
+    _renderSignalDrive(_signalCache.drive[tf] || [], tf);
+  }
+}
+
 function _signalSetTab(tab) {
   _signalActiveTab = tab;
   ['qb', 'log', 'drive'].forEach(function(t) {
@@ -320,6 +369,7 @@ window.openSignal = openSignal;
 window.closeSignal = closeSignal;
 window.loadSignalData = loadSignalData;
 window._signalSetTab = _signalSetTab;
+window._signalSetDriveRootFilter = _signalSetDriveRootFilter;
 window._signalBackdropClick = _signalBackdropClick;
 window._signalDismiss = _signalDismiss;
 </script>
