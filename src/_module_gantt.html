@@ -38,6 +38,7 @@ let ganttHasVisited = false;
 // READS: gantt HUD visibility helpers
 // WRITES: HUD lock toggles and theater exit
 let hudLocked = false;
+let ganttTodayAnchorFdh = null;
 
 function persistGanttViewSession() {
     try {
@@ -545,6 +546,11 @@ function renderGantt(items) {
         let widthPct = Math.max(0.5, ((end - start) / totalTime) * 100);
         let leftPx = Math.round(leftPct / 100 * chartWidth);
         let widthPx = Math.max(9, Math.round(widthPct / 100 * chartWidth));
+        let rowStartTs = start.getTime();
+        let rowEndTs = end.getTime();
+        if (!ganttTodayAnchorFdh && today.getTime() >= rowStartTs && today.getTime() <= rowEndTs) {
+            ganttTodayAnchorFdh = item.fdh;
+        }
         let isOverdue = (!isNaN(end) && today > end);
         let ganttClass = getGanttClass(item.stage, item.status, isOverdue);
         let pillStage = item.stage ? item.stage : "-";
@@ -584,7 +590,7 @@ function renderGantt(items) {
 
         let barLeft = 140 + leftPx;
         rowsArray.push(`
-        <div class="gantt-row" id="gantt-row-${item.fdh}" style="width:${chartWidth + 140}px;">
+        <div class="gantt-row" id="gantt-row-${item.fdh}" data-start-ts="${rowStartTs}" data-end-ts="${rowEndTs}" style="width:${chartWidth + 140}px;">
            <div class="gantt-label ${highestSev}" onclick="handleGanttLabelClick('${item.fdh}')">
                <div class="gantt-label-fdh">${item.fdh}</div><div class="gantt-label-ven">${item.vendor || "UNKNOWN"}</div>
            </div>
@@ -611,5 +617,11 @@ function scrollGanttToToday() {
     let containerW = scrollContainer.clientWidth || window.innerWidth;
     let centerOffset = (chartW * (leftPct / 100)) + 140 - (containerW / 2);
     scrollContainer.scrollLeft = Math.max(0, centerOffset);
+    if (ganttTodayAnchorFdh) {
+        let anchorRow = getEl(`gantt-row-${ganttTodayAnchorFdh}`);
+        if (anchorRow) {
+            scrollContainer.scrollTop = Math.max(0, anchorRow.offsetTop - 12);
+        }
+    }
 }
 </script>

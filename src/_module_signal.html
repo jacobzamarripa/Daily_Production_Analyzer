@@ -8,6 +8,33 @@
 var _signalCurrentTf = 'week';
 var _signalActiveTab = 'qb';
 var _signalMode = 'startup'; // 'startup' = must pick workspace | 'manual' = can dismiss freely
+var _signalCache = { fast: {}, drive: {} };
+var _signalLoadedTf = {};
+
+function _signalShowCurrentPanel() {
+  _signalSetTab(_signalActiveTab || 'qb');
+}
+
+function _signalPrimePanelShell() {
+  var qbEl = document.getElementById('signal-panel-qb');
+  var logEl = document.getElementById('signal-panel-log');
+  var driveEl = document.getElementById('signal-panel-drive');
+  if (qbEl) qbEl.innerHTML = '<div class="signal-loading">Loading...</div>';
+  if (logEl) logEl.innerHTML = '<div class="signal-log-empty">LOADING...</div>';
+  if (driveEl) driveEl.innerHTML = '<div class="signal-loading">Scanning folders...</div>';
+}
+
+function _signalRenderCached(tf) {
+  var fastData = _signalCache.fast[tf];
+  if (fastData) {
+    _renderSignalQB(fastData.qbChanges || []);
+    _renderSignalLogs(fastData.systemLogs || []);
+  }
+  if (Object.prototype.hasOwnProperty.call(_signalCache.drive, tf)) {
+    _renderSignalDrive(_signalCache.drive[tf] || []);
+  }
+  _signalLoadedTf[tf] = !!(fastData && Object.prototype.hasOwnProperty.call(_signalCache.drive, tf));
+}
 
 function openSignal(force) {
   if (window.innerWidth <= 480) {
@@ -20,9 +47,7 @@ function openSignal(force) {
     // Manual open from nav — always show, backdrop dismisses back to app
     _signalMode = 'manual';
     overlay.classList.add('visible', 'signal-manual');
-    _signalCurrentTf = 'week';
-    _signalActiveTab = 'qb';
-    _signalSetTab('qb');
+    _signalShowCurrentPanel();
     loadSignalData(_signalCurrentTf);
     return;
   }
@@ -36,9 +61,7 @@ function openSignal(force) {
   _signalMode = 'startup';
   overlay.classList.add('visible');
   overlay.classList.remove('signal-manual');
-  _signalCurrentTf = 'week';
-  _signalActiveTab = 'qb';
-  _signalSetTab('qb');
+  _signalShowCurrentPanel();
   loadSignalData(_signalCurrentTf);
 }
 
@@ -85,29 +108,38 @@ function loadSignalData(tf) {
     p.classList.toggle('active', p.dataset.tf === tf);
   });
 
-  // Reset all panels
-  var qbEl = document.getElementById('signal-panel-qb');
-  var logEl = document.getElementById('signal-panel-log');
-  var driveEl = document.getElementById('signal-panel-drive');
-  if (qbEl) qbEl.innerHTML = '<div class="signal-loading">Loading...</div>';
-  if (logEl) logEl.innerHTML = '<div class="signal-log-empty">LOADING...</div>';
-  if (driveEl) driveEl.innerHTML = '<div class="signal-loading">Scanning folders...</div>';
+  if (_signalLoadedTf[tf]) {
+    _signalRenderCached(tf);
+    return;
+  }
+
+  _signalPrimePanelShell();
 
   // Call 1: fast sheet reads — renders QB + Log immediately
   google.script.run
     .withSuccessHandler(function(data) {
+      _signalCache.fast[tf] = data || { qbChanges: [], systemLogs: [] };
       _renderSignalQB(data.qbChanges || []);
       _renderSignalLogs(data.systemLogs || []);
       // Call 2: Drive traversal (cached after first run)
       google.script.run
-        .withSuccessHandler(function(activity) { _renderSignalDrive(activity || []); })
+        .withSuccessHandler(function(activity) {
+          _signalCache.drive[tf] = activity || [];
+          _renderSignalDrive(_signalCache.drive[tf]);
+          _signalLoadedTf[tf] = true;
+        })
         .withFailureHandler(function() {
           var el = document.getElementById('signal-panel-drive');
           if (el) el.innerHTML = '<div class="signal-empty">Drive scan failed.</div>';
+          _signalCache.drive[tf] = [];
+          _signalLoadedTf[tf] = true;
         })
         .getSignalDrive(tf);
     })
     .withFailureHandler(function() {
+      var qbEl = document.getElementById('signal-panel-qb');
+      var logEl = document.getElementById('signal-panel-log');
+      _signalLoadedTf[tf] = false;
       if (qbEl) qbEl.innerHTML = '<div class="signal-empty">Failed to load.</div>';
       if (logEl) logEl.innerHTML = '<div class="signal-log-empty">FAILED TO LOAD</div>';
     })
