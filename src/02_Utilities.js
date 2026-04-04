@@ -383,6 +383,14 @@ function getDashboardData() {
          let vendorName = vendorIdx > -1 ? String(data[i][vendorIdx] || "").trim() : "";
          let vStats = fiberStats[vendorName] || { lifetime: { footage: 0, miles: 0 }, recent30: { footage: 0, miles: 0 }, recent7: { footage: 0, miles: 0 }, today: { footage: 0, miles: 0 }, month: { footage: 0, miles: 0 }, prevMonth: { footage: 0, miles: 0 }, quarter: { footage: 0, miles: 0 }, prevQuarter: { footage: 0, miles: 0 } };
 
+         const rawMirrorOfsDate = parseDate(ofsIdx > -1 ? data[i][ofsIdx] : "");
+         const canonicalOfsDate = refData
+             ? String(refData.canonicalOfsDate || refData.forecastedOFS || "").trim()
+             : "";
+         const normalizedCanonicalOfsDate = (!canonicalOfsDate || canonicalOfsDate === '-' || canonicalOfsDate === 'Unknown')
+             ? ""
+             : canonicalOfsDate;
+
          actionItems.push({
              fdh: fdhIdx > -1 ? String(data[i][fdhIdx] || "") : "",
              vendor: vendorName,
@@ -391,7 +399,9 @@ function getDashboardData() {
              status: statusIdx > -1 ? String(data[i][statusIdx] || "") : "",
              bsls: bslsIdx > -1 ? String(data[i][bslsIdx] || "-") : "-",
              isLight: lightIdx > -1 ? (data[i][lightIdx] === true || String(data[i][lightIdx]).toLowerCase() === 'true') : false,
-             ofsDate: parseDate(ofsIdx > -1 ? data[i][ofsIdx] : ""),
+             canonicalOfsDate: normalizedCanonicalOfsDate,
+             ofsDate: normalizedCanonicalOfsDate,
+             rawMirrorOfsDate: rawMirrorOfsDate,
              reportDate: parseDate(dateIdx > -1 ? data[i][dateIdx] : ""),
              targetDate: parseDate(targetIdx > -1 ? data[i][targetIdx] : ""),
              cxStart: parseDate(cxStartIdx > -1 ? data[i][cxStartIdx] : ""),
@@ -421,6 +431,8 @@ function getDashboardData() {
              hasCDDist: refData ? refData.hasCDDist : false,
              hasBOMPo: refData ? refData.hasBOMPo : false,
              hasSOW: refData ? refData.hasSOW : false,
+             rawReferenceOfsDate: refData ? String(refData.canonicalOfsDate || refData.forecastedOFS || "").trim() : "",
+             ofsDateMismatch: !!(rawMirrorOfsDate && normalizedCanonicalOfsDate && rawMirrorOfsDate !== normalizedCanonicalOfsDate),
              qbRef: refData ? (refData.qbRef || {}) : {},
              fiberTotalMiles: vStats.lifetime.miles,
              vel: {                 ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },

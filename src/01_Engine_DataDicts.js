@@ -211,6 +211,7 @@ function getReferenceDictionary() {
            status: statusIdx > -1 ? String(r[statusIdx] || "-") : "-", 
            bsls: bslIdx > -1 ? String(r[bslIdx] || "-") : "-",
            forecastedOFS: ofsIdx > -1 ? safeDate(r[ofsIdx]) : "-",
+           canonicalOfsDate: ofsIdx > -1 ? safeDate(r[ofsIdx]) : "",
            cxStart: cxStartIdx > -1 ? safeDate(r[cxStartIdx]) : "",
            cxComplete: cxEndIdx > -1 ? safeDate(r[cxEndIdx]) : "",
            ugBOM: bomUGIdx > -1 ? Number(r[bomUGIdx]) || 0 : 0, 

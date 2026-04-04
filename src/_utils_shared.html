@@ -66,9 +66,15 @@
           return new Intl.DateTimeFormat('en-US', options).format(d);
       }
 
-      function getEffectiveOfsRaw(item) {
+      function getCanonicalOfsRaw(item) {
           if (!item) return '';
-          return item.ofsDate || item.targetDate || '';
+          let raw = item.canonicalOfsDate || item.ofsDate || '';
+          if (!raw || raw === '-' || raw === 'Unknown') return '';
+          return String(raw).trim();
+      }
+
+      function getEffectiveOfsRaw(item) {
+          return getCanonicalOfsRaw(item);
       }
 
       function getEffectiveOfsDate(item) {
@@ -90,6 +96,21 @@
               label: d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase(),
               isCurrentMonth: d.getUTCMonth() === today.getMonth() && d.getUTCFullYear() === today.getFullYear(),
               date: d
+          };
+      }
+
+      function getOfsDiagnosticMeta(item) {
+          let canonicalRaw = getCanonicalOfsRaw(item);
+          let mirrorRaw = item && item.rawMirrorOfsDate ? String(item.rawMirrorOfsDate).trim() : '';
+          let targetRaw = item && item.targetDate ? String(item.targetDate).trim() : '';
+          return {
+              canonicalRaw: canonicalRaw,
+              mirrorRaw: mirrorRaw,
+              targetRaw: targetRaw,
+              hasCanonical: !!canonicalRaw,
+              hasMirror: !!mirrorRaw && mirrorRaw !== '-' && mirrorRaw !== 'Unknown',
+              hasTarget: !!targetRaw && targetRaw !== '-' && targetRaw !== 'Unknown',
+              mirrorMismatch: !!canonicalRaw && !!mirrorRaw && canonicalRaw !== mirrorRaw
           };
       }
 

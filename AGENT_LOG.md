@@ -1,5 +1,13 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-04: Canonical OFS rewrite from reference-data source of truth
+- **Architectural reset:** Replaced the “effective OFS” fallback model with a canonical OFS contract sourced only from `5_Reference_Data` `OFS DATE`.
+- **New payload field:** `actionItems` now carry `canonicalOfsDate`, with legacy `ofsDate` forced to that same canonical value for compatibility while the rest of the app is still on mixed consumers.
+- **Fallback removed:** The shared frontend OFS helpers no longer fall back to `targetDate`. Blank `OFS DATE` now means OFS is truly missing/TBD and should not appear in OFS month pills, filters, or calendar placements.
+- **Diagnostics added:** Added OFS diagnostic metadata (`rawMirrorOfsDate`, `rawReferenceOfsDate`, `ofsDateMismatch`) plus a shared `getOfsDiagnosticMeta()` helper so remaining OFS mismatches can be audited instead of guessed.
+- **Archive output aligned:** Mirror/archive export paths now write the canonical reference OFS value rather than whichever legacy alias happened to be present.
+- **Validation note:** `node scripts/validate-mobile-shell.js` still fails only on the pre-existing desktop Review Hub marker assertions in `src/WebApp.html`; no new validation failure was introduced by the OFS rewrite.
+
 > [!success] 2026-04-04: OFS consistency sweep across ingest + frontend render paths
 - **Root cause expanded:** Fixing the reference-data ingest header (`OFS DATE` vs `Budget OFS`) restored the payload, but several frontend modules were still bypassing that corrected path and reading raw `item.ofsDate` directly.
 - **Shared resolver added:** Introduced frontend OFS helpers in `src/_utils_shared.html` so the app now resolves one canonical effective OFS date via `item.ofsDate || item.targetDate`, then derives labels/month state from that shared source.
