@@ -38,13 +38,6 @@ function updateAdminBadge() {
         badge.style.display = count > 0 ? 'inline-flex' : 'none'; 
     }
     
-    // FAB Badge (mobile / floating)
-    let fabBadge = getEl('admin-fab-badge');
-    if (fabBadge) {
-        fabBadge.textContent = String(displayCount);
-        fabBadge.style.display = count > 0 ? 'inline-flex' : 'none';
-    }
-
     // Desktop nav header badge
     let navBadge = getEl('nav-hub-badge');
     if (navBadge) {
@@ -58,7 +51,11 @@ function updateChangelogBadge() {
     let recentActivityCount = 0;
     let yesterdayTime = Date.now() - (24 * 60 * 60 * 1000);
     allGlobalLogs.forEach(log => {
-        if (Number(log.timestampObj || 0) >= yesterdayTime) recentActivityCount++;
+        if (Number(log.timestampObj || 0) >= yesterdayTime &&
+            typeof _isChangelogMilestone === 'function' &&
+            _isChangelogMilestone(String(log.type || ''), String(log.val || ''))) {
+            recentActivityCount++;
+        }
     });
 
     const changelogBadge = getEl('changelog-badge');
@@ -68,7 +65,7 @@ function updateChangelogBadge() {
     try { pulseSeen = sessionStorage.getItem(CHANGELOG_PULSE_SESSION_KEY) === '1'; } catch (e) {}
 
     if (recentActivityCount > 0 && !pulseSeen) {
-        changelogBadge.innerText = recentActivityCount;
+        changelogBadge.innerText = recentActivityCount > 99 ? '99+' : recentActivityCount;
         changelogBadge.style.display = 'inline-flex';
     } else {
         changelogBadge.style.display = 'none';

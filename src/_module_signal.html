@@ -124,18 +124,29 @@ function _renderSignalQB(changes) {
   var html = '';
   changes.forEach(function(c) {
     var pillClass = _signalQBPillClass(c.type, c.newVal);
+    var t = (c.type || '').toLowerCase().trim();
+    var isDateField = t === 'ofs date' || t === 'cx start date' || t === 'cx end date';
+    var pillLabel = isDateField ? _signalTypeLabel(t) : _esc(c.newVal || c.type);
+    var subVal = isDateField ? '<span class="signal-val">' + _esc(c.newVal) + '</span>' : '';
     html += '<div class="signal-row">'
       + '<div class="signal-row-main">'
       + '<span class="signal-fdh">' + _esc(c.fdh) + '</span>'
-      + '<span class="glass-pill ' + pillClass + '">' + _esc(c.newVal || c.type) + '</span>'
+      + '<span class="glass-pill ' + pillClass + '">' + pillLabel + '</span>'
       + '</div>'
       + '<div class="signal-row-sub">'
-      + '<span class="signal-val">' + _esc(c.newVal) + '</span>'
+      + subVal
       + '<span class="signal-meta">' + _esc(c.updatedBy) + ' &middot; ' + _esc(c.timestamp) + '</span>'
       + '</div>'
       + '</div>';
   });
   el.innerHTML = html;
+}
+
+function _signalTypeLabel(t) {
+  if (t === 'ofs date') return 'OFS Date';
+  if (t === 'cx start date') return 'CX Start';
+  if (t === 'cx end date') return 'CX End';
+  return t;
 }
 
 function _signalQBPillClass(type, val) {
