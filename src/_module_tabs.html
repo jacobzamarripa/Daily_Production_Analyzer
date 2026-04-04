@@ -48,27 +48,8 @@ function updateAdminBadge() {
 }
 
 function updateChangelogBadge() {
-    let recentActivityCount = 0;
-    let yesterdayTime = Date.now() - (24 * 60 * 60 * 1000);
-    allGlobalLogs.forEach(log => {
-        if (Number(log.timestampObj || 0) >= yesterdayTime &&
-            typeof _isChangelogMilestone === 'function' &&
-            _isChangelogMilestone(String(log.type || ''), String(log.val || ''))) {
-            recentActivityCount++;
-        }
-    });
-
-    const changelogBadge = getEl('changelog-badge');
-    if (!changelogBadge) return;
-
-    let pulseSeen = false;
-    try { pulseSeen = sessionStorage.getItem(CHANGELOG_PULSE_SESSION_KEY) === '1'; } catch (e) {}
-
-    if (recentActivityCount > 0 && !pulseSeen) {
-        changelogBadge.innerText = recentActivityCount > 99 ? '99+' : recentActivityCount;
-        changelogBadge.style.display = 'inline-flex';
-    } else {
-        changelogBadge.style.display = 'none';
+    if (typeof getChangelogBadgeCount === 'function' && typeof syncChangelogBadgeCount === 'function') {
+        syncChangelogBadgeCount(getChangelogBadgeCount());
     }
 }
 </script>

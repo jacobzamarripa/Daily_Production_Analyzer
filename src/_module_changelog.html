@@ -11,6 +11,81 @@ let expandedActivityRows = new Set();
 
 const _CHANGELOG_TRACKED_TYPES = ['status', 'stage', 'stage status', 'ofs date', 'cx start date', 'cx end date'];
 const _CHANGELOG_ALLOWED_STAGE_VALUES = ['permitting', 'vendor assignment', 'cx', 'ofs'];
+const _CHANGELOG_DEFAULT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+function _getChangelogTimestamp(log) {
+  if (!log) return 0;
+  const direct = Number(log.timestampObj || log.timestamp || 0);
+  if (!isNaN(direct) && direct > 0) return direct;
+  const fallback = new Date(log.time || log.date || '').getTime();
+  return isNaN(fallback) ? 0 : fallback;
+}
+function _formatChangelogValue(type, value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  const t = String(type || '').toLowerCase().trim();
+  const isDateType = t === 'ofs date' || t === 'cx start date' || t === 'cx end date';
+  const looksVerboseDate = /\bGMT[+-]\d{4}\b|\b(?:Central|Eastern|Mountain|Pacific) (?:Standard|Daylight) Time\b/.test(raw);
+  if (isDateType || looksVerboseDate) {
+    const parsed = new Date(raw);
+    if (!isNaN(parsed.getTime()) && typeof formatDate === 'function') return formatDate(parsed);
+    return raw.replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '').trim();
+  }
+  return raw;
+}
+function getChangelogEntries(filters) {
+  const opts = filters || {};
+  const search = String(opts.search || '').toLowerCase();
+  const timeFilter = opts.timeFilter || 'ALL';
+  const userFilter = opts.userFilter || 'ALL';
+  const currentFdhOnly = !!opts.currentFdhOnly;
+
+  let logsToRender = (allGlobalLogs || []).filter(log =>
+    _isChangelogMilestone(String(log.type || ''), String(log.val || ''))
+  );
+
+  const now = Date.now();
+  const windowMs = timeFilter === 'ALL'
+    ? _CHANGELOG_DEFAULT_WINDOW_MS
+    : (parseInt(timeFilter, 10) || 0) * 60 * 60 * 1000;
+  if (windowMs > 0) {
+    const cutoffTime = now - windowMs;
+    logsToRender = logsToRender.filter(log => {
+      const ts = _getChangelogTimestamp(log);
+      return !isNaN(ts) && ts >= cutoffTime;
+    });
+  }
+
+  if (currentFdhOnly && typeof currentActiveItem !== 'undefined' && currentActiveItem) {
+    logsToRender = logsToRender.filter(log => String(log.fdh || '') === String(currentActiveItem.fdh || ''));
+  }
+
+  if (userFilter !== 'ALL') {
+    logsToRender = logsToRender.filter(log => String(log.user || '') === userFilter);
+  }
+
+  if (search) {
+    logsToRender = logsToRender.filter(log =>
+      String(log.fdh || '').toLowerCase().includes(search) ||
+      String(log.user || '').toLowerCase().includes(search) ||
+      String(log.type || '').toLowerCase().includes(search) ||
+      String(log.val || '').toLowerCase().includes(search)
+    );
+  }
+
+  logsToRender.sort((a, b) => _getChangelogTimestamp(b) - _getChangelogTimestamp(a));
+  return logsToRender;
+}
+function getChangelogBadgeCount() {
+  return getChangelogEntries({ timeFilter: 'ALL' }).length;
+}
+function syncChangelogBadgeCount(count) {
+  const total = Number(count || 0);
+  const displayValue = total > 99 ? '99+' : String(total);
+  document.querySelectorAll('#changelog-badge').forEach(badge => {
+    badge.textContent = displayValue;
+    badge.style.display = total > 0 ? 'inline-flex' : 'none';
+  });
+}
 function _isChangelogMilestone(type, val) {
   const t = (type || '').toLowerCase().trim();
   if (!_CHANGELOG_TRACKED_TYPES.includes(t)) return false;
@@ -72,45 +147,16 @@ function renderChangeLog() {
     let userFilter = getEl('changelog-user')?.value || 'ALL';
     let currentFdhOnly = getEl('changelog-current-fdh')?.checked;
 
-    // Default: only show Permit Approved and beyond (reduces noise)
-    let logsToRender = allGlobalLogs.filter(log => _isChangelogMilestone(String(log.type || ''), String(log.val || '')));
-
-    if (currentFdhOnly && typeof currentActiveItem !== 'undefined' && currentActiveItem) {
-        logsToRender = logsToRender.filter(log => String(log.fdh || '') === String(currentActiveItem.fdh || ''));
-    }
-
-    if (timeFilter !== 'ALL') {
-        let hours = parseInt(timeFilter, 10);
-        let cutoffTime = Date.now() - (hours * 60 * 60 * 1000);
-        logsToRender = logsToRender.filter(log => {
-            let ts = log.timestampObj ? Number(log.timestampObj) : new Date(log.time).getTime();
-            return !isNaN(ts) && ts >= cutoffTime;
-        });
-    }
-
-    if (userFilter !== 'ALL') {
-        logsToRender = logsToRender.filter(log => String(log.user || '') === userFilter);
-    }
-
-    if (search) {
-        logsToRender = logsToRender.filter(log =>
-            String(log.fdh || '').toLowerCase().includes(search) ||
-            String(log.user || '').toLowerCase().includes(search) ||
-            String(log.type || '').toLowerCase().includes(search) ||
-            String(log.val || '').toLowerCase().includes(search)
-        );
-    }
-
-    logsToRender.sort((a, b) => {
-        let tsA = a.timestampObj ? Number(a.timestampObj) : 0;
-        if (!tsA && a.time) tsA = new Date(a.time).getTime();
-        let tsB = b.timestampObj ? Number(b.timestampObj) : 0;
-        if (!tsB && b.time) tsB = new Date(b.time).getTime();
-        return tsB - tsA;
+    let logsToRender = getChangelogEntries({
+        search: search,
+        timeFilter: timeFilter,
+        userFilter: userFilter,
+        currentFdhOnly: currentFdhOnly
     });
 
     const displayCount = logsToRender.length;
     setTxt('ob-header-count', displayCount);
+    syncChangelogBadgeCount(getChangelogBadgeCount());
     let headerBadge = getEl('ob-header-count');
     if (headerBadge) {
         headerBadge.style.display = 'inline-flex'; // Always show in Hub for current tab
@@ -123,10 +169,9 @@ function renderChangeLog() {
 
     let html = '';
     logsToRender.forEach(log => {
-        let t = String(log.type || '').toUpperCase();
         let rowKey = escJs(getActivityRowKey(log));
         let rowOpen = expandedActivityRows.has(getActivityRowKey(log));
-        let cleanVal = String(log.val ?? '').replace(/(?: \d{2}:\d{2}:\d{2} GMT.*)/, '');
+        let cleanVal = _formatChangelogValue(log.type, log.val || log.type || 'Activity');
         
         // Conditional navigation: only show if project exists in action items
         const targetFdh = String(log.fdh || '');
@@ -141,11 +186,11 @@ function renderChangeLog() {
             <div class="log-row-main log-row-expand" onclick="toggleActivityRow('${rowKey}')">
                 <div class="log-row-top">
                     <span class="log-row-fdh">${esc(log.fdh)}</span>
-                    <span class="log-row-time">${formatDate(log.timestampObj ? new Date(Number(log.timestampObj)) : log.time, true)}</span>
+                    <span class="log-row-time">${formatDate(_getChangelogTimestamp(log) ? new Date(_getChangelogTimestamp(log)) : log.time, true)}</span>
                 </div>
                 <div class="log-row-meta">
                     <span class="log-row-user">${esc(String(log.user || '').split(' ')[0])}</span>
-                    <span class="glass-pill ${_getQBPillClass(log.type, log.val)}">${esc(String(log.val || log.type || 'Activity'))}</span>
+                    <span class="glass-pill ${_getQBPillClass(log.type, cleanVal)}">${esc(cleanVal)}</span>
                 </div>
                 <div class="log-row-val">${esc(cleanVal)}</div>
             </div>

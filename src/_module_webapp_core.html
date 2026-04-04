@@ -192,7 +192,7 @@
                   navSideCrowded = overlapXY(collisionRect, navRightRect);
               }
 
-              shouldShift = dockBottomInWorkspace > 0 && (
+              const expandedDockCollision = !!panelRect && (
                   leftOverlap > 0 ||
                   rightOverlap > 0 ||
                   detailCompression ||
@@ -200,6 +200,10 @@
                   centerCrowded ||
                   topNavOverlap
               );
+
+              // The compact floating dock should no longer push queue/review panes down on its own.
+              // Only the expanded desktop filter panel gets to claim extra clearance.
+              shouldShift = dockBottomInWorkspace > 0 && expandedDockCollision;
 
               if (shouldShift) {
                   let desiredTop = dockBottomInWorkspace + 18;

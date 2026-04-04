@@ -1,5 +1,14 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-04: Review Hub activity recovery + dock clearance rollback
+- **Activity badge/count recovery:** Reworked changelog badge counting so Activity no longer depends on `timestampObj` being populated. The Review Hub activity badge now reflects milestone logs reliably instead of sitting hidden at `0`.
+- **Activity timestamp parsing hardened:** Added shared changelog timestamp parsing fallback (`timestampObj` -> `timestamp` -> `time/date`) for filtering and sorting, so older/newer activity rows render in the right order even when the payload is inconsistent.
+- **Verbose date pill cleanup:** Date-style activity values such as `Fri Jun 05 2026 00:00:00 GMT-0500 (Central Daylight Time)` are now normalized before rendering, preventing raw JS `Date.toString()` output from leaking into pills and row text.
+- **Activity notification pill fix:** The visible Activity badge was still stale because desktop and mobile shells both define `changelog-badge`, while the updater only wrote to the first DOM match. The updater now syncs every badge instance and counts recent milestone activity using the hardened timestamp fallback.
+- **Activity badge logic unified:** Replaced the old session-gated “pulse seen” notification behavior with a canonical changelog count path. The pill now uses the same milestone/time-window selector as the Activity tab itself, so the badge can’t drift independently from the feed logic.
+- **Desktop pane offset fix:** Tightened `syncDockClearanceState()` so the compact floating dock no longer pushes the Diagnostic Queue / Review Hub panes downward by itself. Only the expanded desktop filter panel can request extra clearance now.
+- **Validation note:** Patch was verified by code-path inspection and diff review in `src/_module_changelog.html`, `src/_module_tabs.html`, and `src/_module_webapp_core.html`. No runtime smoke test was executed in this session.
+
 > [!success] 2026-04-03: Desktop Review Hub polish + desktop/mobile branding parity pass
 - **Review Hub containment fixed:** Manager Review no longer inherits Admin-only chrome. Tab-strip/KPI visibility is now driven explicitly by `switchPanelTab()` / `syncOutboxPanelMode()` so Reviewed state hides admin chrome reliably on desktop.
 - **Reviewed panel restoration:** Added narrowly scoped `#ob-panel-reviewed` desktop rules so reviewed rows/header regain stable spacing and comment content can expand without bleeding Admin styles back in.
