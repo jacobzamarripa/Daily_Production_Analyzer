@@ -5,12 +5,14 @@
 // DEPENDED ON BY: WebApp.html (auto-open on load)
 // ============================================================
 
-var _signalCurrentTf = 'week';
+var _signalCurrentTf = 'current';
 var _signalActiveTab = 'qb';
 var _signalMode = 'startup'; // 'startup' = must pick workspace | 'manual' = can dismiss freely
 var _signalCache = { fast: {}, drive: {} };
 var _signalLoadedTf = {};
+var _signalPrefetching = {};
 var _signalDriveRootFilter = 'all';
+var _signalSearchQuery = '';
 
 function _signalNormalizeTf(tf) {
   var raw = String(tf || '').toLowerCase().trim();
@@ -102,11 +104,44 @@ function _signalBackdropClick(e) {
 }
 
 function _showStartupAfterSignal() {
+  // Prefetch 'current' in background while dashboard shows — instant on next open
+  _signalPrefetch('current');
   if (typeof openDashboard === 'function') {
     openDashboard();
   } else {
     completeStartup('detail');
   }
+}
+
+// Fetches and caches a timeframe silently — no UI side-effects
+function _signalPrefetch(tf) {
+  tf = _signalNormalizeTf(tf);
+  if (_signalLoadedTf[tf] || _signalPrefetching[tf]) return;
+  _signalPrefetching[tf] = true;
+  google.script.run
+    .withSuccessHandler(function(data) {
+      _signalCache.fast[tf] = data || { qbChanges: [], systemLogs: [] };
+      google.script.run
+        .withSuccessHandler(function(activity) {
+          _signalCache.drive[tf] = activity || [];
+          _signalLoadedTf[tf] = true;
+          _signalPrefetching[tf] = false;
+          // After current finishes, background-load week when idle
+          if (tf === 'current' && !_signalLoadedTf['week']) {
+            setTimeout(function() { _signalPrefetch('week'); }, 1500);
+          }
+        })
+        .withFailureHandler(function() {
+          _signalCache.drive[tf] = [];
+          _signalLoadedTf[tf] = true;
+          _signalPrefetching[tf] = false;
+        })
+        .getSignalDrive(tf);
+    })
+    .withFailureHandler(function() {
+      _signalPrefetching[tf] = false;
+    })
+    .getSignalFast(tf);
 }
 
 function loadSignalData(tf) {
@@ -157,25 +192,36 @@ function loadSignalData(tf) {
 function _renderSignalQB(changes, tf) {
   var el = document.getElementById('signal-panel-qb');
   if (!el) return;
-  if (!changes.length) {
-    el.innerHTML = '<div class="signal-empty">No QB changes in the ' + _signalTfLabel(tf) + '.</div>';
+  var q = _signalSearchQuery.toLowerCase().trim();
+  var filtered = q ? changes.filter(function(c) {
+    return _signalMatchesQuery([c.fdh, c.type, c.newVal, c.updatedBy, c.timestamp], q);
+  }) : changes;
+
+  _signalUpdateMatchCount(filtered.length, changes.length);
+
+  if (!filtered.length) {
+    el.innerHTML = q
+      ? '<div class="signal-empty">No results for "' + _esc(q) + '".</div>'
+      : '<div class="signal-empty">No QB changes in the ' + _signalTfLabel(tf) + '.</div>';
     return;
   }
   var html = '';
-  changes.forEach(function(c) {
+  filtered.forEach(function(c) {
     var pillClass = _signalQBPillClass(c.type, c.newVal);
     var t = (c.type || '').toLowerCase().trim();
     var isDateField = t === 'ofs date' || t === 'cx start date' || t === 'cx end date';
     var pillLabel = isDateField ? _signalTypeLabel(t) : _esc(c.newVal || c.type);
     var subVal = isDateField ? '<span class="signal-val">' + _esc(c.newVal) + '</span>' : '';
+    var fdhHtml = q ? _signalHighlight(c.fdh, q) : _esc(c.fdh);
+    var metaHtml = _esc(c.updatedBy) + ' &middot; ' + _esc(c.timestamp);
     html += '<div class="signal-row">'
       + '<div class="signal-row-main">'
-      + '<span class="signal-fdh">' + _esc(c.fdh) + '</span>'
+      + '<span class="signal-fdh">' + fdhHtml + '</span>'
       + '<span class="glass-pill ' + pillClass + '">' + pillLabel + '</span>'
       + '</div>'
       + '<div class="signal-row-sub">'
       + subVal
-      + '<span class="signal-meta">' + _esc(c.updatedBy) + ' &middot; ' + _esc(c.timestamp) + '</span>'
+      + '<span class="signal-meta">' + metaHtml + '</span>'
       + '</div>'
       + '</div>';
   });
@@ -212,12 +258,21 @@ function _stripEmoji(s) {
 function _renderSignalLogs(logs) {
   var el = document.getElementById('signal-panel-log');
   if (!el) return;
-  if (!logs.length) {
-    el.innerHTML = '<div class="signal-log-empty">NO ENTRIES FOUND</div>';
+  var q = _signalSearchQuery.toLowerCase().trim();
+  var filtered = q ? logs.filter(function(l) {
+    return _signalMatchesQuery([l.message, l.timestamp], q);
+  }) : logs;
+
+  _signalUpdateMatchCount(filtered.length, logs.length);
+
+  if (!filtered.length) {
+    el.innerHTML = q
+      ? '<div class="signal-log-empty">NO RESULTS FOR "' + _esc(q.toUpperCase()) + '"</div>'
+      : '<div class="signal-log-empty">NO ENTRIES FOUND</div>';
     return;
   }
   var html = '';
-  logs.forEach(function(l) {
+  filtered.forEach(function(l) {
     var raw = l.message || '';
     var msg = _stripEmoji(raw);
     var upper = raw.toUpperCase();
@@ -228,9 +283,10 @@ function _renderSignalLogs(logs) {
       : (upper.includes('COMPLETE') || upper.includes('SUCCESS') || upper.includes('✅'))
       ? 'ok'
       : '';
+    var msgHtml = q ? _signalHighlight(msg, q) : _esc(msg);
     html += '<div class="signal-log-row' + (cls ? ' signal-log-' + cls : '') + '">'
       + '<span class="signal-log-ts">' + _esc(l.timestamp) + '</span>'
-      + '<span class="signal-log-msg">' + _esc(msg) + '</span>'
+      + '<span class="signal-log-msg">' + msgHtml + '</span>'
       + '</div>';
   });
   el.innerHTML = html;
@@ -239,15 +295,32 @@ function _renderSignalLogs(logs) {
 function _renderSignalDrive(activity, tf) {
   var el = document.getElementById('signal-panel-drive');
   if (!el) return;
-  if (!activity.length) {
-    el.innerHTML = '<div class="signal-empty">No Drive folder activity in the ' + _signalTfLabel(tf) + '.</div>';
+  var q = _signalSearchQuery.toLowerCase().trim();
+
+  // Filter: keep groups that have at least one matching file (or matching folder path)
+  var filteredActivity = q ? activity.map(function(group) {
+    var folderMatch = _signalMatchesQuery([group.folder], q);
+    var matchedFiles = group.files.filter(function(f) {
+      return _signalMatchesQuery([f.name, f.modified, group.folder], q);
+    });
+    if (!folderMatch && !matchedFiles.length) return null;
+    return { folder: group.folder, folderUrl: group.folderUrl, files: folderMatch ? group.files : matchedFiles };
+  }).filter(Boolean) : activity;
+
+  var totalFiles = filteredActivity.reduce(function(n, g) { return n + g.files.length; }, 0);
+  _signalUpdateMatchCount(totalFiles, activity.reduce(function(n, g) { return n + g.files.length; }, 0));
+
+  if (!filteredActivity.length) {
+    el.innerHTML = q
+      ? '<div class="signal-empty">No results for "' + _esc(q) + '".</div>'
+      : '<div class="signal-empty">No Drive folder activity in the ' + _signalTfLabel(tf) + '.</div>';
     return;
   }
 
   // Re-group by root subfolder (segment index 1; segment 0 is the Omni Fiber root name)
   // rootMap: rootKey -> { rootUrl, subgroups: [{ subPath, folderUrl, files }] }
   var rootMap = {};
-  activity.forEach(function(group) {
+  filteredActivity.forEach(function(group) {
     var parts = group.folder.split(' / ');
     var rootKey = parts.length > 1 ? parts[1] : parts[0];
     var subPath = parts.length > 2 ? parts.slice(2).join(' / ') : '';
@@ -277,7 +350,7 @@ function _renderSignalDrive(activity, tf) {
   chipHtml += '<button class="signal-drive-filter-chip' + (_signalDriveRootFilter === 'all' ? ' active' : '') + '" type="button" onclick="_signalSetDriveRootFilter(\'all\')">'
     + '<span class="signal-drive-filter-icon">' + folderIcon + '</span>'
     + '<span class="signal-drive-filter-label">All Roots</span>'
-    + '<span class="signal-count">' + activity.length + '</span>'
+    + '<span class="signal-count">' + filteredActivity.length + '</span>'
     + '</button>';
   rootKeys.forEach(function(rootKey) {
     var entry = rootMap[rootKey];
@@ -349,11 +422,72 @@ function _signalSetTab(tab) {
     if (panel) panel.style.display = t === tab ? 'block' : 'none';
     if (btn) btn.classList.toggle('active', t === tab);
   });
+  // Re-render with current search query applied to new tab
+  if (_signalSearchQuery) _signalOnSearch(_signalSearchQuery);
 }
 
 function _esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// === SEARCH ===
+
+function _signalMatchesQuery(fields, q) {
+  if (!q) return true;
+  return fields.some(function(f) {
+    return f && String(f).toLowerCase().indexOf(q) !== -1;
+  });
+}
+
+function _signalHighlight(text, q) {
+  if (!text || !q) return _esc(text);
+  var escaped = _esc(text);
+  var escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escaped.replace(new RegExp('(' + escapedQ + ')', 'gi'),
+    '<mark class="signal-highlight">$1</mark>');
+}
+
+function _signalUpdateMatchCount(matched, total) {
+  var countEl = document.getElementById('signal-search-count');
+  var clearEl = document.getElementById('signal-search-clear');
+  var q = _signalSearchQuery.trim();
+  if (!q) {
+    if (countEl) countEl.style.display = 'none';
+    if (clearEl) clearEl.style.display = 'none';
+    return;
+  }
+  if (countEl) {
+    countEl.textContent = matched + ' of ' + total;
+    countEl.style.display = '';
+  }
+  if (clearEl) clearEl.style.display = '';
+}
+
+function _signalOnSearch(val) {
+  _signalSearchQuery = val || '';
+  // Re-render active tab from cache
+  var tf = _signalNormalizeTf(_signalCurrentTf);
+  var fastData = _signalCache.fast[tf];
+  if (_signalActiveTab === 'qb' && fastData) {
+    _renderSignalQB(fastData.qbChanges || [], tf);
+  } else if (_signalActiveTab === 'log' && fastData) {
+    _renderSignalLogs(fastData.systemLogs || [], tf);
+  } else if (_signalActiveTab === 'drive' && Object.prototype.hasOwnProperty.call(_signalCache.drive, tf)) {
+    _renderSignalDrive(_signalCache.drive[tf] || [], tf);
+  }
+  // Show/hide clear button
+  var clearEl = document.getElementById('signal-search-clear');
+  if (clearEl) clearEl.style.display = _signalSearchQuery ? '' : 'none';
+  var countEl = document.getElementById('signal-search-count');
+  if (!_signalSearchQuery && countEl) countEl.style.display = 'none';
+}
+
+function _signalClearSearch() {
+  _signalSearchQuery = '';
+  var input = document.getElementById('signal-search-input');
+  if (input) { input.value = ''; input.focus(); }
+  _signalOnSearch('');
 }
 
 window.openSignal = openSignal;
@@ -363,4 +497,6 @@ window._signalSetTab = _signalSetTab;
 window._signalSetDriveRootFilter = _signalSetDriveRootFilter;
 window._signalBackdropClick = _signalBackdropClick;
 window._signalDismiss = _signalDismiss;
+window._signalOnSearch = _signalOnSearch;
+window._signalClearSearch = _signalClearSearch;
 </script>

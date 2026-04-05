@@ -912,6 +912,70 @@
       .signal-tab:hover { color: var(--text-main); background: rgba(59,130,246,0.06); }
       .signal-tab.active { color: #3b82f6; background: rgba(59,130,246,0.1); }
 
+      .signal-search-row {
+        padding: 10px 20px 8px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .signal-search-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0 10px;
+        transition: border-color 0.15s ease;
+      }
+      .signal-search-wrap:focus-within {
+        border-color: rgba(59,130,246,0.5);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+      }
+      .signal-search-icon {
+        flex-shrink: 0;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+      }
+      .signal-search-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-main);
+        padding: 8px 0;
+        outline: none;
+        font-family: inherit;
+        min-width: 0;
+      }
+      .signal-search-input::placeholder { color: var(--text-muted); }
+      .signal-search-clear {
+        flex-shrink: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        border-radius: 4px;
+        transition: color 0.12s ease;
+      }
+      .signal-search-clear:hover { color: var(--text-main); }
+      .signal-search-match-count {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .signal-highlight {
+        background: rgba(251,191,36,0.35);
+        border-radius: 2px;
+        padding: 0 1px;
+      }
+
       .signal-body {
         flex: 1;
         overflow-y: auto;

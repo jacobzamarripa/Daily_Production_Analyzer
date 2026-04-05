@@ -152,8 +152,8 @@
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             <div class="signal-tf-pills">
-              <button class="signal-tf-pill" data-tf="current" onclick="_signalSetTab(_signalActiveTab); loadSignalData('current')">Current</button>
-              <button class="signal-tf-pill active" data-tf="week" onclick="_signalSetTab(_signalActiveTab); loadSignalData('week')">Week</button>
+              <button class="signal-tf-pill active" data-tf="current" onclick="_signalSetTab(_signalActiveTab); loadSignalData('current')">Current</button>
+              <button class="signal-tf-pill" data-tf="week" onclick="_signalSetTab(_signalActiveTab); loadSignalData('week')">Week</button>
               <button class="signal-tf-pill" data-tf="month" onclick="_signalSetTab(_signalActiveTab); loadSignalData('month')">Month</button>
             </div>
             <button class="signal-close-btn" id="signal-close-btn" onclick="_signalDismiss()" title="Close">
@@ -165,6 +165,18 @@
           <button class="signal-tab active" id="signal-tab-qb" onclick="_signalSetTab('qb')">QB Changes</button>
           <button class="signal-tab" id="signal-tab-log" onclick="_signalSetTab('log')">App Log</button>
           <button class="signal-tab" id="signal-tab-drive" onclick="_signalSetTab('drive')">Drive Folders</button>
+        </div>
+        <div class="signal-search-row">
+          <div class="signal-search-wrap">
+            <span class="signal-search-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input id="signal-search-input" class="signal-search-input" type="text" placeholder="Search…" autocomplete="off" oninput="_signalOnSearch(this.value)">
+            <span class="signal-search-match-count" id="signal-search-count" style="display:none;"></span>
+            <button class="signal-search-clear" id="signal-search-clear" style="display:none;" onclick="_signalClearSearch()" title="Clear search">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
         </div>
         <div class="signal-body">
           <div id="signal-panel-qb"><div class="signal-loading">Loading...</div></div>
