@@ -296,8 +296,8 @@ function renderDashFlagsFeed() {
 function navigateFromDashboardFlag(fdh) {
     completeStartup('detail');
     setTimeout(function() {
-        if (typeof openCriticalHub === 'function') openCriticalHub();
-    }, 250);
+        if (typeof selectItemForNav === 'function') selectItemForNav(fdh);
+    }, 350);
 }
 
 function _renderDashSkeletons() {

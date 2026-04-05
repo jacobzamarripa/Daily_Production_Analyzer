@@ -24,6 +24,7 @@ function completeStartup(mode) {
     startupTimer = null;
     const overlay = getEl('startup-overlay');
     if (overlay) overlay.classList.remove('visible');
+    document.body.classList.remove('dashboard-active');
 
     if (mode === 'gantt') {
         openGanttView();
