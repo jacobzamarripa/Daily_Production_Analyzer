@@ -174,26 +174,35 @@ function renderDashStatusBar() {
         statusMap[s] = (statusMap[s] || 0) + 1;
     });
 
-    // Progression order: earliest stage first → latest
-    var progressionOrder = [
-        'permit',
-        'construct', 'active', 'install', 'build',
-        'ofs', 'open for sale',
-        'complete',
-        'hold', 'assign', 'pause'
+    // Explicit progression + color map — order index = display order
+    var statusDefs = [
+        { match: ['ofs', 'open for sale'],          color: 'var(--pill-ofs-bdr)' },
+        { match: ['complete'],                       color: 'var(--pill-complete-bdr)' },
+        { match: ['in progress'],                    color: 'var(--pill-active-bdr)' },
+        { match: ['pending start'],                  color: 'var(--pill-active-bdr)' },
+        { match: ['vendor assignment', 'vendor'],    color: 'var(--pill-drg-bdr)' },
+        { match: ['approved'],                       color: '#a855f7' },
+        { match: ['-', 'unknown', ''],               color: '#a855f7' }
     ];
 
-    function progressionRank(statusName) {
-        var s = (statusName || '').toLowerCase();
-        for (var i = 0; i < progressionOrder.length; i++) {
-            if (s.indexOf(progressionOrder[i]) !== -1) return i;
+    function statusDefIndex(statusName) {
+        var s = (statusName || '').toLowerCase().trim();
+        for (var i = 0; i < statusDefs.length; i++) {
+            for (var j = 0; j < statusDefs[i].match.length; j++) {
+                if (s === statusDefs[i].match[j] || s.indexOf(statusDefs[i].match[j]) !== -1) return i;
+            }
         }
-        return progressionOrder.length; // unknowns at end
+        return statusDefs.length; // unrecognised at end
+    }
+
+    function statusColor(statusName) {
+        var idx = statusDefIndex(statusName);
+        return idx < statusDefs.length ? statusDefs[idx].color : 'var(--pill-hold-bdr)';
     }
 
     var entries = Object.keys(statusMap).map(function(k) { return [k, statusMap[k]]; })
         .filter(function(e) { return e[1] > 0; })
-        .sort(function(a, b) { return progressionRank(a[0]) - progressionRank(b[0]); });
+        .sort(function(a, b) { return statusDefIndex(a[0]) - statusDefIndex(b[0]); });
 
     if (!entries.length) {
         container.innerHTML = '<div class="dash-bar-label" style="color:var(--text-muted)">No status data</div>';
@@ -202,16 +211,7 @@ function renderDashStatusBar() {
 
     var maxVal = Math.max.apply(null, entries.map(function(e) { return e[1]; }));
 
-    function statusColor(statusName) {
-        var s = (statusName || '').toLowerCase();
-        if (s.indexOf('ofs') !== -1 || s.indexOf('open for sale') !== -1) return 'var(--pill-ofs-bdr)';
-        if (s.indexOf('permit') !== -1) return 'var(--pill-permit-bdr)';
-        if (s.indexOf('complete') !== -1) return 'var(--pill-complete-bdr)';
-        if (s.indexOf('hold') !== -1 || s.indexOf('assign') !== -1) return 'var(--pill-hold-bdr)';
-        return 'var(--pill-active-bdr)';
-    }
-
-    container.innerHTML = entries.slice(0, 8).map(function(e) {
+    container.innerHTML = entries.map(function(e) {
         var status = e[0], cnt = e[1];
         var pct = ((cnt / maxVal) * 100).toFixed(1);
         return '<div class="dash-bar-row">' +
