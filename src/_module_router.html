@@ -111,13 +111,14 @@ function syncWorkspaceModeState() {
     isGridMode = (currentWorkspaceView === 'grid');
     isDeckMode = isSlideFaceActive();
 
-    document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active', 'digest-mode-active');
+    document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active', 'digest-mode-active', 'dashboard-active');
     if (isGridMode) document.body.classList.add('grid-mode-active');
     if (isDeckMode) document.body.classList.add('deck-mode-active');
     if (currentWorkspaceView === 'gantt') document.body.classList.add('gantt-view-active');
 }
 
 function syncWorkspaceChrome() {
+    if (currentWorkspaceView === 'dashboard') return;
     ['detail', 'grid', 'gantt'].forEach(v => {
         const btn = getEl(`view-btn-${v}`);
         if (btn) btn.classList.toggle('active', v === currentWorkspaceView);
@@ -236,6 +237,10 @@ function syncGanttViewportLayout() {
 }
 
 function switchWorkspaceView(mode) {
+    if (mode === 'dashboard') {
+        if (typeof openDashboard === 'function') openDashboard();
+        return;
+    }
     const requestedMode = mode;
     const normalizedMode = (requestedMode === 'deck' || requestedMode === 'slide' || requestedMode === 'digest') ? 'detail' : requestedMode;
     if (typeof toggleDesktopFiltersPanel === 'function') {

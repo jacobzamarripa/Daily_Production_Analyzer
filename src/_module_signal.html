@@ -102,20 +102,11 @@ function _signalBackdropClick(e) {
 }
 
 function _showStartupAfterSignal() {
-  var overlay = document.getElementById('startup-overlay');
-  var countEl = document.getElementById('startup-countdown');
-  if (!overlay || !countEl) return completeStartup('detail');
-  overlay.classList.add('visible');
-  var countdown = 6;
-  countEl.innerText = countdown;
-  var t = setInterval(function() {
-    countdown--;
-    countEl.innerText = countdown;
-    if (countdown <= 0) {
-      clearInterval(t);
-      completeStartup('detail');
-    }
-  }, 1000);
+  if (typeof openDashboard === 'function') {
+    openDashboard();
+  } else {
+    completeStartup('detail');
+  }
 }
 
 function loadSignalData(tf) {

@@ -1,0 +1,305 @@
+<script>
+// ============================================================
+// FILE: _module_dashboard.html | ROLE: Dashboard landing page — render and open/close
+// DEPENDS ON: _state_analytics.html (currentFilterStats, currentCriticalHubItems),
+//   _state_queue.html (allActionItems), _utils_shared.html (esc, getSeverity, getEl),
+//   _module_critical_hub.html (getCriticalType, openCriticalHub),
+//   _module_startup_refdata.html (completeStartup)
+// DEPENDED ON BY: _module_signal.html (_showStartupAfterSignal),
+//   _module_router.html (switchWorkspaceView 'dashboard'),
+//   WebApp.html (nav-brand onclick)
+// ============================================================
+
+function openDashboard() {
+    if (window.innerWidth <= 480) {
+        completeStartup('detail');
+        return;
+    }
+    var overlay = getEl('startup-overlay');
+    if (!overlay) { completeStartup('detail'); return; }
+
+    renderDashboard();
+    overlay.classList.add('visible');
+    currentWorkspaceView = 'dashboard';
+    document.body.classList.add('dashboard-active');
+}
+
+function closeDashboard() {
+    var overlay = getEl('startup-overlay');
+    if (overlay) overlay.classList.remove('visible');
+    document.body.classList.remove('dashboard-active');
+}
+
+function renderDashboard() {
+    var hasData = Array.isArray(allActionItems) && allActionItems.length > 0;
+
+    var tsEl = getEl('dash-timestamp');
+    var nameEl = getEl('dash-program-name');
+    if (tsEl) tsEl.textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    if (nameEl) nameEl.textContent = hasData ? allActionItems.length + ' Projects Loaded' : 'Loading...';
+
+    // Ref data freshness label
+    var refEl = getEl('dash-ref-label');
+    if (refEl && typeof globalRefDataDate === 'string' && globalRefDataDate) {
+        refEl.textContent = 'Ref data: ' + globalRefDataDate;
+        refEl.style.display = '';
+    } else if (refEl) {
+        refEl.style.display = 'none';
+    }
+
+    if (!hasData) {
+        _renderDashSkeletons();
+        return;
+    }
+
+    renderDashKpiStrip();
+    renderDashHealthDonut();
+    renderDashStageBar();
+    renderDashVendorBsl();
+    renderDashFlagsFeed();
+}
+
+function renderDashKpiStrip() {
+    var container = getEl('dash-kpi-strip');
+    if (!container) return;
+
+    var total = allActionItems.length;
+    var stageCounts = (currentFilterStats && currentFilterStats.stageCounts) || {};
+
+    var ofsCount = 0, permitCount = 0, completeCount = 0;
+    Object.keys(stageCounts).forEach(function(stage) {
+        var s = stage.toLowerCase();
+        var cnt = stageCounts[stage] || 0;
+        if (s.indexOf('ofs') !== -1 || s.indexOf('open for sale') !== -1) ofsCount += cnt;
+        else if (s.indexOf('permit') !== -1) permitCount += cnt;
+        else if (s.indexOf('complete') !== -1) completeCount += cnt;
+    });
+
+    var critCount = (currentCriticalHubItems || []).length;
+
+    var cards = [
+        { label: 'Total',      val: total,        cls: '' },
+        { label: 'OFS',        val: ofsCount,     cls: 'is-ofs' },
+        { label: 'Permitting', val: permitCount,   cls: 'is-permit' },
+        { label: 'Complete',   val: completeCount, cls: 'is-complete' },
+        { label: 'Critical',   val: critCount,     cls: critCount > 0 ? 'is-critical' : '' }
+    ];
+
+    container.innerHTML = cards.map(function(c) {
+        return '<div class="dash-kpi-card ' + c.cls + '">' +
+            '<div class="dash-kpi-val">' + c.val + '</div>' +
+            '<div class="dash-kpi-label">' + esc(c.label) + '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function renderDashHealthDonut() {
+    var wrap = getEl('dash-donut-wrap');
+    if (!wrap) return;
+
+    var items = Array.isArray(allActionItems) ? allActionItems : [];
+    var total = items.length;
+    if (total === 0) { wrap.innerHTML = '<div class="dash-card-label" style="color:var(--text-muted)">No data</div>'; return; }
+
+    var critCnt = 0, warnCnt = 0, cleanCnt = 0;
+    items.forEach(function(item) {
+        var sev = getSeverity(item.flags);
+        if (sev === 'crit') critCnt++;
+        else if (sev === 'warn') warnCnt++;
+        else cleanCnt++;
+    });
+
+    wrap.innerHTML = _buildDonutSVG(total, critCnt, warnCnt, cleanCnt) +
+        '<div class="dash-donut-legend">' +
+            '<div class="dash-legend-row">' +
+                '<div class="dash-legend-row-left">' +
+                    '<div class="dash-legend-dot" style="background:var(--pill-complete-bdr)"></div>Clean' +
+                '</div>' +
+                '<span class="dash-legend-val">' + cleanCnt + '</span>' +
+            '</div>' +
+            '<div class="dash-legend-row">' +
+                '<div class="dash-legend-row-left">' +
+                    '<div class="dash-legend-dot" style="background:var(--color-review)"></div>Warning' +
+                '</div>' +
+                '<span class="dash-legend-val">' + warnCnt + '</span>' +
+            '</div>' +
+            '<div class="dash-legend-row">' +
+                '<div class="dash-legend-row-left">' +
+                    '<div class="dash-legend-dot" style="background:var(--color-critical)"></div>Critical' +
+                '</div>' +
+                '<span class="dash-legend-val">' + critCnt + '</span>' +
+            '</div>' +
+        '</div>';
+}
+
+function _buildDonutSVG(total, crit, warn, clean) {
+    var r = 38;
+    var circ = 2 * Math.PI * r; // ~238.76
+    var safe = total || 1;
+
+    var cleanLen = (clean / safe) * circ;
+    var warnLen  = (warn  / safe) * circ;
+    var critLen  = (crit  / safe) * circ;
+
+    // Arcs stack clockwise: clean → warn → crit
+    var warnOffset = -(cleanLen);
+    var critOffset = -(cleanLen + warnLen);
+
+    return '<svg class="dash-donut-svg" viewBox="0 0 100 100">' +
+        '<circle class="donut-track" cx="50" cy="50" r="' + r + '" />' +
+        '<circle class="donut-arc donut-arc-clean" cx="50" cy="50" r="' + r + '"' +
+            ' stroke-dasharray="' + cleanLen.toFixed(2) + ' ' + circ.toFixed(2) + '"' +
+            ' stroke-dashoffset="0" />' +
+        '<circle class="donut-arc donut-arc-warn" cx="50" cy="50" r="' + r + '"' +
+            ' stroke-dasharray="' + warnLen.toFixed(2) + ' ' + circ.toFixed(2) + '"' +
+            ' stroke-dashoffset="' + warnOffset.toFixed(2) + '" />' +
+        '<circle class="donut-arc donut-arc-crit" cx="50" cy="50" r="' + r + '"' +
+            ' stroke-dasharray="' + critLen.toFixed(2) + ' ' + circ.toFixed(2) + '"' +
+            ' stroke-dashoffset="' + critOffset.toFixed(2) + '" />' +
+        '<text class="donut-center-val" x="50" y="46">' + total + '</text>' +
+        '<text class="donut-center-label" x="50" y="58">PROJECTS</text>' +
+    '</svg>';
+}
+
+function renderDashStageBar() {
+    var container = getEl('dash-stage-bars');
+    if (!container) return;
+
+    var stageCounts = (currentFilterStats && currentFilterStats.stageCounts) || {};
+    var entries = Object.keys(stageCounts).map(function(k) { return [k, stageCounts[k]]; })
+        .filter(function(e) { return e[1] > 0; })
+        .sort(function(a, b) { return b[1] - a[1]; });
+
+    if (!entries.length) {
+        container.innerHTML = '<div class="dash-bar-label" style="color:var(--text-muted)">No stage data</div>';
+        return;
+    }
+
+    var maxVal = entries[0][1];
+
+    function stageColor(stageName) {
+        var s = (stageName || '').toLowerCase();
+        if (s.indexOf('ofs') !== -1 || s.indexOf('open for sale') !== -1) return 'var(--pill-ofs-bg)';
+        if (s.indexOf('permit') !== -1) return 'var(--pill-permit-bg)';
+        if (s.indexOf('complete') !== -1) return 'var(--pill-complete-bg)';
+        if (s.indexOf('hold') !== -1) return 'var(--pill-hold-bg)';
+        return 'var(--pill-active-bg)';
+    }
+
+    function stageBorderColor(stageName) {
+        var s = (stageName || '').toLowerCase();
+        if (s.indexOf('ofs') !== -1 || s.indexOf('open for sale') !== -1) return 'var(--pill-ofs-bdr)';
+        if (s.indexOf('permit') !== -1) return 'var(--pill-permit-bdr)';
+        if (s.indexOf('complete') !== -1) return 'var(--pill-complete-bdr)';
+        if (s.indexOf('hold') !== -1) return 'var(--pill-hold-bdr)';
+        return 'var(--pill-active-bdr)';
+    }
+
+    container.innerHTML = entries.slice(0, 8).map(function(e) {
+        var stage = e[0], cnt = e[1];
+        var pct = ((cnt / maxVal) * 100).toFixed(1);
+        return '<div class="dash-bar-row">' +
+            '<div class="dash-bar-label" title="' + esc(stage) + '">' + esc(stage) + '</div>' +
+            '<div class="dash-bar-track">' +
+                '<div class="dash-bar-fill" style="width:' + pct + '%;background:' + stageBorderColor(stage) + ';opacity:0.6;"></div>' +
+            '</div>' +
+            '<div class="dash-bar-count">' + cnt + '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function renderDashVendorBsl() {
+    var container = getEl('dash-vendor-grid');
+    if (!container) return;
+
+    var bslByVendor = (currentFilterStats && currentFilterStats.bslByVendor) || {};
+    var sorted = Object.keys(bslByVendor)
+        .map(function(v) { return [v, bslByVendor[v]]; })
+        .filter(function(e) { return e[1] > 0; })
+        .sort(function(a, b) { return b[1] - a[1]; })
+        .slice(0, 10);
+
+    if (!sorted.length) {
+        container.innerHTML = '<div class="dash-vendor-name" style="color:var(--text-muted)">No BSL data</div>';
+        return;
+    }
+
+    container.innerHTML = sorted.map(function(e) {
+        return '<div class="dash-vendor-card">' +
+            '<div class="dash-vendor-name">' + esc(e[0]) + '</div>' +
+            '<div class="dash-vendor-bsl">' + Number(e[1]).toLocaleString() + '</div>' +
+            '<div class="dash-vendor-sub">BSLs</div>' +
+        '</div>';
+    }).join('');
+}
+
+function renderDashFlagsFeed() {
+    var feedCard = getEl('dash-flags-card');
+    var container = getEl('dash-flag-feed');
+    if (!container || !feedCard) return;
+
+    var items = (currentCriticalHubItems || []).slice(0, 5);
+
+    if (!items.length) {
+        feedCard.style.display = 'none';
+        return;
+    }
+
+    feedCard.style.display = '';
+
+    container.innerHTML = items.map(function(item) {
+        var sev = getSeverity(item.flags);
+        var flagType = typeof getCriticalType === 'function' ? getCriticalType(item) : 'Critical';
+        var isCrit = sev === 'crit';
+        var cls = isCrit ? 'is-crit' : 'is-warn';
+        var fdh = esc(item.fdh || '');
+        var vendor = esc(item.vendor || '');
+
+        return '<div class="dash-flag-item ' + cls + '">' +
+            '<div>' +
+                '<div class="dash-flag-fdh">' + fdh + '</div>' +
+                '<div class="dash-flag-meta">' + vendor + (flagType ? ' · ' + esc(flagType) : '') + '</div>' +
+            '</div>' +
+            '<span class="dash-flag-badge ' + cls + '">' + (isCrit ? 'CRITICAL' : 'WARNING') + '</span>' +
+            '<button class="dash-flag-nav-btn" onclick="navigateFromDashboardFlag(\'' + fdh.replace(/'/g, "\\'") + '\')">' +
+                'View' +
+            '</button>' +
+        '</div>';
+    }).join('');
+}
+
+function navigateFromDashboardFlag(fdh) {
+    completeStartup('detail');
+    setTimeout(function() {
+        if (typeof openCriticalHub === 'function') openCriticalHub();
+    }, 250);
+}
+
+function _renderDashSkeletons() {
+    var strip = getEl('dash-kpi-strip');
+    if (strip) {
+        strip.innerHTML = [1,2,3,4,5].map(function() {
+            return '<div class="dash-kpi-card">' +
+                '<div class="dash-skeleton" style="height:28px;width:55%;margin-bottom:6px;"></div>' +
+                '<div class="dash-skeleton" style="height:10px;width:75%;"></div>' +
+            '</div>';
+        }).join('');
+    }
+
+    var donutWrap = getEl('dash-donut-wrap');
+    if (donutWrap) {
+        donutWrap.innerHTML = '<div class="dash-skeleton" style="width:110px;height:110px;border-radius:50%;"></div>';
+    }
+
+    var stageBars = getEl('dash-stage-bars');
+    if (stageBars) {
+        stageBars.innerHTML = [1,2,3,4].map(function() {
+            return '<div class="dash-bar-row">' +
+                '<div class="dash-skeleton" style="height:11px;width:80px;"></div>' +
+                '<div class="dash-skeleton" style="height:7px;flex:1;"></div>' +
+                '<div class="dash-skeleton" style="height:11px;width:24px;"></div>' +
+            '</div>';
+        }).join('');
+    }
+}
+</script>
