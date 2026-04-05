@@ -174,16 +174,33 @@ function renderDashStatusBar() {
         statusMap[s] = (statusMap[s] || 0) + 1;
     });
 
+    // Progression order: earliest stage first → latest
+    var progressionOrder = [
+        'permit',
+        'construct', 'active', 'install', 'build',
+        'ofs', 'open for sale',
+        'complete',
+        'hold', 'assign', 'pause'
+    ];
+
+    function progressionRank(statusName) {
+        var s = (statusName || '').toLowerCase();
+        for (var i = 0; i < progressionOrder.length; i++) {
+            if (s.indexOf(progressionOrder[i]) !== -1) return i;
+        }
+        return progressionOrder.length; // unknowns at end
+    }
+
     var entries = Object.keys(statusMap).map(function(k) { return [k, statusMap[k]]; })
         .filter(function(e) { return e[1] > 0; })
-        .sort(function(a, b) { return b[1] - a[1]; });
+        .sort(function(a, b) { return progressionRank(a[0]) - progressionRank(b[0]); });
 
     if (!entries.length) {
         container.innerHTML = '<div class="dash-bar-label" style="color:var(--text-muted)">No status data</div>';
         return;
     }
 
-    var maxVal = entries[0][1];
+    var maxVal = Math.max.apply(null, entries.map(function(e) { return e[1]; }));
 
     function statusColor(statusName) {
         var s = (statusName || '').toLowerCase();
