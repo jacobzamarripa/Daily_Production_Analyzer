@@ -70,6 +70,7 @@
   html.surface-ipad .ob-desktop-tab {
     min-height: var(--ipad-touch-target) !important;
     min-width: var(--ipad-touch-target) !important;
+    box-sizing: border-box !important;
   }
 
   /* ── KPI NAV — NUMBERS ONLY on iPad ─────────────────────────
@@ -84,6 +85,7 @@
     min-height: var(--ipad-touch-target) !important;
     min-width: 40px !important;
     padding: 6px 10px !important;
+    box-sizing: border-box !important;
   }
 
   html.surface-ipad .kpi-val {
@@ -101,9 +103,15 @@
     margin-left: 6px !important;
   }
 
-  /* View picker buttons in top nav */
+  /* View picker buttons in top nav — icon-only, no text padding needed */
   html.surface-ipad .top-nav-center .view-segment-btn {
-    padding: 8px 14px !important;
+    padding: 0 !important;
+  }
+
+  /* Scale up icons inside nav view buttons for better fill ratio (16/36 = 44%) */
+  html.surface-ipad .top-nav-center .view-segment-btn svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 
   /* Smart dock zone tabs */
