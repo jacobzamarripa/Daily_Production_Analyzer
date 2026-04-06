@@ -245,9 +245,19 @@
   /* ── 14. SMART DOCK — PORTRAIT BREATHING ROOM AND CENTERING ─── */
   /* Center dock over the reading pane at all orientations.
      Without this, the dock sits at left:50% of the full viewport
-     in portrait (744px), overlapping the sidebar. */
+     in portrait (744px), overlapping the sidebar.
+     max-width caps the dock to the reading pane width so it never
+     clips into the sidebar (portrait) or past the viewport edge (landscape). */
   html.surface-ipad .filter-strip {
     left: calc(50% + var(--inbox-panel-width) / 2) !important;
+    max-width: calc(100vw - var(--inbox-panel-width) - 24px) !important;
+  }
+
+  /* Theater Mode is a secondary feature — hide on iPad to reduce dock
+     width enough to fit portrait's narrower reading pane (~480px).
+     Users can still access it after entering Slide View. */
+  html.surface-ipad #dock-btn-presentation {
+    display: none !important;
   }
 
   @media (max-width: 820px) {
