@@ -19,8 +19,8 @@
   html.surface-ipad {
     /* Sidebar narrower than desktop (380px) to give reading pane room */
     --inbox-panel-width: 260px;
-    /* Comfortable touch target floor */
-    --ipad-touch-target: 44px;
+    /* Touch target bump — kept close to desktop (34px) for visual density */
+    --ipad-touch-target: 36px;
   }
 
   /* Portrait: tighten sidebar further when viewport ≤ 820px */
@@ -104,14 +104,12 @@
   /* View picker buttons in top nav */
   html.surface-ipad .top-nav-center .view-segment-btn {
     padding: 8px 14px !important;
-    min-height: var(--ipad-touch-target) !important;
   }
 
   /* Smart dock zone tabs */
   html.surface-ipad .filter-zone-tab,
   html.surface-ipad .dock-tab-btn,
   html.surface-ipad .smart-dock-tab {
-    min-height: 48px !important;
     padding: 0 14px !important;
     touch-action: manipulation;
   }
@@ -149,15 +147,13 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* ── 7. GRID — TOUCH ROW HEIGHTS ─────────────────────────── */
-  html.surface-ipad .qb-grid-row {
-    min-height: 52px !important;
-  }
-
+  /* ── 7. GRID — TOUCH CELL PADDING ───────────────────────── */
+  /* Only add minimal extra padding; avoid forcing min-height which
+     inflates rows far above desktop density. */
   html.surface-ipad .grid-cell,
   html.surface-ipad .qb-grid-cell {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
   }
 
   /* ── 8. GANTT — TOUCH ROW HEIGHTS ────────────────────────── */
@@ -226,12 +222,12 @@
     overflow-y: auto;
   }
 
-  /* Queue item rows: slightly taller tap targets */
+  /* Queue item rows: minimal padding bump only — no forced min-height
+     which would inflate rows far above desktop density. */
   html.surface-ipad .inbox-item,
   html.surface-ipad .queue-item {
-    min-height: 52px !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
   }
 
   /* ── 13. DECK / SLIDE MODE ────────────────────────────────── */
