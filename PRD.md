@@ -88,3 +88,11 @@
 - [x] Phase 4 — Desktop Review Hub & Overlay Modernization
 - [x] Phase 5 — Gantt / Grid / Deck Visual Consistency Sweep
 - [x] Phase 6 — Desktop Motion, Density, and Regression Validation
+
+---
+
+## Workstream 21 — Universal Surface Tier (iPad)
+- [x] Phase 1 — iPad Detection Layer (surface-ipad class + setV2Variant)
+- [x] Phase 2 — iPad CSS Partial (_styles_ipad.html — touch targets, layout, bottom sheet)
+- [x] Phase 3 — Navigation Ergonomics + Workspace Fixes (Gantt, Detail, Grid)
+- [ ] Phase 4 — QA & Smoke Test (Playwright iPad mini emulation)

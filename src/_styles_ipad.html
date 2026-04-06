@@ -1,0 +1,267 @@
+<!--
+// ============================================================
+// FILE: _styles_ipad.html | ROLE: iPad surface CSS overrides
+// DEPENDS ON: _styles_base.html, _styles_layout.html
+// DEPENDED ON BY: WebApp.html (included only in desktop shell)
+// MOBILE/AGENT NOTES: ALL rules scoped under .surface-ipad.
+//   Never remove this scope — desktop and phone must be isolated.
+//   iPad mini 6: 744px portrait / 1133px landscape, pointer:coarse.
+// ============================================================
+-->
+<style>
+  /* ═══════════════════════════════════════════════════════════
+     WS17 — iPad Surface Tier
+     Surface scope: html.surface-ipad
+     Portrait: 744px wide | Landscape: 1024-1133px wide
+  ═══════════════════════════════════════════════════════════ */
+
+  /* ── 1. ROOT TOKENS ───────────────────────────────────────── */
+  html.surface-ipad {
+    /* Sidebar narrower than desktop (380px) to give reading pane room */
+    --inbox-panel-width: 260px;
+    /* Comfortable touch target floor */
+    --ipad-touch-target: 44px;
+  }
+
+  /* Portrait: tighten sidebar further when viewport ≤ 820px */
+  @media (max-width: 820px) {
+    html.surface-ipad {
+      --inbox-panel-width: 240px;
+    }
+  }
+
+  /* Landscape: near-desktop width */
+  @media (min-width: 1024px) {
+    html.surface-ipad {
+      --inbox-panel-width: 300px;
+    }
+  }
+
+  /* ── 2. GLOBAL TOUCH POLISH ───────────────────────────────── */
+  html.surface-ipad *,
+  html.surface-ipad button,
+  html.surface-ipad input,
+  html.surface-ipad select,
+  html.surface-ipad a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html.surface-ipad button,
+  html.surface-ipad .btn,
+  html.surface-ipad .btn-nav,
+  html.surface-ipad .btn-icon,
+  html.surface-ipad .view-segment-btn,
+  html.surface-ipad .kpi-nav-box,
+  html.surface-ipad .dock-tab,
+  html.surface-ipad .ob-desktop-tab,
+  html.surface-ipad .tab-btn {
+    touch-action: manipulation;
+  }
+
+  /* ── 3. TOUCH TARGET FLOOR (44px) ─────────────────────────── */
+  html.surface-ipad .btn,
+  html.surface-ipad .btn-nav,
+  html.surface-ipad .btn-icon,
+  html.surface-ipad .view-segment-btn,
+  html.surface-ipad #btn-hamburger,
+  html.surface-ipad #btn-theme,
+  html.surface-ipad #btn-help,
+  html.surface-ipad .dock-tab,
+  html.surface-ipad .ob-desktop-tab {
+    min-height: var(--ipad-touch-target) !important;
+    min-width: var(--ipad-touch-target) !important;
+  }
+
+  /* ── KPI NAV — NUMBERS ONLY on iPad ─────────────────────────
+     Hide the "Pipeline" group heading and per-pill text labels.
+     Only the numeric value and color remain visible.           */
+  html.surface-ipad .kpi-hud-label      { display: none !important; }  /* "Pipeline" heading */
+  html.surface-ipad .kpi-label          { display: none !important; }  /* "Projects" / "BSLs" / "Critical" */
+  html.surface-ipad .kpi-expand-wrap    { display: none !important; }  /* breakdown expansion */
+
+  /* Compact pill sizing — number only needs less room */
+  html.surface-ipad .kpi-nav-box {
+    min-height: var(--ipad-touch-target) !important;
+    min-width: 40px !important;
+    padding: 6px 10px !important;
+  }
+
+  html.surface-ipad .kpi-val {
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+  }
+
+  html.surface-ipad .kpi-hud-group {
+    gap: 4px !important;
+  }
+
+  html.surface-ipad .kpi-nav-container {
+    gap: 4px !important;
+    margin-left: 6px !important;
+  }
+
+  /* View picker buttons in top nav */
+  html.surface-ipad .top-nav-center .view-segment-btn {
+    padding: 8px 14px !important;
+    min-height: var(--ipad-touch-target) !important;
+  }
+
+  /* Smart dock zone tabs */
+  html.surface-ipad .filter-zone-tab,
+  html.surface-ipad .dock-tab-btn,
+  html.surface-ipad .smart-dock-tab {
+    min-height: 48px !important;
+    padding: 0 14px !important;
+    touch-action: manipulation;
+  }
+
+  /* ── 4. TOP NAV — COMPACT BUT TOUCH-FRIENDLY ──────────────── */
+  html.surface-ipad .top-nav {
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 0 16px !important;
+  }
+
+  /* ── 5. WORKSPACE LAYOUT ─────────────────────────────────── */
+  /* Reading pane must not shrink below available space */
+  html.surface-ipad .reading-pane {
+    min-width: 0 !important;
+    padding: 14px !important;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  html.surface-ipad .inbox-sidebar {
+    width: var(--inbox-panel-width) !important;
+    min-width: 220px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ── 6. DETAIL PANE — MOMENTUM SCROLLING ─────────────────── */
+  html.surface-ipad #pane-content {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  html.surface-ipad .reading-pane-scroll,
+  html.surface-ipad .pane-scroll-area {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── 7. GRID — TOUCH ROW HEIGHTS ─────────────────────────── */
+  html.surface-ipad .qb-grid-row {
+    min-height: 52px !important;
+  }
+
+  html.surface-ipad .grid-cell,
+  html.surface-ipad .qb-grid-cell {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  /* ── 8. GANTT — TOUCH ROW HEIGHTS ────────────────────────── */
+  html.surface-ipad .gantt-row,
+  html.surface-ipad .gantt-task-row {
+    min-height: 44px !important;
+  }
+
+  html.surface-ipad .gantt-task-bar {
+    min-height: 28px !important;
+  }
+
+  /* ── 9. ADMIN / OUTBOX PANEL — RIGHT-SIDE FLOATING DRAWER ───
+     Floats over the reading pane / deck area without pushing content.
+     Sidebar (inbox list) remains visible on the left.               */
+  html.surface-ipad .outbox-pane {
+    /* Pull out of flex flow and float as overlay */
+    position: fixed !important;
+    top: 56px !important;          /* below top nav */
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    width: var(--inbox-panel-width) !important;
+    max-width: var(--inbox-panel-width) !important;
+    height: auto !important;
+    /* Slide in from the right */
+    transform: translateX(100%) !important;
+    transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+    border-radius: 20px 0 0 20px !important;
+    border-left: 1px solid var(--border) !important;
+    border-top: 1px solid var(--border) !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: -8px 0 32px rgba(0,0,0,0.12) !important;
+    z-index: 10050 !important;
+    overflow: hidden !important;
+    margin-bottom: 0 !important;
+    background: var(--card-bg) !important;
+  }
+
+  html.surface-ipad .outbox-pane.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Remove the drag-handle pseudo-element (not needed for side drawer) */
+  html.surface-ipad .outbox-pane::before {
+    display: none !important;
+  }
+
+  /* ── 10. HELP PANEL — CONSTRAIN ON NARROW PORTRAIT ───────── */
+  html.surface-ipad .help-panel {
+    max-width: min(90vw, 420px) !important;
+  }
+
+  /* ── 11. CRITICAL HUB OVERLAY — FIT PORTRAIT ─────────────── */
+  html.surface-ipad .critical-hub-overlay,
+  html.surface-ipad .critical-hub-panel {
+    max-width: calc(100vw - 32px) !important;
+  }
+
+  /* ── 12. QUEUE LIST — SCROLLABLE WITH MOMENTUM ───────────── */
+  html.surface-ipad #inbox-list,
+  html.surface-ipad .inbox-list-scroll,
+  html.surface-ipad .queue-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+
+  /* Queue item rows: slightly taller tap targets */
+  html.surface-ipad .inbox-item,
+  html.surface-ipad .queue-item {
+    min-height: 52px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  /* ── 13. DECK / SLIDE MODE ────────────────────────────────── */
+  /* Deck is available on iPad (WebApp.html shell) — no restrictions.
+     touch-action: pan-y allows vertical scroll but allows JS swipe detection */
+  html.surface-ipad #deck-stage {
+    touch-action: pan-y;
+  }
+
+  html.surface-ipad .deck-card,
+  html.surface-ipad .slide-face {
+    touch-action: pan-y;
+  }
+
+  /* ── 14. SMART DOCK — PORTRAIT BREATHING ROOM ────────────── */
+  @media (max-width: 820px) {
+    html.surface-ipad .filter-strip.smart-dock {
+      padding: 6px 12px !important;
+      gap: 6px !important;
+    }
+
+    html.surface-ipad .dock-zone-label {
+      font-size: 10px !important;
+    }
+  }
+
+  /* ── 15. SCROLLABLE CONTAINERS — GLOBAL MOMENTUM ─────────── */
+  html.surface-ipad [class*="scroll"],
+  html.surface-ipad [class*="-list"],
+  html.surface-ipad .review-hub-scroll-area {
+    -webkit-overflow-scrolling: touch;
+  }
+</style>

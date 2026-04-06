@@ -131,7 +131,7 @@ function setAdminPanelOpen(open) {
     }
 
     if (overlay) {
-        overlay.classList.toggle('open', open && window.innerWidth <= 768);
+        overlay.classList.toggle('open', open && (window.innerWidth <= 768 || isIPadLike()));
     }
 
     syncReviewHubControlState(open);

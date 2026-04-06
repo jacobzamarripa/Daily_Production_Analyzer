@@ -37,6 +37,7 @@
       }
 
       .btn-icon.mobile-menu-toggle { display: none; }
+      .nav-compact-fab { display: none; }
 
       /* WS20: Desktop shell container geometry — workspace as framed card */
       @media (min-width: 769px) {
@@ -504,18 +505,74 @@
           .inbox-sidebar { min-width: 240px; }
           .reading-pane { padding: 16px; }
           .qb-grid { gap: 20px; }
-          .kpi-nav-container { gap: 8px; margin-left: 8px; }
-          .kpi-hud-group { gap: 2px; padding: 3px; }
-          .kpi-hud-label { padding: 0 8px 0 6px; }
-          .kpi-nav-box { padding: 3px 8px; min-width: 38px; }
-          .kpi-expand-wrap { max-width: 0; }
+          /* Single-row header — override _styles_ui_core ≤1280px single-column stacking */
+          .top-nav { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important; gap: 6px !important; }
+          .top-nav-left { flex-wrap: nowrap !important; min-width: 0; justify-self: start !important; }
+          .top-nav-center { justify-content: center !important; flex-wrap: nowrap !important; justify-self: center !important; }
+          .nav-actions { flex-wrap: nowrap !important; gap: 4px !important; justify-self: end !important; justify-content: flex-end !important; }
+          .nav-brand { flex-shrink: 1; min-width: 0; }
+          .kpi-nav-container { flex: 0 0 auto !important; flex-wrap: nowrap !important; gap: 4px; margin-left: 6px; }
+          .kpi-hud-group { gap: 2px; padding: 3px; flex-wrap: nowrap !important; width: auto !important; }
+          /* Also override the ≤1100px kpi-hud-group width:100% rule */
+          .kpi-hud-label { padding: 0 6px 0 4px !important; border-bottom: none !important; width: auto !important; }
+          /* Header collapse: hide per-pill sub-labels, keep "Pipeline" heading; swap full button groups for compact fabs */
+          .kpi-label { display: none !important; }
+          .view-segment-group { display: none !important; }
+          .nav-compact-fab { display: flex !important; }
+          .kpi-nav-box { padding: 4px 8px; min-width: 32px; }
+          .kpi-expand-wrap { max-width: 0; overflow: hidden; }
           .kpi-expand-inner { gap: 4px; font-size: 8px; padding-left: 6px; margin-left: 6px; }
           .ref-age-badge { padding: 5px 8px; }
+          /* Admin panel floats as right-side drawer — does not push content aside */
+          .outbox-pane {
+              position: fixed !important;
+              top: var(--desktop-header-height, 56px) !important;
+              right: 0 !important;
+              bottom: 0 !important;
+              left: auto !important;
+              width: var(--inbox-panel-width) !important;
+              transform: translateX(110%) !important;
+              transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+              border-radius: 16px 0 0 16px !important;
+              border-left: 1px solid var(--border) !important;
+              border-top: none !important;
+              box-shadow: -6px 0 24px rgba(0,0,0,0.10) !important;
+              z-index: 10050 !important;
+              margin-bottom: 0 !important;
+              background: var(--card-bg) !important;
+          }
+          .outbox-pane.open {
+              transform: translateX(0) !important;
+          }
       }
 
       /* iPad handles fallback — (hover: none) catches Edge which may not report pointer:coarse */
       @media screen and (hover: none) and (min-width: 769px) and (min-height: 600px) {
           :root { --inbox-panel-width: 280px; }
+          .top-nav { gap: 6px !important; }
+          .top-nav-left { flex-wrap: nowrap !important; min-width: 0; }
+          .nav-brand { flex-shrink: 1; min-width: 0; }
+          .kpi-nav-container { flex: 0 0 auto !important; flex-wrap: nowrap !important; }
+          .kpi-hud-group { flex-wrap: nowrap; }
+          .kpi-label { display: none !important; }
+          .nav-actions { flex-wrap: nowrap !important; gap: 4px !important; }
+          .view-segment-group { display: none !important; }
+          .nav-compact-fab { display: flex !important; }
+          .outbox-pane {
+              position: fixed !important;
+              top: var(--desktop-header-height, 56px) !important;
+              right: 0 !important; bottom: 0 !important; left: auto !important;
+              width: var(--inbox-panel-width) !important;
+              transform: translateX(110%) !important;
+              transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+              border-radius: 16px 0 0 16px !important;
+              border-left: 1px solid var(--border) !important;
+              box-shadow: -6px 0 24px rgba(0,0,0,0.10) !important;
+              z-index: 10050 !important;
+              margin-bottom: 0 !important;
+              background: var(--card-bg) !important;
+          }
+          .outbox-pane.open { transform: translateX(0) !important; }
       }
       .touch-tablet { --inbox-panel-width: 280px; }
 

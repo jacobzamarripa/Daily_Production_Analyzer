@@ -672,4 +672,12 @@
     .outbox-pane   { width: auto !important; min-width: 0 !important; max-width: none !important; }
 }
 
+/* 📱 TABLET — dock centered over reading pane (must be after _styles_ui_core overrides left:50%) */
+@media screen and (pointer: coarse) and (min-width: 769px) and (min-height: 600px) {
+    .filter-strip { left: calc(50% + var(--inbox-panel-width) / 2) !important; }
+}
+@media screen and (hover: none) and (min-width: 769px) and (min-height: 600px) {
+    .filter-strip { left: calc(50% + var(--inbox-panel-width) / 2) !important; }
+}
+
 </style>

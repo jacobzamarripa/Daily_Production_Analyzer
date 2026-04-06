@@ -1291,6 +1291,20 @@ function toggleNavFab() {
     if (!dropdown) return;
     dropdown.classList.toggle('open');
 }
+function toggleNavViewFab() {
+    let d = document.getElementById('nav-view-dropdown');
+    if (!d) return;
+    let opening = !d.classList.contains('open');
+    document.getElementById('nav-tools-dropdown')?.classList.remove('open');
+    d.classList.toggle('open', opening);
+}
+function toggleNavToolsFab() {
+    let d = document.getElementById('nav-tools-dropdown');
+    if (!d) return;
+    let opening = !d.classList.contains('open');
+    document.getElementById('nav-view-dropdown')?.classList.remove('open');
+    d.classList.toggle('open', opening);
+}
 
 function getProjectsHudFilterEntries() {
     let entries = [];

@@ -95,7 +95,9 @@ function updateRefDataIndicator() {
         badge.style.color = color;
         badge.style.background = bgColor;
         badge.style.borderColor = borderColor;
-        badge.textContent = `REF DATA: ${label}`;
+        const isTablet = window.matchMedia('(pointer: coarse) and (min-width: 769px) and (min-height: 600px)').matches;
+        const shortLabel = daysOld <= 0 ? '✓' : `${daysOld}d`;
+        badge.textContent = isTablet ? `Ref: ${shortLabel}` : `REF DATA: ${label}`;
     }
     if (paneSpan) {
         paneSpan.textContent = `REF DATA: ${displayDate} (${label})`;

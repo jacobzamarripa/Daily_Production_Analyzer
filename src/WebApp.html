@@ -11,6 +11,13 @@
           if (url.searchParams.get('shell') === 'desktop') return;
 
           const ua = navigator.userAgent || '';
+          // iPad (incl. iPadOS 13+ which reports Macintosh UA) must be excluded before the phone check
+          // because Chrome/older Safari on iPad include "Mobile" in their UA string.
+          const isIpad = /iPad/i.test(ua)
+            || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)
+            || window.matchMedia('(pointer: coarse) and (min-width: 600px) and (min-height: 600px)').matches;
+          if (isIpad) return;
+
           const isPhoneUA = /iPhone|Android.+Mobile|Windows Phone|Mobile/i.test(ua);
           const isPhoneViewport = window.matchMedia('(pointer: coarse) and (max-width: 480px)').matches;
 
@@ -289,6 +296,39 @@
               <button class="view-segment-btn" onclick="toggleWidget('cal-widget', event)" title="Project Calendar">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               </button>
+          </div>
+          <!-- Tablet-compact dropdowns: hidden on desktop, shown on touch tablets via CSS -->
+          <div class="desktop-sync-fab nav-compact-fab" id="nav-view-fab-wrap">
+              <button class="btn-icon" onclick="toggleNavViewFab()" title="Switch View">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
+              </button>
+              <div class="nav-fab-dropdown" id="nav-view-dropdown">
+                  <button onclick="primeDockMotionOrigin(null,'detail'); switchWorkspaceView('detail'); toggleNavViewFab()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg> Detail
+                  </button>
+                  <button onclick="primeDockMotionOrigin(null,'grid'); switchWorkspaceView('grid'); toggleNavViewFab()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Grid
+                  </button>
+                  <button onclick="primeDockMotionOrigin(null,'gantt'); openGanttView(); toggleNavViewFab()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg> Gantt
+                  </button>
+              </div>
+          </div>
+          <div class="desktop-sync-fab nav-compact-fab" id="nav-tools-fab-wrap">
+              <button class="btn-icon" onclick="toggleNavToolsFab()" title="Tools">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              </button>
+              <div class="nav-fab-dropdown" id="nav-tools-dropdown">
+                  <button onclick="openSignal(true); toggleNavToolsFab()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Signal
+                  </button>
+                  <button onclick="toggleWidget('calc-widget', event); toggleNavToolsFab()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="18" x2="16" y2="18"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg> Calculator
+                  </button>
+                  <button onclick="toggleWidget('cal-widget', event); toggleNavToolsFab()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Calendar
+                  </button>
+              </div>
           </div>
       </div>
       <div id="critical-hub-overlay" class="critical-hub-overlay" onclick="closeCriticalHub()">
@@ -869,7 +909,6 @@
     <?!= include('_module_ui_shell_helpers') ?>
     <?!= include('_module_mini_sld') ?>
     <?!= include('_module_webapp_core') ?>
-
 
                 <!-- Legacy shared-shell mobile dock -->
                 <div id="mobile-dock">

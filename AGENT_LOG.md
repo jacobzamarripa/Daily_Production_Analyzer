@@ -1,5 +1,13 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-05: WS21 — Universal Surface Tier (iPad mini)
+- **New surface tier:** Added `html.surface-ipad` detection in `WebApp.html` auto-routing IIFE. Detects iPadOS 13+ (which reports Macintosh UA) via `pointer: coarse + min-width: 600px + min-height: 600px`. Sets `document.documentElement.classList.add('surface-ipad')` and `window.__surfaceIpad = true` without any redirect (iPad stays on WebApp.html desktop shell).
+- **Variant state:** After all modules load, `setV2Variant('iPad')` is called when `__surfaceIpad` is set. Desktop and phone paths unchanged.
+- **New CSS partial:** `src/_styles_ipad.html` — 15 sections covering: root tokens (sidebar 240-300px by orientation), touch-action/tap-highlight polish, 44px touch target floor on all interactive elements, reading pane momentum scrolling, grid rows 52px, Gantt rows 44px, admin/outbox as bottom sheet (70vh, 20px top radius, slide from translateY(100%)), help panel constrained, critical hub overlay constrained, queue item padding, deck touch-action passthrough.
+- **Gantt rotate hint:** `_styles_gantt.html:233` updated to exclude `.surface-ipad` from the portrait rotate-hint — iPad can show Gantt in both orientations.
+- **No shell changes:** `v2_shell_GlassFlow.html` untouched. Desktop experience bit-for-bit unchanged (all iPad CSS scoped under `html.surface-ipad`).
+- **PRD:** WS21 added; Phases 1-3 marked complete, Phase 4 (QA) pending.
+
 > [!success] 2026-04-04: Canonical OFS rewrite from reference-data source of truth
 - **Architectural reset:** Replaced the “effective OFS” fallback model with a canonical OFS contract sourced only from `5_Reference_Data` `OFS DATE`.
 - **New payload field:** `actionItems` now carry `canonicalOfsDate`, with legacy `ofsDate` forced to that same canonical value for compatibility while the rest of the app is still on mixed consumers.
