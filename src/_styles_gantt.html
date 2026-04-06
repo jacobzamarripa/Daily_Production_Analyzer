@@ -231,7 +231,7 @@
 
       /* Orientation-aware display logic */
       @media (max-width: 932px) and (orientation: portrait) {
-          body.gantt-view-active .timeline-wrapper { display: none !important; }
-          body.gantt-view-active .gantt-mobile-placeholder { display: flex !important; }
+          html:not(.surface-ipad) body.gantt-view-active .timeline-wrapper { display: none !important; }
+          html:not(.surface-ipad) body.gantt-view-active .gantt-mobile-placeholder { display: flex !important; }
       }
 </style>

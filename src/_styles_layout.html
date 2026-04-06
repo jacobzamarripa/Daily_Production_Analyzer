@@ -576,18 +576,316 @@
       }
       .touch-tablet { --inbox-panel-width: 280px; }
 
-      /* 📱 PHONE (≤480px) — vertical stack layout */
-      @media screen and (max-width: 768px) {
-          :root { --inbox-panel-width: 100vw; }
+      /* iPad portrait keeps the desktop shell; only cancel the phone hide/stack behavior. */
+      @media screen and (max-width: 768px) and (min-width: 600px) and (pointer: coarse) and (min-height: 600px) {
+          #main-workspace {
+              position: relative !important;
+              width: auto !important;
+              height: auto !important;
+              padding-top: 0 !important;
+              display: flex !important;
+              flex: 1 1 auto !important;
+              overflow: hidden !important;
+          }
 
           .workspace {
+              display: flex !important;
+              flex-direction: row !important;
+              align-items: stretch !important;
+              gap: 8px !important;
+              overflow: hidden !important;
+          }
+
+          .inbox-sidebar {
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              right: auto !important;
+              bottom: auto !important;
+              display: flex !important;
+              width: var(--inbox-panel-width) !important;
+              max-width: var(--inbox-panel-width) !important;
+              min-width: 240px !important;
+              height: auto !important;
+              max-height: none !important;
+              margin: 12px 0 12px 16px !important;
+              border-right: 1px solid var(--border) !important;
+              border-radius: 24px !important;
+              background: color-mix(in srgb, var(--card-bg) 92%, transparent) !important;
+              box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08) !important;
+              overflow: hidden !important;
+          }
+
+          .reading-pane {
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              right: auto !important;
+              bottom: auto !important;
+              display: flex !important;
+              width: auto !important;
+              min-width: 0 !important;
+              flex: 1 1 auto !important;
+              margin: 0 !important;
+              background: transparent !important;
+              box-shadow: none !important;
+              transform: none !important;
+              overflow: hidden !important;
+          }
+
+          .upper-workspace,
+          #detail-layout,
+          .detail-main,
+          #grid-content,
+          #deck-stage,
+          #gantt-panel {
+              width: 100% !important;
+              height: auto !important;
+              min-height: 0 !important;
+              overflow: hidden !important;
+          }
+
+          html.surface-ipad #pane-content,
+          html.surface-ipad #grid-content,
+          html.surface-ipad #deck-stage {
+              height: 100% !important;
+              overflow: auto !important;
+          }
+
+          html.surface-ipad #gantt-panel {
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              right: auto !important;
+              bottom: auto !important;
+              display: none !important;
+              margin: 0 !important;
+              overflow: auto !important;
+          }
+
+          html.surface-ipad body.gantt-view-active #gantt-panel {
+              display: flex !important;
+              height: 100% !important;
+          }
+
+          html.surface-ipad body.gantt-view-active .timeline-wrapper,
+          html.surface-ipad body.gantt-view-active #gantt-wrapper,
+          html.surface-ipad body.gantt-view-active #gantt-scroll {
+              display: flex !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+              min-height: 0 !important;
+          }
+
+          html.surface-ipad body.gantt-view-active .gantt-mobile-placeholder {
+              display: none !important;
+          }
+
+          html.surface-ipad .outbox-pane {
+              width: min(320px, calc(100vw - 24px)) !important;
+              max-width: min(320px, calc(100vw - 24px)) !important;
+          }
+
+          html.surface-ipad .help-panel {
+              width: min(380px, calc(100vw - 24px)) !important;
+              max-width: min(380px, calc(100vw - 24px)) !important;
+          }
+
+          html.surface-ipad .top-nav {
+              position: relative !important;
+              top: auto !important;
+              left: auto !important;
+              right: auto !important;
+              display: grid !important;
+              grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+              min-height: var(--desktop-header-height) !important;
+              height: auto !important;
+              max-height: none !important;
+              padding: 8px 18px !important;
+              overflow: visible !important;
+              backdrop-filter: blur(12px) !important;
+              -webkit-backdrop-filter: blur(12px) !important;
+          }
+
+          html.surface-ipad .top-nav-left {
+              display: flex !important;
+              align-items: center !important;
+              gap: 12px !important;
+              min-width: 0 !important;
+              flex-wrap: nowrap !important;
+              justify-self: start !important;
+          }
+
+          html.surface-ipad .nav-brand {
+              order: 0 !important;
+              flex: 0 1 auto !important;
+              padding: 8px 14px !important;
+              overflow: visible !important;
+              text-overflow: clip !important;
+              align-self: auto !important;
+          }
+
+          html.surface-ipad .nav-brand-title {
+              font-size: 22px !important;
+              font-weight: 900 !important;
+              white-space: nowrap !important;
+              overflow: visible !important;
+              text-overflow: clip !important;
+              max-width: none !important;
+          }
+
+          html.surface-ipad .top-nav-center {
+              display: inline-flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              gap: 8px !important;
+              min-width: 0 !important;
+              flex-wrap: nowrap !important;
+              justify-self: center !important;
+          }
+
+          html.surface-ipad .kpi-nav-container,
+          html.surface-ipad .kpi-expand-wrap,
+          html.surface-ipad #bsls-pie-hud,
+          html.surface-ipad #projects-pie-hud,
+          html.surface-ipad .gemini-badge,
+          html.surface-ipad #nav-ref-age,
+          html.surface-ipad .ref-age-badge {
+              display: initial !important;
+          }
+
+          html.surface-ipad .kpi-nav-container {
+              display: flex !important;
+              align-items: center !important;
+              flex: 0 0 auto !important;
+              flex-wrap: nowrap !important;
+              gap: 4px !important;
+              margin-left: 6px !important;
+              overflow: visible !important;
+              min-width: 0 !important;
+          }
+
+          html.surface-ipad .kpi-hud-group {
+              gap: 2px !important;
+              padding: 3px !important;
+              flex-wrap: nowrap !important;
+              width: auto !important;
+          }
+
+          html.surface-ipad .kpi-hud-label {
+              padding: 0 6px 0 4px !important;
+              border-right: 1px solid var(--border) !important;
+              border-bottom: none !important;
+              width: auto !important;
+              font-size: 9px !important;
+              letter-spacing: 0.9px !important;
+          }
+
+          html.surface-ipad .kpi-nav-box {
+              padding: 4px 8px !important;
+              min-width: 32px !important;
+          }
+
+          html.surface-ipad .kpi-label {
+              display: none !important;
+          }
+
+          html.surface-ipad .kpi-expand-wrap {
+              max-width: 0 !important;
+              opacity: 0 !important;
+              overflow: hidden !important;
+          }
+
+          html.surface-ipad .kpi-expand-inner {
+              gap: 4px !important;
+              font-size: 8px !important;
+              padding-left: 6px !important;
+              margin-left: 6px !important;
+          }
+
+          html.surface-ipad .desktop-sync-fab {
+              display: flex !important;
+              align-items: center !important;
+          }
+
+          html.surface-ipad .nav-pipeline-fab {
+              display: none !important;
+          }
+
+          html.surface-ipad .nav-actions {
+              order: 0 !important;
+              display: flex !important;
+              align-items: center !important;
+              gap: 4px !important;
+              min-width: 0 !important;
+              flex-wrap: nowrap !important;
+              justify-content: flex-end !important;
+              justify-self: end !important;
+          }
+
+          html.surface-ipad #nav-ref-age,
+          html.surface-ipad .ref-age-badge {
+              padding: 5px 8px !important;
+              font-size: 9px !important;
+              line-height: 1 !important;
+              border-radius: 12px !important;
+          }
+
+          html.surface-ipad #btn-hamburger,
+          html.surface-ipad #btn-theme,
+          html.surface-ipad #btn-help {
+              min-width: auto !important;
+              min-height: auto !important;
+              height: 34px !important;
+              flex-shrink: 0 !important;
+          }
+
+      }
+
+      @media screen and (orientation: portrait) {
+          html.surface-ipad .kpi-nav-container { display: none !important; }
+          html.surface-ipad .nav-pipeline-fab { display: flex !important; align-items: center !important; }
+          html.surface-ipad .view-segment-group { display: none !important; }
+          html.surface-ipad .nav-compact-fab { display: flex !important; }
+          html.surface-ipad .nav-pipeline-fab .btn-icon {
+              height: 34px !important;
+              padding: 0 10px !important;
+              font-size: 11px !important;
+              font-weight: 900 !important;
+          }
+          html.surface-ipad .nav-pipeline-dropdown {
+              min-width: 144px !important;
+          }
+          html.surface-ipad .nav-pipeline-dropdown button {
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+              gap: 12px !important;
+              font-size: 11px !important;
+              font-weight: 800 !important;
+          }
+          html.surface-ipad .nav-pipeline-dropdown strong {
+              font-size: 12px !important;
+              font-weight: 900 !important;
+              line-height: 1 !important;
+          }
+          html.surface-ipad .nav-pipeline-dropdown button:nth-child(1) strong { color: #d97706 !important; }
+          html.surface-ipad .nav-pipeline-dropdown button:nth-child(2) strong { color: #2563eb !important; }
+          html.surface-ipad .nav-pipeline-dropdown button:nth-child(3) strong { color: #dc2626 !important; }
+      }
+
+      /* 📱 PHONE (≤480px) — vertical stack layout */
+      @media screen and (max-width: 768px) {
+          html:not(.surface-ipad) { --inbox-panel-width: 100vw; }
+
+          html:not(.surface-ipad) .workspace {
               flex-direction: column !important;
               gap: 0 !important;
               overflow-y: auto !important;
               overflow-x: hidden !important;
           }
 
-          .inbox-sidebar {
+          html:not(.surface-ipad) .inbox-sidebar {
               width: 100% !important;
               min-width: 0 !important;
               max-width: 100% !important;
@@ -601,7 +899,7 @@
               overflow-y: auto !important;
           }
 
-          .reading-pane {
+          html:not(.surface-ipad) .reading-pane {
               width: 100% !important;
               min-width: 0 !important;
               flex: 1 1 auto !important;
@@ -851,16 +1149,16 @@
                                                                                                                                                                                                 @media (max-width: 768px) {
 
                                                                                                                                                                                                     /* Prevent body overflow while allowing internal panel scroll */
-                                                                                                                                                                                                    html, body {
+                                                                                                                                                                                                    html:not(.surface-ipad), html:not(.surface-ipad) body {
                                                                                                                                                                                                         overflow: hidden !important;
                                                                                                                                                                                                         height: 100% !important;
                                                                                                                                                                                                         position: fixed !important; /* Prevents elastic pull-to-refresh on iOS */
                                                                                                                                                                                                         width: 100% !important;
                                                                                                                                                                                                     }
-                                                                                                                                                                                                    body { padding-bottom: 0 !important; }
+                                                                                                                                                                                                    html:not(.surface-ipad) body { padding-bottom: 0 !important; }
 
                                                                                                                                                                                                     /* ── Header: compact single row 52px (Solid) ── */
-                                                                                                                                                                                                    .top-nav {
+                                                                                                                                                                                                    html:not(.surface-ipad) .top-nav {
                                                                                                                                                                                                         position: fixed !important;
                                                                                                                                                                                                         top: 0 !important;
                                                                                                                                                                                                         left: 0 !important;
@@ -879,12 +1177,12 @@
                                                                                                                                                                                                         -webkit-backdrop-filter: none !important;
                                                                                                                                                                                                         border-bottom: 1px solid var(--border) !important;
                                                                                                                                                                                                     }
-                                                                                                                                                                                                    body.dark-mode .top-nav {
+                                                                                                                                                                                                    html:not(.surface-ipad) body.dark-mode .top-nav {
                                                                                                                                                                                                         background: var(--card-bg) !important;
                                                                                                                                                                                                         border-bottom: 1px solid var(--border) !important;
                                                                                                                                                                                                     }
-                                                                                                                                                                                                    .top-nav-left { display: contents !important; }
-                                                                                                                                                                                                    .nav-brand {
+                                                                                                                                                                                                    html:not(.surface-ipad) .top-nav-left { display: contents !important; }
+                                                                                                                                                                                                    html:not(.surface-ipad) .nav-brand {
                                                                                                                                                                                                         order: 1 !important;
                                                                                                                                                                                                         flex: 1 1 auto !important;
                                                                                                                                                                                                         height: auto !important;
@@ -895,7 +1193,7 @@
                                                                                                                                                                                                         min-width: 0 !important;
                                                                                                                                                                                                         align-self: center !important;
                                                                                                                                                                                                     }
-                                                                                                                                                                                                    .nav-brand-title {
+                                                                                                                                                                                                    html:not(.surface-ipad) .nav-brand-title {
                                                                                                                                                                                                         font-size: 13px !important;
                                                                                                                                                                                                         font-weight: 800 !important;
                                                                                                                                                                                                         white-space: nowrap !important;
@@ -903,10 +1201,10 @@
                                                                                                                                                                                                         text-overflow: ellipsis !important;
                                                                                                                                                                                                         max-width: 100% !important;
                                                                                                                                                                                                     }
-                                                                                                                                                                                                    .nav-brand-signature {
+                                                                                                                                                                                                    html:not(.surface-ipad) .nav-brand-signature {
                                                                                                                                                                                                         display: none !important;
                                                                                                                                                                                                     }
-                                                                                                                                                                                                    .nav-actions {
+                                                                                                                                                                                                    html:not(.surface-ipad) .nav-actions {
                                                                                                                                                                                                         order: 2 !important;
                                                                                                                                                                                                         flex: 0 0 auto !important;
                                                                                                                                                                                                         height: auto !important;
@@ -915,18 +1213,18 @@
                                                                                                                                                                                                         gap: 4px !important;
                                                                                                                                                                                                     }
                                                                                                                                                                                                     /* KPI row hidden — context lives in queue panel header */
-                                                                                                                                                                                                    .kpi-nav-container { display: none !important; }
-                                                                                                                                                                                                    .kpi-expand-wrap   { display: none !important; }
-                                                                                                                                                                                                    #bsls-pie-hud, #projects-pie-hud { display: none !important; }
+                                                                                                                                                                                                    html:not(.surface-ipad) .kpi-nav-container { display: none !important; }
+                                                                                                                                                                                                    html:not(.surface-ipad) .kpi-expand-wrap   { display: none !important; }
+                                                                                                                                                                                                    html:not(.surface-ipad) #bsls-pie-hud, html:not(.surface-ipad) #projects-pie-hud { display: none !important; }
 
                                                                                                                                                                                                     /* Hide desktop-only header elements */
-                                                                                                                                                                                                    .top-nav-center, .nav-fab-hide, #btn-nav-fab,
-                                                                                                                                                                                                    .nav-fab-dropdown, .gemini-badge, #nav-ref-age, .ref-age-badge,
-                                                                                                                                                                                                    .desktop-sync-fab {
+                                                                                                                                                                                                    html:not(.surface-ipad) .top-nav-center, html:not(.surface-ipad) .nav-fab-hide, html:not(.surface-ipad) #btn-nav-fab,
+                                                                                                                                                                                                    html:not(.surface-ipad) .nav-fab-dropdown, html:not(.surface-ipad) .gemini-badge, html:not(.surface-ipad) #nav-ref-age, html:not(.surface-ipad) .ref-age-badge,
+                                                                                                                                                                                                    html:not(.surface-ipad) .desktop-sync-fab {
                                                                                                                                                                                                         display: none !important;
                                                                                                                                                                                                     }
                                                                                                                                                                                                     /* Keep hamburger, theme, help */
-                                                                                                                                                                                                    #btn-hamburger, #btn-theme, #btn-help {
+                                                                                                                                                                                                    html:not(.surface-ipad) #btn-hamburger, html:not(.surface-ipad) #btn-theme, html:not(.surface-ipad) #btn-help {
                                                                                                                                                                                                         display: flex !important;
                                                                                                                                                                                                         align-items: center !important;
                                                                                                                                                                                                         justify-content: center !important;
@@ -937,21 +1235,21 @@
                                                                                                                                                                                                     }
 
                                                                                                                                                                                                     /* ── WS12 Phase 4: Compact nav + touch targets ──────────── */
-                                                                                                                                                                                                    .top-nav {
+                                                                                                                                                                                                    html:not(.surface-ipad) .top-nav {
                                                                                                                                                                                                         grid-template-columns: minmax(0, 1fr) auto !important;
                                                                                                                                                                                                     }
 
-                                                                                                                                                                                                    *, button, input, select, a {
+                                                                                                                                                                                                    html:not(.surface-ipad) *, html:not(.surface-ipad) button, html:not(.surface-ipad) input, html:not(.surface-ipad) select, html:not(.surface-ipad) a {
                                                                                                                                                                                                         -webkit-tap-highlight-color: transparent;
                                                                                                                                                                                                     }
 
-                                                                                                                                                                                                    button, .btn, .btn-nav, .btn-icon, .view-segment-btn,
-                                                                                                                                                                                                    .kpi-nav-box, .m-tab-btn,
-                                                                                                                                                                                                    .nav-fab-dropdown button, .mobile-menu-panel button {
+                                                                                                                                                                                                    html:not(.surface-ipad) button, html:not(.surface-ipad) .btn, html:not(.surface-ipad) .btn-nav, html:not(.surface-ipad) .btn-icon, html:not(.surface-ipad) .view-segment-btn,
+                                                                                                                                                                                                    html:not(.surface-ipad) .kpi-nav-box, html:not(.surface-ipad) .m-tab-btn,
+                                                                                                                                                                                                    html:not(.surface-ipad) .nav-fab-dropdown button, html:not(.surface-ipad) .mobile-menu-panel button {
                                                                                                                                                                                                         touch-action: manipulation;
                                                                                                                                                                                                     }
 
-                                                                                                                                                                                                    .mobile-menu-panel button {
+                                                                                                                                                                                                    html:not(.surface-ipad) .mobile-menu-panel button {
                                                                                                                                                                                                         min-height: 44px !important;
                                                                                                                                                                                                         padding: 0 16px !important;
                                                                                                                                                                                                         display: flex !important;
@@ -959,7 +1257,7 @@
                                                                                                                                                                                                     }
 
                                                                                                                                                                                                     /* ── Workspace container ────────────────────────────────── */
-                                                                                                                                                                                                    #main-workspace {
+                                                                                                                                                                                                    html:not(.surface-ipad) #main-workspace {
                                                                                                                                                                                                         position: relative !important;
                                                                                                                                                                                                         width: 100vw !important;
                                                                                                                                                                                                         height: 100svh !important;
@@ -971,7 +1269,7 @@
                                                                                                                                                                                                     }
 
                                                                                                                                                                                                     /* ── Queue sidebar: floated card below header (Centric-Ops pattern) ── */
-                                                                                                                                                                                                    .inbox-sidebar {
+                                                                                                                                                                                                    html:not(.surface-ipad) .inbox-sidebar {
                                                                                                                                                                                                         position: absolute !important;
                                                                                                                                                                                                         top: 60px !important;
                                                                                                                                                                                                         left: 12px !important;
@@ -994,7 +1292,7 @@
                                                                                                                                                                                                     }
 
                                                                                                                                                                                                     /* ── Reading pane: floated card below header ── */
-                                                                                                                                                                                                    .reading-pane {
+                                                                                                                                                                                                    html:not(.surface-ipad) .reading-pane {
                                                                                                                                                                                                         position: absolute !important;
                                                                                                                                                                                                         top: 60px !important;
                                                                                                                                                                                                         left: 12px !important;
@@ -1009,7 +1307,7 @@
                                                                                                                                                                                                         box-shadow: 0 8px 32px rgba(15, 23, 42, 0.10) !important;
                                                                                                                                                                                                         flex: unset !important;
                                                                                                                                                                                                     }
-                                                                                                                                                                                                    .upper-workspace, #detail-layout, .detail-main {
+                                                                                                                                                                                                    html:not(.surface-ipad) .upper-workspace, html:not(.surface-ipad) #detail-layout, html:not(.surface-ipad) .detail-main {
                                                                                                                                                                                                         width: 100% !important;
                                                                                                                                                                                                         height: 100% !important;
                                                                                                                                                                                                         max-width: unset !important;
@@ -1019,7 +1317,7 @@
                                                                                                                                                                                                     }
 
                                                                                                                                                                                                     /* ── Gantt panel: full-screen overlay ───────────────────── */
-                                                                                                                                                                                                    #gantt-panel {
+                                                                                                                                                                                                    html:not(.surface-ipad) #gantt-panel {
                                                                                                                                                                                                         position: fixed !important;
                                                                                                                                                                                                         top: 52px !important;
                                                                                                                                                                                                         left: 0 !important;

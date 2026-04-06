@@ -1124,7 +1124,9 @@ function applyFilters() {
         setTxt('kpi-total-proj', displayFiltered.length);
         setTxt('kpi-active-bsls', activeBslsCount.toLocaleString());
         setTxt('kpi-active-crit', activeCritCount);
-
+        setTxt('nav-pipeline-projects-count', displayFiltered.length);
+        setTxt('nav-pipeline-bsls-count', activeBslsCount.toLocaleString());
+        setTxt('nav-pipeline-critical-count', activeCritCount);
         let sortedStageKeys = Object.keys(currentFilterStats.stageCounts).sort((a, b) => currentFilterStats.stageCounts[b] - currentFilterStats.stageCounts[a]);
         let top2Stages = sortedStageKeys.slice(0, 2);
         let stageHtml = top2Stages.map(s => `<span class="kpi-expand-token">${currentFilterStats.stageCounts[s]} ${esc(s)}</span>`).join('<span class="kpi-expand-sep">•</span>');
@@ -1297,6 +1299,7 @@ function toggleNavViewFab() {
     if (!d) return;
     let opening = !d.classList.contains('open');
     document.getElementById('nav-tools-dropdown')?.classList.remove('open');
+    document.getElementById('nav-pipeline-dropdown')?.classList.remove('open');
     d.classList.toggle('open', opening);
 }
 function toggleNavToolsFab() {
@@ -1304,6 +1307,15 @@ function toggleNavToolsFab() {
     if (!d) return;
     let opening = !d.classList.contains('open');
     document.getElementById('nav-view-dropdown')?.classList.remove('open');
+    document.getElementById('nav-pipeline-dropdown')?.classList.remove('open');
+    d.classList.toggle('open', opening);
+}
+function toggleNavPipelineFab() {
+    let d = document.getElementById('nav-pipeline-dropdown');
+    if (!d) return;
+    let opening = !d.classList.contains('open');
+    document.getElementById('nav-view-dropdown')?.classList.remove('open');
+    document.getElementById('nav-tools-dropdown')?.classList.remove('open');
     d.classList.toggle('open', opening);
 }
 
