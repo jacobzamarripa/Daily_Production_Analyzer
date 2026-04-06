@@ -246,7 +246,7 @@ function ensureDeckIndex() {
 function updateDeckStageSelection() {
     const items = getDeckItems();
     const active = items[deckIndex];
-    document.querySelectorAll('.inbox-list .grid-card').forEach(card => card.classList.remove('is-selected'));
+    document.querySelectorAll('.inbox-list .grid-card.is-selected').forEach(card => card.classList.remove('is-selected'));
     if (!active) return;
     document.querySelectorAll(`.inbox-list [data-fdh="${CSS.escape(String(active.fdh || ''))}"]`).forEach(card => card.classList.add('is-selected'));
     centerQueueCardByFdh(active.fdh, 'smooth');

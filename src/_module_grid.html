@@ -59,11 +59,22 @@ function updateGridPivot() {
     renderGrid();
 }
 
+let gridRenderRAF = null;
 function renderGrid() {
     if (!isGridMode && !isDeckMode) return;
+    if (gridRenderRAF) cancelAnimationFrame(gridRenderRAF);
+    gridRenderRAF = requestAnimationFrame(() => {
+        _performRenderGrid();
+        gridRenderRAF = null;
+    });
+}
+
+function _performRenderGrid() {
     const grid = getEl('grid-content');
     if (!grid) return;
     const logUser = getEl('filter-log-user')?.value || 'ALL';
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     if (currentGridPivot === 'global-log') {
         let validFdhs = new Set(filteredItems.map(i => i.fdh));
@@ -118,7 +129,11 @@ function renderGrid() {
         return;
     }
 
-    grid.innerHTML = filteredItems.map(item => {
+    // Performance Cap: Limit grid rendering to prevent browser stalling on massive datasets
+    const renderLimit = 400;
+    const itemsToRender = filteredItems.slice(0, renderLimit);
+
+    grid.innerHTML = itemsToRender.map(item => {
         let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
         let combinedPill = isNotInQb ? "NOT IN QB REFERENCE" : `${item.stage || "-"} | ${item.status || "-"}`;
         let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
@@ -128,14 +143,13 @@ function renderGrid() {
 
         let pStart = safeDate(item.cxStart);
         let pEnd = safeDate(item.cxEnd);
-        let daysLeft = pEnd ? Math.ceil((pEnd - new Date()) / 86400000) : 0;
+        let daysLeft = pEnd ? Math.ceil((pEnd - now) / 86400000) : 0;
         let st = (item.stage || "").toLowerCase();
         let stat = (item.status || "").toLowerCase();
         let isOFS = st.includes('ofs');
         let isComplete = stat.includes('complete');
         let isPermit = st.includes('permit');
         let isOnHold = stat.includes('hold') || stat.includes('assign');
-        let today = new Date(); today.setHours(0,0,0,0);
         let isOverdue = pEnd && today > pEnd && !isOFS && !isComplete && !isOnHold && !isPermit;
         let isMuted = isComplete || isOFS || isPermit;
         let muteClass = isMuted ? 'is-muted' : '';
@@ -152,7 +166,7 @@ function renderGrid() {
             let target = item.targetDate ? formatDate(item.targetDate) : 'TBD';
             let pct = 0;
             if (pStart && pEnd && pEnd - pStart > 0) {
-                let total = pEnd - pStart, elap = new Date() - pStart;
+                let total = pEnd - pStart, elap = now - pStart;
                 pct = Math.max(0, Math.min(100, (elap / total) * 100));
             }
             let sColor = "#facc15";
@@ -182,7 +196,7 @@ function renderGrid() {
                 </div>
             `;
         } else if (currentGridPivot === 'velocity') {
-            let v = item.vel;
+            let v = item.velocity || item.vel;
             let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
             let ofsMeta = getEffectiveOfsMonthMeta(item, today);
             let ofsMonthStr = ofsMeta.label;
@@ -305,6 +319,10 @@ function renderGrid() {
             </div>
         `;
     }).join('');
+
+    if (filteredItems.length > renderLimit) {
+        grid.innerHTML += `<div class="empty-msg" style="grid-column: 1 / -1; padding: 40px; opacity: 0.6;">Showing first ${renderLimit} of ${filteredItems.length} items. Use search to narrow results.</div>`;
+    }
 }
 
 function openPaneFromGrid(fdh) {
@@ -313,7 +331,7 @@ function openPaneFromGrid(fdh) {
 
     currentActiveItem = item;
 
-    document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('is-selected'));
+    document.querySelectorAll('.grid-card.is-selected').forEach(c => c.classList.remove('is-selected'));
     let matchingCards = Array.from(document.querySelectorAll(`.grid-card[data-fdh="${CSS.escape(String(item.fdh || ''))}"]`));
     let gCard = matchingCards[0] || getEl(`grid-card-${item.fdh}`);
     matchingCards.forEach(c => c.classList.add('is-selected'));
@@ -331,7 +349,7 @@ function openPaneFromGrid(fdh) {
     let ganttArea = getEl('gantt-area-main');
     if (ganttArea) {
         ganttArea.classList.add('has-focus');
-        document.querySelectorAll('.gantt-row').forEach(r => r.classList.remove('is-active'));
+        document.querySelectorAll('.gantt-row.is-active').forEach(r => r.classList.remove('is-active'));
         let gRow = getEl(`gantt-row-${item.fdh}`);
         if (gRow) gRow.classList.add('is-active');
     }

@@ -552,9 +552,9 @@ function openPane(item, cardEl) {
         currentActiveItem = item;
         renderChangeLog();
         currentQueueIndex = filteredItems.indexOf(item);
-        document.querySelectorAll('.email-card').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.email-card.selected').forEach(c => c.classList.remove('selected'));
         if (cardEl) cardEl.classList.add('selected');
-        document.querySelectorAll('.grid-card').forEach(c => c.classList.remove('is-selected'));
+        document.querySelectorAll('.grid-card.is-selected').forEach(c => c.classList.remove('is-selected'));
         document.querySelectorAll(`.grid-card[data-fdh="${CSS.escape(String(item.fdh || ''))}"]`).forEach(c => c.classList.add('is-selected'));
         centerQueueCardByFdh(item.fdh, 'smooth');
 
@@ -1214,8 +1214,9 @@ function applyFilters() {
         if (currentWorkspaceView === 'gantt' && !ganttFocusedFdh && ganttHasVisited) captureGanttScrollState();
         renderList(displayFiltered);
         renderAdminPane(activeQueueItems);
-        if (currentWorkspaceView === 'grid') renderGrid();
-        if (isDeckMode) {
+        if (currentWorkspaceView === 'grid') {
+            renderGrid();
+        } else if (isDeckMode) {
             renderGrid();
             renderDeckStage();
         }
