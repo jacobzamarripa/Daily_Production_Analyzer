@@ -82,23 +82,24 @@
     box-sizing: border-box !important;
   }
 
-  /* ── KPI NAV — NUMBERS ONLY on iPad ─────────────────────────
-     Hide the "Pipeline" group heading and per-pill text labels.
-     Only the numeric value and color remain visible.           */
-  html.surface-ipad .kpi-hud-label      { display: none !important; }  /* "Pipeline" heading */
+  /* ── KPI NAV — LANDSCAPE: restore PIPELINE label, numbers only ──
+     kpi-hud-label ("Pipeline") is restored — it auto-hides in
+     portrait because kpi-nav-container itself is display:none there.
+     Per-pill labels ("Projects"/"BSLs"/"Critical") and hover
+     expansions remain hidden to keep pills compact.               */
   html.surface-ipad .kpi-label          { display: none !important; }  /* "Projects" / "BSLs" / "Critical" */
   html.surface-ipad .kpi-expand-wrap    { display: none !important; }  /* breakdown expansion */
 
-  /* Compact pill sizing — number only needs less room */
+  /* Compact pill sizing — match desktop proportions */
   html.surface-ipad .kpi-nav-box {
-    min-height: var(--ipad-touch-target) !important;
-    min-width: 40px !important;
-    padding: 6px 10px !important;
+    min-height: 28px !important;
+    min-width: 36px !important;
+    padding: 4px 8px !important;
     box-sizing: border-box !important;
   }
 
   html.surface-ipad .kpi-val {
-    font-size: 15px !important;
+    font-size: 13px !important;
     font-weight: 900 !important;
     line-height: 1 !important;
   }
