@@ -4,6 +4,14 @@
 > Read this before editing any .gs file in 
 > this project.
 
+## MANDATORY: Plan Before Any Code Change
+
+Read AGENTS.md for the full protocol.
+Short version: before editing, creating, or
+deleting ANY file — present a written plan
+(Goal / Files / Risks) and WAIT for explicit
+user approval. No exceptions.
+
 ## GAS Runtime
 - V8 runtime — ES6+ supported
 - No Node.js, no npm, no require()

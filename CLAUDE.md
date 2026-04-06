@@ -1,5 +1,15 @@
 # Omni PMO App - AI Coding Guidelines
 
+## MANDATORY: Plan Before Any Code Change
+
+> See `AGENTS.md` for the full protocol. The short version:
+>
+> Before editing, creating, or deleting **any** file — present a written plan
+> (Goal / Files / Risks) and **wait for explicit user approval** before touching
+> a single line. No exceptions, no matter how small the change seems.
+
+---
+
 ## Tech Stack
 * **Environment:** Google Apps Script (V8 Runtime).
 * **Frontend:** Vanilla HTML, CSS, and ES6 JavaScript served via `HtmlService`. No external bundlers.
