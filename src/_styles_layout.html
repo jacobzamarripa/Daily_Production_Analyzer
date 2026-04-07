@@ -58,18 +58,6 @@
         .outbox-pane {
           margin-bottom: var(--desktop-shell-radius, 16px) !important;
         }
-        /* desktop-hub-btn: hide on mobile (default), show on desktop */
-        .desktop-hub-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 10px;
-        }
-        #btn-review-hub.is-active {
-          background: color-mix(in srgb, var(--accent) 12%, transparent);
-          border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-          color: var(--accent);
-        }
         /* Desktop tab strip — replaces bottom-dock tab context */
         .ob-desktop-tab-strip {
           display: flex;
@@ -264,84 +252,74 @@
           font-size: 10px;
           font-weight: 900;
         }
-        /* KPI mini chips: full-width 3-col on the panel width */
-        .outbox-pane .admin-kpi-mini-wrap {
-          width: 100%;
-        }
-        /* KPI chip row */
-        .review-hub-kpi-row {
+        /* KPI mini chips: dedicated row below tabs on desktop */
+        .admin-kpi-mini-wrap {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(3, 1fr);
           gap: 8px;
+          align-items: stretch;
+          background: color-mix(in srgb, var(--bg) 40%, transparent);
           padding: 10px 14px;
           border-bottom: 1px solid var(--border);
-          flex-shrink: 0;
         }
-        /* Chip base */
-        .review-hub-kpi-row .admin-kpi-mini {
+        /* Mini chip base */
+        .admin-kpi-mini {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           text-align: center;
-          min-height: 64px;
-          gap: 3px;
-          padding: 10px 6px;
-          border-radius: 14px;
-          border: 1px solid transparent;
+          min-width: 54px;
+          min-height: 52px;
+          gap: 2px;
+          padding: 6px;
+          border-radius: 12px;
+          border: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+          background: var(--card-bg);
+          cursor: pointer;
+          transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
+        .admin-kpi-mini:hover { 
+          background: var(--card-bg); 
+          transform: translateY(-1px);
+          border-color: var(--accent);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        /* Hide KPI row when not on Admin tab — matches JS toggle on #review-hub-main-header */
+        #review-hub-main-header:not(.is-admin-tab) ~ #admin-kpi-header-wrap {
+          display: none !important;
+        }
+        /* Label & Value */
+        .admin-kpi-mini-label { font-size: 8px; font-weight: 900; text-transform: uppercase; color: var(--text-muted); opacity: 0.8; }
+        .admin-kpi-mini-val { font-size: 14px; font-weight: 900; color: var(--text-main); }
         /* Icon */
-        .review-hub-kpi-row .admin-kpi-mini svg {
-          width: 16px !important;
-          height: 16px !important;
+        .admin-kpi-mini svg {
+          width: 14px !important;
+          height: 14px !important;
           flex-shrink: 0;
-          opacity: 0.85;
-          margin-bottom: 2px;
+          opacity: 0.7;
         }
-        /* Label — subordinate */
-        .review-hub-kpi-row .admin-kpi-mini-label {
-          font-size: 9px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: inherit;
-          opacity: 0.65;
+        /* Active states */
+        .admin-kpi-mini.active { border-width: 2px; transform: translateY(-1px); }
+        .admin-kpi-mini.crossings { color: #f59e0b; }
+        .admin-kpi-mini.crossings.active { background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; }
+        .admin-kpi-mini.status { color: #ef4444; }
+        .admin-kpi-mini.status.active { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
+        .admin-kpi-mini.boms { color: #3b82f6; }
+        .admin-kpi-mini.boms.active { background: rgba(59, 130, 246, 0.1); border-color: #3b82f6; }
+
+        /* Unified Header Padding Adjustment */
+        .outbox-pane .inbox-header {
+          padding: 16px 14px !important;
+          height: auto !important;
+          min-height: 0 !important;
         }
-        /* Value — dominant */
-        .review-hub-kpi-row .admin-kpi-mini-val {
-          font-size: 20px;
-          font-weight: 900;
-          line-height: 1;
-          color: inherit;
-        }
-        /* Per-type coloring — always-on container tint */
-        .review-hub-kpi-row .admin-kpi-mini.crossings {
-          color: #f59e0b;
-          background: rgba(245, 158, 11, 0.08);
-          border-color: rgba(245, 158, 11, 0.28);
-        }
-        .review-hub-kpi-row .admin-kpi-mini.status {
-          color: #ef4444;
-          background: rgba(239, 68, 68, 0.08);
-          border-color: rgba(239, 68, 68, 0.28);
-        }
-        .review-hub-kpi-row .admin-kpi-mini.boms {
-          color: #3b82f6;
-          background: rgba(59, 130, 246, 0.08);
-          border-color: rgba(59, 130, 246, 0.28);
-        }
-        /* Active state — deeper tint when filter engaged */
-        .review-hub-kpi-row .admin-kpi-mini.crossings.active {
-          background: rgba(245, 158, 11, 0.16);
-          border-color: rgba(245, 158, 11, 0.5);
-        }
-        .review-hub-kpi-row .admin-kpi-mini.status.active {
-          background: rgba(239, 68, 68, 0.16);
-          border-color: rgba(239, 68, 68, 0.5);
-        }
-        .review-hub-kpi-row .admin-kpi-mini.boms.active {
-          background: rgba(59, 130, 246, 0.16);
-          border-color: rgba(59, 130, 246, 0.5);
+        .outbox-pane .inbox-header .panel-tab-close {
+          position: relative !important;
+          right: auto !important;
+          top: auto !important;
+          margin-left: 4px;
+          flex-shrink: 0;
         }
         /* ── Activity tab: filter bar full-width override ── */
         .outbox-pane .review-hub-filter-bar {
@@ -534,7 +512,7 @@
               width: var(--inbox-panel-width) !important;
               transform: translateX(110%) !important;
               transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
-              border-radius: 16px 0 0 16px !important;
+              border-radius: var(--desktop-shell-radius, 24px) 0 0 var(--desktop-shell-radius, 24px) !important;
               border-left: 1px solid var(--border) !important;
               border-top: none !important;
               box-shadow: -6px 0 24px rgba(0,0,0,0.10) !important;
@@ -542,6 +520,11 @@
               margin-bottom: 0 !important;
               background: var(--card-bg) !important;
           }
+
+          /* GlassFlow-parity header styles for Review Hub */
+          .glassflow-queue-title { display: flex; flex-direction: column; gap: 2px; }
+          .glassflow-queue-kicker { font-size: 10px; font-weight: 900; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
+          .glassflow-queue-count { font-size: 24px; font-weight: 900; color: var(--text-main); line-height: 1; margin-top: 4px; }
           .outbox-pane.open {
               transform: translateX(0) !important;
           }

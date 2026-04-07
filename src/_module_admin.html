@@ -50,14 +50,11 @@ function syncAdminFabAnchorToPanel() {
     let host = document.querySelector('.reading-pane');
     if (!pane || !host) return;
 
-    let paneStyle = window.getComputedStyle(pane);
-    let marginTop = parseFloat(paneStyle.marginTop) || 0;
-    let marginRight = parseFloat(paneStyle.marginRight) || 0;
-    let hostRect = host.getBoundingClientRect();
-
-    // Keep the launcher aligned to the same in-panel corner target as the close button.
-    let top = Math.max(6, Math.round(hostRect.top + marginTop + 12));
-    let right = Math.max(6, Math.round((window.innerWidth - hostRect.right) + marginRight + 12));
+    // Desktop: Fixed corner position that aligns with the sliding panel
+    // Top: 56px (header) + 12px (X offset) = 68px.
+    // Right: 12px (X offset)
+    let top = 68;
+    let right = 12;
 
     document.documentElement.style.setProperty('--admin-fab-top', `${top}px`);
     document.documentElement.style.setProperty('--admin-fab-right', `${right}px`);
@@ -94,14 +91,7 @@ function syncReviewHubControlState(open) {
         headerClose.title = `Close ${tabLabel}`;
     }
 
-    // Desktop nav hub button active state
-    let navHubBtn = getEl('btn-review-hub');
-    if (navHubBtn) {
-        navHubBtn.classList.toggle('is-active', isOpen);
-        navHubBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        navHubBtn.setAttribute('aria-label', isOpen ? 'Close Review Hub' : 'Open Review Hub');
-    }
-
+    // syncReviewHubControlState is still used to update the FAB state.
     syncAdminFabAnchorToPanel();
 }
 

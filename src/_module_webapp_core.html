@@ -579,7 +579,7 @@
       });
 
       function isIPadLike() {
-          if (window.matchMedia('(pointer: coarse) and (min-width: 769px) and (min-height: 600px)').matches) return true;
+          if (window.matchMedia('(pointer: coarse) and (min-width: 768px) and (min-height: 600px)').matches) return true;
           let ua = navigator.userAgent;
           if (/iPad/.test(ua)) return true;
           if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;

@@ -282,30 +282,33 @@
   <!-- Review Hub (Admin Panel) -->
   <div id="outbox-overlay" onclick="toggleAdminPanel()"></div>
   <div class="outbox-pane" id="outbox-pane">
-     <div id="review-hub-main-header" class="inbox-header is-admin-tab" style="flex-direction:column; align-items:stretch; padding-bottom:12px !important;">
+     <div id="review-hub-main-header" class="inbox-header is-admin-tab">
         <div style="display:flex; justify-content:flex-start; align-items:center; width:100%; gap:12px;">
             <div class="glassflow-queue-title">
                <div class="glassflow-queue-kicker" id="review-hub-title"><span>Review</span><span>Hub</span></div>
                <div class="glassflow-queue-count" id="ob-header-count">0</div>
             </div>
-            <div class="admin-kpi-mini-wrap" id="admin-kpi-header-wrap" style="margin-left:auto;">
-                <div class="admin-kpi-mini crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')" title="Filter crossings to verify">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v8H2z"></path><line x1="6" y1="8" x2="6" y2="16"></line><line x1="10" y1="8" x2="10" y2="16"></line></svg>
-                    <div class="admin-kpi-mini-label">Crossings</div>
-                    <div class="admin-kpi-mini-val" id="kpi-crossings-val">0</div>
-                </div>
-                <div class="admin-kpi-mini status" id="kpi-admin-status" onclick="toggleAdminFilter('status')" title="Filter status mismatches">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
-                    <div class="admin-kpi-mini-label">Status</div>
-                    <div class="admin-kpi-mini-val" id="kpi-status-val">0</div>
-                </div>
-                <div class="admin-kpi-mini boms" id="kpi-admin-boms" onclick="toggleAdminFilter('boms')" title="Filter BOM issues">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                    <div class="admin-kpi-mini-label">BOMs</div>
-                    <div class="admin-kpi-mini-val" id="kpi-boms-val">0</div>
-                </div>
-            </div>
+            <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel" style="position:relative; right:auto; top:auto; margin-left:4px; flex-shrink:0;">✕</button>
         </div>
+     </div>
+
+     <!-- Row 2: KPI Mini Chips (Visible on Admin tab) -->
+     <div class="admin-kpi-mini-wrap" id="admin-kpi-header-wrap" style="padding: 10px 14px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+         <div class="admin-kpi-mini crossings" id="kpi-admin-crossings" onclick="toggleAdminFilter('crossings')" title="Filter crossings to verify">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v8H2z"></path><line x1="6" y1="8" x2="6" y2="16"></line><line x1="10" y1="8" x2="10" y2="16"></line></svg>
+             <div class="admin-kpi-mini-label">Crossings</div>
+             <div class="admin-kpi-mini-val" id="kpi-crossings-val">0</div>
+         </div>
+         <div class="admin-kpi-mini status" id="kpi-admin-status" onclick="toggleAdminFilter('status')" title="Filter status mismatches">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+             <div class="admin-kpi-mini-label">Status</div>
+             <div class="admin-kpi-mini-val" id="kpi-status-val">0</div>
+         </div>
+         <div class="admin-kpi-mini boms" id="kpi-admin-boms" onclick="toggleAdminFilter('boms')" title="Filter BOM issues">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+             <div class="admin-kpi-mini-label">BOMs</div>
+             <div class="admin-kpi-mini-val" id="kpi-boms-val">0</div>
+         </div>
      </div>
      <div id="ob-panel-admin" class="review-hub-panel" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
         <div id="admin-pane-content" class="review-hub-scroll-area" style="flex:1; overflow-y:auto;"></div>
