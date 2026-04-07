@@ -695,6 +695,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   
   let refDict = optionalRefDict || getReferenceDictionary();
   let vendorDict = getVendorLiveDictionary(refDict);
+  let xingsDict = getSpecialXingsDictionary(); // 🧠 FETCH CD DATA
 
   const histData = histSheet.getDataRange().getValues();
 
@@ -751,6 +752,17 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       }
 
       let cdIntelText = "";
+      if (xingsDict[fdhId]) {
+          let cdData = xingsDict[fdhId];
+          if (cdData.summary !== "") {
+              cdIntelText = cdData.summary;
+          }
+          if (cdData.highway && cdData.highway.toLowerCase() !== "none" && cdData.highway.trim() !== "") {
+              if (diag.flags !== "✅ No Anomalies" && diag.flags !== "") diag.flags += "\n🚧 CD: MAJOR CROSSING RISK";
+              else diag.flags = "🚧 CD: MAJOR CROSSING RISK";
+              diag.flagColors.push("#b45309");
+          }
+      }
 
       let refData = null;
 
