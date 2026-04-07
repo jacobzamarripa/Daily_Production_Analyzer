@@ -1,5 +1,13 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-06: Review Hub Layout Refactor & Interaction Polish
+- **KPI Row Repositioning (Desktop & Mobile)**: Moved the `admin-kpi-mini-wrap` out of the Review Hub header and into a dedicated 3-column grid row immediately below the tabs (Desktop) or header (Mobile). This provides significantly more breathing room and visual clarity.
+- **Header Cleanup**: Simplified the `review-hub-main-header` layout, removing "crammed" elements and establishing a consistent vertical hierarchy: Header -> Tabs -> KPIs -> Content.
+- **Redesigned Admin FAB (Desktop)**: Updated the floating Admin FAB to a refined 36px diameter with improved dark mode visuals, including a glassy backdrop and high-contrast shadows.
+- **Unified Close Interaction**: Added a dedicated Red X button (`review-hub-close-btn`) to the shared Review Hub header. This button is absolutely positioned to perfectly overlay the FAB's starting coordinates, creating a seamless "morphing" swap effect when the panel opens.
+- **Layering & Visibility**: Lowered the FAB's `z-index` so it is correctly covered by the sliding panel. Updated CSS to ensure the FAB is properly hidden during startup/loading now that it resides at the body's top level.
+- **Dead Code Cleanup**: Removed legacy navigation hub button logic (`btn-review-hub`) and redundant close buttons from the desktop panel markup to prevent future agent drift.
+
 > [!success] 2026-04-05: WS21 — Universal Surface Tier (iPad mini)
 - **New surface tier:** Added `html.surface-ipad` detection in `WebApp.html` auto-routing IIFE. Detects iPadOS 13+ (which reports Macintosh UA) via `pointer: coarse + min-width: 600px + min-height: 600px`. Sets `document.documentElement.classList.add('surface-ipad')` and `window.__surfaceIpad = true` without any redirect (iPad stays on WebApp.html desktop shell).
 - **Variant state:** After all modules load, `setV2Variant('iPad')` is called when `__surfaceIpad` is set. Desktop and phone paths unchanged.
