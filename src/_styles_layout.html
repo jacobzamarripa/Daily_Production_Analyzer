@@ -310,16 +310,16 @@
 
         /* Unified Header Padding Adjustment */
         .outbox-pane .inbox-header {
-          padding: 16px 14px !important;
-          height: auto !important;
-          min-height: 0 !important;
+          padding: 12px 14px !important;
+          height: 52px !important;
+          min-height: 52px !important;
         }
         .outbox-pane .inbox-header .panel-tab-close {
-          position: relative !important;
-          right: auto !important;
-          top: auto !important;
-          margin-left: 4px;
+          position: absolute !important;
+          right: 12px !important;
+          top: 12px !important;
           flex-shrink: 0;
+          z-index: 100;
         }
         /* ── Activity tab: filter bar full-width override ── */
         .outbox-pane .review-hub-filter-bar {

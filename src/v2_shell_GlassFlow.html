@@ -145,30 +145,29 @@
 
       <div class="v2-shell-glassflow-views">
         <div id="v2-glassflow-queue-panel" class="v2-shell-glassflow-scroll">
-          <div class="glassflow-queue-header">
-            <div class="glassflow-queue-toolbar">
-              <div class="glassflow-queue-title">
-                <div class="glassflow-queue-kicker"><span>Diagnostics</span><span>Queue</span></div>
-                <div class="glassflow-queue-count" id="inbox-count">0</div>
-              </div>
-              <div class="glassflow-queue-actions">
-                <select class="glassflow-queue-select is-group" id="group-by-select" onchange="setGroupBy(this.value)">
-                  <option value="none">Default</option>
-                  <option value="vendor">Vendor</option>
-                  <option value="city">City</option>
-                  <option value="health">Health</option>
-                  <option value="stage">Stage</option>
-                  <option value="status">Status</option>
-                </select>
-                <select class="glassflow-queue-select is-pivot" id="sidebar-pivot-select" onchange="applyFilters()">
-                  <option value="schedule">Project Schedule</option>
-                  <option value="velocity">Field Velocity</option>
-                </select>
-                <button class="glassflow-queue-icon has-tooltip" id="view-toggle-btn" data-tooltip="Switch to List" onclick="cycleViewMode()" aria-label="Change queue view">☰</button>
-              </div>
+          <div class="inbox-header">
+            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                <div class="inbox-title inbox-title-stack"><span>Diagnostics</span><span>Queue</span></div>
+                <div class="inbox-count" id="inbox-count">0</div>
             </div>
-            <div class="glassflow-queue-filters" id="active-filter-pills" style="margin-top:10px;"></div>
+            <div class="glassflow-queue-actions">
+              <select class="glassflow-queue-select is-group" id="group-by-select" onchange="setGroupBy(this.value)">
+                <option value="none">Default</option>
+                <option value="vendor">Vendor</option>
+                <option value="city">City</option>
+                <option value="health">Health</option>
+                <option value="stage">Stage</option>
+                <option value="status">Status</option>
+              </select>
+              <select class="glassflow-queue-select is-pivot" id="sidebar-pivot-select" onchange="applyFilters()">
+                <option value="schedule">Project Schedule</option>
+                <option value="velocity">Field Velocity</option>
+              </select>
+              <button class="glassflow-queue-icon has-tooltip" id="view-toggle-btn" data-tooltip="Switch to List" onclick="cycleViewMode()" aria-label="Change queue view">☰</button>
+            </div>
           </div>
+          <div class="glassflow-queue-header" style="display:none;"></div>
+          <div class="glassflow-queue-filters" id="active-filter-pills" style="margin-top:10px;"></div>
           <div class="glassflow-queue-lane">
             <div id="inbox-list"></div>
           </div>
@@ -283,12 +282,12 @@
   <div id="outbox-overlay" onclick="toggleAdminPanel()"></div>
   <div class="outbox-pane" id="outbox-pane">
      <div id="review-hub-main-header" class="inbox-header is-admin-tab">
-        <div style="display:flex; justify-content:flex-start; align-items:center; width:100%; gap:12px;">
-            <div class="glassflow-queue-title">
-               <div class="glassflow-queue-kicker" id="review-hub-title"><span>Review</span><span>Hub</span></div>
-               <div class="glassflow-queue-count" id="ob-header-count">0</div>
-            </div>
-            <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel" style="position:relative; right:auto; top:auto; margin-left:4px; flex-shrink:0;">✕</button>
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+            <div class="inbox-title inbox-title-stack" id="review-hub-title"><span>Review</span><span>Hub</span></div>
+            <div class="inbox-count" id="ob-header-count">0</div>
+        </div>
+        <div class="glassflow-queue-actions" style="margin-left:auto;">
+            <button class="panel-tab-close" onclick="toggleAdminPanel()" title="Close panel" style="display:flex !important; position:relative; right:auto; top:auto; flex-shrink:0;">✕</button>
         </div>
      </div>
 
@@ -1182,6 +1181,10 @@
         window.setTimeout(() => {
             const isOpen = !!document.getElementById('outbox-pane')?.classList.contains('open');
             document.body.classList.toggle('mobile-admin-open', isOpen);
+            const adminFab = document.getElementById('admin-hub-fab');
+            if (adminFab) {
+                adminFab.classList.toggle('is-active', isOpen);
+            }
             syncAdminBodyClass();
             pulseDockContext();
             syncMobileDockContext();

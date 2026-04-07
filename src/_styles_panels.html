@@ -40,13 +40,15 @@
       .review-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; width: auto; margin-top: auto !important; padding-top: 0 !important; border-top: none !important; }
       .review-actions .btn { flex: none !important; }
       .inbox-header {
-          padding: 18px 60px 14px 20px;
+          padding: 12px 14px;
           border-bottom: 1px solid var(--border);
           background: transparent;
           display: flex;
           justify-content: space-between;
           align-items: center;
           position: relative;
+          min-height: 52px;
+          box-sizing: border-box;
       }
       #btn-filters, #view-toggle-btn, #sort-queue, #btn-clear-filters, #sidebar-pivot-select {
           background: color-mix(in srgb, var(--card-bg) 86%, transparent) !important;
@@ -187,38 +189,37 @@
           align-items: center;
           justify-content: center;
           position: absolute;
-          top: 12px;
+          top: 8px;
           right: 12px;
           z-index: 100;
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          border: 1px solid rgba(239, 68, 68, 0.25);
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--text-main);
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
           flex-shrink: 0;
           padding: 0;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
       }
       .review-hub-close-btn svg {
           width: 18px;
           height: 18px;
+          stroke-width: 2.5;
       }
       .review-hub-close-btn:hover {
-          background: #ef4444;
-          color: #fff;
-          transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+          transform: scale(1.08);
+          background: var(--bg);
+          border-color: var(--accent);
       }
       body.dark-mode .review-hub-close-btn {
-          background: rgba(239, 68, 68, 0.12);
-          border-color: rgba(239, 68, 68, 0.3);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      }
-      body.dark-mode .review-hub-close-btn:hover {
-          background: #f87171;
-          color: #fff;
+          background: var(--card-bg);
+          border-color: var(--border);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.4);
       }
 
       .startup-overlay.visible ~ #admin-dock .admin-fab-anchor {
@@ -232,18 +233,21 @@
       .admin-fab-label { display: none; }
       .admin-fab-badge { position: absolute; top: -6px; left: -8px; min-width: 22px; height: 22px; border-radius: 11px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 900; padding: 0 6px; display: none; align-items: center; justify-content: center; line-height: 1; box-sizing: border-box; box-shadow: 0 8px 18px rgba(239, 68, 68, 0.28); }
 
-      /* Desktop specific: Hide redundant close button when FAB is present */
+      /* Desktop specific: Show close button when panel is open */
       @media (min-width: 769px) {
           .outbox-pane .panel-tab-close {
-              display: none !important;
+              display: flex !important;
           }
       }
 
       .panel-tab-close {
-          display: none !important;
-          width: 30px;
-          min-width: 30px;
-          height: 30px;
+          display: flex !important;
+          position: absolute;
+          top: 8px;
+          right: 12px;
+          width: 36px;
+          min-width: 36px;
+          height: 36px;
           border-radius: 50%;
           border: 1px solid var(--border);
           background: color-mix(in srgb, var(--card-bg) 94%, transparent);
@@ -257,7 +261,7 @@
           padding: 0;
           box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
           transition: transform 0.18s ease, background 0.18s ease;
-          pointer-events: none !important;
+          pointer-events: auto !important;
       }
       .admin-panel-close:hover {
           transform: translateY(-1px);

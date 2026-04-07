@@ -358,6 +358,7 @@ function syncOutboxPanelMode() {
         hubHeader.classList.toggle('is-admin-tab', currentPanelTab === 'admin');
         hubHeader.classList.toggle('is-reviewed-tab', currentPanelTab === 'reviewed');
         hubHeader.classList.toggle('is-changelog-tab', currentPanelTab === 'changelog');
+        hubHeader.style.display = isDeckView ? 'none' : 'flex';
     }
     if (tabBar) tabBar.style.display = isDeckView ? 'none' : 'flex';
     if (desktopTabStrip) desktopTabStrip.style.display = !isDeckView ? 'flex' : 'none';

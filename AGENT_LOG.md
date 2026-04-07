@@ -1,5 +1,13 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-07: Standardized Headers & FAB Alignment Refinement
+- **Standardized Header Template**: Unified the `Diagnostics Queue`, `Review Hub`, and `Manager Review` panels under a single compact `.inbox-header` template with a consistent **52px min-height**.
+- **2-Tone Branding Alignment**: Enforced the 2-tone color palette (`var(--text-muted)` + `var(--accent)`) across all panel titles using the `.inbox-title-stack` pattern for a cohesive system-wide look.
+- **Precision FAB/Close Morphing**: Re-anchored the Admin FAB to `top: 76px; right: 24px;` and the circular panel close buttons to `top: 8px; right: 12px;` (relative to a 12px panel margin). This ensures the centers of both buttons overlap perfectly, creating a high-fidelity "morphing" effect when toggling panels.
+- **Deck Mode Orchestration**: Fixed responsiveness and alignment issues in Deck Mode by removing inline style overrides and hardening the `setAdminPanelOpen` logic. The FAB now correctly toggles the `Manager Review` action panel and persists its state reliably.
+- **Structural Cleanup**: Repaired malformed HTML containers in `WebApp.html` and `v2_shell_GlassFlow.html` that were causing layout bleed, and eliminated duplicate code fragments at file ends.
+- **Files touched:** `src/WebApp.html`, `src/v2_shell_GlassFlow.html`, `src/_module_admin.html`, `src/_module_deck.html`, `src/_module_router.html`, `src/_styles_badges.html`, `src/_styles_glassflow_core.html`, `src/_styles_layout.html`, `src/_styles_panels.html`.
+
 > [!success] 2026-04-06: High-Fidelity Dock Refinement & WS20 Conclusion
 - **Dynamic Card-Anchored Centering**: Replaced hardcoded dock offsets with a robust, multi-pass JS calculation in `syncDockClearanceState()`. The search dock now dynamically anchors its horizontal center to the active information card (`#project-schedule-card` or `#deck-stage-card`), ensuring perfect alignment even as panels slide or cards resize.
 - **Vertical Equidistance (12px Symmetry)**: Enforced a strict 12px vertical gap symmetry. The distance from Nav to Dock and Dock to Content is now exactly equal, creating a high-fidelity "floating" integrated feel.

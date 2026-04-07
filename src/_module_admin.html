@@ -34,8 +34,7 @@ function toggleAdminFilter(type) {
 }
 
 function toggleAdminPanel() {
-    let pane = getEl('outbox-pane');
-    let isOpen = pane && pane.classList.contains('open');
+    let isOpen = document.body.classList.contains('admin-open');
     setAdminPanelOpen(!isOpen);
 }
 
@@ -114,15 +113,17 @@ function setAdminPanelOpen(open) {
             if (pane) pane.classList.add('open');
             if (readingPane) readingPane.classList.add('admin-open');
             syncAdminFabAnchorToPanel();
+            if (typeof syncOutboxPanelMode === 'function') syncOutboxPanelMode();
             if (typeof syncDockClearanceState === 'function') syncDockClearanceState();
         }, 10);
     } else {
         if (pane) pane.classList.remove('open');
         if (readingPane) readingPane.classList.remove('admin-open');
         if (typeof syncDockClearanceState === 'function') syncDockClearanceState();
+        syncReviewHubControlState(false);
         setTimeout(() => {
-            if (!pane.classList.contains('open')) {
-                if (pane) pane.style.display = 'none';
+            if (pane && !pane.classList.contains('open')) {
+                pane.style.display = 'none';
                 // Final sync once transition is fully done and display is none
                 if (typeof syncDockClearanceState === 'function') syncDockClearanceState();
             }

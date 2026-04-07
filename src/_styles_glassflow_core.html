@@ -222,13 +222,15 @@ body.mobile-admin-open .v2-shell-glassflow-dock {
 #admin-hub-fab {
   bottom: calc(16px + env(safe-area-inset-bottom, 8px)) !important; /* Base FAB */
   right: 16px !important;
+  width: 48px !important;
+  height: 48px !important;
   background: color-mix(in srgb, var(--card-bg) 95%, #fff) !important;
   border: 1px solid var(--border) !important;
   box-shadow: 0 12px 40px rgba(0,0,0,0.25) !important;
 }
 #admin-hub-fab svg {
-  width: 22px !important;
-  height: 22px !important;
+  width: 20px !important;
+  height: 20px !important;
   color: var(--text-main);
   opacity: 0.85;
 }
@@ -618,7 +620,7 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
 
 /* Custom Queue Items */
 .v2-shell-glassflow .glassflow-queue-header {
-    padding: 14px 14px 10px;
+    padding: 10px 14px 6px;
     background: color-mix(in srgb, var(--card-bg) 92%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -659,14 +661,14 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 50px;
-    height: 38px;
-    padding: 0 14px;
+    min-width: 44px;
+    height: 32px;
+    padding: 0 10px;
     border-radius: 999px;
     background: color-mix(in srgb, var(--accent) 12%, var(--bg));
     border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
     color: var(--text-main);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 900;
 }
 .v2-shell-glassflow .glassflow-queue-actions {
