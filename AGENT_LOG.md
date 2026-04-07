@@ -1,5 +1,14 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-07: Backend Report Automation & Logic Cleanup
+- **Optimized Ingestion Engine**: Refactored the daily report ingestion to an "Immediate Move" pattern. Files are now moved to the Master Archive as soon as they are parsed, eliminating the exponential slowdown caused by re-scanning folders after GAS timeouts.
+- **Production_Incoming Alignment**: Corrected the `REFERENCE_FOLDER_ID` configuration to target the live Power Automate sync folder. Added MIME-type detection to identify Excel files even without `.xlsx` extensions.
+- **EOD Automation Pipeline**: Implemented a 4-trigger daily schedule (9AM, 12PM, 3PM, 4:30PM) to ensure all reports are ingested and a final compiled review is generated before the 5PM cutoff.
+- **Legacy Logic Purge**: Fully removed **CD Analysis** and **Special Crossings** logic, including `src/05_CDAnalyzer.js`, `src/_module_special_crossings.html`, and their associated backend functions and UI components.
+- **Professional Menu Reorganization**: Rebuilt the Google Sheets UI under a single **Omni PMO** menu with a logical hierarchy (Data Pipeline, Review Engine, Quickbase Hub, Reporting, Maintenance). Removed all emojis for a cleaner, enterprise-grade look.
+- **Signal Promotion**: Formally promoted the Signal monitoring logic from "experimental" to a Core Production Feature with updated high-resolution portfolio monitoring labels.
+- **Files touched:** `src/00_Config.js`, `src/01_Engine_Archive.js`, `src/01_Engine_DataDicts.js`, `src/02_Utilities.js`, `src/06_QBSync.js`, `src/WebApp.html`, `src/_module_admin.html`, `src/v2_shell_GlassFlow.html`, `src/05_CDAnalyzer.js` (deleted), `src/_module_special_crossings.html` (deleted).
+
 > [!success] 2026-04-07: Standardized Headers & FAB Alignment Refinement
 - **Standardized Header Template**: Unified the `Diagnostics Queue`, `Review Hub`, and `Manager Review` panels under a single compact `.inbox-header` template with a consistent **52px min-height**.
 - **2-Tone Branding Alignment**: Enforced the 2-tone color palette (`var(--text-muted)` + `var(--accent)`) across all panel titles using the `.inbox-title-stack` pattern for a cohesive system-wide look.
