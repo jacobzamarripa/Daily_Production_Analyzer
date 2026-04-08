@@ -568,9 +568,10 @@ function openPane(item, cardEl) {
         if (!isGridMode && !isDeckMode) {
             setStyle('pane-content', 'display', 'flex');
         }
-        if (window.innerWidth > 768 && !isGridMode && !isDeckMode) {
-            setAdminPanelOpen(shouldAutoOpenAdminPanel());
-        }
+        
+        // Removed forced auto-open here; now handled by syncAdminPanelForViewport 
+        // which respects the window.__adminPanelExplicitlyClosed flag.
+
 
         renderDiagnosticStrip(item.rawRow);
 

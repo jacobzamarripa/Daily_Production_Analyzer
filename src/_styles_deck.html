@@ -173,8 +173,11 @@
       }
       #dock-btn-slide-theme { width: 44px; height: 44px; padding: 0 !important; border-radius: 50%; font-size: 0 !important; align-items: center; justify-content: center; }
       body.presentation-active .top-nav,
-      body.presentation-active .inbox-sidebar,
-      body.presentation-active .outbox-pane { display: none !important; }
+      body.presentation-active .inbox-sidebar { display: none !important; }
+
+      /* Theater Mode: hides Review Hub by default, but allows admin-open to override */
+      body.presentation-active .outbox-pane { display: none; }
+      body.presentation-active.admin-open .outbox-pane { display: flex !important; }
       /* ── INDEPENDENT SLIDE THEME (Dark Mode via local CSS vars) ── */
       .qb-grid.slide-dark-mode,
       #deck-stage-card.slide-dark-mode {

@@ -400,6 +400,10 @@ function switchPanelTab(tab) {
         hubHeader.classList.toggle('is-reviewed-tab', tab === 'reviewed');
         hubHeader.classList.toggle('is-changelog-tab', tab === 'changelog');
     }
+    
+    // Ensure the Review Hub is open when switching tabs (crucial for desktop/iPad)
+    if (typeof setAdminPanelOpen === 'function') setAdminPanelOpen(true);
+
     if (desktopTabStrip) desktopTabStrip.style.display = 'flex';
     if (adminKpiRow) adminKpiRow.style.display = (tab === 'admin') ? '' : 'none';
 
@@ -445,7 +449,12 @@ function renderDetailWorkspaceFace() {
             deckStage.style.padding = '';
             deckStage.style.overflow = '';
         }
-        setAdminPanelOpen(true);
+        
+        // Only force open if not explicitly closed by user
+        if (!window.__adminPanelExplicitlyClosed) {
+            setAdminPanelOpen(true);
+        }
+
         deckIndex = Math.max(0, filteredItems.findIndex(i => i.fdh === currentActiveItem.fdh));
         renderDeckStage();
         syncActivePresentationCardTheme();

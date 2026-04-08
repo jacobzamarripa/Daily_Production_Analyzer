@@ -35,6 +35,11 @@ function toggleAdminFilter(type) {
 
 function toggleAdminPanel() {
     let isOpen = document.body.classList.contains('admin-open');
+    if (isOpen) {
+        window.__adminPanelExplicitlyClosed = true;
+    } else {
+        window.__adminPanelExplicitlyClosed = false;
+    }
     setAdminPanelOpen(!isOpen);
 }
 
@@ -77,11 +82,11 @@ function syncReviewHubControlState(open) {
     }
 
     // Handle all potential close buttons (Header and Deck Action Panel)
-    const closeButtons = document.querySelectorAll('#admin-panel-close, .review-hub-close-btn, .panel-tab-close');
+    const closeButtons = document.querySelectorAll('#admin-panel-close, #deck-panel-close, .review-hub-close-btn, .panel-tab-close');
     closeButtons.forEach(btn => {
         btn.setAttribute('aria-label', `Close ${tabLabel}`);
         btn.title = `Close ${tabLabel}`;
-        if (btn.id === 'admin-panel-close') {
+        if (btn.id === 'admin-panel-close' || btn.id === 'deck-panel-close') {
             btn.setAttribute('aria-hidden', !isOpen ? 'true' : 'false');
             btn.tabIndex = isOpen ? 0 : -1;
         }
@@ -96,6 +101,10 @@ function setAdminPanelOpen(open) {
     let overlay = getEl('outbox-overlay');
     let readingPane = document.querySelector('.reading-pane');
 
+    // Prevent redundant state transitions if already in requested state
+    const isCurrentlyOpen = document.body.classList.contains('admin-open');
+    if (isCurrentlyOpen === open && pane && pane.style.display === (open ? 'flex' : 'none')) return;
+
     if (open && window.innerWidth > 768 && typeof toggleDesktopFiltersPanel === 'function') {
         let dockPanel = getEl('dock-filters-panel');
         if (dockPanel && dockPanel.classList.contains('is-open')) toggleDesktopFiltersPanel(false);
@@ -106,11 +115,13 @@ function setAdminPanelOpen(open) {
 
     if (open) {
         if (pane) pane.style.display = 'flex';
+        // Immediately sync tab visibility so the correct tab shows as it slides in
+        if (typeof syncOutboxPanelMode === 'function') syncOutboxPanelMode();
+        
         setTimeout(() => {
             if (pane) pane.classList.add('open');
             if (readingPane) readingPane.classList.add('admin-open');
             syncAdminFabAnchorToPanel();
-            if (typeof syncOutboxPanelMode === 'function') syncOutboxPanelMode();
             if (typeof syncDockClearanceState === 'function') syncDockClearanceState();
         }, 10);
     } else {
@@ -136,7 +147,13 @@ function setAdminPanelOpen(open) {
 
 function syncAdminPanelForViewport() {
     syncOutboxPanelMode();
-    setAdminPanelOpen(shouldAutoOpenAdminPanel());
+    // Only auto-open on desktop if not explicitly closed by user
+    if (shouldAutoOpenAdminPanel()) {
+        if (window.__adminPanelExplicitlyClosed) return;
+        setAdminPanelOpen(true);
+    } else {
+        setAdminPanelOpen(false);
+    }
 }
 
 function openAdminPanelByDefault() {
