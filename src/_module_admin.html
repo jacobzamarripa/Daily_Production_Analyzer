@@ -55,9 +55,9 @@ function syncAdminFabAnchorToPanel() {
     if (!pane || !host) return;
 
     // Desktop: Fixed corner position that aligns with the sliding panel
-    // Top: 56px (header) + 12px (X offset) = 68px.
+    // Top: 56px (header) + 8px (X offset) = 64px.
     // Right: 12px (X offset)
-    let top = 68;
+    let top = 64;
     let right = 12;
 
     document.documentElement.style.setProperty('--admin-fab-top', `${top}px`);
