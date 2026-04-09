@@ -161,7 +161,7 @@
           border-top: none !important;
           box-shadow: none !important;
           margin-top: 0 !important;
-          z-index: var(--z-max);
+          z-index: calc(var(--z-dock) - 1);
       }
       body.gantt-view-active #gantt-panel .gantt-controls {
           position: absolute;
