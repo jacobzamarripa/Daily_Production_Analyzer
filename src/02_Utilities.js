@@ -1255,7 +1255,7 @@ function _getSignalCutoff(tf, ss, now) {
 function getSignalFast(tf) {
   const timeframe = _normalizeSignalTimeframe(tf);
   const TTL_MAP = { current: 300, week: 900, month: 1800 };
-  const cacheKey = 'SIGNAL_FAST_' + timeframe;
+  const cacheKey = 'SIGNAL_FAST_V2_' + timeframe;
   const cache = CacheService.getScriptCache();
   const cached = cache.get(cacheKey);
   if (cached) { try { return JSON.parse(cached); } catch(e) {} }
@@ -1271,9 +1271,27 @@ function getSignalFast(tf) {
   const changeSheet = ss.getSheetByName(CHANGE_LOG_SHEET);
   if (changeSheet && changeSheet.getLastRow() > 1) {
     const data = changeSheet.getDataRange().getValues();
+    const headers = (data[0] || []).map(h => String(h || '').trim());
+    const getIdxByAliases = (aliases) => headers.findIndex(function(h) {
+      const normalized = String(h || '').trim().toUpperCase();
+      return aliases.some(function(alias) { return normalized === alias; });
+    });
+    const resolveIdx = (aliases, fallbackIdx) => {
+      const idx = getIdxByAliases(aliases);
+      return idx > -1 ? idx : fallbackIdx;
+    };
+    const fdhIdx = resolveIdx(['FDH ENGINEERING ID', 'FDH ID', 'FDH'], 0);
+    const typeIdx = resolveIdx(['TYPE OF CHANGE', 'CHANGE TYPE', 'TYPE'], 1);
+    const valueIdx = resolveIdx(['NEW VALUE', 'VALUE'], 2);
+    const userIdx = resolveIdx(['UPDATED BY', 'USER', 'USER NAME'], 3);
+    const tsIdx = resolveIdx(['DATE & TIME UPDATED', 'TIMESTAMP', 'UPDATED AT', 'DATE UPDATED'], 4);
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
-      let ts = row[4];
+      const fdh = fdhIdx > -1 ? String(row[fdhIdx] || '').trim() : '';
+      const changeType = typeIdx > -1 ? String(row[typeIdx] || '') : '';
+      const rawVal = valueIdx > -1 ? row[valueIdx] : '';
+      const userName = userIdx > -1 ? String(row[userIdx] || 'Unknown') : 'Unknown';
+      let ts = tsIdx > -1 ? row[tsIdx] : '';
       
       // Robust timestamp handling: Support Date objects and strings
       if (!(ts instanceof Date) && ts) {
@@ -1281,10 +1299,7 @@ function getSignalFast(tf) {
         if (!isNaN(d.getTime())) ts = d;
       }
 
-      if (ts instanceof Date && ts >= cutoff && _isSignalMilestone(String(row[1] || ''), String(row[2] || ''))) {
-        const userName = String(row[3] || 'Unknown');
-        const changeType = String(row[1] || '');
-        const rawVal = row[2];
+      if (fdh && ts instanceof Date && ts >= cutoff && _isSignalMilestone(changeType, String(rawVal || ''))) {
         const isDateField = changeType.toLowerCase().trim().includes('date');
         
         const formattedVal = isDateField && rawVal instanceof Date
@@ -1292,7 +1307,7 @@ function getSignalFast(tf) {
           : String(rawVal || '');
 
         result.qbChanges.push({
-          fdh: String(row[0] || ''),
+          fdh: fdh,
           type: changeType,
           newVal: formattedVal,
           updatedBy: userName,

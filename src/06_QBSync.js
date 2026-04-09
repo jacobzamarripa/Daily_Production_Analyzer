@@ -14,6 +14,7 @@ const QB_REPORT_ID    = "1000071";
 const QB_API_BASE     = "https://api.quickbase.com/v1";
 const QB_PAGE_SIZE    = 1000;
 const QB_MAX_PAGES    = 20;
+const CHANGE_LOG_TABLE_ID = "bvqruhtyc";
 
 // --- PHASE 2 SCAFFOLD (not active — write-back not enabled) ---
 // FIDs are unique PER TABLE only. Always pair with parent Table ID to avoid collision.
@@ -287,8 +288,58 @@ function syncChangeLogs() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(CHANGE_LOG_SHEET) || ss.insertSheet(CHANGE_LOG_SHEET);
 
-  const fids = [8, 13, 17, 10, 11];
   const headers = ["FDH Engineering ID", "Type of Change", "New Value", "Updated By", "Date & Time Updated"];
+  const fieldUrl = QB_API_BASE + "/fields?tableId=" + CHANGE_LOG_TABLE_ID;
+  const fieldResponse = UrlFetchApp.fetch(fieldUrl, _qbHeaders(token));
+  if (fieldResponse.getResponseCode() !== 200) throw new Error("QB Change Log field discovery failed: " + fieldResponse.getContentText());
+
+  const fieldList = JSON.parse(fieldResponse.getContentText()) || [];
+  const normalizeLabel = (label) => String(label || '').trim().replace(/\s+/g, ' ').toUpperCase();
+  const findField = (aliases) => {
+    const normalizedAliases = aliases.map(normalizeLabel);
+    return fieldList.find(function(field) {
+      const label = normalizeLabel(field && field.label);
+      return normalizedAliases.some(function(alias) { return label === alias; });
+    });
+  };
+
+  const fdhField = findField([
+    'FDH PROJECT  ENGINEERING ID',
+    'FDH PROJECT ENGINEERING ID',
+    'FDH ENGINEERING ID',
+    'FDH ID',
+    'FDH',
+    'PROJECT ID / FDH'
+  ]);
+  const typeField = findField(['TYPE OF CHANGE', 'CHANGE TYPE', 'TYPE']);
+  const valueField = findField(['UPDATE', 'NEW VALUE', 'VALUE']);
+  const updatedByField = findField(['UPDATED BY', 'USER']);
+  const updatedAtField = findField(['DATE & TIME UPDATED', 'UPDATED AT', 'TIMESTAMP', 'DATE UPDATED']);
+  const fdhFid = fdhField ? Number(fdhField.id) : 0;
+  const typeFid = typeField ? Number(typeField.id) : 0;
+  const valueFid = valueField ? Number(valueField.id) : 0;
+  const updatedByFid = updatedByField ? Number(updatedByField.id) : 0;
+  const updatedAtFid = updatedAtField ? Number(updatedAtField.id) : 0;
+  const missingField = !fdhFid || !typeFid || !valueFid || !updatedByFid || !updatedAtFid;
+  if (missingField) {
+    logMsg("QB Change Log field mapping incomplete: " + JSON.stringify({
+      fdhFid: fdhFid,
+      typeFid: typeFid,
+      valueFid: valueFid,
+      updatedByFid: updatedByFid,
+      updatedAtFid: updatedAtFid
+    }));
+    throw new Error("QB Change Log field mapping incomplete. Run discoverChangeLogFields() to inspect live labels/FIDs.");
+  }
+  logMsg("QB Change Log fields resolved: " + JSON.stringify({
+    fdh: { fid: fdhFid, label: fdhField.label, type: fdhField.fieldType },
+    type: { fid: typeFid, label: typeField.label, type: typeField.fieldType },
+    value: { fid: valueFid, label: valueField.label, type: valueField.fieldType },
+    updatedBy: { fid: updatedByFid, label: updatedByField.label, type: updatedByField.fieldType },
+    updatedAt: { fid: updatedAtFid, label: updatedAtField.label, type: updatedAtField.fieldType }
+  }));
+
+  const fids = [fdhFid, typeFid, valueFid, updatedByFid, updatedAtFid];
 
   const sinceDate = new Date();
   sinceDate.setDate(sinceDate.getDate() - 14);
@@ -296,10 +347,10 @@ function syncChangeLogs() {
 
   const url = "https://api.quickbase.com/v1/records/query";
   const payload = {
-    from: "bvqruhtyc",
+    from: CHANGE_LOG_TABLE_ID,
     select: fids,
-    where: "{11.GT." + timestamp + "}",
-    sortBy: [{ fieldId: 11, order: "DESC" }]
+    where: "{" + updatedAtFid + ".GT." + timestamp + "}",
+    sortBy: [{ fieldId: updatedAtFid, order: "DESC" }]
   };
 
   const options = {
@@ -317,21 +368,34 @@ function syncChangeLogs() {
   if (response.getResponseCode() !== 200) throw new Error("QB API Error: " + response.getContentText());
 
   const result = JSON.parse(response.getContentText());
+  const getCellText = function(rec, fid) {
+    const cell = rec[String(fid)];
+    if (!cell) return "";
+    if (cell.displayValue !== null && cell.displayValue !== undefined && cell.displayValue !== "") {
+      return _extractValue(cell.displayValue);
+    }
+    return _extractValue(cell.value);
+  };
   const rows = (result.data || []).map(function(rec) {
-    const userVal = rec["10"] ? rec["10"].value : null;
-    const dateObj = new Date(rec["11"].value);
+    const userVal = getCellText(rec, updatedByFid);
+    const updatedAtVal = getCellText(rec, updatedAtFid);
+    const dateObj = new Date(updatedAtVal);
     // QB date-only fields arrive as midnight CST (GMT-6). Suppress time when it's 00:00.
     const timeStr  = Utilities.formatDate(dateObj, "GMT-6", "HH:mm");
     const dateStr  = Utilities.formatDate(dateObj, "GMT-6", "MM/dd/yyyy");
     const displayDate = timeStr === "00:00" ? dateStr : dateStr + " " + timeStr;
     return [
-      rec["8"] ? rec["8"].value : "",
-      rec["13"] ? rec["13"].value : "",
-      rec["17"] ? rec["17"].value : "",
-      (userVal && (userVal.name || userVal.email)) || "System",
+      getCellText(rec, fdhFid),
+      getCellText(rec, typeFid),
+      getCellText(rec, valueFid),
+      userVal || "System",
       displayDate
     ];
   });
+  const blankFdhCount = rows.filter(function(row) { return !String(row[0] || "").trim(); }).length;
+  if (blankFdhCount > 0) {
+    logMsg("QB Change Log sync: " + blankFdhCount + " rows still have blank FDH after raw extraction fallback.");
+  }
 
   sheet.clear();
   ensureCapacity(sheet, Math.max(rows.length + 1, 2), headers.length);
@@ -342,6 +406,11 @@ function syncChangeLogs() {
   sheet.getRange("1:1").setBackground("#0f172a").setFontColor("white").setFontWeight("bold");
   sheet.setFrozenRows(1);
   trimAndFilterSheet(sheet, rows.length + 1, headers.length);
+  CacheService.getScriptCache().removeAll([
+    'dashboard_data_cache_v11_meta', 'dashboard_data_cache_v11',
+    'SIGNAL_FAST_current', 'SIGNAL_FAST_week', 'SIGNAL_FAST_month',
+    'SIGNAL_FAST_V2_current', 'SIGNAL_FAST_V2_week', 'SIGNAL_FAST_V2_month'
+  ]);
   return { success: true, count: rows.length };
 }
 
@@ -808,7 +877,6 @@ function _qbHeaders(token) {
  * Run this once to see the field mapping in the Apps Script Logger.
  */
 function discoverChangeLogFields() {
-  const CHANGE_LOG_TABLE_ID = "bvqruhtyc";
   const token = PropertiesService.getScriptProperties().getProperty("QB_USER_TOKEN");
   
   if (!token) {

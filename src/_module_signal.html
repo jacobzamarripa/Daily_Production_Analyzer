@@ -5,7 +5,7 @@
 .signal-qb-card {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
-  cursor: pointer;
+  cursor: default;
   transition: background 0.1s;
   display: flex;
   flex-direction: column;
@@ -17,6 +17,23 @@
 .signal-qb-fdh { font-size: 15px; font-weight: 900; color: var(--text-main); letter-spacing: -0.3px; }
 .signal-qb-meta { font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: right; line-height: 1.3; text-transform: uppercase; }
 .signal-qb-pill-row { display: flex; align-items: center; gap: 8px; }
+.signal-qb-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.signal-qb-pills { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.signal-qb-open-btn {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--card-bg));
+  color: var(--text-main);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.signal-qb-open-btn:hover { background: color-mix(in srgb, var(--accent) 18%, var(--card-bg)); }
 /* ── Top Movers Section ── */
 .signal-movers-row {
   display: grid;
@@ -318,24 +335,27 @@ function _renderSignalQB(changes, tf, topMovers) {
     var t = (c.type || '').toLowerCase().trim();
     var isDateField = t === 'ofs date' || t === 'cx start date' || t === 'cx end date';
     
-    var fdhHtml = q ? _signalHighlight(c.fdh, q) : _esc(c.fdh);
+    var fdhText = String(c.fdh || '').trim() || 'FDH Missing';
+    var fdhHtml = q ? _signalHighlight(fdhText, q) : _esc(fdhText);
     var metaHtml = _esc(c.updatedBy) + '<br>' + _esc(c.timestamp);
-    var hasItem = (allActionItems || []).some(function(i) { return String(i.fdh || '') === String(c.fdh || ''); });
+    var hasItem = (allActionItems || []).some(function(i) { return String(i.fdh || '') === fdhText; });
     var viewBtn = hasItem
-      ? '<button class="signal-nav-btn-overlay" onclick="_signalNavigateToItem(' + JSON.stringify(String(c.fdh || '')) + ')"></button>'
+      ? '<button class="signal-qb-open-btn" onclick="event.stopPropagation(); _signalNavigateToItem(' + JSON.stringify(fdhText) + ');">Open Detail</button>'
       : '';
     
     var displayPillText = isDateField ? (_signalTypeLabel(t).toUpperCase() + ' | ' + _esc(c.newVal)) : _esc(c.newVal || c.type);
 
     html += '<div class="signal-qb-card">'
-      + viewBtn
       + '<div class="signal-qb-header">'
       + '<div class="signal-qb-fdh">' + fdhHtml + '</div>'
       + '<div class="signal-qb-meta">' + metaHtml + '</div>'
       + '</div>'
-      + '<div class="signal-qb-pill-row">'
+      + '<div class="signal-qb-footer">'
+      + '<div class="signal-qb-pills">'
       + '<span class="glass-pill ' + pillClass + '">' + displayPillText + '</span>'
       + (isDateField ? '' : '<span class="glass-pill pill-hold" style="opacity:0.6;">' + _esc(c.type) + '</span>')
+      + '</div>'
+      + viewBtn
       + '</div>'
       + '</div>';
   });

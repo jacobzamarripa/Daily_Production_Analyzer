@@ -772,6 +772,14 @@
               (queueCount > 0
                   ? `You have ${queueCount} item(s) still in the queue.\nHave you reviewed the current flagged projects before syncing?`
                   : "Queue is clear — safe to sync.");
+          const resetSignalCaches = function() {
+              if (typeof _signalCache !== 'undefined' && _signalCache) {
+                  _signalCache.fast = {};
+                  _signalCache.drive = {};
+              }
+              if (typeof _signalLoadedTf !== 'undefined') _signalLoadedTf = {};
+              if (typeof _signalPrefetching !== 'undefined') _signalPrefetching = {};
+          };
           if (!confirm(msg)) return;
           const btn = getEl('btn-qb-sync');
           if (btn) { btn.innerText = '⟳ Syncing…'; btn.disabled = true; }
@@ -796,6 +804,7 @@
                           .withSuccessHandler(function(data) {
                               hideFrostedLoader();
                               if (btn) { btn.innerText = '⟳ Sync QB'; btn.disabled = false; }
+                              resetSignalCaches();
                               initDashboard(data);
                               showToast('✅ Synced ' + r.count + ' records · ' + r.timestamp);
 
