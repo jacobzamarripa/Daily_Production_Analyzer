@@ -422,13 +422,26 @@
     </div>
 
     <div id="calc-widget" class="tool-widget">
-        <div class="tool-header" id="calc-widget-header">Benny OSP Calculator<button class="tool-close" onclick="toggleWidget('calc-widget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
-        <input type="text" id="calc-display" readonly value="0">
+        <div class="tool-header" id="calc-widget-header">
+            <div class="calc-header-stack">
+                <div class="calc-header-kicker">BENNY SERIES 04</div>
+                <div class="calc-header-title">OSP Field Estimator</div>
+            </div>
+            <button class="tool-close" onclick="toggleWidget('calc-widget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <div class="calc-display-shell">
+            <div class="calc-solar-strip" aria-hidden="true"></div>
+            <div class="calc-display-meta">
+                <span>OSP DESK CALC</span>
+                <span>QTY -> DAYS</span>
+            </div>
+            <input type="text" id="calc-display" readonly value="0">
+        </div>
         <div class="calc-sub-grid">
-            <button class="calc-sub-btn" onclick="calcOp('drill-days')">DRILL DYS</button>
-            <button class="calc-sub-btn" onclick="calcOp('jet-days')">JET DYS</button>
-            <button class="calc-sub-btn" onclick="calcOp('ae-days')">AE DYS</button>
-            <button class="calc-sub-btn" onclick="calcOp('splice-days')">SPLICE DYS</button>
+            <button class="calc-sub-btn" onclick="calcOp('drill-days')"><span>DRILL</span><small>450 / day</small></button>
+            <button class="calc-sub-btn" onclick="calcOp('jet-days')"><span>JET</span><small>5000 / day</small></button>
+            <button class="calc-sub-btn" onclick="calcOp('ae-days')"><span>AE</span><small>5000 / day</small></button>
+            <button class="calc-sub-btn" onclick="calcOp('splice-days')"><span>SPLICE</span><small>5 / day</small></button>
         </div>
         <div class="calc-keys">
             <button class="calc-btn top-op" onclick="calcOp('clr')">AC</button>
