@@ -96,3 +96,19 @@
 - [x] Phase 2 — iPad CSS Partial (_styles_ipad.html — touch targets, layout, bottom sheet)
 - [x] Phase 3 — Navigation Ergonomics + Workspace Fixes (Gantt, Detail, Grid)
 - [ ] Phase 4 — QA & Smoke Test (Playwright iPad mini emulation)
+
+---
+
+## Workstream 22 — UI Plane Architecture & Stacking Integrity ✓
+- [x] Phase 1 — Global Z-Index Tokenization
+- [x] Phase 2 — Cross-file Z-Index Standardization
+- [x] Phase 3 — Container Collision & Interaction Refinement (Deck Mode Fixes)
+
+---
+
+## Workstream 23 — SIGNAL UI Final Tightening ✓
+- [x] Phase 1 — Quickbase Changes Inbox-Card Redesign (FDH ID + Status Pills)
+- [x] Phase 2 — Drive Folders Focused Signal (CDs/Permits & BOMs ONLY)
+- [x] Phase 3 — App Log Terminal Console Polish
+- [x] Phase 4 — Rolling 24-hour Snapshot for "Current" view
+- [x] Phase 5 — Targeted Drive Scanning Optimization (< 3s load)

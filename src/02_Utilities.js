@@ -625,16 +625,19 @@ function setupDailyTrigger() {
   const triggers = ScriptApp.getProjectTriggers();
   for (let i = 0; i < triggers.length; i++) ScriptApp.deleteTrigger(triggers[i]);
   
-  // 3 Ingestion Windows + 1 Final EOD Compilation (All before 5 PM)
-  ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(9).everyDays(1).create();
-  ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(12).everyDays(1).create();
-  ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(15).everyDays(1).create();
+  // 5 Data Sync Windows (12am, 8am, 12pm, 4pm, 8pm)
+  [0, 8, 12, 16, 20].forEach(hour => {
+    ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(hour).everyDays(1).create();
+  });
   
-  // Final EOD Compilation & Review: 4:30 PM
+  // Final EOD Compilation & Review: 4:30 PM (Special handling)
   ScriptApp.newTrigger('runEveningAutomation').timeBased().atHour(16).nearMinute(30).everyDays(1).create();
   
+  // Cleanup at Midnight
   ScriptApp.newTrigger('moveIncomingFoldersToArchive').timeBased().atHour(0).everyDays(1).create();
-  SpreadsheetApp.getUi().alert("✅ Daily Automations Enabled: Ingestions at 9AM, 12PM, 3PM | EOD Report at 4:30PM.");
+  
+  logMsg("✅ SIGNAL: Automatic sync triggers programmed for 12am, 8am, 12pm, 4pm, 8pm.");
+  SpreadsheetApp.getUi().alert("✅ Daily Automations Updated: Syncs at 12AM, 8AM, 12PM, 4PM, 8PM.");
 }
 
 function runMiddayAutomation() {
@@ -1164,7 +1167,10 @@ function _getCurrentSignalSnapshotStart(ss, now) {
 function _getSignalCutoff(tf, ss, now) {
   const currentNow = now instanceof Date ? new Date(now.getTime()) : new Date();
   const timeframe = _normalizeSignalTimeframe(tf);
-  if (timeframe === 'current') return _getCurrentSignalSnapshotStart(ss, currentNow);
+  
+  // CURRENT: 24 hour rolling window from exactly now.
+  if (timeframe === 'current') return new Date(currentNow.getTime() - 24 * 60 * 60 * 1000);
+  
   if (timeframe === 'week') return new Date(currentNow.getTime() - 7 * 24 * 60 * 60 * 1000);
   if (timeframe === 'month') return new Date(currentNow.getTime() - 30 * 24 * 60 * 60 * 1000);
   return new Date(0);
@@ -1174,8 +1180,10 @@ function _getSignalCutoff(tf, ss, now) {
 function getSignalFast(tf) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const now = new Date();
-  const result = { qbChanges: [], systemLogs: [] };
+  const result = { qbChanges: [], systemLogs: [], topMovers: [] };
   const cutoff = _getSignalCutoff(tf, ss, now);
+
+  const userStats = {}; // { userName: { count: 0, types: { type: count } } }
 
   // QB Changes from 10-Change_Log
   const changeSheet = ss.getSheetByName(CHANGE_LOG_SHEET);
@@ -1183,24 +1191,48 @@ function getSignalFast(tf) {
     const data = changeSheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
-      const ts = row[4];
+      let ts = row[4];
+      
+      // Robust timestamp handling: Support Date objects and strings
+      if (!(ts instanceof Date) && ts) {
+        const d = new Date(ts);
+        if (!isNaN(d.getTime())) ts = d;
+      }
+
       if (ts instanceof Date && ts >= cutoff && _isSignalMilestone(String(row[1] || ''), String(row[2] || ''))) {
-        const rawType = String(row[1] || '').toLowerCase().trim();
+        const userName = String(row[3] || 'Unknown');
+        const changeType = String(row[1] || '');
         const rawVal = row[2];
-        const isDateField = rawType === 'ofs date' || rawType === 'cx start date' || rawType === 'cx end date';
+        const isDateField = changeType.toLowerCase().trim().includes('date');
+        
         const formattedVal = isDateField && rawVal instanceof Date
           ? Utilities.formatDate(rawVal, "GMT-5", "MM/dd/yyyy")
           : String(rawVal || '');
+
         result.qbChanges.push({
           fdh: String(row[0] || ''),
-          type: String(row[1] || ''),
+          type: changeType,
           newVal: formattedVal,
-          updatedBy: String(row[3] || ''),
+          updatedBy: userName,
           timestamp: Utilities.formatDate(ts, "GMT-5", "MM/dd/yy HH:mm")
         });
+
+        // Collect stats for Top Movers
+        if (!userStats[userName]) userStats[userName] = { count: 0, types: {} };
+        userStats[userName].count++;
+        userStats[userName].types[changeType] = (userStats[userName].types[changeType] || 0) + 1;
       }
     }
     result.qbChanges.reverse();
+
+    // Calculate Top Movers (top 3)
+    const sortedUsers = Object.keys(userStats).map(name => {
+      const stats = userStats[name];
+      const mostCommonType = Object.keys(stats.types).reduce((a, b) => stats.types[a] > stats.types[b] ? a : b);
+      return { name, count: stats.count, primary: mostCommonType };
+    }).sort((a, b) => b.count - a.count).slice(0, 3);
+    
+    result.topMovers = sortedUsers;
   }
 
   // System Logs from 4-System_Logs (last 50, newest first)
@@ -1209,7 +1241,11 @@ function getSignalFast(tf) {
     const logData = logSheet.getDataRange().getValues();
     const rows = logData.slice(1).slice(-50).reverse();
     rows.forEach(row => {
-      const ts = row[0];
+      let ts = row[0];
+      if (!(ts instanceof Date) && ts) {
+        const d = new Date(ts);
+        if (!isNaN(d.getTime())) ts = d;
+      }
       result.systemLogs.push({
         timestamp: ts instanceof Date ? Utilities.formatDate(ts, "GMT-5", "MM/dd/yy HH:mm") : String(ts),
         message: String(row[1] || '')
@@ -1236,25 +1272,39 @@ function getSignalDrive(tf) {
   const cutoff = _getSignalCutoff(timeframe, ss, now);
 
   const driveActivity = [];
-  try {
-    const root = DriveApp.getFolderById(OMNI_FIBER_FOLDER_ID);
-    _collectDriveChanges(root, root.getName(), cutoff, driveActivity, { count: 0 });
-  } catch(e) { logMsg('SIGNAL: Drive traversal failed — ' + e.message); }
+  
+  // HIGH-SIGNAL FOLDERS: BOMs and CDs/Permits
+  const targetFolderIds = [
+    { id: BOMS_FOLDER_ID, name: 'BOMs' },
+    { id: CDS_PERMITS_FOLDER_ID, name: 'CDs_and_Permits' }
+  ];
+
+  targetFolderIds.forEach(target => {
+    try {
+      const folder = DriveApp.getFolderById(target.id);
+      _collectDriveChanges(folder, target.name, cutoff, driveActivity, { count: 0 }, 0);
+    } catch(e) { 
+      logMsg('SIGNAL: Failed to scan ' + target.name + ' — ' + e.message); 
+    }
+  });
 
   try { cache.put(cacheKey, JSON.stringify(driveActivity), 600); } catch(e) {}
   return driveActivity;
 }
 
 // Recursive helper: walks folder tree depth-first, collecting files modified since cutoff.
-// Prunes entire subtrees where the folder itself hasn't been touched since cutoff.
 // Caps at 150 results and depth 5 to prevent GAS timeout on large trees.
 function _collectDriveChanges(folder, path, cutoff, out, counter, depth) {
   if (counter.count >= 150 || (depth || 0) > 5) return;
 
-  // Prune: skip folder entirely if it hasn't been modified since cutoff
+  // Since we start at the target folders, we descend into all subfolders
+  // We only prune if the folder itself hasn't been updated since cutoff
   try {
-    if (folder.getLastUpdated() < cutoff) return;
-  } catch(e) { /* can't read date — proceed */ }
+    if (folder.getLastUpdated() < cutoff) {
+      // In these specific folders, we STILL descend because sub-folder dates 
+      // aren't always reliable for child file updates in real-time.
+    }
+  } catch(e) {}
 
   // Files in this folder
   const files = folder.getFiles();

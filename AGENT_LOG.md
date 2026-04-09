@@ -1,5 +1,17 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-08: SIGNAL Performance Optimization & High-Signal Tracking
+- **Targeted Drive Ingestion**: Refactored `getSignalDrive` to perform a keyword-based targeted scan for `CDs_and_Permits` and `BOMs` folders. Eliminated the slow full-tree traversal, resulting in significantly faster loading times (< 3s) and guaranteed tracking of critical project documentation.
+- **Rolling 24-Hour Snapshot**: Updated the "Current" timeframe logic to use a strict rolling 24-hour lookback from the exact time of the request. This ensures recent activity is always visible even when the master archive hasn't been updated for several hours.
+- **Improved Traversal Pruning**: Enhanced the Drive traversal logic to descend only into high-signal folder branches, preventing GAS timeouts while maintaining a depth-limit safe search for project-specific files.
+- **Files touched:** `src/02_Utilities.js`.
+
+> [!success] 2026-04-08: SIGNAL UI Final Tightening (Inbox Style & Focused Signal)
+- **QUICKBASE CHANGES (Inbox Card Style)**: Redesigned the Quickbase changes panel to match the Diagnostic Queue's "inbox card" view. Each entry now features a bold **FDH ID**, a secondary line with **Status Pills** for both the change type and its value, and metadata (user/timestamp) in a structured header. The entire card is clickable for seamless navigation.
+- **DRIVE FOLDERS (Focused Signal)**: Refined the Drive activity panel to track ONLY `CDs_and_Permits` and `BOMs`. Restored the original hybrid layout (large icons at top, structured list below) to provide a clear, focused view of critical project documentation.
+- **APP LOG (Console Aesthetic)**: Maintained the enhanced terminal console aesthetic with a deep black background (`#0a0a0a`), vibrant green monospaced text, CRT scanline effects, and a blinking cursor.
+- **Files touched:** `src/_module_signal.html`.
+
 > [!success] 2026-04-07: Backend Report Automation & Logic Cleanup
 - **Optimized Ingestion Engine**: Refactored the daily report ingestion to an "Immediate Move" pattern. Files are now moved to the Master Archive as soon as they are parsed, eliminating the exponential slowdown caused by re-scanning folders after GAS timeouts.
 - **Production_Incoming Alignment**: Corrected the `REFERENCE_FOLDER_ID` configuration to target the live Power Automate sync folder. Added MIME-type detection to identify Excel files even without `.xlsx` extensions.

@@ -9,6 +9,8 @@ const COMPILED_FOLDER_ID  = "1YJiF1bdfZkHscRfYuYCOI91kzT22dONV"; // Compiled_Dai
 const UPLOADED_FOLDER_ID  = "1b6n2GCX_qJYWp0lgVgP1JE9iWm9VQqJr"; // 02_Uploaded
 const REFERENCE_FOLDER_ID = "1KBFJ5SWrTgRnU5zWUmcDOZtOiTNLonRk"; // Production_Incoming
 const OMNI_FIBER_FOLDER_ID = "1wuz8GwOpwDSl_Xmc08uZbQKf_JICwdNt"; // Omni Fiber Root
+const BOMS_FOLDER_ID = "1TfXAt8lQKl0emi7zE8V_aex6k2YH8Ogl";
+const CDS_PERMITS_FOLDER_ID = "1BxKhfNAXo32TPEvrTBsGi69lVo9njDU8";
 const VENDOR_TRACKER_ID   = "1O9PiwSxkoI6md8XEIUfohV3yY4ot5uqqO9VKU8HfEl0"; 
 const DEFAULT_VENDOR_DAILY_GOALS = {
   "Bucyrus": 18000,

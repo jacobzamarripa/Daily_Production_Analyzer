@@ -1,3 +1,92 @@
+<style>
+/* SIGNAL UI REFINEMENT (WS23) */
+
+/* ── Quickbase Changes: Inbox Card Style ── */
+.signal-qb-card {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+.signal-qb-card:hover { background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
+.signal-qb-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.signal-qb-fdh { font-size: 15px; font-weight: 900; color: var(--text-main); letter-spacing: -0.3px; }
+.signal-qb-meta { font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: right; line-height: 1.3; text-transform: uppercase; }
+.signal-qb-pill-row { display: flex; align-items: center; gap: 8px; }
+/* ── Top Movers Section ── */
+.signal-movers-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--accent) 3%, var(--bg));
+  border-bottom: 1px solid var(--border);
+}
+.signal-mover-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.signal-mover-name { font-size: 11px; font-weight: 900; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.signal-mover-count { font-size: 18px; font-weight: 900; color: var(--accent); line-height: 1; }
+.signal-mover-label { font-size: 8px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.signal-mover-primary { font-size: 9px; font-weight: 700; color: var(--text-muted); margin-top: 2px; line-height: 1.1; }
+.signal-section-header { font-size: 10px; font-weight: 900; text-transform: uppercase; color: var(--text-muted); padding: 12px 16px 4px; letter-spacing: 1px; }
+
+/* ── App Log: Terminal Console Style ── */
+#signal-panel-log {
+  background: #0a0a0a !important;
+  color: #22c55e !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 1), 0 0 0 1px #1a1a1a !important;
+  overflow-y: auto;
+  position: relative;
+}
+#signal-panel-log::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.3;
+}
+.signal-log-row {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0 !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.03) !important;
+  font-size: 12px;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+.signal-log-row:last-child::after {
+  content: "▊";
+  animation: signal-cursor-blink 1s steps(2) infinite;
+  margin-left: 4px;
+}
+@keyframes signal-cursor-blink { 0% { opacity: 0; } 100% { opacity: 1; } }
+.signal-log-ts { color: #666; font-weight: 700; flex-shrink: 0; }
+.signal-log-msg { flex: 1; min-width: 0; word-break: break-word; }
+.signal-log-err .signal-log-msg { color: #ef4444; text-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+.signal-log-warn .signal-log-msg { color: #f59e0b; text-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+.signal-log-ok .signal-log-msg { color: #22c55e; text-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+</style>
 <script>
 // ============================================================
 // FILE: _module_signal.html | ROLE: SIGNAL Operations Console
@@ -45,7 +134,7 @@ function _signalPrimePanelShell() {
 function _signalRenderCached(tf) {
   var fastData = _signalCache.fast[tf];
   if (fastData) {
-    _renderSignalQB(fastData.qbChanges || [], tf);
+    _renderSignalQB(fastData.qbChanges || [], tf, fastData.topMovers || []);
     _renderSignalLogs(fastData.systemLogs || []);
   }
   if (Object.prototype.hasOwnProperty.call(_signalCache.drive, tf)) {
@@ -162,7 +251,7 @@ function loadSignalData(tf) {
   google.script.run
     .withSuccessHandler(function(data) {
       _signalCache.fast[tf] = data || { qbChanges: [], systemLogs: [] };
-      _renderSignalQB(data.qbChanges || [], tf);
+      _renderSignalQB(data.qbChanges || [], tf, data.topMovers || []);
       _renderSignalLogs(data.systemLogs || []);
       // Call 2: Drive traversal (cached after first run)
       google.script.run
@@ -189,7 +278,7 @@ function loadSignalData(tf) {
     .getSignalFast(tf);
 }
 
-function _renderSignalQB(changes, tf) {
+function _renderSignalQB(changes, tf, topMovers) {
   var el = document.getElementById('signal-panel-qb');
   if (!el) return;
   var q = _signalSearchQuery.toLowerCase().trim();
@@ -205,28 +294,48 @@ function _renderSignalQB(changes, tf) {
       : '<div class="signal-empty">No QB changes in the ' + _signalTfLabel(tf) + '.</div>';
     return;
   }
+
   var html = '';
+
+  // Render Top Movers section (only if no search query is active)
+  if (!q && topMovers && topMovers.length > 0) {
+    html += '<div class="signal-section-header">Top Movers (24h)</div>';
+    html += '<div class="signal-movers-row">';
+    topMovers.forEach(function(m) {
+      html += '<div class="signal-mover-card">'
+        + '<div class="signal-mover-name">' + _esc(m.name) + '</div>'
+        + '<div class="signal-mover-count">' + m.count + '</div>'
+        + '<div class="signal-mover-label">Changes</div>'
+        + '<div class="signal-mover-primary">' + _esc(m.primary) + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+    html += '<div class="signal-section-header">Activity Feed</div>';
+  }
+
   filtered.forEach(function(c) {
     var pillClass = _signalQBPillClass(c.type, c.newVal);
     var t = (c.type || '').toLowerCase().trim();
     var isDateField = t === 'ofs date' || t === 'cx start date' || t === 'cx end date';
-    var pillLabel = isDateField ? _signalTypeLabel(t) : _esc(c.newVal || c.type);
-    var subVal = isDateField ? '<span class="signal-val">' + _esc(c.newVal) + '</span>' : '';
+    
     var fdhHtml = q ? _signalHighlight(c.fdh, q) : _esc(c.fdh);
-    var metaHtml = _esc(c.updatedBy) + ' &middot; ' + _esc(c.timestamp);
+    var metaHtml = _esc(c.updatedBy) + '<br>' + _esc(c.timestamp);
     var hasItem = (allActionItems || []).some(function(i) { return String(i.fdh || '') === String(c.fdh || ''); });
     var viewBtn = hasItem
-      ? '<button class="signal-nav-btn" onclick="_signalNavigateToItem(' + JSON.stringify(String(c.fdh || '')) + ')">View</button>'
+      ? '<button class="signal-nav-btn-overlay" onclick="_signalNavigateToItem(' + JSON.stringify(String(c.fdh || '')) + ')"></button>'
       : '';
-    html += '<div class="signal-row">'
-      + '<div class="signal-row-main">'
-      + '<span class="signal-fdh">' + fdhHtml + '</span>'
-      + '<span class="glass-pill ' + pillClass + '">' + pillLabel + '</span>'
+    
+    var displayPillText = isDateField ? (_signalTypeLabel(t).toUpperCase() + ' | ' + _esc(c.newVal)) : _esc(c.newVal || c.type);
+
+    html += '<div class="signal-qb-card">'
       + viewBtn
+      + '<div class="signal-qb-header">'
+      + '<div class="signal-qb-fdh">' + fdhHtml + '</div>'
+      + '<div class="signal-qb-meta">' + metaHtml + '</div>'
       + '</div>'
-      + '<div class="signal-row-sub">'
-      + subVal
-      + '<span class="signal-meta">' + metaHtml + '</span>'
+      + '<div class="signal-qb-pill-row">'
+      + '<span class="glass-pill ' + pillClass + '">' + displayPillText + '</span>'
+      + (isDateField ? '' : '<span class="glass-pill pill-hold" style="opacity:0.6;">' + _esc(c.type) + '</span>')
       + '</div>'
       + '</div>';
   });
@@ -272,8 +381,8 @@ function _renderSignalLogs(logs) {
 
   if (!filtered.length) {
     el.innerHTML = q
-      ? '<div class="signal-log-empty">NO RESULTS FOR "' + _esc(q.toUpperCase()) + '"</div>'
-      : '<div class="signal-log-empty">NO ENTRIES FOUND</div>';
+      ? '<div class="signal-log-row"><span class="signal-log-msg">NO RESULTS FOR "' + _esc(q.toUpperCase()) + '"</span></div>'
+      : '<div class="signal-log-row"><span class="signal-log-msg">NO ENTRIES FOUND</span></div>';
     return;
   }
   var html = '';
@@ -295,6 +404,8 @@ function _renderSignalLogs(logs) {
       + '</div>';
   });
   el.innerHTML = html;
+  // Auto-scroll to bottom for terminal effect
+  el.scrollTop = el.scrollHeight;
 }
 
 function _renderSignalDrive(activity, tf) {
@@ -302,15 +413,22 @@ function _renderSignalDrive(activity, tf) {
   if (!el) return;
   var q = _signalSearchQuery.toLowerCase().trim();
 
-  // Filter: keep groups that have at least one matching file (or matching folder path)
-  var filteredActivity = q ? activity.map(function(group) {
-    var folderMatch = _signalMatchesQuery([group.folder], q);
-    var matchedFiles = group.files.filter(function(f) {
-      return _signalMatchesQuery([f.name, f.modified, group.folder], q);
-    });
-    if (!folderMatch && !matchedFiles.length) return null;
-    return { folder: group.folder, folderUrl: group.folderUrl, files: folderMatch ? group.files : matchedFiles };
-  }).filter(Boolean) : activity;
+  // Filter: keep groups that match CDs_and_Permits OR BOMs
+  var filteredActivity = activity.filter(function(group) {
+    var p = (group.folder || '').toLowerCase();
+    return p.includes('cds_and_permits') || p.includes('boms');
+  });
+
+  if (q) {
+    filteredActivity = filteredActivity.map(function(group) {
+      var folderMatch = _signalMatchesQuery([group.folder], q);
+      var matchedFiles = group.files.filter(function(f) {
+        return _signalMatchesQuery([f.name, f.modified, group.folder], q);
+      });
+      if (!folderMatch && !matchedFiles.length) return null;
+      return { folder: group.folder, folderUrl: group.folderUrl, files: folderMatch ? group.files : matchedFiles };
+    }).filter(Boolean);
+  }
 
   var totalFiles = filteredActivity.reduce(function(n, g) { return n + g.files.length; }, 0);
   _signalUpdateMatchCount(totalFiles, activity.reduce(function(n, g) { return n + g.files.length; }, 0));
@@ -318,19 +436,17 @@ function _renderSignalDrive(activity, tf) {
   if (!filteredActivity.length) {
     el.innerHTML = q
       ? '<div class="signal-empty">No results for "' + _esc(q) + '".</div>'
-      : '<div class="signal-empty">No Drive folder activity in the ' + _signalTfLabel(tf) + '.</div>';
+      : '<div class="signal-empty">No CD/Permit or BOM activity in the ' + _signalTfLabel(tf) + '.</div>';
     return;
   }
 
-  // Re-group by root subfolder (segment index 1; segment 0 is the Omni Fiber root name)
-  // rootMap: rootKey -> { rootUrl, subgroups: [{ subPath, folderUrl, files }] }
+  // Re-group by root subfolder
   var rootMap = {};
   filteredActivity.forEach(function(group) {
     var parts = group.folder.split(' / ');
     var rootKey = parts.length > 1 ? parts[1] : parts[0];
     var subPath = parts.length > 2 ? parts.slice(2).join(' / ') : '';
     if (!rootMap[rootKey]) rootMap[rootKey] = { rootUrl: null, subgroups: [] };
-    // First entry at depth 1 (subPath empty) carries the root folder URL
     if (!subPath && group.folderUrl) rootMap[rootKey].rootUrl = group.folderUrl;
     rootMap[rootKey].subgroups.push({ subPath: subPath, folderUrl: group.folderUrl || null, files: group.files });
   });
@@ -359,11 +475,11 @@ function _renderSignalDrive(activity, tf) {
     + '</button>';
   rootKeys.forEach(function(rootKey) {
     var entry = rootMap[rootKey];
-    var totalFiles = entry.subgroups.reduce(function(n, g) { return n + g.files.length; }, 0);
+    var count = entry.subgroups.reduce(function(n, g) { return n + g.files.length; }, 0);
     chipHtml += '<button class="signal-drive-filter-chip' + (_signalDriveRootFilter === rootKey ? ' active' : '') + '" type="button" onclick="_signalSetDriveRootFilter(' + JSON.stringify(rootKey) + ')">'
       + '<span class="signal-drive-filter-icon">' + folderIcon + '</span>'
       + '<span class="signal-drive-filter-label">' + _esc(rootKey) + '</span>'
-      + '<span class="signal-count">' + totalFiles + '</span>'
+      + '<span class="signal-count">' + count + '</span>'
       + '</button>';
   });
   chipHtml += '</div>';
@@ -372,39 +488,30 @@ function _renderSignalDrive(activity, tf) {
   rootKeys.forEach(function(rootKey) {
     if (_signalDriveRootFilter !== 'all' && _signalDriveRootFilter !== rootKey) return;
     var entry = rootMap[rootKey];
-    var totalFiles = entry.subgroups.reduce(function(n, g) { return n + g.files.length; }, 0);
-    var rootLink = entry.rootUrl
-      ? ' href="' + _esc(entry.rootUrl) + '" target="_blank"'
-      : '';
+    var rootLink = entry.rootUrl ? ' href="' + _esc(entry.rootUrl) + '" target="_blank"' : '';
 
     html += '<div class="signal-drive-root">'
       + '<div class="signal-drive-root-header">'
       + '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>'
       + '<a class="signal-drive-link"' + rootLink + '>' + _esc(rootKey) + '</a>'
-      + ' <span class="signal-count">' + totalFiles + '</span>'
       + '</div>';
 
     entry.subgroups.forEach(function(sg) {
       if (sg.subPath) {
-        var subLink = sg.folderUrl
-          ? ' href="' + _esc(sg.folderUrl) + '" target="_blank"'
-          : '';
+        var subLink = sg.folderUrl ? ' href="' + _esc(sg.folderUrl) + '" target="_blank"' : '';
         html += '<div class="signal-drive-subfolder">'
           + '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" opacity="0.6"/></svg>'
           + '<a class="signal-drive-link"' + subLink + '>' + _esc(sg.subPath) + '</a>'
           + '</div>';
       }
       sg.files.forEach(function(f) {
-        var fileLink = f.url
-          ? ' href="' + _esc(f.url) + '" target="_blank"'
-          : '';
+        var fileLink = f.url ? ' href="' + _esc(f.url) + '" target="_blank"' : '';
         html += '<div class="signal-drive-file' + (sg.subPath ? ' signal-drive-file-nested' : '') + '">'
           + '<a class="signal-drive-file-name signal-drive-link"' + fileLink + '>' + _esc(f.name) + '</a>'
           + '<span class="signal-meta">' + _esc(f.modified) + '</span>'
           + '</div>';
       });
     });
-
     html += '</div>';
   });
   el.innerHTML = html;
@@ -475,7 +582,7 @@ function _signalOnSearch(val) {
   var tf = _signalNormalizeTf(_signalCurrentTf);
   var fastData = _signalCache.fast[tf];
   if (_signalActiveTab === 'qb' && fastData) {
-    _renderSignalQB(fastData.qbChanges || [], tf);
+    _renderSignalQB(fastData.qbChanges || [], tf, fastData.topMovers || []);
   } else if (_signalActiveTab === 'log' && fastData) {
     _renderSignalLogs(fastData.systemLogs || [], tf);
   } else if (_signalActiveTab === 'drive' && Object.prototype.hasOwnProperty.call(_signalCache.drive, tf)) {
