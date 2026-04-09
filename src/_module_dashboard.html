@@ -35,17 +35,14 @@ function renderDashboard() {
 
     var tsEl = getEl('dash-timestamp');
     var nameEl = getEl('dash-program-name');
-    if (tsEl) tsEl.textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    if (nameEl) nameEl.textContent = hasData ? allActionItems.length + ' Projects Loaded' : 'Loading...';
-
-    // Ref data freshness label
-    var refEl = getEl('dash-ref-label');
-    if (refEl && typeof globalRefDataDate === 'string' && globalRefDataDate) {
-        refEl.textContent = 'Ref data: ' + globalRefDataDate;
-        refEl.style.display = '';
-    } else if (refEl) {
-        refEl.style.display = 'none';
+    
+    // Updated freshness pill logic
+    if (tsEl) {
+        var freshTime = (typeof globalRefDataDate === 'string' && globalRefDataDate) ? globalRefDataDate : new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        tsEl.textContent = 'FRESHNESS: ' + freshTime;
     }
+    
+    if (nameEl) nameEl.textContent = hasData ? allActionItems.length + ' Projects Loaded' : 'Loading...';
 
     if (!hasData) {
         _renderDashSkeletons();
@@ -63,7 +60,6 @@ function renderDashKpiStrip() {
     var container = getEl('dash-kpi-strip');
     if (!container) return;
 
-    var total = allActionItems.length;
     var stageCounts = (currentFilterStats && currentFilterStats.stageCounts) || {};
 
     var ofsCount = 0, permitCount = 0, completeCount = 0;
@@ -80,7 +76,6 @@ function renderDashKpiStrip() {
     }).length;
 
     var cards = [
-        { label: 'Total',      val: total,        cls: '' },
         { label: 'OFS',        val: ofsCount,     cls: 'is-ofs' },
         { label: 'Permitting', val: permitCount,   cls: 'is-permit' },
         { label: 'Complete',   val: completeCount, cls: 'is-complete' },
@@ -255,13 +250,12 @@ function renderDashFlagsFeed() {
     if (!container || !feedCard) return;
 
     var items = (currentCriticalHubItems || []);
+    feedCard.style.display = ''; // Always show in 2-column layout
 
     if (!items.length) {
-        feedCard.style.display = 'none';
+        container.innerHTML = '<div class="empty-msg" style="margin-top:40px; color:var(--text-muted); font-size:12px; font-weight:700;">All Clear ✓<br><span style="font-weight:500; font-size:10px; opacity:0.7;">No critical items currently flagged.</span></div>';
         return;
     }
-
-    feedCard.style.display = '';
 
     container.innerHTML = items.map(function(item) {
         var fdh = esc(item.fdh || '');
@@ -303,9 +297,9 @@ function navigateFromDashboardFlag(fdh) {
 function _renderDashSkeletons() {
     var strip = getEl('dash-kpi-strip');
     if (strip) {
-        strip.innerHTML = [1,2,3,4,5].map(function() {
+        strip.innerHTML = [1,2,3,4].map(function() {
             return '<div class="dash-kpi-card">' +
-                '<div class="dash-skeleton" style="height:28px;width:55%;margin-bottom:6px;"></div>' +
+                '<div class="dash-skeleton" style="height:32px;width:55%;margin-bottom:6px;"></div>' +
                 '<div class="dash-skeleton" style="height:10px;width:75%;"></div>' +
             '</div>';
         }).join('');
@@ -323,6 +317,20 @@ function _renderDashSkeletons() {
                 '<div class="dash-skeleton" style="height:11px;width:80px;"></div>' +
                 '<div class="dash-skeleton" style="height:7px;flex:1;"></div>' +
                 '<div class="dash-skeleton" style="height:11px;width:24px;"></div>' +
+            '</div>';
+        }).join('');
+    }
+
+    var flagFeed = getEl('dash-flag-feed');
+    var flagCard = getEl('dash-flags-card');
+    if (flagFeed && flagCard) {
+        flagCard.style.display = '';
+        flagFeed.innerHTML = [1,2,3].map(function() {
+            return '<div class="dash-flag-item">' +
+                '<div class="dash-flag-main">' +
+                    '<div class="dash-skeleton" style="height:14px;width:120px;margin-bottom:6px;"></div>' +
+                    '<div class="dash-skeleton" style="height:10px;width:180px;"></div>' +
+                '</div>' +
             '</div>';
         }).join('');
     }
