@@ -1566,22 +1566,44 @@ function backfillMissingReports() {
     return;
   }
 
-  // 3. Get existing reports from Pending and Uploaded folders
+  // 3. Get existing reports from Compiled_Daily_Production_Reports (Recursive Scan)
   const existingReports = new Set();
-  const checkFolders = [COMPILED_FOLDER_ID, UPLOADED_FOLDER_ID];
   
-  checkFolders.forEach(id => {
+  /**
+   * Internal helper to recursively find existing report filenames.
+   * @param {string} folderId 
+   */
+  function scanFolderRecursive(folderId) {
     try {
-      let folder = DriveApp.getFolderById(id);
+      let folder = DriveApp.getFolderById(folderId);
+      
+      // 3a. Check files in current level
       let files = folder.getFiles();
       while (files.hasNext()) {
         let name = files.next().getName();
-        // Match Daily_Production_Report_M.d.yy.csv or Daily_Production_Report_MM.dd.yy.csv
-        let match = name.match(/Daily_Production_Report_(\d{1,2}\.\d{1,2}\.\d{2})\.csv/);
-        if (match) existingReports.add(match[1]);
+        // Match Daily_Production_Report_M.d.yy or Daily_Production_Report_MM.dd.yy with optional extension
+        let match = name.match(/Daily_Production_Report_(\d{1,2}\.\d{1,2}\.\d{2})/);
+        if (match) {
+          // Normalize to M.d.yy to match archiveDates format (no leading zeros)
+          let p = match[1].split('.');
+          let dObj = new Date(`20${p[2]}`, p[0]-1, p[1]);
+          let normalizedDate = Utilities.formatDate(dObj, "GMT-5", "M.d.yy");
+          existingReports.add(normalizedDate);
+        }
       }
-    } catch(e) { logMsg(`⚠️ Gap Scan folder check failed (${id}): ${e.message}`); }
-  });
+      
+      // 3b. Recurse into all subfolders (e.g., 02_Uploaded month/year folders)
+      let subfolders = folder.getFolders();
+      while (subfolders.hasNext()) {
+        scanFolderRecursive(subfolders.next().getId());
+      }
+    } catch (e) {
+      logMsg(`⚠️ Gap Scan folder check failed (${folderId}): ${e.message}`);
+    }
+  }
+
+  // Start recursion from the root parent folder
+  scanFolderRecursive(COMPILED_PARENT_FOLDER_ID);
 
   // 4. Identify gaps
   const missingDates = [...archiveDates].filter(d => !existingReports.has(d));
