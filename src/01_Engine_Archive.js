@@ -543,11 +543,63 @@ function runBennyDiagnostics(row, refDict, vendorDict) {
       flagColors.push(TEXT_COLORS.WARN);
       hCols.warn.push("FDH Engineering ID");
   } else if (fdhId !== "" && !refData) {
-      flags.push(`LIKELY OFS / OOS`);
-      flagColors.push(TEXT_COLORS.DONE);
-      drafts.push(`Missing from current CX reference data, but present historically in Master Archive. Treat as likely advanced beyond CX, most likely OFS.`);
-      inferredStage = "OFS (Inferred)";
-      inferredStatus = "OOS";
+      // PROBABILITY-BASED INFERENCE (Master_Archive fallback)
+      let hasRecentActivity = (dailyUG > 0 || dailyAE > 0 || dailyFIB > 0 || dailyNAP > 0);
+      let commentText = vendorComment.toLowerCase();
+      
+      // Completion Avg across active phases
+      let phases = [
+          { tot: totalUG, bom: vendorBOMUG },
+          { tot: totalAE, bom: vendorBOMAE },
+          { tot: totalFIB, bom: vendorBOMFIB },
+          { tot: totalNAP, bom: vendorBOMNAP }
+      ];
+      let activePhases = phases.filter(p => p.bom > 0);
+      let completionAvg = activePhases.length > 0 
+          ? activePhases.reduce((acc, p) => acc + Math.min(1, p.tot / p.bom), 0) / activePhases.length 
+          : 0;
+      let hasBOM = activePhases.length > 0;
+
+      // Scoring Matrix
+      let sFieldCX = 10, sOFS = 10, sPreCon = 10, sHold = 5;
+
+      // 1. Field CX Probability
+      if (hasRecentActivity) sFieldCX += 50;
+      if (completionAvg > 0 && completionAvg < 0.95) sFieldCX += 30;
+      if (["drilling", "pulling", "splicing", "placing", "trenching", "boring"].some(w => commentText.includes(w))) sFieldCX += 20;
+      if (lightToCab) sFieldCX -= 50;
+
+      // 2. OFS Probability
+      if (lightToCab) sOFS += 50;
+      if (completionAvg >= 0.95 || (completionAvg === 0 && !hasBOM)) sOFS += 40;
+      if (["done", "complete", "turned over", "spliced out", "ready"].some(w => commentText.includes(w))) sOFS += 20;
+      if (hasRecentActivity) sOFS -= 50;
+
+      // 3. Pre-Con Probability
+      if (completionAvg === 0 && !hasRecentActivity) sPreCon += 50;
+      if (["permit", "design", "waiting", "locates", "walk"].some(w => commentText.includes(w))) sPreCon += 30;
+      if (completionAvg > 0) sPreCon -= 50;
+
+      // 4. Hold Probability
+      if (["hold", "stop", "blocked", "standby", "canceled"].some(w => commentText.includes(w))) sHold += 60;
+      if (completionAvg > 0 && !hasRecentActivity) sHold += 20;
+
+      // Determine Winner
+      let results = [
+          { stage: "Field CX | In Progress", status: "Construction", score: sFieldCX, flag: "INFERRED: FIELD CX" },
+          { stage: "OFS (Inferred)", status: "OOS", score: sOFS, flag: "LIKELY OFS / OOS" },
+          { stage: "Pre-Construction", status: "Permitting", score: sPreCon, flag: "INFERRED: PRE-CON" },
+          { stage: "On Hold", status: "Hold", score: sHold, flag: "INFERRED: HOLD" }
+      ];
+      results.sort((a, b) => b.score - a.score);
+      let winner = results[0];
+
+      flags.push(winner.flag);
+      // If score is high (>=50), color it DONE (green), else WARN (red)
+      flagColors.push(winner.score >= 50 ? TEXT_COLORS.DONE : TEXT_COLORS.WARN);
+      drafts.push(`Missing from reference data. Inferred as ${winner.stage} (Score: ${winner.score}) based on archive report.`);
+      inferredStage = winner.stage;
+      inferredStatus = winner.status;
       hCols.warn.push("FDH Engineering ID");
   }
   

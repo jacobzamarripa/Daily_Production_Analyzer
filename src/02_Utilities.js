@@ -295,7 +295,7 @@ function _parseDashboardDateValue(value) {
   return isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function _shouldHideStaleOfsQueueItem(stage, status, flags, primaryOfsDate, fallbackOfsDate, reportDate) {
+function _isStaleOfsItem(stage, status, flags, primaryOfsDate, fallbackOfsDate, reportDate) {
   const stageStr = String(stage || '').toUpperCase();
   const statusStr = String(status || '').toUpperCase();
   const flagsStr = String(flags || '').toUpperCase();
@@ -305,13 +305,15 @@ function _shouldHideStaleOfsQueueItem(stage, status, flags, primaryOfsDate, fall
   const ofsDate = _parseDashboardDateValue(primaryOfsDate) || _parseDashboardDateValue(fallbackOfsDate) || _parseDashboardDateValue(reportDate);
   if (!ofsDate) return false;
 
+  // RULE: Hide if more than 7 days past the OFS month.
+  // Example: OFS March (3/31) cutoff is April 7th.
   const cutoff = new Date(ofsDate.getFullYear(), ofsDate.getMonth() + 1, 7);
   cutoff.setHours(23, 59, 59, 999);
   return Date.now() > cutoff.getTime();
 }
 
 function getDashboardData() {
-  const CACHE_KEY = 'dashboard_data_cache_v11';
+  const CACHE_KEY = 'dashboard_data_cache_v12';
   const cache = CacheService.getScriptCache();
   const cached = getChunkedCache(cache, CACHE_KEY);
   if (cached) { try { return JSON.parse(cached); } catch(e) {} }
@@ -475,16 +477,14 @@ function getDashboardData() {
              ? ""
              : canonicalOfsDate;
 
-         if (_shouldHideStaleOfsQueueItem(
+         const isStaleOfs = _isStaleOfsItem(
              stageIdx > -1 ? data[i][stageIdx] : "",
              statusIdx > -1 ? data[i][statusIdx] : "",
              flags,
              normalizedCanonicalOfsDate,
              rawMirrorOfsDate,
              dateIdx > -1 ? data[i][dateIdx] : ""
-         )) {
-             continue;
-         }
+         );
 
          actionItems.push({
              fdh: fdhIdx > -1 ? String(data[i][fdhIdx] || "") : "",
@@ -496,6 +496,7 @@ function getDashboardData() {
              isLight: lightIdx > -1 ? (data[i][lightIdx] === true || String(data[i][lightIdx]).toLowerCase() === 'true') : false,
              canonicalOfsDate: normalizedCanonicalOfsDate,
              ofsDate: normalizedCanonicalOfsDate,
+             isStaleOfs: isStaleOfs,
              rawMirrorOfsDate: rawMirrorOfsDate,
              reportDate: parseDate(dateIdx > -1 ? data[i][dateIdx] : ""),
              targetDate: parseDate(targetIdx > -1 ? data[i][targetIdx] : ""),
@@ -1082,7 +1083,7 @@ function webAppTrigger3a(targetDateStr) {
 
 // 🧠 WEB APP BRIDGE: Logs the Admin Check permanently and cleans the Daily Review sheet instantly
 function markAdminCheckComplete(fdhId) {
-  CacheService.getScriptCache().removeAll(['dashboard_data_cache_v11_meta', 'dashboard_data_cache_v11', 'SIGNAL_FAST_current', 'dashboard_data_cache_v2_blob']);
+  CacheService.getScriptCache().removeAll(['dashboard_data_cache_v12_meta', 'dashboard_data_cache_v12', 'SIGNAL_FAST_current', 'dashboard_data_cache_v2_blob']);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if(!adminSheet) return false;
@@ -1131,7 +1132,7 @@ function markAdminCheckComplete(fdhId) {
 }
 
 function verifySpecialCrossings(fdhId) {
-  CacheService.getScriptCache().removeAll(['dashboard_data_cache_v11_meta', 'dashboard_data_cache_v11', 'SIGNAL_FAST_current']);
+  CacheService.getScriptCache().removeAll(['dashboard_data_cache_v12_meta', 'dashboard_data_cache_v12', 'SIGNAL_FAST_current']);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if (!adminSheet) return false;
@@ -1178,7 +1179,7 @@ function verifySpecialCrossings(fdhId) {
 
 // 🧠 NEW: Status Sync Log Bridge
 function markStatusSyncComplete(fdhId) {
-  CacheService.getScriptCache().removeAll(['dashboard_data_cache_v11_meta', 'dashboard_data_cache_v11', 'SIGNAL_FAST_current', 'dashboard_data_cache_v2_blob']);
+  CacheService.getScriptCache().removeAll(['dashboard_data_cache_v12_meta', 'dashboard_data_cache_v12', 'SIGNAL_FAST_current', 'dashboard_data_cache_v2_blob']);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let adminSheet = ss.getSheetByName("Admin_Logs");
   if(!adminSheet) return false;

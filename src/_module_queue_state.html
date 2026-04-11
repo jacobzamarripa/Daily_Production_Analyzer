@@ -1045,6 +1045,10 @@ function applyFilters() {
             let mOfs = activeFilters.ofs.length === 0 || activeFilters.ofs.some(v => ofsBuckets.includes(v));
             let mStatus = activeFilters.status.length === 0 || activeFilters.status.includes(i.status || '');
             let mSearch = itemMatchesSearch(i, searchTerm);
+
+            // SOFT HIDE: stale OFS items are hidden by default to reduce clutter, but remain searchable
+            if (searchTerm === '' && i.isStaleOfs) return false;
+
             return mSev && mVen && mCit && mOfs && mStatus && mSearch;
         });
         setTxt('kpi-crossings-val', baseFiltered.filter(i => i.flags.includes("ADMIN: CHECK CROSSINGS")).length);
