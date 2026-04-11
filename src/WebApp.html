@@ -550,7 +550,6 @@
                     <option value="ofs">OFS Date</option>
                     <option value="report">Report Date</option>
                     <option value="admin">Admin Check</option>
-                    <option value="default">Default</option>
                 </select>
                 <button class="btn collapsed hover-trigger" id="dock-btn-exit-theater" onclick="primeDockMotionOrigin(this, 'gantt'); exitTheaterMode()" style="background:#a855f7; color:#fff; border-color:#9333ea; padding: 0 14px;">Exit Focus</button>
                 <button class="btn collapsed hover-trigger" id="dock-btn-exit-fs" onclick="primeDockMotionOrigin(this, 'detail'); switchWorkspaceView('detail')" style="background:var(--text-main); color:var(--bg); border-color:var(--text-main); padding: 0 14px;">Exit Gantt</button>
@@ -574,13 +573,12 @@
                  <option value="velocity">Field Velocity</option>
               </select>
               <select id="sort-queue" onchange="applyFilters()" style="font-size:11px; padding:6px 8px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text-main); font-weight:bold; outline:none; cursor:pointer; width:auto; height:32px;">
-                 <option value="default">Default</option>
-                 <option value="admin">Admin Check</option>
-                 <option value="target">Target Date</option>
-                 <option value="start">CX Start</option>
                  <option value="end">CX Complete</option>
+                 <option value="start">CX Start</option>
+                 <option value="target">Target Date</option>
                  <option value="ofs">OFS Date</option>
                  <option value="report">Report Date</option>
+                 <option value="admin">Admin Check</option>
               </select>
           </div>
         </div>
@@ -849,8 +847,8 @@
 
         <div class="help-sec">
           <div class="help-sec-title">Daily Workflow</div>
-          <div class="help-wf-step"><div class="help-wf-num">1</div><div class="hdesc"><b>Sync QB</b> — Pull the latest project data from QuickBase. Do this when QB statuses or BOMs have changed.</div></div>
-          <div class="help-wf-step"><div class="help-wf-num">2</div><div class="hdesc"><b>Run Review</b> — Prompts for a date, processes daily vendor files, and loads anomalies into the queue.</div></div>
+          <div class="help-wf-step"><div class="help-wf-num">1</div><div class="hdesc"><b>Sync QB</b> — Pull the latest project data from QuickBase and rebuild the dashboard from the latest archive date. Use this when QB statuses or BOMs have changed.</div></div>
+          <div class="help-wf-step"><div class="help-wf-num">2</div><div class="hdesc"><b>Run Review</b> — Prompts for a specific date, processes daily vendor files, and rebuilds the queue for that selected review slice.</div></div>
           <div class="help-wf-step"><div class="help-wf-num">3</div><div class="hdesc"><b>Admin Checks</b> — Open the right-side <b>Review Hub</b> to clear Status Mismatches, verify Special Crossings, and log missing BOMs.</div></div>
           <div class="help-wf-step"><div class="help-wf-num">4</div><div class="hdesc"><b>Review &amp; Note</b> — Check the Vendor Update and System Flags. The AI (Gemini) pre-drafts a manager note. Edit it to reflect your decision.</div></div>
           <div class="help-wf-step"><div class="help-wf-num">5</div><div class="hdesc"><b>Commit</b> — Saves the review and moves the project to the Reviewed drawer.</div></div>

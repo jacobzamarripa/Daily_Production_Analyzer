@@ -312,6 +312,36 @@ function _isStaleOfsItem(stage, status, flags, primaryOfsDate, fallbackOfsDate, 
   return Date.now() > cutoff.getTime();
 }
 
+function _buildReferenceConfidenceMeta(input) {
+  const flagsStr = String((input && input.flags) || '').toUpperCase();
+  const hasReferencePresence = !!(input && input.hasReferencePresence) && !flagsStr.includes('NOT IN QB REFERENCE');
+  const hasCurrentStatus = !flagsStr.includes('MISSING QB STATUS');
+  const hasFreshReferenceState = !flagsStr.includes('STATUS MISMATCH') && !flagsStr.includes('ADMIN: REFRESH REF DATA');
+  const hasRid = !!String((input && input.rid) || '').trim();
+  const hasSow = !!(input && input.hasSOW);
+  const hasCd = !!(input && ((input.hasCDDel) || (input.hasCDDist)));
+  const hasBom = !!(input && ((input.hasBOMDel) || (input.hasBOMPo)));
+  const hasInferredState = flagsStr.includes('INFERRED:') || flagsStr.includes('LIKELY OFS');
+  const hasInferredDates = !!String((input && input.cxInferred) || '').trim();
+
+  let score = 0;
+  if (hasReferencePresence) score += 50;
+  if (hasCurrentStatus) score += 20;
+  if (hasFreshReferenceState) score += 10;
+  if (hasRid) score += 8;
+  if (hasSow) score += 4;
+  if (hasCd) score += 4;
+  if (hasBom) score += 4;
+  if (hasInferredState) score -= 12;
+  if (hasInferredDates) score -= 6;
+
+  let tier = 'weak';
+  if (score >= 75) tier = 'strong';
+  else if (score >= 40) tier = 'partial';
+
+  return { score: score, tier: tier };
+}
+
 function getDashboardData() {
   const CACHE_KEY = 'dashboard_data_cache_v12';
   const cache = CacheService.getScriptCache();
@@ -486,6 +516,18 @@ function getDashboardData() {
              dateIdx > -1 ? data[i][dateIdx] : ""
          );
 
+         const referenceMeta = _buildReferenceConfidenceMeta({
+             flags: flags,
+             hasReferencePresence: !!refData,
+             rid: refData ? String(refData.rid || "") : "",
+             hasSOW: refData ? refData.hasSOW : false,
+             hasCDDel: refData ? refData.hasCDDel : false,
+             hasCDDist: refData ? refData.hasCDDist : false,
+             hasBOMDel: refData ? refData.hasBOMDel : false,
+             hasBOMPo: refData ? refData.hasBOMPo : false,
+             cxInferred: cxInferredIdx > -1 ? String(data[i][cxInferredIdx] || "") : ""
+         });
+
          actionItems.push({
              fdh: fdhIdx > -1 ? String(data[i][fdhIdx] || "") : "",
              vendor: vendorName,
@@ -530,6 +572,8 @@ function getDashboardData() {
              hasSOW: refData ? refData.hasSOW : false,
              rawReferenceOfsDate: refData ? String(refData.canonicalOfsDate || refData.forecastedOFS || "").trim() : "",
              ofsDateMismatch: !!(rawMirrorOfsDate && normalizedCanonicalOfsDate && rawMirrorOfsDate !== normalizedCanonicalOfsDate),
+             referenceConfidenceScore: referenceMeta.score,
+             referenceConfidenceTier: referenceMeta.tier,
              qbRef: refData ? (refData.qbRef || {}) : {},
              fiberTotalMiles: vStats.lifetime.miles,
              vel: {                 ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },
@@ -1773,6 +1817,33 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
       let hData = highlightsData[i];
       let fdhKey = String(row[fdhIdx] || "").trim().toUpperCase();
       let refData = refDict[fdhKey] || null;
+      const rawMirrorOfsDate = parseDate(row[ofsIdx]);
+      const canonicalOfsDate = refData
+        ? String(refData.canonicalOfsDate || refData.forecastedOFS || "").trim()
+        : String(row[ofsIdx] || "").trim();
+      const normalizedCanonicalOfsDate = (!canonicalOfsDate || canonicalOfsDate === '-' || canonicalOfsDate === 'Unknown')
+        ? ""
+        : canonicalOfsDate;
+      const isStaleOfs = _isStaleOfsItem(
+        String(row[stageIdx] || ""),
+        String(row[statusIdx] || ""),
+        String(row[flagsIdx] || ""),
+        normalizedCanonicalOfsDate,
+        rawMirrorOfsDate,
+        row[dateIdx]
+      );
+
+      const referenceMeta = _buildReferenceConfidenceMeta({
+        flags: String(row[flagsIdx] || ""),
+        hasReferencePresence: !!refData,
+        rid: refData ? String(refData.rid || "") : "",
+        hasSOW: refData ? refData.hasSOW : false,
+        hasCDDel: refData ? refData.hasCDDel : false,
+        hasCDDist: refData ? refData.hasCDDist : false,
+        hasBOMDel: refData ? refData.hasBOMDel : false,
+        hasBOMPo: refData ? refData.hasBOMPo : false,
+        cxInferred: cxInferredIdx > -1 ? String(row[cxInferredIdx] || "") : ""
+      });
 
       actionItems.push({
         fdh: fdhKey,
@@ -1782,8 +1853,10 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
         status: String(row[statusIdx] || ""),
         bsls: String(row[bslsIdx] || "-"),
         isLight: isChecked(row[lightIdx]),
-        canonicalOfsDate: String(row[ofsIdx] || ""),
-        ofsDate: String(row[ofsIdx] || ""),
+        canonicalOfsDate: normalizedCanonicalOfsDate,
+        ofsDate: normalizedCanonicalOfsDate,
+        isStaleOfs: isStaleOfs,
+        rawMirrorOfsDate: rawMirrorOfsDate,
         reportDate: parseDate(row[dateIdx]),
         targetDate: parseDate(row[targetIdx]),
         cxStart: parseDate(row[cxStartIdx]),
@@ -1804,6 +1877,19 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
         isTrackerLinked: String(row[summaryIdx]).includes("[📡 Tracker Linked]"),
         isDrgTracked: isChecked(row[drgIdx]) || (refData ? !!refData.isDrgTracked : false),
         rid: refData ? String(refData.rid || "") : "",
+        hasBOMDel: refData ? refData.hasBOMDel : false,
+        hasSpliceDel: refData ? refData.hasSpliceDel : false,
+        hasStandDel: refData ? refData.hasStandDel : false,
+        hasCDDel: refData ? refData.hasCDDel : false,
+        hasSpliceDist: refData ? refData.hasSpliceDist : false,
+        hasStrandDist: refData ? refData.hasStrandDist : false,
+        hasCDDist: refData ? refData.hasCDDist : false,
+        hasBOMPo: refData ? refData.hasBOMPo : false,
+        hasSOW: refData ? refData.hasSOW : false,
+        rawReferenceOfsDate: refData ? String(refData.canonicalOfsDate || refData.forecastedOFS || "").trim() : "",
+        ofsDateMismatch: !!(rawMirrorOfsDate && normalizedCanonicalOfsDate && rawMirrorOfsDate !== normalizedCanonicalOfsDate),
+        referenceConfidenceScore: referenceMeta.score,
+        referenceConfidenceTier: referenceMeta.tier,
         qbRef: refData ? (refData.qbRef || {}) : {},
         vel: {
             ug: { tot: parseNum(row[ugTotIdx]), bom: parseNum(row[ugBomIdx]), daily: parseNum(row[ugDailyIdx]) },
@@ -1885,4 +1971,3 @@ function _getPayloadFileV2(createIfMissing) {
     return null;
   }
 }
-

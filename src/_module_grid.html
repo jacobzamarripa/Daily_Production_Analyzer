@@ -148,8 +148,8 @@ function _performRenderGrid() {
         let stat = (item.status || "").toLowerCase();
         let isOFS = st.includes('ofs');
         let isComplete = stat.includes('complete');
-        let isPermit = st.includes('permit');
-        let isOnHold = stat.includes('hold') || stat.includes('assign');
+        let isPermit = st.includes('permit') || st.includes('pre-con') || st.includes('vendor assignment');
+        let isOnHold = stat.includes('hold');
         let isOverdue = pEnd && today > pEnd && !isOFS && !isComplete && !isOnHold && !isPermit;
         let isMuted = isComplete || isOFS || isPermit;
         let muteClass = isMuted ? 'is-muted' : '';

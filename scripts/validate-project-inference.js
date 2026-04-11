@@ -1,0 +1,74 @@
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const root = path.resolve(__dirname, '..');
+
+function read(relPath) {
+  return fs.readFileSync(path.join(root, relPath), 'utf8');
+}
+
+function extractFunction(source, name) {
+  const marker = `function ${name}(`;
+  const start = source.indexOf(marker);
+  if (start === -1) {
+    throw new Error(`Could not find ${name}`);
+  }
+
+  let braceStart = source.indexOf('{', start);
+  let depth = 0;
+  for (let i = braceStart; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === '{') depth++;
+    if (ch === '}') depth--;
+    if (depth === 0) {
+      return source.slice(start, i + 1);
+    }
+  }
+
+  throw new Error(`Could not parse ${name}`);
+}
+
+const archiveSource = read('src/01_Engine_Archive.js');
+const sharedSource = read('src/_utils_shared.html');
+const queueSource = read('src/_module_queue_state.html');
+const gridSource = read('src/_module_grid.html');
+
+const context = {
+  console,
+};
+vm.createContext(context);
+
+[
+  extractFunction(archiveSource, 'classifyInferredReviewState'),
+  extractFunction(sharedSource, 'getQBStatusClass'),
+  extractFunction(sharedSource, 'getGanttClass'),
+].forEach((snippet) => vm.runInContext(snippet, context));
+
+function assertEqual(actual, expected, label) {
+  if (actual !== expected) {
+    throw new Error(`${label}: expected "${expected}", received "${actual}"`);
+  }
+  console.log(`PASS ${label}`);
+}
+
+const vendorAssignment = context.classifyInferredReviewState('Vendor Assignment', 'Permitting');
+assertEqual(vendorAssignment.flag, 'INFERRED: PRE-CON', 'Vendor Assignment stays in pre-con inference bucket');
+assertEqual(vendorAssignment.stage, 'Vendor Assignment', 'Vendor Assignment stage is preserved');
+assertEqual(context.getQBStatusClass(vendorAssignment.stage, vendorAssignment.status, false), 'chip-permit', 'Vendor Assignment pill class is permit');
+assertEqual(context.getGanttClass(vendorAssignment.stage, vendorAssignment.status, false), 'g-color-purple', 'Vendor Assignment gantt color is permit purple');
+
+const preCon = context.classifyInferredReviewState('Pre-Construction', 'Permitting');
+assertEqual(preCon.flag, 'INFERRED: PRE-CON', 'Pre-Construction is not reclassified as Field CX');
+assertEqual(context.getQBStatusClass(preCon.stage, preCon.status, false), 'chip-permit', 'Pre-Construction pill class is permit');
+
+const fieldCx = context.classifyInferredReviewState('Field CX', 'Construction');
+assertEqual(fieldCx.flag, 'INFERRED: FIELD CX', 'Field CX stays in field inference bucket');
+assertEqual(context.getGanttClass(fieldCx.stage, fieldCx.status, false), 'g-color-yellow', 'Field CX gantt color remains active yellow');
+
+assertEqual(/let isPermit = st\.includes\('permit'\) \|\| st\.includes\('pre-con'\) \|\| st\.includes\('vendor assignment'\);/.test(queueSource), true, 'Queue schedule logic treats vendor assignment as pre-con');
+assertEqual(/let isOnHold = stat\.includes\('hold'\);/.test(queueSource), true, 'Queue schedule logic no longer treats assignment as hold');
+assertEqual(/let isPermit = st\.includes\('permit'\) \|\| st\.includes\('pre-con'\) \|\| st\.includes\('vendor assignment'\);/.test(gridSource), true, 'Grid schedule logic treats vendor assignment as pre-con');
+assertEqual(/let isOnHold = stat\.includes\('hold'\);/.test(gridSource), true, 'Grid schedule logic no longer treats assignment as hold');
+
+console.log('\nProject inference validation passed.');

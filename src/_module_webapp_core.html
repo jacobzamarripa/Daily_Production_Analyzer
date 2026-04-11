@@ -257,8 +257,8 @@
       }
 
       function getActiveSortValue() {
-          const queueSort = getEl('sort-queue')?.value || 'default';
-          if (currentWorkspaceView === 'gantt' && queueSort === 'default') return 'end';
+          const queueSort = getEl('sort-queue')?.value || 'end';
+          if (queueSort === 'default' || queueSort === 'confidence') return 'end';
           return queueSort;
       }
 

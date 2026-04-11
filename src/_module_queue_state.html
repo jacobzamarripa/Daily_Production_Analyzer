@@ -251,7 +251,7 @@ function renderList(items) {
         let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
         let combinedPill = getQueueCombinedPill(item);
 
-        let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+        let pillCls = getQueuePillClass(item.stage, item.status);
         let isSelected = (currentActiveItem && currentActiveItem.fdh === item.fdh) ? 'selected' : '';
         let cityVendor = [item.city, item.vendor].filter(Boolean).join(' · ');
 
@@ -278,7 +278,7 @@ function renderList(items) {
         today.setHours(0, 0, 0, 0);
         let isNotInQb = item.flags.includes("NOT IN QB REFERENCE") || item.flags.includes("MISSING QB STATUS");
         let combinedPill = getQueueCombinedPill(item);
-        let pillCls = getQBStatusClass(item.stage, item.status, isNotInQb);
+        let pillCls = getQueuePillClass(item.stage, item.status);
 
         let pEnd = safeDate(item.cxEnd);
         let daysLeft = pEnd ? Math.ceil((pEnd - new Date()) / 86400000) : 0;
@@ -596,9 +596,9 @@ function openPane(item, cardEl) {
         let st = (item.stage || "").toLowerCase();
         let stat = (item.status || "").toLowerCase();
         let isOFS = st.includes('ofs');
-        let isPermit = st.includes('permit');
+        let isPermit = st.includes('permit') || st.includes('pre-con') || st.includes('vendor assignment');
         let isComplete = stat.includes('complete');
-        let isOnHold = stat.includes('hold') || stat.includes('assign');
+        let isOnHold = stat.includes('hold');
 
         let hasEnd = item.cxEnd && item.cxEnd !== "";
         let isOverdue = false;
@@ -1159,42 +1159,7 @@ function applyFilters() {
             }
         }
 
-        if (sortVal !== 'default') {
-            displayFiltered.sort((a, b) => {
-                if (sortVal === 'admin') {
-                    let aAdmin = (a.flags.includes("ADMIN: CHECK CROSSINGS") || a.flags.includes("STATUS MISMATCH") || a.flags.includes("ADMIN: REFRESH REF DATA") || a.flags.includes("MISSING QB STATUS")) ? 0 : 1;
-                    let bAdmin = (b.flags.includes("ADMIN: CHECK CROSSINGS") || b.flags.includes("STATUS MISMATCH") || b.flags.includes("ADMIN: REFRESH REF DATA") || b.flags.includes("MISSING QB STATUS")) ? 0 : 1;
-                    if (aAdmin !== bAdmin) return aAdmin - bAdmin;
-                    return a.rowNum - b.rowNum;
-                }
-                let valA;
-                let valB;
-                if (sortVal === 'target') {
-                    valA = new Date(a.targetDate);
-                    valB = new Date(b.targetDate);
-                } else if (sortVal === 'start') {
-                    valA = new Date(a.cxStart);
-                    valB = new Date(b.cxStart);
-                } else if (sortVal === 'end') {
-                    valA = new Date(a.cxEnd);
-                    valB = new Date(b.cxEnd);
-                } else if (sortVal === 'ofs') {
-                    valA = getEffectiveOfsDate(a);
-                    valB = getEffectiveOfsDate(b);
-                } else if (sortVal === 'report') {
-                    valA = new Date(a.reportDate);
-                    valB = new Date(b.reportDate);
-                }
-                let isInvA = isNaN(valA);
-                let isInvB = isNaN(valB);
-                if (isInvA && isInvB) return a.rowNum - b.rowNum;
-                if (isInvA) return 1;
-                if (isInvB) return -1;
-                return valA - valB;
-            });
-        } else {
-            displayFiltered.sort((a, b) => a.rowNum - b.rowNum);
-        }
+        displayFiltered.sort((a, b) => compareWithSecondarySort(a, b, sortVal || 'end'));
 
         if (currentGroupBy !== 'none') {
             displayFiltered = flattenGroupedSections(getGroupedQueueSections(displayFiltered));

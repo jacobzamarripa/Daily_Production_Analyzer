@@ -857,11 +857,13 @@ function classifyInferredReviewState(stage, status) {
   let st = stageText.toLowerCase();
   let stat = statusText.toLowerCase();
 
+  if (st.includes("permit") || st.includes("pre-con") || st.includes("vendor assignment") || stat.includes("permit")) {
+    let normalizedStage = stageText || "Pre-Construction";
+    if (st.includes("vendor assignment")) normalizedStage = "Vendor Assignment";
+    return { stage: normalizedStage, status: statusText || "Permitting", flag: "INFERRED: PRE-CON", bucket: "precon" };
+  }
   if (st.includes("field cx") || st.includes("construction") || stat.includes("construction") || stat.includes("in progress")) {
     return { stage: stageText || "Field CX", status: statusText || "Construction", flag: "INFERRED: FIELD CX", bucket: "field" };
-  }
-  if (st.includes("permit") || st.includes("pre-con") || st.includes("vendor assignment") || stat.includes("permit")) {
-    return { stage: stageText || "Pre-Construction", status: statusText || "Permitting", flag: "INFERRED: PRE-CON", bucket: "precon" };
   }
   if (st.includes("hold") || stat.includes("hold")) {
     return { stage: stageText || "On Hold", status: statusText || "Hold", flag: "INFERRED: HOLD", bucket: "hold" };

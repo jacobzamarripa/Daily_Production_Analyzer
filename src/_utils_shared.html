@@ -171,13 +171,126 @@
           return highestSev;
       }
 
+      function getSeverityOrder(flagsStr) {
+          const severity = getSeverity(flagsStr);
+          const order = { crit: 0, warn: 1, info: 2, ghost: 3 };
+          return Object.prototype.hasOwnProperty.call(order, severity) ? order[severity] : 99;
+      }
+
+      function buildReferenceConfidenceMeta(item) {
+          const flagsStr = String((item && item.flags) || '').toUpperCase();
+          const hasReferencePresence = !flagsStr.includes('NOT IN QB REFERENCE');
+          const hasCurrentStatus = !flagsStr.includes('MISSING QB STATUS');
+          const hasFreshReferenceState = !flagsStr.includes('STATUS MISMATCH') && !flagsStr.includes('ADMIN: REFRESH REF DATA');
+          const hasRid = !!String((item && item.rid) || '').trim();
+          const hasSow = !!(item && item.hasSOW);
+          const hasCd = !!(item && ((item.hasCDDel) || (item.hasCDDist)));
+          const hasBom = !!(item && ((item.hasBOMDel) || (item.hasBOMPo)));
+          const hasInferredState = flagsStr.includes('INFERRED:') || flagsStr.includes('LIKELY OFS');
+          const hasInferredDates = !!String((item && item.cxInferred) || '').trim();
+
+          let score = 0;
+          if (hasReferencePresence) score += 50;
+          if (hasCurrentStatus) score += 20;
+          if (hasFreshReferenceState) score += 10;
+          if (hasRid) score += 8;
+          if (hasSow) score += 4;
+          if (hasCd) score += 4;
+          if (hasBom) score += 4;
+          if (hasInferredState) score -= 12;
+          if (hasInferredDates) score -= 6;
+
+          let tier = 'weak';
+          if (score >= 75) tier = 'strong';
+          else if (score >= 40) tier = 'partial';
+
+          return { score: score, tier: tier };
+      }
+
+      function getReferenceConfidenceScore(item) {
+          const raw = item && item.referenceConfidenceScore;
+          const num = Number(raw);
+          if (Number.isFinite(num)) return num;
+          return buildReferenceConfidenceMeta(item).score;
+      }
+
+      function getReferenceConfidenceTier(item) {
+          const raw = item && item.referenceConfidenceTier;
+          if (raw === 'strong' || raw === 'partial' || raw === 'weak') return raw;
+          return buildReferenceConfidenceMeta(item).tier;
+      }
+
+      function getPrimarySortDate(item) {
+          return safeDate(item && item.targetDate) ||
+                 safeDate(item && item.cxEnd) ||
+                 getEffectiveOfsDate(item) ||
+                 safeDate(item && item.reportDate) ||
+                 null;
+      }
+
+      function compareWithSecondarySort(a, b, sortMode) {
+          const mode = sortMode || 'end';
+          const scoreDiff = getReferenceConfidenceScore(b) - getReferenceConfidenceScore(a);
+          if (scoreDiff !== 0) return scoreDiff;
+
+          if (mode === 'admin') {
+              const aAdmin = (String(a && a.flags || '').includes("ADMIN: CHECK CROSSINGS") || String(a && a.flags || '').includes("STATUS MISMATCH") || String(a && a.flags || '').includes("ADMIN: REFRESH REF DATA") || String(a && a.flags || '').includes("MISSING QB STATUS")) ? 0 : 1;
+              const bAdmin = (String(b && b.flags || '').includes("ADMIN: CHECK CROSSINGS") || String(b && b.flags || '').includes("STATUS MISMATCH") || String(b && b.flags || '').includes("ADMIN: REFRESH REF DATA") || String(b && b.flags || '').includes("MISSING QB STATUS")) ? 0 : 1;
+              if (aAdmin !== bAdmin) return aAdmin - bAdmin;
+          }
+
+          let valA = null;
+          let valB = null;
+          if (mode === 'target') {
+              valA = safeDate(a && a.targetDate);
+              valB = safeDate(b && b.targetDate);
+          } else if (mode === 'start') {
+              valA = safeDate(a && a.cxStart);
+              valB = safeDate(b && b.cxStart);
+          } else if (mode === 'end') {
+              valA = safeDate(a && a.cxEnd);
+              valB = safeDate(b && b.cxEnd);
+          } else if (mode === 'ofs') {
+              valA = getEffectiveOfsDate(a);
+              valB = getEffectiveOfsDate(b);
+          } else if (mode === 'report') {
+              valA = safeDate(a && a.reportDate);
+              valB = safeDate(b && b.reportDate);
+          } else {
+              valA = getPrimarySortDate(a);
+              valB = getPrimarySortDate(b);
+          }
+
+          const hasA = !!valA;
+          const hasB = !!valB;
+          if (hasA && hasB) {
+              const dateDiff = valA.getTime() - valB.getTime();
+              if (dateDiff !== 0) return dateDiff;
+          } else if (hasA !== hasB) {
+              return hasA ? -1 : 1;
+          }
+
+          const severityDiff = getSeverityOrder(a && a.flags) - getSeverityOrder(b && b.flags);
+          if (severityDiff !== 0) return severityDiff;
+
+          return (Number(a && a.rowNum) || 0) - (Number(b && b.rowNum) || 0);
+      }
+
+      function compareReferenceConfidence(a, b) {
+          return compareWithSecondarySort(a, b, 'end');
+      }
+
+      function getQueuePillClass(stage, status) {
+          return getQBStatusClass(stage, status, false);
+      }
+
       function getQBStatusClass(stage, status, isMissing) {
           if (isMissing) return 'chip-missing';
           let st = (stage || "").toLowerCase(), stat = (status || "").toLowerCase();
           if (st.includes('ofs')) return 'chip-ofs';
-          if (st.includes('permit')) return 'chip-permit';
+          if (st.includes('permit') || st.includes('pre-con') || st.includes('vendor assignment')) return 'chip-permit';
           if (stat.includes('complete')) return 'chip-complete';
-          if (stat.includes('hold') || stat.includes('assign')) return 'chip-hold';
+          if (stat.includes('hold')) return 'chip-hold';
           return 'chip-active';
       }
 
@@ -222,15 +335,25 @@
           return `${item.stage || "-"} | ${item.status || "-"}`;
       }
 
+      function getDisplayStageLabel(item) {
+          if (!item) return "-";
+          const flags = String(item.flags || '');
+          if (flags.includes("INFERRED: FIELD CX")) return "Field CX";
+          if (flags.includes("INFERRED: PRE-CON")) return "Pre-Construction";
+          if (flags.includes("INFERRED: HOLD")) return "On Hold";
+          if (flags.includes("LIKELY OFS / OOS")) return "OFS (Inferred)";
+          return item.stage || "-";
+      }
+
       function getGanttClass(stage, status, isOverdue) {
           let st = (stage || "").toLowerCase(), stat = (status || "").toLowerCase();
           if (st.includes('ofs')) return 'g-color-blue';
-          if (st.includes('permit') || st.includes('pre-con')) return 'g-color-purple';
+          if (st.includes('permit') || st.includes('pre-con') || st.includes('vendor assignment')) return 'g-color-purple';
           if (stat.includes('complete')) return 'g-color-green';
           if (stat.includes('hold')) return 'g-color-gray';
           if (st.includes('inferred')) {
               if (st.includes('cx')) return 'g-color-yellow';
-              if (st.includes('pre-con')) return 'g-color-purple';
+              if (st.includes('pre-con') || st.includes('vendor assignment')) return 'g-color-purple';
               if (st.includes('hold')) return 'g-color-gray';
           }
           if (isOverdue || st === "reference data missing" || st === "-") return 'g-color-red';
