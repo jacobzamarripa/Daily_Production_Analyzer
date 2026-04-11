@@ -189,10 +189,10 @@
 
       function getQueueCombinedPill(item) {
           const flags = String((item && item.flags) || '');
-          const isOutOfCxScope = flags.includes("LIKELY OFS / OUT OF CX SCOPE");
+          const isOutOfCxScope = flags.includes("LIKELY OFS / OOS");
           const isMissingQbStatus = flags.includes("MISSING QB STATUS");
           const isNotInQb = flags.includes("NOT IN QB REFERENCE");
-          if (isOutOfCxScope) return "OFS (Inferred) | Out of CX Scope";
+          if (isOutOfCxScope) return "OFS (Inferred) | OOS";
           if (isMissingQbStatus && !isNotInQb) return "Reference Status Missing";
           if (isNotInQb) return "Reference Data Missing";
           return `${item.stage || "-"} | ${item.status || "-"}`;
@@ -204,11 +204,10 @@
           if (st.includes('permit')) return 'g-color-purple';
           if (stat.includes('complete')) return 'g-color-green';
           if (stat.includes('hold')) return 'g-color-gray';
-          if (st === "ofs (inferred) | out of cx scope") return 'g-color-blue';
+          if (st === "ofs (inferred) | oos") return 'g-color-blue';
           if (isOverdue || st === "reference data missing" || st === "-") return 'g-color-red';
           return 'g-color-yellow';
       }
-
       // ── DOM HELPERS (Shorthand) ──
       const getEl = (id) => document.getElementById(id);
       const setHtml = (id, val) => { let el = getEl(id); if(el) el.innerHTML = val; };

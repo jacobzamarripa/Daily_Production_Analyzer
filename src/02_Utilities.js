@@ -299,7 +299,7 @@ function _shouldHideStaleOfsQueueItem(stage, status, flags, primaryOfsDate, fall
   const stageStr = String(stage || '').toUpperCase();
   const statusStr = String(status || '').toUpperCase();
   const flagsStr = String(flags || '').toUpperCase();
-  const isOfsScoped = stageStr.includes('OFS') || statusStr.includes('OUT OF CX SCOPE') || flagsStr.includes('LIKELY OFS / OUT OF CX SCOPE');
+  const isOfsScoped = stageStr.includes('OFS') || statusStr.includes('OOS') || flagsStr.includes('LIKELY OFS');
   if (!isOfsScoped) return false;
 
   const ofsDate = _parseDashboardDateValue(primaryOfsDate) || _parseDashboardDateValue(fallbackOfsDate) || _parseDashboardDateValue(reportDate);
