@@ -163,7 +163,7 @@ function syncFromQBWebApp() {
     sheet.setFrozenRows(1);
     trimAndFilterSheet(sheet, numRows, numCols);
 
-    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy HH:mm");
+    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yy HH:mm");
     PropertiesService.getScriptProperties().setProperties({
       "refDataImportDate": timestamp,
       "refDataFileName":   "QuickBase API \u2014 Table " + QB_TABLE_ID,
@@ -364,7 +364,7 @@ function syncChangeLogs() {
     const dateObj = new Date(updatedAtVal);
     // QB date-only fields arrive as midnight CST (GMT-6). Suppress time when it's 00:00.
     const timeStr  = Utilities.formatDate(dateObj, "GMT-6", "HH:mm");
-    const dateStr  = Utilities.formatDate(dateObj, "GMT-6", "MM/dd/yyyy");
+    const dateStr  = Utilities.formatDate(dateObj, "GMT-6", "MM/dd/yy");
     const displayDate = timeStr === "00:00" ? dateStr : dateStr + " " + timeStr;
     return [
       getCellText(rec, fdhFid),
@@ -438,7 +438,7 @@ function importFDHProjects() {
         ui.ButtonSet.YES_NO
       );
       if (resp !== ui.Button.YES) return;
-      const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy HH:mm");
+      const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yy HH:mm");
       dirtyRows.forEach(function(row) {
         logMsg("⚠️ DIRTY ROW RECOVERY: FDH=" + row.fdhId + " row=" + row.rowIndex + " at " + timestamp);
       });
@@ -475,7 +475,7 @@ function importFDHProjects() {
     trimAndFilterSheet(sheet, numRows, numCols);
 
     // --- Store sync metadata ---
-    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy HH:mm");
+    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yy HH:mm");
     PropertiesService.getScriptProperties().setProperties({
       "refDataImportDate": timestamp,
       "refDataFileName":   "QuickBase API \u2014 Table " + QB_TABLE_ID,
@@ -548,7 +548,7 @@ function commitToQueue() {
     commitSheet.setFrozenRows(1);
   }
 
-  const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy HH:mm");
+  const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yy HH:mm");
   const userEmail = Session.getActiveUser().getEmail();
 
   verifiedRows.forEach(function(row) {
@@ -611,7 +611,7 @@ function commitToQueueWebApp() {
       commitSheet.setFrozenRows(1);
     }
 
-    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yyyy HH:mm");
+    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yy HH:mm");
     const userEmail = Session.getActiveUser().getEmail();
 
     verifiedRows.forEach(function(row) {
@@ -641,7 +641,7 @@ function exportCommittedQueueToCSV() {
   let csvRows = data.map(function(row) {
     return row.map(function(cell) {
       let val = cell instanceof Date
-        ? Utilities.formatDate(cell, Session.getScriptTimeZone(), "MM/dd/yyyy")
+        ? Utilities.formatDate(cell, Session.getScriptTimeZone(), "MM/dd/yy")
         : cell.toString();
       if (val.includes(",") || val.includes('"') || val.includes("\n")) {
         val = '"' + val.replace(/"/g, '""') + '"';

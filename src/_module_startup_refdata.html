@@ -50,18 +50,18 @@ function updateRefDataIndicator() {
         return;
     }
 
-    // Parse the stored date and compute days old.
-    let dateOnly = globalRefDataDate.split(' ')[0];
-    let parts = dateOnly.split('/');
-    if (parts.length < 3) parts = dateOnly.split('-');
-    let refDate;
-    if (parts.length === 3) {
-        if (parts[0].length === 4) refDate = new Date(parts[0], parts[1] - 1, parts[2]);
-        else refDate = new Date(parts[2], parts[0] - 1, parts[1]);
-    }
+    // Parse the stored date and compute days old using safeDate helper.
+    let refDate = safeDate(globalRefDataDate);
     let today = new Date();
     today.setHours(0, 0, 0, 0);
-    let daysOld = refDate ? Math.round((today - refDate) / 86400000) : 999;
+    
+    // safeDate returns UTC date; we need to compare it to today's local date for "days old"
+    // to keep it simple, we strip time from both and calculate the difference.
+    let daysOld = 999;
+    if (refDate) {
+        let d = new Date(refDate.getUTCFullYear(), refDate.getUTCMonth(), refDate.getUTCDate());
+        daysOld = Math.round((today - d) / 86400000);
+    }
 
     let color;
     let bgColor;

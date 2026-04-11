@@ -39,6 +39,12 @@ function renderDashboard() {
     // Updated freshness pill logic
     if (tsEl) {
         var freshTime = (typeof globalRefDataDate === 'string' && globalRefDataDate) ? globalRefDataDate : new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        // Force 2-digit year if it's a date string
+        if (freshTime.match(/\d{1,2}\/\d{1,2}\/\d{4}/)) {
+            var p = freshTime.split(' ');
+            var dPart = p[0].split('/');
+            freshTime = dPart[0].padStart(2,'0') + '/' + dPart[1].padStart(2,'0') + '/' + dPart[2].substring(2) + (p[1] ? ' ' + p[1] : '');
+        }
         tsEl.textContent = 'FRESHNESS: ' + freshTime;
     }
     

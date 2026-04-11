@@ -240,7 +240,7 @@ function exportInboxReviewsCSV() {
   let csvContent = "";
   data.forEach(row => {
     let csvRow = row.map(cell => {
-      let cellStr = (cell instanceof Date) ? Utilities.formatDate(cell, "GMT-5", "MM/dd/yyyy HH:mm") : cell.toString();
+      let cellStr = (cell instanceof Date) ? Utilities.formatDate(cell, "GMT-5", "MM/dd/yy HH:mm") : cell.toString();
       return `"${cellStr.replace(/"/g, '""')}"`;
     });
     csvContent += csvRow.join(",") + "\n";
@@ -376,12 +376,13 @@ function getDashboardData() {
       if (timeVal instanceof Date) {
           // Sheets auto-converts date strings to Date objects; never call String() on them.
           const hm = Utilities.formatDate(timeVal, "GMT-6", "HH:mm");
-          const dm = Utilities.formatDate(timeVal, "GMT-6", "MM/dd/yyyy");
+          const dm = Utilities.formatDate(timeVal, "GMT-6", "MM/dd/yy");
           if (hm === "00:00") {
               // QB date-only field (midnight CST) → normalize to UTC midnight so
               // the frontend isMidnightUTC check suppresses the time display.
               const p = dm.split('/');
-              logTime = new Date(Date.UTC(parseInt(p[2]), parseInt(p[0]) - 1, parseInt(p[1])));
+              let yr = p[2].length === 2 ? parseInt('20' + p[2], 10) : parseInt(p[2], 10);
+              logTime = new Date(Date.UTC(yr, parseInt(p[0]) - 1, parseInt(p[1])));
               timeDisplay = dm;
           } else {
               logTime = new Date(timeVal.getTime());
@@ -389,10 +390,11 @@ function getDashboardData() {
           }
       } else {
           const s = String(timeVal || '').trim();
-          // Date-only strings (MM/dd/yyyy) are parsed as UTC midnight to prevent TZ drift.
-          const dateOnly = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+          // Date-only strings (MM/dd/yy or MM/dd/yy) are parsed as UTC midnight to prevent TZ drift.
+          const dateOnly = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
           if (dateOnly) {
-              logTime = new Date(Date.UTC(parseInt(dateOnly[3]), parseInt(dateOnly[1]) - 1, parseInt(dateOnly[2])));
+              let yr = dateOnly[3].length === 2 ? parseInt('20' + dateOnly[3], 10) : parseInt(dateOnly[3], 10);
+              logTime = new Date(Date.UTC(yr, parseInt(dateOnly[1]) - 1, parseInt(dateOnly[2])));
           } else {
               logTime = new Date(s);
           }
@@ -425,7 +427,23 @@ function getDashboardData() {
      if (stageStr.includes("PERMITTING") && !statStr.includes("APPROVED")) continue;
 
      if (flags !== "" && !flags.includes("✅ No Anomalies")) {
-         const parseDate = (val) => val ? ((val instanceof Date) ? Utilities.formatDate(val, "GMT-5", "MM-dd-yyyy") : String(val).split('T')[0]) : "";
+         const parseDate = (val) => {
+             if (!val || val === "" || val === "-") return "";
+             if (val instanceof Date) return Utilities.formatDate(val, "GMT-5", "MM/dd/yy");
+             let s = String(val).trim();
+             // ISO or Sheet-style yyyy-MM-dd
+             let mIso = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+             if (mIso) return `${mIso[2].padStart(2,'0')}/${mIso[3].padStart(2,'0')}/${mIso[1].substring(2)}`;
+             // MM/dd/yyyy or MM/dd/yy
+             let mUs = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})/);
+             if (mUs) {
+                 let yr = mUs[3].length === 4 ? mUs[3].substring(2) : mUs[3];
+                 return `${mUs[1].padStart(2,'0')}/${mUs[2].padStart(2,'0')}/${yr}`;
+             }
+             let d = new Date(s);
+             if (!isNaN(d.getTime())) return Utilities.formatDate(d, "GMT-5", "MM/dd/yy");
+             return s;
+         };
          const fieldProduction = summaryIdx > -1 ? String(data[i][summaryIdx] || "").trim() : "";
          const mirrorTrackerLinked = fieldProduction.includes("[📡 Tracker Linked]") || fieldProduction.includes("[Tracker Linked]");
          const mirrorDrgTracked = drgIdx > -1 ? isChecked(data[i][drgIdx]) : false;
@@ -859,7 +877,7 @@ function saveDeckAnswers(payload) {
     }
   }
 
-  const now = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy HH:mm");
+  const now = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yy HH:mm");
   let rowData = DECK_HEADERS.map(header => {
     switch (header) {
       case "Timestamp": return now;
@@ -1073,7 +1091,7 @@ function markAdminCheckComplete(fdhId) {
 
   let data = adminSheet.getDataRange().getValues();
   let found = false;
-  let dateStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy");
+  let dateStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yy");
 
   for(let i=1; i<data.length; i++) {
       if(data[i][0].toString().toUpperCase() === fdhId.toUpperCase()) {
@@ -1124,7 +1142,7 @@ function verifySpecialCrossings(fdhId) {
 
   let data = adminSheet.getDataRange().getValues();
   let found = false;
-  let dateStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy");
+  let dateStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yy");
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0].toString().toUpperCase() === fdhId.toUpperCase()) {
@@ -1169,7 +1187,7 @@ function markStatusSyncComplete(fdhId) {
 
   let data = adminSheet.getDataRange().getValues();
   let found = false;
-  let dateStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy");
+  let dateStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yy");
 
   for(let i=1; i<data.length; i++) {
       if(data[i][0].toString().toUpperCase() === fdhId.toUpperCase()) {
@@ -1217,7 +1235,7 @@ function emailExportCSV(reviewsArray, targetEmail) {
 
   // 2. Build the CSV file in memory
   let csvContent = "Timestamp,FDH,Vendor,System Flags,Manager Comment\n";
-  let now = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy HH:mm");
+  let now = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yy HH:mm");
 
   reviewsArray.forEach(item => {
      let safeFlags = `"${item.flags.replace(/\n/g, ', ').replace(/"/g, '""')}"`;
@@ -1359,7 +1377,7 @@ function getSignalFast(tf) {
         const isDateField = changeType.toLowerCase().trim().includes('date');
         
         const formattedVal = isDateField && rawVal instanceof Date
-          ? Utilities.formatDate(rawVal, "GMT-5", "MM/dd/yyyy")
+          ? Utilities.formatDate(rawVal, "GMT-5", "MM/dd/yy")
           : String(rawVal || '');
 
         result.qbChanges.push({
@@ -1723,14 +1741,28 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
         let normalized = String(val || '').trim().toLowerCase();
         return ['true', '1', 'yes', 'y', 'checked', 'x', 'drg', 'direct vendor'].includes(normalized);
     };
-    const parseDate = (val) => val ? ((val instanceof Date) ? Utilities.formatDate(val, "GMT-5", "MM-dd-yyyy") : String(val).split('T')[0]) : "";
+    const parseDate = (val) => {
+        if (!val || val === "" || val === "-") return "";
+        if (val instanceof Date) return Utilities.formatDate(val, "GMT-5", "MM/dd/yy");
+        let s = String(val).trim();
+        let mIso = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+        if (mIso) return `${mIso[2].padStart(2,'0')}/${mIso[3].padStart(2,'0')}/${mIso[1].substring(2)}`;
+        let mUs = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})/);
+        if (mUs) {
+            let yr = mUs[3].length === 4 ? mUs[3].substring(2) : mUs[3];
+            return `${mUs[1].padStart(2,'0')}/${mUs[2].padStart(2,'0')}/${yr}`;
+        }
+        let d = new Date(s);
+        if (!isNaN(d.getTime())) return Utilities.formatDate(d, "GMT-5", "MM/dd/yy");
+        return s;
+    };
 
     let globalLogs = [];
     if (logSheet && logSheet.getLastRow() > 1) {
       const logData = logSheet.getDataRange().getValues();
       for (let j = 1; j < logData.length; j++) {
         let timeVal = logData[j][4];
-        let timeDisplay = (timeVal instanceof Date) ? Utilities.formatDate(timeVal, "GMT-6", "MM/dd/yyyy HH:mm") : String(timeVal || "");
+        let timeDisplay = (timeVal instanceof Date) ? Utilities.formatDate(timeVal, "GMT-6", "MM/dd/yy HH:mm") : String(timeVal || "");
         globalLogs.push({ fdh: String(logData[j][0] || ""), type: String(logData[j][1] || ""), val: String(logData[j][2] || ""), user: String(logData[j][3] || "System"), time: timeDisplay });
       }
     }

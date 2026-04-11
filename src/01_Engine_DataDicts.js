@@ -26,7 +26,7 @@ function importReferenceData() {
   refSheet.setFrozenRows(1);
   trimAndFilterSheet(refSheet, csvData.length, csvData[0].length);
   // Store import date so dashboard can show staleness
-  let importDateStr = Utilities.formatDate(newestDate, "GMT-5", "MM/dd/yyyy");
+  let importDateStr = Utilities.formatDate(newestDate, "GMT-5", "MM/dd/yy");
   PropertiesService.getScriptProperties().setProperty('refDataImportDate', importDateStr);
   PropertiesService.getScriptProperties().setProperty('refDataFileName', newestFile.getName());
 
@@ -194,9 +194,9 @@ function getReferenceDictionary() {
     const isChecked = (val) => val != null && ["true", "1", "yes", "checked"].includes(String(val).toLowerCase().trim());
     const safeDate = (val) => {
         if (!val) return "";
-        if (val instanceof Date) return Utilities.formatDate(val, "GMT-5", "MM/dd/yyyy");
+        if (val instanceof Date) return Utilities.formatDate(val, "GMT-5", "MM/dd/yy");
         let d = new Date(val);
-        if (!isNaN(d.getTime())) return Utilities.formatDate(d, "GMT-5", "MM/dd/yyyy");
+        if (!isNaN(d.getTime())) return Utilities.formatDate(d, "GMT-5", "MM/dd/yy");
         return String(val).trim();
     };
 

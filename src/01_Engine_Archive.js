@@ -425,7 +425,7 @@ function exportQuickBaseCSVCore(isSilent = false) {
   let csvContent = "";
   data.forEach(row => {
     let csvRow = row.map(cell => {
-      let cellStr = (cell instanceof Date) ? Utilities.formatDate(cell, "GMT-5", "MM/dd/yyyy") : cell.toString();
+      let cellStr = (cell instanceof Date) ? Utilities.formatDate(cell, "GMT-5", "MM/dd/yy") : cell.toString();
       if (typeof cellStr === 'string') cellStr = cellStr.replace(/\[Auto-Fixed FDH: .*?\]\s*/, "");
       return (cellStr.includes(",") || cellStr.includes("\"") || cellStr.includes("\n")) ? `"${cellStr.replace(/"/g, '""')}"` : cellStr;
     });
@@ -722,8 +722,15 @@ function buildCxLkvDictionary(mirrorSheet) {
     let fdh = String(mData[r][fdhCol] || "").toUpperCase().trim();
     if (!fdh) continue;
     if (!lkvDict[fdh]) lkvDict[fdh] = { cxStart: "", cxComplete: "" };
-    let cs = cxSCol > -1 ? String(mData[r][cxSCol] || "") : "";
-    let ce = cxECol > -1 ? String(mData[r][cxECol] || "") : "";
+    const _fmt = (val) => {
+      if (!val || val === "" || val === "-") return "";
+      if (val instanceof Date) return Utilities.formatDate(val, "GMT-5", "MM/dd/yy");
+      let d = new Date(val);
+      if (!isNaN(d.getTime())) return Utilities.formatDate(d, "GMT-5", "MM/dd/yy");
+      return String(val).trim();
+    };
+    let cs = cxSCol > -1 ? _fmt(mData[r][cxSCol]) : "";
+    let ce = cxECol > -1 ? _fmt(mData[r][cxECol]) : "";
     if (cs) lkvDict[fdh].cxStart = cs;
     if (ce) lkvDict[fdh].cxComplete = ce;
   }
@@ -760,8 +767,7 @@ function inferCxDatesFromHistory(fdh, histData, histHeaders) {
     if (!d) return "";
     let obj = (d instanceof Date) ? d : new Date(d);
     if (isNaN(obj.getTime())) return "";
-    return Utilities.formatDate(obj, "GMT-5", "MM/dd/yyyy");
-  };
+    return Utilities.formatDate(obj, "GMT-5", "MM/dd/yy");  };
 
   let cxStart = "", startSource = "";
   let cxComplete = "", endSource = "";
@@ -831,8 +837,13 @@ function resolveCxDates(fdh, refData, lkvDict, histData, histHeaders) {
   }
 
   let parts = [];
-  if (startSource) parts.push("start:" + startSource);
-  if (endSource)   parts.push("end:"   + endSource);
+  const _fmtInfDate = (d) => {
+    if (!d) return "";
+    let obj = (d instanceof Date) ? d : new Date(d);
+    return isNaN(obj.getTime()) ? String(d) : Utilities.formatDate(obj, "GMT-5", "MM/dd/yy");
+  };
+  if (startSource) parts.push("start:" + (startSource.includes('/') ? _fmtInfDate(startSource) : startSource));
+  if (endSource)   parts.push("end:"   + (endSource.includes('/')   ? _fmtInfDate(endSource)   : endSource));
   result.inferredLabel = parts.join(",");
 
   return result;
@@ -991,7 +1002,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
               diag.draft = `Project is missing Stage or Status in QB. Please update QuickBase.`;
           } 
           else if (hasActivity && !isFieldCx) {
-              let todayStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yyyy");
+              let todayStr = Utilities.formatDate(new Date(), "GMT-5", "MM/dd/yy");
               let hasSyncedToday = refData.statusSyncDate === todayStr;
 
               if (hasSyncedToday) {

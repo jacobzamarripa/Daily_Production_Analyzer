@@ -26,18 +26,30 @@
       // UTC-locked date parser — prevents browser local-time shifting across timezones.
       function safeDate(str) {
           if (!str || str === '' || str === '-' || str === 'Unknown') return null;
-          let s = String(str);
-          // yyyy-MM-dd or yyyy/MM/dd (ISO-style)
+          let s = String(str).trim();
+          
+          // 1. Check for long Javascript Date string format (e.g. "Sat Apr 11 2026...")
+          if (s.includes(' ') && s.match(/[A-Z][a-z]{2}\s[A-Z][a-z]{2}\s\d{1,2}\s\d{4}/)) {
+              let d = new Date(s);
+              if (!isNaN(d.getTime())) return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+          }
+
+          // 2. yyyy-MM-dd or yyyy/MM/dd (ISO-style)
           let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
           if (m) return new Date(Date.UTC(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10)));
-          // MM-dd-yyyy or MM/dd/yyyy or MM-dd-yy
+          
+          // 3. MM-dd-yyyy or MM/dd/yyyy or MM-dd-yy or MM/dd/yy
           m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})/);
           if (m) {
               let yr = m[3].length === 2 ? parseInt('20'+m[3],10) : parseInt(m[3],10);
               return new Date(Date.UTC(yr, parseInt(m[1],10)-1, parseInt(m[2],10)));
           }
+          
           let d = new Date(str);
-          return isNaN(d.getTime()) ? null : d;
+          if (!isNaN(d.getTime())) {
+              return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+          }
+          return null;
       }
 
       // UTC-locked date formatter — everyone on the team sees the same Business Day date.
@@ -48,22 +60,30 @@
           if (val instanceof Date) {
               d = val;
           } else {
-              let raw = String(val).split('GMT')[0].split('(')[0].trim();
-              d = new Date(raw);
-              if (isNaN(d.getTime())) d = safeDate(val);
+              // Try to parse the string into a UTC-locked Date object
+              d = safeDate(val);
           }
 
           if (!d || isNaN(d.getTime())) return String(val);
 
-          // QB date-only fields are normalized to UTC midnight upstream; suppress time for those.
-          const isMidnightUTC = d.getUTCHours() === 0 && d.getUTCMinutes() === 0;
-          const options = { month: '2-digit', day: '2-digit', year: '2-digit', timeZone: 'UTC' };
-          if (includeTime && !isMidnightUTC) {
-              options.hour = '2-digit';
-              options.minute = '2-digit';
+          // Force MM/DD/YY format
+          let mo = String(d.getUTCMonth() + 1).padStart(2, '0');
+          let da = String(d.getUTCDate()).padStart(2, '0');
+          let yr = String(d.getUTCFullYear()).substring(2);
+          
+          let datePart = mo + '/' + da + '/' + yr;
+
+          if (includeTime) {
+              // Only show time if it's not exactly midnight UTC
+              const isMidnightUTC = d.getUTCHours() === 0 && d.getUTCMinutes() === 0;
+              if (!isMidnightUTC) {
+                  let hh = String(d.getUTCHours()).padStart(2, '0');
+                  let mm = String(d.getUTCMinutes()).padStart(2, '0');
+                  return datePart + ' ' + hh + ':' + mm;
+              }
           }
 
-          return new Intl.DateTimeFormat('en-US', options).format(d);
+          return datePart;
       }
 
       function getCanonicalOfsRaw(item) {
