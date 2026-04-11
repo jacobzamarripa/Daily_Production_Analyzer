@@ -564,16 +564,17 @@ function runBennyDiagnostics(row, refDict, vendorDict) {
       let sFieldCX = 10, sOFS = 10, sPreCon = 10, sHold = 5;
 
       // 1. Field CX Probability
-      if (hasRecentActivity) sFieldCX += 50;
+      if (hasRecentActivity) sFieldCX += 60; // Increased weight
       if (completionAvg > 0 && completionAvg < 0.95) sFieldCX += 30;
-      if (["drilling", "pulling", "splicing", "placing", "trenching", "boring"].some(w => commentText.includes(w))) sFieldCX += 20;
-      if (lightToCab) sFieldCX -= 50;
+      if (["drilling", "pulling", "splicing", "placing", "trenching", "boring", "pothole"].some(w => commentText.includes(w))) sFieldCX += 25;
+      if (lightToCab) sFieldCX -= 40;
 
       // 2. OFS Probability
       if (lightToCab) sOFS += 50;
-      if (completionAvg >= 0.95 || (completionAvg === 0 && !hasBOM)) sOFS += 40;
+      if (completionAvg >= 0.95) sOFS += 40;
+      if (completionAvg === 0 && !hasBOM) sOFS += 20; // Lowered weight for missing data
       if (["done", "complete", "turned over", "spliced out", "ready"].some(w => commentText.includes(w))) sOFS += 20;
-      if (hasRecentActivity) sOFS -= 50;
+      if (hasRecentActivity) sOFS -= 60; // Increased penalty for activity
 
       // 3. Pre-Con Probability
       if (completionAvg === 0 && !hasRecentActivity) sPreCon += 50;
@@ -597,7 +598,9 @@ function runBennyDiagnostics(row, refDict, vendorDict) {
       flags.push(winner.flag);
       // If score is high (>=50), color it DONE (green), else WARN (red)
       flagColors.push(winner.score >= 50 ? TEXT_COLORS.DONE : TEXT_COLORS.WARN);
-      drafts.push(`Missing from reference data. Inferred as ${winner.stage} (Score: ${winner.score}) based on archive report.`);
+      
+      let scoreBreakdown = `[Probabilities: CX:${sFieldCX}, OFS:${sOFS}, PRE:${sPreCon}, HLD:${sHold}]`;
+      drafts.push(`Missing from reference data. Inferred as ${winner.stage} ${scoreBreakdown} based on archive report.`);
       inferredStage = winner.stage;
       inferredStatus = winner.status;
       hCols.warn.push("FDH Engineering ID");
@@ -997,13 +1000,6 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       if (diag.flags.includes("POSSIBLE REROUTE (NAP)")) {
           diag.flags = diag.flags.replace(/POSSIBLE REROUTE \(NAP\)/g, "SCOPE DEVIATION (NAP)");
           diag.draft = diag.draft.replace(/QB shows 0 BOM for NAP, but vendor reported activity\. Verify if a reroute occurred\./g, "Vendor reported Splicing activity, but BOM shows 0 NAPs. Verify if scope was expanded.");
-      }
-      if (diag.flags.includes("NOT IN QB REFERENCE") || diag.flags.includes("NOT IN QB")) {
-          diag.flags = diag.flags.replace(/NOT IN QB REFERENCE/g, "LIKELY OFS / OOS").replace(/NOT IN QB/g, "LIKELY OFS / OOS");
-          diag.draft = diag.draft.replace(/Not found in QuickBase Reference Data/g, "Missing from current CX reference data, but present historically in Master Archive. Treat as likely advanced beyond CX, most likely OFS.")
-                                 .replace(/Not found in QuickBase/g, "Missing from current CX reference data, but present historically in Master Archive. Treat as likely advanced beyond CX, most likely OFS.");
-          if (!diag.inferredStage) diag.inferredStage = "OFS (Inferred)";
-          if (!diag.inferredStatus) diag.inferredStatus = "OOS";
       }
       
       if (benchmarkDict[fdhId] && benchmarkDict[fdhId].includes("Possible Reroute")) {
