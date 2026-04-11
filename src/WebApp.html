@@ -567,8 +567,12 @@
               <div class="inbox-title inbox-title-stack"><span>Diagnostics</span><span>Queue</span></div>
               <div class="inbox-count" id="inbox-count">0</div>
           </div>
-          <div style="display:flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:0;">
-              <button class="btn-icon has-tooltip" id="view-toggle-btn" data-tooltip="Switch to List" onclick="cycleViewMode()" style="margin-right:4px; display:inline-flex; align-items:center; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="13" width="18" height="5" rx="1"/></svg></button>
+          <div style="display:flex; align-items:center; gap:4px; margin-left:auto; flex-shrink:0;">
+              <button class="btn-icon has-tooltip" id="view-toggle-btn" data-tooltip="Switch to List" onclick="cycleViewMode()" style="display:inline-flex; align-items:center; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><rect x="3" y="13" width="18" height="5" rx="1"/></svg></button>
+              <select id="sidebar-pivot-select" onchange="applyFilters()" style="display:none; font-size:11px; padding:6px 8px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text-main); font-weight:bold; outline:none; cursor:pointer; width:auto; height:32px;">
+                 <option value="schedule">Project Schedule</option>
+                 <option value="velocity">Field Velocity</option>
+              </select>
               <select id="sort-queue" onchange="applyFilters()" style="font-size:11px; padding:6px 8px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text-main); font-weight:bold; outline:none; cursor:pointer; width:auto; height:32px;">
                  <option value="default">Default</option>
                  <option value="admin">Admin Check</option>
