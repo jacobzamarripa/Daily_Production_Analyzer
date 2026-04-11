@@ -209,6 +209,10 @@
 
       function getQueueCombinedPill(item) {
           const flags = String((item && item.flags) || '');
+          if (flags.includes("INFERRED: FIELD CX")) return "Field CX (Inferred)";
+          if (flags.includes("INFERRED: PRE-CON")) return "Pre-Con (Inferred)";
+          if (flags.includes("INFERRED: HOLD")) return "On Hold (Inferred)";
+          
           const isOutOfCxScope = flags.includes("LIKELY OFS / OOS") || flags.includes("LIKELY OFS / OUT OF CX SCOPE");
           const isMissingQbStatus = flags.includes("MISSING QB STATUS");
           const isNotInQb = flags.includes("NOT IN QB REFERENCE");
@@ -221,10 +225,14 @@
       function getGanttClass(stage, status, isOverdue) {
           let st = (stage || "").toLowerCase(), stat = (status || "").toLowerCase();
           if (st.includes('ofs')) return 'g-color-blue';
-          if (st.includes('permit')) return 'g-color-purple';
+          if (st.includes('permit') || st.includes('pre-con')) return 'g-color-purple';
           if (stat.includes('complete')) return 'g-color-green';
           if (stat.includes('hold')) return 'g-color-gray';
-          if (st === "ofs (inferred) | oos") return 'g-color-blue';
+          if (st.includes('inferred')) {
+              if (st.includes('cx')) return 'g-color-yellow';
+              if (st.includes('pre-con')) return 'g-color-purple';
+              if (st.includes('hold')) return 'g-color-gray';
+          }
           if (isOverdue || st === "reference data missing" || st === "-") return 'g-color-red';
           return 'g-color-yellow';
       }

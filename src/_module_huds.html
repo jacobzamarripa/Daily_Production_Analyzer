@@ -92,7 +92,7 @@ function renderProjectsHUD() {
         let color = defaultColors[idx % defaultColors.length];
         let sLower = stage.toLowerCase();
 
-        if (sLower.includes('permit')) color = '#a855f7';
+        if (sLower.includes('permit') || sLower.includes('pre-con')) color = '#a855f7';
         else if (sLower.includes('field cx')) {
             if (sLower.includes('complete')) color = '#22c55e';
             else if (sLower.includes('pending') || sLower.includes('assignment')) color = '#f97316';
@@ -100,7 +100,7 @@ function renderProjectsHUD() {
             else color = '#facc15';
         }
         else if (sLower.includes('ofs')) color = '#3b82f6';
-        else if (sLower.includes('hold')) color = '#64748b';
+        else if (sLower.includes('hold') || sLower.includes('on hold')) color = '#64748b';
         else if (sLower.includes('pending') || sLower.includes('assignment')) color = '#f97316';
 
         return { label: stage, count: pieCounts[stage], color: color };

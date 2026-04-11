@@ -307,7 +307,9 @@ function showHUD(e, fdh) {
     if (!item) return;
     let hud = getEl('gantt-hud');
     if (!hud) return;
-    let html = `<div style="font-size:14px; font-weight:900; color:#fff; border-bottom:1px solid #333338; padding-bottom:4px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;"><span>${item.fdh}</span><span style="color:#a1a1aa; font-size:11px;">${item.vendor}</span></div><div style="font-size:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;"><div><span style="color:#a1a1aa;">CX START:</span><br/>${item.cxStart ? formatDate(item.cxStart) : "TBD"}</div><div><span style="color:#a1a1aa;">TARGET:</span><br/>${item.targetDate ? formatDate(item.targetDate) : "TBD"}</div></div>`;
+    let html = `<div style="font-size:14px; font-weight:900; color:#fff; border-bottom:1px solid #333338; padding-bottom:4px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;"><span>${item.fdh}</span><span style="color:#a1a1aa; font-size:11px;">${item.vendor}</span></div>
+    <div style="font-size:10px; margin-bottom:6px; color:#fff; font-weight:bold;">${item.stage || "-"} | ${item.status || "-"}</div>
+    <div style="font-size:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px;"><div><span style="color:#a1a1aa;">CX START:</span><br/>${item.cxStart ? formatDate(item.cxStart) : "TBD"}</div><div><span style="color:#a1a1aa;">TARGET:</span><br/>${item.targetDate ? formatDate(item.targetDate) : "TBD"}</div></div>`;
     if (item.vel) {
         let vels = [];
         if (item.vel.ug.bom > 0) vels.push(`<span style="color:var(--qb-ug);">UG: ${Math.round((item.vel.ug.tot / item.vel.ug.bom) * 100)}%</span>`);
@@ -332,6 +334,10 @@ function showHUD(e, fdh) {
     }
     if (item.cxInferred && item.cxInferred.length > 0) {
         html += `<div style="font-size:9px; color:#fbbf24; border-top:1px solid #333338; padding-top:4px; margin-top:4px;">&#9888; Dates inferred (${item.cxInferred})</div>`;
+    }
+    let probMatch = (item.draft || "").match(/\[Probabilities: .*?\]/);
+    if (probMatch) {
+        html += `<div style="font-size:9px; color:#34d399; border-top:1px solid #333338; padding-top:4px; margin-top:4px;">&#129504; ${probMatch[0]}</div>`;
     }
     hud.dataset.mode = 'project';
     hud.innerHTML = html;
@@ -592,8 +598,9 @@ function renderGantt(items) {
         }
 
         let barLeft = 140 + leftPx;
-        let isInferred = !!(item.cxInferred && item.cxInferred.length > 0);
-        let inferredBorderStyle = isInferred ? " border: 2px dashed rgba(255,255,255,0.5);" : "";
+        let hasInferredDates = !!(item.cxInferred && item.cxInferred.length > 0);
+        let hasInferredStatus = !!(item.flags && (item.flags.includes("INFERRED:") || item.flags.includes("LIKELY OFS")));
+        let inferredBorderStyle = (hasInferredDates || hasInferredStatus) ? " border: 2px dashed rgba(255,255,255,0.5);" : "";
         rowsArray.push(`
         <div class="gantt-row" id="gantt-row-${item.fdh}" data-start-ts="${rowStartTs}" data-end-ts="${rowEndTs}" style="width:${chartWidth + 140}px;">
            <div class="gantt-label ${highestSev}" onclick="handleGanttLabelClick('${item.fdh}')">

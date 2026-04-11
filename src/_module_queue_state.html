@@ -1372,7 +1372,8 @@ function getProjectsPieSliceLabel(item) {
     let sLower = stageName.toLowerCase();
     if (sLower.includes('field cx')) return `${stageName} | ${statusName}`;
     if (sLower.includes('ofs')) return 'OFS';
-    if (sLower.includes('permit')) return 'Permitting';
+    if (sLower.includes('permit') || sLower.includes('pre-con')) return 'Permitting';
+    if (sLower.includes('hold')) return 'On Hold';
     return stageName;
 }
 
