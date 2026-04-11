@@ -767,8 +767,8 @@
       // ── ⟳ Sync QB — pulls fresh reference data from QuickBase API ──────────
       function triggerQBSync() {
           const queueCount = document.querySelectorAll('#inbox-list .inbox-item').length;
-          const msg = "Sync reference data from QuickBase?\n\n" +
-              "⚠️  This will overwrite 5-Reference_Data with live QB data.\n\n" +
+          const msg = "Sync reference data from QuickBase and rebuild the dashboard?\n\n" +
+              "⚠️  This will overwrite 5-Reference_Data with live QB data and rebuild the UI from the latest archive date.\n\n" +
               (queueCount > 0
                   ? `You have ${queueCount} item(s) still in the queue.\nHave you reviewed the current flagged projects before syncing?`
                   : "Queue is clear — safe to sync.");
@@ -804,7 +804,8 @@
                   resetSignalCaches();
                   initDashboard(data);
                   const meta = data._syncMeta || {};
-                  showToast('Synced ' + (meta.count || '?') + ' records · Dashboard rebuilt from ' + (meta.date || 'latest'));
+                  const totalSec = meta.timings && meta.timings.totalMs ? (meta.timings.totalMs / 1000).toFixed(1) + 's' : '';
+                  showToast('Synced ' + (meta.count || '?') + ' records · Dashboard rebuilt from ' + (meta.date || 'latest') + (totalSec ? ' · ' + totalSec : ''));
                   if (meta.timestamp) { globalRefDataDate = meta.timestamp; updateRefDataIndicator(); }
               })
               .withFailureHandler(function(e) {

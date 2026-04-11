@@ -438,7 +438,85 @@ function exportQuickBaseCSVCore(isSilent = false) {
   if (!isSilent) SpreadsheetApp.getUi().alert(`✅ CSV Exported: ${fileName}`);
 }
 
-function runBennyDiagnostics(row, refDict, vendorDict) {
+function buildInferenceHistoryContext(histData, histHeaders) {
+  const fdhIdx = histHeaders.indexOf("FDH Engineering ID");
+  const dateIdx = histHeaders.indexOf("Date");
+  const commentIdx = histHeaders.indexOf("Vendor Comment");
+  const dailyUGIdx = histHeaders.indexOf("Daily UG Footage");
+  const dailyAEIdx = histHeaders.indexOf("Daily Strand Footage");
+  const dailyFIBIdx = histHeaders.indexOf("Daily Fiber Footage");
+  const dailyNAPIdx = histHeaders.indexOf("Daily NAPs/Encl. Completed");
+  let context = {};
+
+  if (fdhIdx < 0 || dateIdx < 0) return context;
+
+  for (let i = 1; i < histData.length; i++) {
+    let row = histData[i];
+    let fdh = row[fdhIdx] ? String(row[fdhIdx]).trim().toUpperCase() : "";
+    if (!fdh) continue;
+
+    let rawDate = row[dateIdx];
+    let entryDate = rawDate instanceof Date ? rawDate : new Date(rawDate);
+    if (isNaN(entryDate.getTime())) continue;
+    let dateKey = new Date(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate());
+
+    if (!context[fdh]) context[fdh] = [];
+    context[fdh].push({
+      date: dateKey,
+      ts: dateKey.getTime(),
+      comment: commentIdx > -1 ? String(row[commentIdx] || "").trim().toLowerCase() : "",
+      dailyUG: dailyUGIdx > -1 ? (Number(row[dailyUGIdx]) || 0) : 0,
+      dailyAE: dailyAEIdx > -1 ? (Number(row[dailyAEIdx]) || 0) : 0,
+      dailyFIB: dailyFIBIdx > -1 ? (Number(row[dailyFIBIdx]) || 0) : 0,
+      dailyNAP: dailyNAPIdx > -1 ? (Number(row[dailyNAPIdx]) || 0) : 0
+    });
+  }
+
+  Object.keys(context).forEach(function(fdh) {
+    context[fdh].sort(function(a, b) { return a.ts - b.ts; });
+  });
+
+  return context;
+}
+
+function getRecentInferenceSignals(fdhId, rowDate, inferenceHistoryContext, lookbackDays) {
+  let windowDays = Number(lookbackDays) || 14;
+  let result = {
+    hasRecentActivity: false,
+    recentActiveDays: 0,
+    recentWindowLabel: "0d",
+    recentTotals: { ug: 0, ae: 0, fib: 0, nap: 0 },
+    latestComment: ""
+  };
+  if (!fdhId || !rowDate || !inferenceHistoryContext || !inferenceHistoryContext[fdhId]) return result;
+
+  let anchorDate = rowDate instanceof Date ? rowDate : new Date(rowDate);
+  if (isNaN(anchorDate.getTime())) return result;
+  let anchor = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate());
+  let startTs = anchor.getTime() - ((windowDays - 1) * 86400000);
+  let entries = inferenceHistoryContext[fdhId];
+  let commentEntries = [];
+
+  entries.forEach(function(entry) {
+    if (entry.ts < startTs || entry.ts > anchor.getTime()) return;
+    let entryHasActivity = entry.dailyUG > 0 || entry.dailyAE > 0 || entry.dailyFIB > 0 || entry.dailyNAP > 0;
+    if (entryHasActivity) {
+      result.hasRecentActivity = true;
+      result.recentActiveDays++;
+      result.recentTotals.ug += entry.dailyUG;
+      result.recentTotals.ae += entry.dailyAE;
+      result.recentTotals.fib += entry.dailyFIB;
+      result.recentTotals.nap += entry.dailyNAP;
+    }
+    if (entry.comment) commentEntries.push(entry.comment);
+  });
+
+  if (commentEntries.length > 0) result.latestComment = commentEntries[commentEntries.length - 1];
+  result.recentWindowLabel = `${windowDays}d`;
+  return result;
+}
+
+function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict) {
   let flags = [], drafts = [], summary = [], qbGaps = [], hCols = { warn: [], mismatch: [], ug: [], ae: [], fib: [], nap: [] }, flagColors = [], healedId = null;
   let inferredStage = "", inferredStatus = "";
   let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")] ? row[HISTORY_HEADERS.indexOf("FDH Engineering ID")].toString().toUpperCase().trim() : "";
@@ -465,6 +543,8 @@ function runBennyDiagnostics(row, refDict, vendorDict) {
   let crewsNAP = Number(row[HISTORY_HEADERS.indexOf("Splicing Crews")]) || 0;
   
   let lightToCab = row[HISTORY_HEADERS.indexOf("Light to Cabinets")] === true;
+  let rowDateRaw = row[HISTORY_HEADERS.indexOf("Date")];
+  let rowDate = rowDateRaw instanceof Date ? rowDateRaw : new Date(rowDateRaw);
   let targetDateRaw = row[HISTORY_HEADERS.indexOf("Target Completion Date")];
   let targetDate = (targetDateRaw instanceof Date) ? targetDateRaw : new Date(targetDateRaw);
   const parseFdhList = (value) => String(value || "").split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
@@ -543,66 +623,35 @@ function runBennyDiagnostics(row, refDict, vendorDict) {
       flagColors.push(TEXT_COLORS.WARN);
       hCols.warn.push("FDH Engineering ID");
   } else if (fdhId !== "" && !refData) {
-      // PROBABILITY-BASED INFERENCE (Master_Archive fallback)
-      let hasRecentActivity = (dailyUG > 0 || dailyAE > 0 || dailyFIB > 0 || dailyNAP > 0);
-      let commentText = vendorComment.toLowerCase();
-      
-      // Completion Avg across active phases
-      let phases = [
-          { tot: totalUG, bom: vendorBOMUG },
-          { tot: totalAE, bom: vendorBOMAE },
-          { tot: totalFIB, bom: vendorBOMFIB },
-          { tot: totalNAP, bom: vendorBOMNAP }
-      ];
-      let activePhases = phases.filter(p => p.bom > 0);
-      let completionAvg = activePhases.length > 0 
-          ? activePhases.reduce((acc, p) => acc + Math.min(1, p.tot / p.bom), 0) / activePhases.length 
-          : 0;
-      let hasBOM = activePhases.length > 0;
+      flags.push("🚩 NOT IN QB REFERENCE");
+      flagColors.push(TEXT_COLORS.WARN);
+      let inferredState = resolveMissingReferenceState({
+          fdhId: fdhId,
+          rowDate: rowDate,
+          vendorComment: vendorComment,
+          dailyUG: dailyUG,
+          dailyAE: dailyAE,
+          dailyFIB: dailyFIB,
+          dailyNAP: dailyNAP,
+          totalUG: totalUG,
+          totalAE: totalAE,
+          totalFIB: totalFIB,
+          totalNAP: totalNAP,
+          vendorBOMUG: vendorBOMUG,
+          vendorBOMAE: vendorBOMAE,
+          vendorBOMFIB: vendorBOMFIB,
+          vendorBOMNAP: vendorBOMNAP,
+          lightToCab: lightToCab,
+          vTracker: vTracker,
+          inferenceHistoryContext: inferenceHistoryContext,
+          lastKnownState: (lkvDict && lkvDict[fdhId]) ? lkvDict[fdhId] : null
+      });
 
-      // Scoring Matrix
-      let sFieldCX = 10, sOFS = 10, sPreCon = 10, sHold = 5;
-
-      // 1. Field CX Probability
-      if (hasRecentActivity) sFieldCX += 60; // Increased weight
-      if (completionAvg > 0 && completionAvg < 0.95) sFieldCX += 30;
-      if (["drilling", "pulling", "splicing", "placing", "trenching", "boring", "pothole"].some(w => commentText.includes(w))) sFieldCX += 25;
-      if (lightToCab) sFieldCX -= 40;
-
-      // 2. OFS Probability
-      if (lightToCab) sOFS += 50;
-      if (completionAvg >= 0.95) sOFS += 40;
-      if (completionAvg === 0 && !hasBOM) sOFS += 20; // Lowered weight for missing data
-      if (["done", "complete", "turned over", "spliced out", "ready"].some(w => commentText.includes(w))) sOFS += 20;
-      if (hasRecentActivity) sOFS -= 60; // Increased penalty for activity
-
-      // 3. Pre-Con Probability
-      if (completionAvg === 0 && !hasRecentActivity) sPreCon += 50;
-      if (["permit", "design", "waiting", "locates", "walk"].some(w => commentText.includes(w))) sPreCon += 30;
-      if (completionAvg > 0) sPreCon -= 50;
-
-      // 4. Hold Probability
-      if (["hold", "stop", "blocked", "standby", "canceled"].some(w => commentText.includes(w))) sHold += 60;
-      if (completionAvg > 0 && !hasRecentActivity) sHold += 20;
-
-      // Determine Winner
-      let results = [
-          { stage: "Field CX | In Progress", status: "Construction", score: sFieldCX, flag: "INFERRED: FIELD CX" },
-          { stage: "OFS (Inferred)", status: "OOS", score: sOFS, flag: "LIKELY OFS / OOS" },
-          { stage: "Pre-Construction", status: "Permitting", score: sPreCon, flag: "INFERRED: PRE-CON" },
-          { stage: "On Hold", status: "Hold", score: sHold, flag: "INFERRED: HOLD" }
-      ];
-      results.sort((a, b) => b.score - a.score);
-      let winner = results[0];
-
-      flags.push(winner.flag);
-      // If score is high (>=50), color it DONE (green), else WARN (red)
-      flagColors.push(winner.score >= 50 ? TEXT_COLORS.DONE : TEXT_COLORS.WARN);
-      
-      let scoreBreakdown = `[Probabilities: CX:${sFieldCX}, OFS:${sOFS}, PRE:${sPreCon}, HLD:${sHold}]`;
-      drafts.push(`Missing from reference data. Inferred as ${winner.stage} ${scoreBreakdown} based on archive report.`);
-      inferredStage = winner.stage;
-      inferredStatus = winner.status;
+      if (inferredState.flag) flags.push(inferredState.flag);
+      flagColors.push(inferredState.flagColor || TEXT_COLORS.WARN);
+      drafts.push(inferredState.note);
+      inferredStage = inferredState.stage;
+      inferredStatus = inferredState.status;
       hCols.warn.push("FDH Engineering ID");
   }
   
@@ -762,7 +811,8 @@ function runBennyDiagnostics(row, refDict, vendorDict) {
 
 /**
  * Scans the existing 3-Daily_Review sheet and returns the last known non-empty
- * CX Start / CX Complete per FDH. Used as Tier-2 fallback when QB ref is gone.
+ * CX dates plus a reliable Stage / Status snapshot per FDH. Used as Tier-2
+ * fallback when QB reference data disappears.
  */
 function buildCxLkvDictionary(mirrorSheet) {
   let lkvDict = {};
@@ -772,11 +822,14 @@ function buildCxLkvDictionary(mirrorSheet) {
   let fdhCol = mHeaders.indexOf("FDH Engineering ID");
   let cxSCol = mHeaders.indexOf("CX Start");
   let cxECol = mHeaders.indexOf("CX Complete");
+  let stageCol = mHeaders.indexOf("Stage");
+  let statusCol = mHeaders.indexOf("Status");
+  let flagsCol = mHeaders.indexOf("Health Flags");
   if (fdhCol < 0) return lkvDict;
   for (let r = 1; r < mData.length; r++) {
     let fdh = String(mData[r][fdhCol] || "").toUpperCase().trim();
     if (!fdh) continue;
-    if (!lkvDict[fdh]) lkvDict[fdh] = { cxStart: "", cxComplete: "" };
+    if (!lkvDict[fdh]) lkvDict[fdh] = { cxStart: "", cxComplete: "", stage: "", status: "" };
     const _fmt = (val) => {
       if (!val || val === "" || val === "-") return "";
       if (val instanceof Date) return Utilities.formatDate(val, "GMT-5", "MM/dd/yy");
@@ -786,10 +839,174 @@ function buildCxLkvDictionary(mirrorSheet) {
     };
     let cs = cxSCol > -1 ? _fmt(mData[r][cxSCol]) : "";
     let ce = cxECol > -1 ? _fmt(mData[r][cxECol]) : "";
+    let stage = stageCol > -1 ? String(mData[r][stageCol] || "").trim() : "";
+    let status = statusCol > -1 ? String(mData[r][statusCol] || "").trim() : "";
+    let flagsText = flagsCol > -1 ? String(mData[r][flagsCol] || "") : "";
+    let hasStaleStatus = /STATUS MISMATCH|MISSING QB STATUS|ADMIN: REFRESH REF DATA/i.test(flagsText);
     if (cs) lkvDict[fdh].cxStart = cs;
     if (ce) lkvDict[fdh].cxComplete = ce;
+    if (!hasStaleStatus && stage && stage !== "-") lkvDict[fdh].stage = stage;
+    if (!hasStaleStatus && status && status !== "-") lkvDict[fdh].status = status;
   }
   return lkvDict;
+}
+
+function classifyInferredReviewState(stage, status) {
+  let stageText = String(stage || "").trim();
+  let statusText = String(status || "").trim();
+  let st = stageText.toLowerCase();
+  let stat = statusText.toLowerCase();
+
+  if (st.includes("field cx") || st.includes("construction") || stat.includes("construction") || stat.includes("in progress")) {
+    return { stage: stageText || "Field CX", status: statusText || "Construction", flag: "INFERRED: FIELD CX", bucket: "field" };
+  }
+  if (st.includes("permit") || st.includes("pre-con") || st.includes("vendor assignment") || stat.includes("permit")) {
+    return { stage: stageText || "Pre-Construction", status: statusText || "Permitting", flag: "INFERRED: PRE-CON", bucket: "precon" };
+  }
+  if (st.includes("hold") || stat.includes("hold")) {
+    return { stage: stageText || "On Hold", status: statusText || "Hold", flag: "INFERRED: HOLD", bucket: "hold" };
+  }
+  if (st.includes("ofs") || stat.includes("oos")) {
+    return { stage: stageText || "OFS (Inferred)", status: statusText || "OOS", flag: "LIKELY OFS / OOS", bucket: "ofs" };
+  }
+
+  return { stage: stageText || "-", status: statusText || "-", flag: "", bucket: "" };
+}
+
+function resolveMissingReferenceState(context) {
+  let currentRowHasActivity = (context.dailyUG > 0 || context.dailyAE > 0 || context.dailyFIB > 0 || context.dailyNAP > 0);
+  let recentSignals = getRecentInferenceSignals(context.fdhId, context.rowDate, context.inferenceHistoryContext, 14);
+  let hasRecentActivity = currentRowHasActivity || recentSignals.hasRecentActivity;
+  let commentText = [String(context.vendorComment || "").toLowerCase(), recentSignals.latestComment].filter(Boolean).join(" ");
+  let hasTrackerEvidence = !!(context.vTracker && (
+    (context.vTracker.ugPct && context.vTracker.ugPct > 0) ||
+    (context.vTracker.aePct && context.vTracker.aePct > 0) ||
+    (context.vTracker.fibPct && context.vTracker.fibPct > 0) ||
+    (context.vTracker.napPct && context.vTracker.napPct > 0)
+  ));
+
+  let phases = [
+    { tot: context.totalUG, bom: context.vendorBOMUG },
+    { tot: context.totalAE, bom: context.vendorBOMAE },
+    { tot: context.totalFIB, bom: context.vendorBOMFIB },
+    { tot: context.totalNAP, bom: context.vendorBOMNAP }
+  ];
+  let activePhases = phases.filter(p => p.bom > 0);
+  let completionAvg = activePhases.length > 0
+    ? activePhases.reduce((acc, p) => acc + Math.min(1, p.tot / p.bom), 0) / activePhases.length
+    : 0;
+  let hasBOM = activePhases.length > 0;
+
+  let workKeywords = ["drilling", "pulling", "splicing", "placing", "trenching", "boring", "pothole", "crew", "crews", "production", "fiber", "strand", "ug"];
+  let doneKeywords = ["done", "complete", "completed", "turned over", "spliced out", "ready", "lit"];
+  let preConKeywords = ["permit", "design", "waiting", "locates", "walk", "review", "engineering", "approval"];
+  let holdKeywords = ["hold", "stop", "blocked", "standby", "canceled", "cancelled", "paused"];
+  let signalSummary = `[Signals: CUR:${currentRowHasActivity ? 'Y' : 'N'}, REC:${recentSignals.hasRecentActivity ? 'Y' : 'N'}@${recentSignals.recentWindowLabel}, DAYS:${recentSignals.recentActiveDays}, TRK:${hasTrackerEvidence ? 'Y' : 'N'}, CMP:${Math.round(completionAvg * 100)}%, LIGHT:${context.lightToCab ? 'Y' : 'N'}]`;
+
+  if (holdKeywords.some(w => commentText.includes(w)) && !currentRowHasActivity) {
+    return {
+      stage: "On Hold",
+      status: "Hold",
+      flag: "INFERRED: HOLD",
+      flagColor: TEXT_COLORS.WARN,
+      note: `Missing from reference data. Inferred as On Hold from explicit hold language in recent reporting. ${signalSummary}`
+    };
+  }
+
+  if (currentRowHasActivity || hasTrackerEvidence || recentSignals.hasRecentActivity || (completionAvg > 0 && completionAvg < 0.98)) {
+    return {
+      stage: "Field CX",
+      status: "Construction",
+      flag: "INFERRED: FIELD CX",
+      flagColor: TEXT_COLORS.DONE,
+      note: `Missing from reference data. Inferred as Field CX from active production signals in archive history. ${signalSummary}`
+    };
+  }
+
+  if (context.lightToCab && !hasRecentActivity) {
+    return {
+      stage: "OFS (Inferred)",
+      status: "OOS",
+      flag: "LIKELY OFS / OOS",
+      flagColor: TEXT_COLORS.DONE,
+      note: `Missing from reference data. Inferred as OFS from light-to-cabinets confirmation with no recent active work. ${signalSummary}`
+    };
+  }
+
+  let lastKnown = classifyInferredReviewState(
+    context.lastKnownState && context.lastKnownState.stage,
+    context.lastKnownState && context.lastKnownState.status
+  );
+  if (lastKnown.stage !== "-" || lastKnown.status !== "-") {
+    return {
+      stage: lastKnown.stage,
+      status: lastKnown.status,
+      flag: lastKnown.flag,
+      flagColor: TEXT_COLORS.MAGIC,
+      note: `Missing from reference data. Using last known Daily Review state (${lastKnown.stage} | ${lastKnown.status}) before falling back to weighted inference. ${signalSummary}`
+    };
+  }
+
+  if ((completionAvg >= 0.98 || doneKeywords.some(w => commentText.includes(w))) && !hasRecentActivity) {
+    return {
+      stage: "OFS (Inferred)",
+      status: "OOS",
+      flag: "LIKELY OFS / OOS",
+      flagColor: TEXT_COLORS.DONE,
+      note: `Missing from reference data. Inferred as OFS from strong completion signals with no recent active work. ${signalSummary}`
+    };
+  }
+
+  if (preConKeywords.some(w => commentText.includes(w)) && !hasRecentActivity && !context.lightToCab) {
+    return {
+      stage: "Pre-Construction",
+      status: "Permitting",
+      flag: "INFERRED: PRE-CON",
+      flagColor: TEXT_COLORS.DONE,
+      note: `Missing from reference data. Inferred as Pre-Construction from permitting / planning signals with no active production. ${signalSummary}`
+    };
+  }
+
+  let sFieldCX = 15, sOFS = 10, sPreCon = 10, sHold = 5;
+
+  if (recentSignals.recentActiveDays >= 3) sFieldCX += 10;
+  if (workKeywords.some(w => commentText.includes(w))) sFieldCX += 20;
+  if (context.lightToCab) sFieldCX -= 40;
+
+  if (context.lightToCab) sOFS += 55;
+  if (completionAvg >= 0.98) sOFS += 35;
+  if (!hasRecentActivity && !hasTrackerEvidence && completionAvg === 0 && !hasBOM) sOFS += 20;
+  if (!hasRecentActivity && doneKeywords.some(w => commentText.includes(w))) sOFS += 25;
+  if (!context.lightToCab && completionAvg === 0) sOFS -= 10;
+
+  if (completionAvg === 0 && !hasRecentActivity) sPreCon += 50;
+  if (preConKeywords.some(w => commentText.includes(w))) sPreCon += 35;
+  if (completionAvg > 0) sPreCon -= 35;
+  if (context.lightToCab) sPreCon -= 25;
+
+  if (holdKeywords.some(w => commentText.includes(w))) sHold += 70;
+  if (completionAvg > 0 && !hasRecentActivity) sHold += 15;
+
+  let results = [
+    { stage: "Field CX", status: "Construction", score: sFieldCX, flag: "INFERRED: FIELD CX", priority: 1 },
+    { stage: "Pre-Construction", status: "Permitting", score: sPreCon, flag: "INFERRED: PRE-CON", priority: 2 },
+    { stage: "On Hold", status: "Hold", score: sHold, flag: "INFERRED: HOLD", priority: 3 },
+    { stage: "OFS (Inferred)", status: "OOS", score: sOFS, flag: "LIKELY OFS / OOS", priority: 4 }
+  ];
+  results.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return (a.priority || 99) - (b.priority || 99);
+  });
+  let winner = results[0];
+  let scoreBreakdown = `[Probabilities: CX:${sFieldCX}, OFS:${sOFS}, PRE:${sPreCon}, HLD:${sHold}] ${signalSummary}`;
+
+  return {
+    stage: winner.stage,
+    status: winner.status,
+    flag: winner.flag,
+    flagColor: winner.score >= 50 ? TEXT_COLORS.DONE : TEXT_COLORS.WARN,
+    note: `Missing from reference data. Inferred as ${winner.stage} ${scoreBreakdown} based on weighted archive signals.`
+  };
 }
 
 /**
@@ -801,6 +1018,7 @@ function inferCxDatesFromHistory(fdh, histData, histHeaders) {
   let fdhIdx    = histHeaders.indexOf("FDH Engineering ID");
   let dateIdx   = histHeaders.indexOf("Date");
   let locIdx    = histHeaders.indexOf("Locates Called In");
+  let lightIdx  = histHeaders.indexOf("Light to Cabinets");
   let ugTotIdx  = histHeaders.indexOf("Total UG Footage Completed");
   let aeTotIdx  = histHeaders.indexOf("Total Strand Footage Complete?");
   let fibTotIdx = histHeaders.indexOf("Total Fiber Footage Complete");
@@ -960,6 +1178,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
 
   let benchmarkDict = buildBenchmarkDictionary(histData, HISTORY_HEADERS, refDict);
   let lkvDict = buildCxLkvDictionary(mirrorSheet);
+  let inferenceHistoryContext = buildInferenceHistoryContext(histData, HISTORY_HEADERS);
 
   let currentMirrorHeaders = mirrorSheet.getLastColumn() > 0 ? mirrorSheet.getRange(1, 1, 1, mirrorSheet.getLastColumn()).getValues()[0] : [];
   let defaultHeaders = [...HISTORY_HEADERS, ...REVIEW_EXTRA_HEADERS, ...ANALYTICS_QUADRANT, "Archive_Row"];
@@ -995,7 +1214,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     if (targetDates.includes(rowDateStr) || targetDates.includes(altDateStr)) {
       let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")].toString().toUpperCase().trim();
       submittedFdhs.add(fdhId);
-      let diag = runBennyDiagnostics(row, refDict, vendorDict); 
+      let diag = runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict);
       
       if (diag.flags.includes("POSSIBLE REROUTE (NAP)")) {
           diag.flags = diag.flags.replace(/POSSIBLE REROUTE \(NAP\)/g, "SCOPE DEVIATION (NAP)");

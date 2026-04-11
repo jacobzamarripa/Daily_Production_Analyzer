@@ -141,6 +141,8 @@ function discoverAllQBFields() {
 function syncFromQBWebApp() {
   CacheService.getScriptCache().removeAll(['dashboard_data_cache_v12_meta', 'dashboard_data_cache_v12', 'SIGNAL_FAST_current', 'vendor_daily_goals_v1', 'city_coords_v1', 'dashboard_data_cache_v2_blob']);
   try {
+    const syncStartMs = Date.now();
+    const timings = {};
     const token = PropertiesService.getScriptProperties().getProperty("QB_USER_TOKEN");
     if (!token) return { success: false, error: "QB_USER_TOKEN not configured in Script Properties." };
 
@@ -148,7 +150,9 @@ function syncFromQBWebApp() {
     let sheet   = ss.getSheetByName(REF_SHEET);
     if (!sheet) sheet = ss.insertSheet(REF_SHEET);
 
+    const snapshotStartMs = Date.now();
     const snapshot = _fetchReferenceTableSnapshot(token);
+    timings.snapshotFetchMs = Date.now() - snapshotStartMs;
     const allRows = snapshot.rows;
     if (allRows.length === 0) return { success: false, error: "QuickBase returned 0 records. Check the table access and token permissions." };
 
@@ -156,12 +160,14 @@ function syncFromQBWebApp() {
     const outputData = [headers].concat(allRows);
     const numRows = outputData.length, numCols = headers.length;
 
+    const refWriteStartMs = Date.now();
     sheet.clear();
     ensureCapacity(sheet, numRows, numCols);
     sheet.getRange(1, 1, numRows, numCols).setValues(outputData);
     sheet.getRange(1, 1, 1, numCols).setBackground("#003366").setFontColor("#ffffff").setFontWeight("bold");
     sheet.setFrozenRows(1);
     trimAndFilterSheet(sheet, numRows, numCols);
+    timings.referenceWriteMs = Date.now() - refWriteStartMs;
 
     const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "MM/dd/yy HH:mm");
     PropertiesService.getScriptProperties().setProperties({
@@ -181,24 +187,29 @@ function syncFromQBWebApp() {
 
     // --- Enrich 5-Reference_Data with multi-table Deck reference values ---
     try {
+      const deckStartMs = Date.now();
       var refSheet2   = ss.getSheetByName(REF_SHEET);
       var refHeaders2 = refSheet2.getRange(1, 1, 1, refSheet2.getLastColumn()).getValues()[0].map(String);
       var fdhRefIdx   = refHeaders2.findIndex(function(h) { return h.toUpperCase().includes("FDH"); });
       if (fdhRefIdx === -1) throw new Error("FDH column not found in " + REF_SHEET);
 
-      var refData2 = refSheet2.getRange(2, 1, refSheet2.getLastRow() - 1, refSheet2.getLastColumn()).getValues();
-      var fdhRowMap = {};
-      refData2.forEach(function(row, i) {
-        var key = row[fdhRefIdx] ? row[fdhRefIdx].toString().trim().toUpperCase() : "";
-        if (key) fdhRowMap[key] = i + 2;
-      });
+      var missingDeckCols = QB_DECK_COLUMNS.filter(function(col) { return refHeaders2.indexOf(col) === -1; });
+      if (missingDeckCols.length > 0) {
+        var deckColStartIdx = refSheet2.getLastColumn() + 1;
+        var headerRange = refSheet2.getRange(1, deckColStartIdx, 1, missingDeckCols.length);
+        headerRange.setValues([missingDeckCols]);
+        headerRange.setBackground("#003366").setFontColor("#ffffff").setFontWeight("bold");
+        refHeaders2 = refHeaders2.concat(missingDeckCols);
+      }
 
-      QB_DECK_COLUMNS.forEach(function(col) {
-        if (refHeaders2.indexOf(col) === -1) {
-          var newColIdx = refSheet2.getLastColumn() + 1;
-          refSheet2.getRange(1, newColIdx).setValue(col).setBackground("#003366").setFontColor("#ffffff").setFontWeight("bold");
-          refHeaders2.push(col);
-        }
+      var refRowCount = Math.max(refSheet2.getLastRow() - 1, 0);
+      var refLastCol = refSheet2.getLastColumn();
+      var refRange = refRowCount > 0 ? refSheet2.getRange(2, 1, refRowCount, refLastCol) : null;
+      var refValues = refRange ? refRange.getValues() : [];
+      var fdhRowMap = {};
+      refValues.forEach(function(row, i) {
+        var key = row[fdhRefIdx] ? row[fdhRefIdx].toString().trim().toUpperCase() : "";
+        if (key) fdhRowMap[key] = i;
       });
 
       for (var tableId in QB_DECK_QUERY_CONFIG) {
@@ -230,30 +241,36 @@ function syncFromQBWebApp() {
           var fdhVal  = fdhCell ? _extractValue(fdhCell.value) : "";
           if (!fdhVal) return;
           var fdhKey = fdhVal.toString().trim().toUpperCase();
-          var rowNum = fdhRowMap[fdhKey];
-          if (!rowNum) return;
+          var rowIdx = fdhRowMap[fdhKey];
+          if (rowIdx === undefined) return;
 
           QB_DECK_COLUMNS.forEach(function(col) {
             var fid = colMap[col];
             if (!fid || !rec[fid]) return;
             var val    = _extractValue(rec[fid].value);
-            var colIdx = refHeaders2.indexOf(col) + 1;
-            if (colIdx > 0 && val !== "") refSheet2.getRange(rowNum, colIdx).setValue(val);
+            var colIdx = refHeaders2.indexOf(col);
+            if (colIdx > -1 && val !== "") refValues[rowIdx][colIdx] = val;
           });
         });
       }
+      if (refRange) refRange.setValues(refValues);
+      timings.deckEnrichmentMs = Date.now() - deckStartMs;
       logMsg("QB Deck Enrichment: " + Object.keys(fdhRowMap).length + " rows scanned across " + Object.keys(QB_DECK_QUERY_CONFIG).length + " tables.");
     } catch (deckErr) {
       Logger.log("Deck enrichment WARN: " + deckErr.message);
     }
 
+    const changeLogStartMs = Date.now();
     try {
       syncChangeLogs();
     } catch (clErr) {
       Logger.log("Change Log Sync Error: " + clErr.message);
     }
+    timings.changeLogSyncMs = Date.now() - changeLogStartMs;
+    timings.totalSyncMs = Date.now() - syncStartMs;
+    logMsg("QB WebApp Sync timings: " + JSON.stringify(timings));
 
-    return { success: true, count: allRows.length, timestamp: timestamp };
+    return { success: true, count: allRows.length, timestamp: timestamp, timings: timings };
 
   } catch (e) {
     Logger.log("syncFromQBWebApp ERROR: " + e.message);
@@ -944,14 +961,23 @@ function _getLatestArchiveDate() {
  * attached) so the frontend can refresh in a single round-trip.
  */
 function syncAndRebuildDashboard() {
+  const overallStartMs = Date.now();
   const syncResult = syncFromQBWebApp();
   if (!syncResult.success) {
     return { actionItems: [], _syncMeta: { error: syncResult.error } };
   }
   const latestDate = _getLatestArchiveDate();
   logMsg("syncAndRebuildDashboard: rebuilding from latest archive date → " + latestDate);
+  const rebuildStartMs = Date.now();
   generateDailyReviewCore(latestDate, null, false);
+  const payloadFetchStartMs = Date.now();
   const payload = getDashboardDataV2();
-  payload._syncMeta = { count: syncResult.count, timestamp: syncResult.timestamp, date: latestDate };
+  const timings = Object.assign({}, syncResult.timings || {}, {
+    rebuildReviewMs: Date.now() - rebuildStartMs,
+    payloadFetchMs: Date.now() - payloadFetchStartMs,
+    totalMs: Date.now() - overallStartMs
+  });
+  logMsg("syncAndRebuildDashboard timings: " + JSON.stringify(timings));
+  payload._syncMeta = { count: syncResult.count, timestamp: syncResult.timestamp, date: latestDate, timings: timings };
   return payload;
 }
