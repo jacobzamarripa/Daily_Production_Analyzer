@@ -486,6 +486,59 @@ function _renderSignalDrive(activity, tf) {
     _signalDriveRootFilter = 'all';
   }
 
+  var html = '';
+
+  // Render Top Movers section (only if no search query is active)
+  if (!q) {
+    var bomsTotal = 0;
+    var cdsTotal = 0;
+    var subfolderStats = {}; // { name: { count, parent } }
+
+    activity.forEach(function(group) {
+      var p = (group.folder || '').toLowerCase();
+      var count = group.files.length;
+      var isBom = p.includes('boms');
+      var isCd = p.includes('cds_and_permits');
+      if (isBom) bomsTotal += count;
+      if (isCd) cdsTotal += count;
+
+      var parts = group.folder.split(' / ');
+      var subName = parts.length > 1 ? parts[1] : parts[0];
+      if (!subfolderStats[subName]) subfolderStats[subName] = { count: 0, parent: parts[0] };
+      subfolderStats[subName].count += count;
+    });
+
+    var topMover = { name: 'None', count: 0, parent: 'N/A' };
+    Object.keys(subfolderStats).forEach(function(name) {
+      if (subfolderStats[name].count > topMover.count) {
+        topMover = { name: name, count: subfolderStats[name].count, parent: subfolderStats[name].parent };
+      }
+    });
+
+    html += '<div class="signal-section-header">Drive Summary (' + _signalTfLabel(tf) + ')</div>';
+    html += '<div class="signal-movers-row">'
+      + '<div class="signal-mover-card">'
+      + '<div class="signal-mover-name">BOMs</div>'
+      + '<div class="signal-mover-count">' + bomsTotal + '</div>'
+      + '<div class="signal-mover-label">Updates</div>'
+      + '<div class="signal-mover-primary">Portfolio Total</div>'
+      + '</div>'
+      + '<div class="signal-mover-card">'
+      + '<div class="signal-mover-name">CDs & Permits</div>'
+      + '<div class="signal-mover-count">' + cdsTotal + '</div>'
+      + '<div class="signal-mover-label">Updates</div>'
+      + '<div class="signal-mover-primary">Portfolio Total</div>'
+      + '</div>'
+      + '<div class="signal-mover-card">'
+      + '<div class="signal-mover-name">' + _esc(topMover.name) + '</div>'
+      + '<div class="signal-mover-count">' + topMover.count + '</div>'
+      + '<div class="signal-mover-label">Updates</div>'
+      + '<div class="signal-mover-primary">' + _esc(topMover.parent) + '</div>'
+      + '</div>'
+      + '</div>';
+    html += '<div class="signal-section-header">Activity Feed</div>';
+  }
+
   var folderIcon = '<svg width="46" height="46" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/></svg>';
   var chipHtml = '<div class="signal-drive-filter-row">';
   chipHtml += '<button class="signal-drive-filter-chip' + (_signalDriveRootFilter === 'all' ? ' active' : '') + '" type="button" onclick="_signalSetDriveRootFilter(\'all\')">'
@@ -504,7 +557,7 @@ function _renderSignalDrive(activity, tf) {
   });
   chipHtml += '</div>';
 
-  var html = chipHtml;
+  html += chipHtml;
   rootKeys.forEach(function(rootKey) {
     if (_signalDriveRootFilter !== 'all' && _signalDriveRootFilter !== rootKey) return;
     var entry = rootMap[rootKey];
