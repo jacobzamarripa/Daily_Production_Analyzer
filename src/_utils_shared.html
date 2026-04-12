@@ -322,6 +322,7 @@
 
       function getQueueCombinedPill(item) {
           const flags = String((item && item.flags) || '');
+          if (flags.includes("INFERRED: SPLICING ONLY")) return "Field CX | Splicing Only";
           if (flags.includes("INFERRED: FIELD CX")) return "Field CX (Inferred)";
           if (flags.includes("INFERRED: PRE-CON")) return "Pre-Con (Inferred)";
           if (flags.includes("INFERRED: HOLD")) return "On Hold (Inferred)";
@@ -338,6 +339,7 @@
       function getDisplayStageLabel(item) {
           if (!item) return "-";
           const flags = String(item.flags || '');
+          if (flags.includes("INFERRED: SPLICING ONLY")) return "Field CX";
           if (flags.includes("INFERRED: FIELD CX")) return "Field CX";
           if (flags.includes("INFERRED: PRE-CON")) return "Pre-Construction";
           if (flags.includes("INFERRED: HOLD")) return "On Hold";

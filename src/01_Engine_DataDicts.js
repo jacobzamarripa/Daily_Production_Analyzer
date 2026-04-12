@@ -320,6 +320,7 @@ function parseTrackerPct(val) {
 function getVendorLiveDictionary(refDict) {
   let vendorDict = {};
   let officialFDHs = refDict ? Object.keys(refDict) : [];
+  let fuzzyCorrectionCount = 0;
   try {
     let vSS = SpreadsheetApp.openById(VENDOR_TRACKER_ID);
     let sheets = vSS.getSheets(); 
@@ -379,6 +380,7 @@ function getVendorLiveDictionary(refDict) {
          let matched = attemptFuzzyMatch(rawFdh, officialFDHs, sheetName, refDict);
          if (matched) {
              finalFdh = matched;
+             if (matched !== rawFdh) fuzzyCorrectionCount++;
          }
          
          let combinedNotes = noteIndices
@@ -418,7 +420,7 @@ function getVendorLiveDictionary(refDict) {
          };
       }
     }
-    logMsg(`📉 Vendor Tracker Coverage: Successfully matched ${Object.keys(vendorDict).length} projects.`);
+    logMsg(`📉 Vendor Tracker Coverage: Successfully matched ${Object.keys(vendorDict).length} projects. Same-market fuzzy corrections: ${fuzzyCorrectionCount}.`);
   } catch (e) { logMsg(`⚠️ Vendor Tracker Error: ${e.toString()}`); }
   return vendorDict;
 }

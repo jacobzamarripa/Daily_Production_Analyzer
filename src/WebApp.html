@@ -381,9 +381,15 @@
         <div class="desktop-sync-fab">
           <button class="btn-icon" id="btn-nav-fab" onclick="toggleNavFab()" title="Sync Actions"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
           <div class="nav-fab-dropdown" id="nav-fab-dropdown">
-            <button onclick="triggerQBSync(); toggleNavFab()">Sync QB</button>
+            <button onclick="triggerProcessIncoming(); toggleNavFab()">Process Incoming</button>
+            <button onclick="triggerQBSync(); toggleNavFab()">Sync QB + Rebuild</button>
             <button onclick="triggerRunReview(); toggleNavFab()" style="display:inline-flex;align-items:center;gap:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run Review</button>
-            <button onclick="triggerUIRefresh(); toggleNavFab()">Refresh</button>
+            <button onclick="triggerUIRefresh(); toggleNavFab()">Refresh UI</button>
+            <button onclick="triggerForceRescan(); toggleNavFab()">Force Re-scan</button>
+            <button onclick="triggerResetIngestionLock(); toggleNavFab()">Reset Ingestion Lock</button>
+            <button onclick="triggerCleanArchiveDuplicates(); toggleNavFab()">Clean Archive Duplicates</button>
+            <button onclick="triggerRepairLegacyAutoFixedFdhs(); toggleNavFab()">Repair Legacy Auto-Fixes</button>
+            <button onclick="triggerBlockedAutoMatchReport(); toggleNavFab()">Blocked Auto-Match Report</button>
           </div>
         </div>
         <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme" title="Toggle dark mode"></button>
@@ -476,10 +482,16 @@
 
     <!-- Mobile hamburger menu -->
     <div class="mobile-menu-panel" id="mobile-menu-panel">
-      <button onclick="triggerQBSync(); toggleMobileMenu()">Sync QB</button>
+      <button onclick="triggerProcessIncoming(); toggleMobileMenu()">Process Incoming</button>
+      <button onclick="triggerQBSync(); toggleMobileMenu()">Sync QB + Rebuild</button>
       <button onclick="triggerRunReview(); toggleMobileMenu()">Run Review</button>
-      <button onclick="triggerUIRefresh(); toggleMobileMenu()">Refresh</button>
-            <button onclick="toggleAdminPanel(); toggleMobileMenu()">Review Hub</button>
+      <button onclick="triggerUIRefresh(); toggleMobileMenu()">Refresh UI</button>
+      <button onclick="triggerForceRescan(); toggleMobileMenu()">Force Re-scan</button>
+      <button onclick="triggerResetIngestionLock(); toggleMobileMenu()">Reset Ingestion Lock</button>
+      <button onclick="triggerCleanArchiveDuplicates(); toggleMobileMenu()">Clean Archive Duplicates</button>
+      <button onclick="triggerRepairLegacyAutoFixedFdhs(); toggleMobileMenu()">Repair Legacy Auto-Fixes</button>
+      <button onclick="triggerBlockedAutoMatchReport(); toggleMobileMenu()">Blocked Auto-Match Report</button>
+      <button onclick="toggleAdminPanel(); toggleMobileMenu()">Review Hub</button>
       <button onclick="toggleDarkMode(); toggleMobileMenu()" id="mob-theme-btn">Theme</button>
       <button onclick="toggleHelpPanel(); toggleMobileMenu()">? Help</button>
     </div>

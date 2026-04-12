@@ -139,15 +139,19 @@ function onOpen() {
     
     main.addSubMenu(ui.createMenu('Data Pipeline')
       .addItem('Process Incoming Reports', 'processIncomingForQuickBase')
+      .addItem('Process Incoming + Rebuild Dashboard', 'webAppProcessIncomingAndRebuild')
       .addItem('Load Specific Date to QB Tab', 'promptLoadSpecificDateToQB')
       .addItem('Load Vendor Range to QB Tab', 'promptLoadVendorRangeToQB')
       .addSeparator()
+      .addItem('Sync QB + Rebuild Dashboard', 'syncAndRebuildDashboard')
       .addItem('Emergency: Force Re-scan All Files', 'forceRescanIncoming')
+      .addItem('Force Re-scan + Rebuild Dashboard', 'webAppForceRescanAndRebuild')
       .addItem('Unlock Ingestion', 'resetIngestionLock')
     );
 
     main.addSubMenu(ui.createMenu('Review Engine')
       .addItem('Generate Daily Review', 'promptGenerateDailyReview')
+      .addItem('Refresh Dashboard Payload', 'getDashboardDataV2')
       .addItem('Commit Review to Archive & QB', 'commitReviewToArchiveAndQB')
     );
 
@@ -174,6 +178,9 @@ function onOpen() {
       .addItem('Refresh Styles & Checkboxes', 'applyFormatting')
       .addItem('Clear Processed File Tags', 'resetFileTags')
       .addItem('Clean Archive Duplicates', 'removeDuplicatesFromArchive')
+      .addItem('Clean Archive Duplicates + Refresh Dashboard', 'webAppRemoveDuplicatesAndRefresh')
+      .addItem('Repair Legacy Auto-Fixed FDHs', 'webAppRepairLegacyAutoFixedFdhs')
+      .addItem('Report Blocked Auto-Matches', 'reportLegacyBlockedAutoMatches')
       .addItem('Import Historical Archive', 'importArchiveFolder')
     );
 
@@ -1121,6 +1128,160 @@ function webAppTrigger3a(targetDateStr) {
     return getDashboardDataV2();
   } catch (e) {
     logFrontendError("webAppTrigger3a Error: " + e.message);
+    throw e;
+  }
+}
+
+function webAppProcessIncomingAndRebuild() {
+  try {
+    logMsg("🌐 WebApp triggered Process Incoming + Rebuild");
+    processIncomingForQuickBase(true, false);
+    const latestDate = _getLatestArchiveDate();
+    generateDailyReviewCore(latestDate, null, false);
+    const payload = getDashboardDataV2();
+    payload._actionMeta = {
+      action: "processIncomingAndRebuild",
+      date: latestDate,
+      message: "Processed incoming reports and rebuilt dashboard."
+    };
+    return payload;
+  } catch (e) {
+    logFrontendError("webAppProcessIncomingAndRebuild Error: " + e.message);
+    throw e;
+  }
+}
+
+function webAppForceRescanAndRebuild() {
+  try {
+    logMsg("🌐 WebApp triggered Force Re-scan + Rebuild");
+    forceRescanIncoming();
+    const latestDate = _getLatestArchiveDate();
+    generateDailyReviewCore(latestDate, null, false);
+    const payload = getDashboardDataV2();
+    payload._actionMeta = {
+      action: "forceRescanAndRebuild",
+      date: latestDate,
+      message: "Force re-scan completed and dashboard rebuilt."
+    };
+    return payload;
+  } catch (e) {
+    logFrontendError("webAppForceRescanAndRebuild Error: " + e.message);
+    throw e;
+  }
+}
+
+function webAppResetIngestionLock() {
+  try {
+    logMsg("🌐 WebApp triggered Reset Ingestion Lock");
+    PropertiesService.getScriptProperties().setProperty("INGESTION_IN_PROGRESS", "false");
+    return { success: true, message: "Ingestion lock cleared." };
+  } catch (e) {
+    logFrontendError("webAppResetIngestionLock Error: " + e.message);
+    throw e;
+  }
+}
+
+function webAppRemoveDuplicatesAndRefresh() {
+  try {
+    logMsg("🌐 WebApp triggered Clean Archive Duplicates + Refresh");
+    removeDuplicatesFromArchive();
+    const latestDate = _getLatestArchiveDate();
+    generateDailyReviewCore(latestDate, null, false);
+    const payload = getDashboardDataV2();
+    payload._actionMeta = {
+      action: "removeDuplicatesAndRefresh",
+      date: latestDate,
+      message: "Archive duplicates cleaned and dashboard rebuilt."
+    };
+    return payload;
+  } catch (e) {
+    logFrontendError("webAppRemoveDuplicatesAndRefresh Error: " + e.message);
+    throw e;
+  }
+}
+
+function webAppRepairLegacyAutoFixedFdhs() {
+  try {
+    logMsg("🌐 WebApp triggered Repair Legacy Auto-Fixed FDHs");
+    const repairStats = repairLegacyAutoFixedFdhs();
+    const latestDate = _getLatestArchiveDate();
+    generateDailyReviewCore(latestDate, null, false);
+    const payload = getDashboardDataV2();
+    payload._actionMeta = {
+      action: "repairLegacyAutoFixedFdhs",
+      date: latestDate,
+      scanned: repairStats.scanned,
+      repaired: repairStats.repaired,
+      unresolved: repairStats.unresolved,
+      unchanged: repairStats.unchanged,
+      message: repairStats.message
+    };
+    return payload;
+  } catch (e) {
+    logFrontendError("webAppRepairLegacyAutoFixedFdhs Error: " + e.message);
+    throw e;
+  }
+}
+
+function reportLegacyBlockedAutoMatches() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const archiveSheet = ss.getSheetByName(HISTORY_SHEET);
+  if (!archiveSheet || archiveSheet.getLastRow() < 2) {
+    return { count: 0, sheetName: 'Blocked_Auto_Matches_Report', message: 'No archive rows found.' };
+  }
+
+  const reportName = 'Blocked_Auto_Matches_Report';
+  let reportSheet = ss.getSheetByName(reportName);
+  if (!reportSheet) reportSheet = ss.insertSheet(reportName);
+  reportSheet.clear();
+
+  const rows = archiveSheet.getDataRange().getValues();
+  const fdhIdx = HISTORY_HEADERS.indexOf("FDH Engineering ID");
+  const dateIdx = HISTORY_HEADERS.indexOf("Date");
+  const vendorIdx = HISTORY_HEADERS.indexOf("Contractor");
+  const commentIdx = HISTORY_HEADERS.indexOf("Vendor Comment");
+
+  const output = [[
+    "Archive Row",
+    "Date",
+    "Current FDH",
+    "Original Submitted FDH",
+    "Blocked Target",
+    "Vendor",
+    "Vendor Comment"
+  ]];
+
+  for (let i = 1; i < rows.length; i++) {
+    let comment = String(rows[i][commentIdx] || "");
+    let blockedTarget = extractBlockedAutoMatchTarget(comment);
+    if (!blockedTarget) continue;
+    output.push([
+      i + 1,
+      rows[i][dateIdx] || "",
+      rows[i][fdhIdx] || "",
+      extractAutoFixedFdhFromComment(comment),
+      blockedTarget,
+      rows[i][vendorIdx] || "",
+      comment
+    ]);
+  }
+
+  reportSheet.getRange(1, 1, output.length, output[0].length).setValues(output);
+  reportSheet.getRange(1, 1, 1, output[0].length).setBackground("#7f1d1d").setFontColor("#ffffff").setFontWeight("bold");
+  reportSheet.setFrozenRows(1);
+  SpreadsheetApp.flush();
+
+  let message = `Blocked auto-match report generated with ${output.length - 1} row(s).`;
+  logMsg("📋 " + message);
+  return { count: output.length - 1, sheetName: reportName, message: message };
+}
+
+function webAppReportLegacyBlockedAutoMatches() {
+  try {
+    const result = reportLegacyBlockedAutoMatches();
+    return { success: true, count: result.count, sheetName: result.sheetName, message: result.message };
+  } catch (e) {
+    logFrontendError("webAppReportLegacyBlockedAutoMatches Error: " + e.message);
     throw e;
   }
 }

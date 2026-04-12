@@ -36,6 +36,99 @@ function getExistingKeys() {
   return keys;
 }
 
+function extractAutoFixedFdhFromComment(comment) {
+  let match = String(comment || "").match(/\[Auto-Fixed FDH: (.*?)\]/);
+  return match ? String(match[1] || "").trim().toUpperCase() : "";
+}
+
+function extractBlockedAutoMatchTarget(comment) {
+  let match = String(comment || "").match(/\[Blocked Auto-Match: (.*?)\]/);
+  return match ? String(match[1] || "").trim().toUpperCase() : "";
+}
+
+function stripAutoFixRepairMarkers(comment) {
+  return String(comment || "")
+    .replace(/\[Blocked Auto-Match: .*?\]\s*/g, "")
+    .replace(/\[Repair Audit: .*?\]\s*/g, "")
+    .trim();
+}
+
+function buildLegacyAutoFixComment(baseComment, originalId, options) {
+  let parts = [];
+  let safeOriginalId = String(originalId || "").trim().toUpperCase();
+  if (options && options.blockedTarget) {
+    parts.push(`[Blocked Auto-Match: ${String(options.blockedTarget || "").trim().toUpperCase()}]`);
+  }
+  if (safeOriginalId) parts.push(`[Auto-Fixed FDH: ${safeOriginalId}]`);
+  if (options && options.auditText) parts.push(`[Repair Audit: ${options.auditText}]`);
+  let cleanBase = stripAutoFixRepairMarkers(baseComment).replace(/\[Auto-Fixed FDH: .*?\]\s*/g, "").trim();
+  return (parts.join(" ") + (cleanBase ? " " + cleanBase : "")).trim();
+}
+
+function repairLegacyAutoFixedFdhs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const archiveSheet = ss.getSheetByName(HISTORY_SHEET);
+  if (!archiveSheet || archiveSheet.getLastRow() < 2) {
+    return { scanned: 0, repaired: 0, unresolved: 0, unchanged: 0, message: "No archive rows found." };
+  }
+
+  const refDict = getReferenceDictionary();
+  const officialKeys = Object.keys(refDict || {});
+  const data = archiveSheet.getDataRange().getValues();
+  const fdhIdx = HISTORY_HEADERS.indexOf("FDH Engineering ID");
+  const commentIdx = HISTORY_HEADERS.indexOf("Vendor Comment");
+  if (fdhIdx < 0 || commentIdx < 0) {
+    throw new Error("Archive columns missing: FDH Engineering ID or Vendor Comment.");
+  }
+
+  let scanned = 0;
+  let repaired = 0;
+  let unresolved = 0;
+  let unchanged = 0;
+  let touched = false;
+
+  for (let i = 1; i < data.length; i++) {
+    let currentComment = String(data[i][commentIdx] || "");
+    let originalId = extractAutoFixedFdhFromComment(currentComment);
+    if (!originalId) continue;
+
+    scanned++;
+    let storedFdh = String(data[i][fdhIdx] || "").trim().toUpperCase();
+    let rematchedFdh = attemptFuzzyMatch(originalId, officialKeys, null, refDict);
+
+    if (rematchedFdh && rematchedFdh === storedFdh) {
+      unchanged++;
+      continue;
+    }
+
+    touched = true;
+    if (rematchedFdh) {
+      data[i][fdhIdx] = rematchedFdh;
+      data[i][commentIdx] = buildLegacyAutoFixComment(currentComment, originalId, {
+        auditText: `${storedFdh || "UNKNOWN"} -> ${rematchedFdh}`
+      });
+      repaired++;
+      continue;
+    }
+
+    data[i][fdhIdx] = originalId;
+    data[i][commentIdx] = buildLegacyAutoFixComment(currentComment, originalId, {
+      blockedTarget: storedFdh || "UNKNOWN"
+    });
+    unresolved++;
+  }
+
+  if (touched) {
+    archiveSheet.getRange(2, fdhIdx + 1, data.length - 1, 1).setValues(data.slice(1).map(function(row) { return [row[fdhIdx]]; }));
+    archiveSheet.getRange(2, commentIdx + 1, data.length - 1, 1).setValues(data.slice(1).map(function(row) { return [row[commentIdx]]; }));
+    SpreadsheetApp.flush();
+  }
+
+  let message = `Legacy auto-fix repair scanned ${scanned} row(s): ${repaired} repaired, ${unresolved} unresolved, ${unchanged} unchanged.`;
+  logMsg("🛠️ " + message);
+  return { scanned: scanned, repaired: repaired, unresolved: unresolved, unchanged: unchanged, message: message };
+}
+
 function processIncomingForQuickBase(isSilent = false, isContinuation = false) {
   const startTime = new Date().getTime();
   const props = PropertiesService.getScriptProperties();
@@ -559,8 +652,19 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
       return refStatus.includes("complete") || refStage.includes("ofs");
   };
   
+  let blockedTarget = extractBlockedAutoMatchTarget(vendorComment);
   let origMatch = vendorComment.match(/\[Auto-Fixed FDH: (.*?)\]/);
-  if (origMatch) { flags.push(`🪄 ID AUTO-CORRECTED`); flagColors.push(TEXT_COLORS.MAGIC); drafts.push(`Vendor submitted ${origMatch[1]}, auto-corrected to ${fdhId}.`); vendorComment = vendorComment.replace(/\[Auto-Fixed FDH: .*?\]\s*/, ""); }
+  if (blockedTarget && origMatch) {
+      flags.push(`🚧 BLOCKED AUTO-MATCH`);
+      flagColors.push(TEXT_COLORS.WARN);
+      drafts.push(`Vendor submitted ${origMatch[1]}. Legacy auto-match to ${blockedTarget} was blocked by the market hard stop. Manual review required.`);
+      vendorComment = vendorComment.replace(/\[Blocked Auto-Match: .*?\]\s*/g, "").replace(/\[Auto-Fixed FDH: .*?\]\s*/, "");
+  } else if (origMatch) {
+      flags.push(`🪄 ID AUTO-CORRECTED`);
+      flagColors.push(TEXT_COLORS.MAGIC);
+      drafts.push(`Vendor submitted ${origMatch[1]}, auto-corrected to ${fdhId}.`);
+      vendorComment = vendorComment.replace(/\[Auto-Fixed FDH: .*?\]\s*/, "");
+  }
   if (!refDict[fdhId]) {
       let softHeal = attemptFuzzyMatch(fdhId, Object.keys(refDict));
       if (softHeal) { fdhId = softHeal; healedId = softHeal; flags.push(`🪄 SOFT MATCH`); flagColors.push(TEXT_COLORS.MAGIC); drafts.push(`Archive has typo. Matched to ${softHeal}.`); }
@@ -641,6 +745,7 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
           vendorBOMAE: vendorBOMAE,
           vendorBOMFIB: vendorBOMFIB,
           vendorBOMNAP: vendorBOMNAP,
+          splicingCrews: crewsNAP,
           lightToCab: lightToCab,
           vTracker: vTracker,
           inferenceHistoryContext: inferenceHistoryContext,
@@ -862,6 +967,9 @@ function classifyInferredReviewState(stage, status) {
     if (st.includes("vendor assignment")) normalizedStage = "Vendor Assignment";
     return { stage: normalizedStage, status: statusText || "Permitting", flag: "INFERRED: PRE-CON", bucket: "precon" };
   }
+  if ((st.includes("field cx") || st.includes("construction")) && stat.includes("splicing only")) {
+    return { stage: stageText || "Field CX", status: statusText || "Splicing Only", flag: "INFERRED: SPLICING ONLY", bucket: "field" };
+  }
   if (st.includes("field cx") || st.includes("construction") || stat.includes("construction") || stat.includes("in progress")) {
     return { stage: stageText || "Field CX", status: statusText || "Construction", flag: "INFERRED: FIELD CX", bucket: "field" };
   }
@@ -877,6 +985,8 @@ function classifyInferredReviewState(stage, status) {
 
 function resolveMissingReferenceState(context) {
   let currentRowHasActivity = (context.dailyUG > 0 || context.dailyAE > 0 || context.dailyFIB > 0 || context.dailyNAP > 0);
+  let currentRowHasCivilActivity = (context.dailyUG > 0 || context.dailyAE > 0 || context.dailyFIB > 0);
+  let currentRowHasSpliceActivity = (context.dailyNAP > 0 || context.splicingCrews > 0);
   let recentSignals = getRecentInferenceSignals(context.fdhId, context.rowDate, context.inferenceHistoryContext, 14);
   let hasRecentActivity = currentRowHasActivity || recentSignals.hasRecentActivity;
   let commentText = [String(context.vendorComment || "").toLowerCase(), recentSignals.latestComment].filter(Boolean).join(" ");
@@ -900,10 +1010,13 @@ function resolveMissingReferenceState(context) {
   let hasBOM = activePhases.length > 0;
 
   let workKeywords = ["drilling", "pulling", "splicing", "placing", "trenching", "boring", "pothole", "crew", "crews", "production", "fiber", "strand", "ug"];
+  let spliceKeywords = ["splice", "splicing", "splice only", "spliced", "nap", "enclosure"];
   let doneKeywords = ["done", "complete", "completed", "turned over", "spliced out", "ready", "lit"];
   let preConKeywords = ["permit", "design", "waiting", "locates", "walk", "review", "engineering", "approval"];
   let holdKeywords = ["hold", "stop", "blocked", "standby", "canceled", "cancelled", "paused"];
   let signalSummary = `[Signals: CUR:${currentRowHasActivity ? 'Y' : 'N'}, REC:${recentSignals.hasRecentActivity ? 'Y' : 'N'}@${recentSignals.recentWindowLabel}, DAYS:${recentSignals.recentActiveDays}, TRK:${hasTrackerEvidence ? 'Y' : 'N'}, CMP:${Math.round(completionAvg * 100)}%, LIGHT:${context.lightToCab ? 'Y' : 'N'}]`;
+  let trackerShowsSpliceOnly = !!(context.vTracker && (context.vTracker.napPct > 0) && !(context.vTracker.ugPct > 0 || context.vTracker.aePct > 0 || context.vTracker.fibPct > 0));
+  let commentShowsSpliceOnly = spliceKeywords.some(w => commentText.includes(w));
 
   if (holdKeywords.some(w => commentText.includes(w)) && !currentRowHasActivity) {
     return {
@@ -912,6 +1025,16 @@ function resolveMissingReferenceState(context) {
       flag: "INFERRED: HOLD",
       flagColor: TEXT_COLORS.WARN,
       note: `Missing from reference data. Inferred as On Hold from explicit hold language in recent reporting. ${signalSummary}`
+    };
+  }
+
+  if ((currentRowHasSpliceActivity || trackerShowsSpliceOnly || commentShowsSpliceOnly) && !currentRowHasCivilActivity) {
+    return {
+      stage: "Field CX",
+      status: "Splicing Only",
+      flag: "INFERRED: SPLICING ONLY",
+      flagColor: TEXT_COLORS.DONE,
+      note: `Missing from reference data. Inferred as Field CX | Splicing Only because the vendor reported splice activity without civil production in the current signal set. ${signalSummary}`
     };
   }
 
@@ -969,11 +1092,12 @@ function resolveMissingReferenceState(context) {
     };
   }
 
-  let sFieldCX = 15, sOFS = 10, sPreCon = 10, sHold = 5;
+  let sFieldCX = 15, sOFS = 10, sPreCon = 10, sHold = 5, sSpliceOnly = 10;
 
   if (recentSignals.recentActiveDays >= 3) sFieldCX += 10;
   if (workKeywords.some(w => commentText.includes(w))) sFieldCX += 20;
   if (context.lightToCab) sFieldCX -= 40;
+  if (currentRowHasSpliceActivity && !currentRowHasCivilActivity) sFieldCX -= 20;
 
   if (context.lightToCab) sOFS += 55;
   if (completionAvg >= 0.98) sOFS += 35;
@@ -989,7 +1113,15 @@ function resolveMissingReferenceState(context) {
   if (holdKeywords.some(w => commentText.includes(w))) sHold += 70;
   if (completionAvg > 0 && !hasRecentActivity) sHold += 15;
 
+  if (currentRowHasSpliceActivity) sSpliceOnly += 40;
+  if (!currentRowHasCivilActivity) sSpliceOnly += 25;
+  if (trackerShowsSpliceOnly) sSpliceOnly += 20;
+  if (commentShowsSpliceOnly) sSpliceOnly += 15;
+  if (currentRowHasCivilActivity) sSpliceOnly -= 40;
+  if (context.lightToCab) sSpliceOnly -= 10;
+
   let results = [
+    { stage: "Field CX", status: "Splicing Only", score: sSpliceOnly, flag: "INFERRED: SPLICING ONLY", priority: 1 },
     { stage: "Field CX", status: "Construction", score: sFieldCX, flag: "INFERRED: FIELD CX", priority: 1 },
     { stage: "Pre-Construction", status: "Permitting", score: sPreCon, flag: "INFERRED: PRE-CON", priority: 2 },
     { stage: "On Hold", status: "Hold", score: sHold, flag: "INFERRED: HOLD", priority: 3 },
@@ -1000,7 +1132,7 @@ function resolveMissingReferenceState(context) {
     return (a.priority || 99) - (b.priority || 99);
   });
   let winner = results[0];
-  let scoreBreakdown = `[Probabilities: CX:${sFieldCX}, OFS:${sOFS}, PRE:${sPreCon}, HLD:${sHold}] ${signalSummary}`;
+  let scoreBreakdown = `[Probabilities: SPL:${sSpliceOnly}, CX:${sFieldCX}, OFS:${sOFS}, PRE:${sPreCon}, HLD:${sHold}] ${signalSummary}`;
 
   return {
     stage: winner.stage,

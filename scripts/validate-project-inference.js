@@ -31,6 +31,7 @@ function extractFunction(source, name) {
 
 const archiveSource = read('src/01_Engine_Archive.js');
 const sharedSource = read('src/_utils_shared.html');
+const matchingSource = read('src/01_Engine_Matching.js');
 const queueSource = read('src/_module_queue_state.html');
 const gridSource = read('src/_module_grid.html');
 
@@ -40,6 +41,7 @@ const context = {
 vm.createContext(context);
 
 [
+  extractFunction(matchingSource, 'attemptFuzzyMatch'),
   extractFunction(archiveSource, 'classifyInferredReviewState'),
   extractFunction(sharedSource, 'getQBStatusClass'),
   extractFunction(sharedSource, 'getGanttClass'),
@@ -65,6 +67,18 @@ assertEqual(context.getQBStatusClass(preCon.stage, preCon.status, false), 'chip-
 const fieldCx = context.classifyInferredReviewState('Field CX', 'Construction');
 assertEqual(fieldCx.flag, 'INFERRED: FIELD CX', 'Field CX stays in field inference bucket');
 assertEqual(context.getGanttClass(fieldCx.stage, fieldCx.status, false), 'g-color-yellow', 'Field CX gantt color remains active yellow');
+
+const spliceOnly = context.classifyInferredReviewState('Field CX', 'Splicing Only');
+assertEqual(spliceOnly.flag, 'INFERRED: SPLICING ONLY', 'Splicing Only gets its own inference flag');
+assertEqual(spliceOnly.stage, 'Field CX', 'Splicing Only stays in Field CX stage');
+assertEqual(context.getQBStatusClass(spliceOnly.stage, spliceOnly.status, false), 'chip-active', 'Splicing Only stays in the active field color family');
+
+const refDict = {
+  'CLE123-F45': { city: 'Cleveland' },
+  'AKR123-F45': { city: 'Akron' },
+};
+assertEqual(context.attemptFuzzyMatch('CLE123-F45', Object.keys(refDict), null, refDict), 'CLE123-F45', 'Exact same-market IDs still match');
+assertEqual(context.attemptFuzzyMatch('DAY123-F45', Object.keys(refDict), null, refDict), null, 'Cross-market fuzzy healing is blocked even when the F-number matches');
 
 assertEqual(/let isPermit = st\.includes\('permit'\) \|\| st\.includes\('pre-con'\) \|\| st\.includes\('vendor assignment'\);/.test(queueSource), true, 'Queue schedule logic treats vendor assignment as pre-con');
 assertEqual(/let isOnHold = stat\.includes\('hold'\);/.test(queueSource), true, 'Queue schedule logic no longer treats assignment as hold');

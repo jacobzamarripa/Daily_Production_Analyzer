@@ -816,6 +816,116 @@
               .syncAndRebuildDashboard();
       }
 
+      function triggerProcessIncoming() {
+          if (!confirm("Process incoming vendor reports and rebuild the dashboard from the latest archive date?\n\nUse this when testing report ingestion, fuzzy matching, or inferred status changes.")) return;
+          showFrostedLoader("PROCESSING INCOMING", "Scanning vendor reports and rebuilding dashboard...", "engine", [
+              "Scanning incoming report folders...",
+              "Applying archive deduplication rules...",
+              "Refreshing QuickBase upload staging...",
+              "Rebuilding dashboard from latest archive date..."
+          ]);
+          google.script.run
+              .withSuccessHandler(function(data) {
+                  hideFrostedLoader();
+                  initDashboard(data);
+                  const meta = data._actionMeta || {};
+                  showToast(meta.message || 'Processed incoming reports and rebuilt dashboard');
+              })
+              .withFailureHandler(function(err) {
+                  hideFrostedLoader();
+                  showToast('Process Incoming error: ' + err.message, 'error');
+              })
+              .webAppProcessIncomingAndRebuild();
+      }
+
+      function triggerForceRescan() {
+          if (!confirm("Force re-scan all incoming files and rebuild the dashboard?\n\nThis ignores prior processed tags and should only be used for recovery/testing.")) return;
+          showFrostedLoader("FORCING RE-SCAN", "Re-evaluating incoming reports and rebuilding dashboard...", "engine", [
+              "Ignoring processed-file tags...",
+              "Re-scanning incoming folders...",
+              "Refreshing archive/QB staging...",
+              "Rebuilding dashboard from latest archive date..."
+          ]);
+          google.script.run
+              .withSuccessHandler(function(data) {
+                  hideFrostedLoader();
+                  initDashboard(data);
+                  const meta = data._actionMeta || {};
+                  showToast(meta.message || 'Force re-scan complete');
+              })
+              .withFailureHandler(function(err) {
+                  hideFrostedLoader();
+                  showToast('Force Re-scan error: ' + err.message, 'error');
+              })
+              .webAppForceRescanAndRebuild();
+      }
+
+      function triggerResetIngestionLock() {
+          if (!confirm("Clear the ingestion lock?\n\nUse this only if an earlier ingestion run got stuck.")) return;
+          google.script.run
+              .withSuccessHandler(function(result) {
+                  showToast((result && result.message) || 'Ingestion lock cleared');
+              })
+              .withFailureHandler(function(err) {
+                  showToast('Reset Lock error: ' + err.message, 'error');
+              })
+              .webAppResetIngestionLock();
+      }
+
+      function triggerCleanArchiveDuplicates() {
+          if (!confirm("Clean duplicate archive rows and rebuild the dashboard?\n\nUse this when older duplicate rows are contaminating the latest review.")) return;
+          showFrostedLoader("CLEANING ARCHIVE", "Removing duplicate archive rows and rebuilding dashboard...", "sync", [
+              "Scanning archive for duplicate Date + FDH rows...",
+              "Removing duplicate rows...",
+              "Rebuilding dashboard from latest archive date..."
+          ]);
+          google.script.run
+              .withSuccessHandler(function(data) {
+                  hideFrostedLoader();
+                  initDashboard(data);
+                  const meta = data._actionMeta || {};
+                  showToast(meta.message || 'Archive duplicates cleaned');
+              })
+              .withFailureHandler(function(err) {
+                  hideFrostedLoader();
+                  showToast('Clean Archive error: ' + err.message, 'error');
+              })
+              .webAppRemoveDuplicatesAndRefresh();
+      }
+
+      function triggerRepairLegacyAutoFixedFdhs() {
+          if (!confirm("Repair legacy auto-fixed FDH rows and rebuild the dashboard?\n\nThis will scan historical archive rows with [Auto-Fixed FDH: ...], re-run matching under the new market hard stop, and detach rows that no longer have a safe match.")) return;
+          showFrostedLoader("REPAIRING LEGACY AUTO-FIXES", "Re-evaluating historical auto-fixed FDH rows...", "sync", [
+              "Scanning archive for legacy auto-fixed rows...",
+              "Re-running FDH matching under hard market gate...",
+              "Repairing safe rows and blocking unsafe matches...",
+              "Rebuilding dashboard from latest archive date..."
+          ]);
+          google.script.run
+              .withSuccessHandler(function(data) {
+                  hideFrostedLoader();
+                  initDashboard(data);
+                  const meta = data._actionMeta || {};
+                  showToast(meta.message || 'Legacy auto-fixed FDHs repaired');
+              })
+              .withFailureHandler(function(err) {
+                  hideFrostedLoader();
+                  showToast('Repair Auto-Fixes error: ' + err.message, 'error');
+              })
+              .webAppRepairLegacyAutoFixedFdhs();
+      }
+
+      function triggerBlockedAutoMatchReport() {
+          google.script.run
+              .withSuccessHandler(function(result) {
+                  showToast((result && result.message) || 'Blocked auto-match report generated');
+              })
+              .withFailureHandler(function(err) {
+                  showToast('Blocked Auto-Match report error: ' + err.message, 'error');
+              })
+              .webAppReportLegacyBlockedAutoMatches();
+      }
+
       // ── ▶ Run Review — re-runs the diagnostic engine for a given date ────
       function triggerRunReview() {
           let d = new Date();
