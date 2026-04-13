@@ -29,6 +29,7 @@
 5. **Surgical Logic Changes:** Edit the specific `_module_*.html` file, not the main shell. Standardize by including `<script>` tags within the partial itself.
 6. **Mobile GAS Viewport:** Set viewport via `addMetaTag()` in `doGet()`. Use `width=device-width, initial-scale=1, viewport-fit=cover`.
 7. **No Massive Inline CSS:** Never put more than 500 lines of CSS inline in an HTML shell file. GAS `HtmlService` often sanitizes or completely ignores large inline `<style>` blocks. Move core shell styles to a partial like `_styles_glassflow_core.html` and use `<?!= include() ?>`.
+8. **Drive Intake Strategy:** Keep Power Automate -> Google Drive -> timed GAS discovery as the production ingestion path. Do not add webhook complexity just to gain a few seconds of transfer time. If near-real-time detection is ever required, the preferred upgrade path is a small Cloud Run receiver using Google Drive `changes.watch`, filtering by target folder IDs, then triggering the existing GAS import flow.
 
 ## Autonomous Web Automation (Agent Loop Pattern)
 To perform multi-step, loop-until-completion web tasks (especially testing the GAS UI or scraping the deployed app):

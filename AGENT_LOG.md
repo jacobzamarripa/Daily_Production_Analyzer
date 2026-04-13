@@ -1,5 +1,18 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-13: "Running Reports" Ingestion & Intentional Backfilling
+- **Robust Date Extraction**: Refactored `parseFileToRows` and `normalizeDateString` to handle row-level dates, including support for Excel serial numbers and fuzzy date-header identification ("Work Date", "Service Date", etc.).
+- **Value-Based Date Hunt**: Implemented a "Date Hunt" fallback that scans cell values if headers are missing, ensuring cumulative spreadsheets (running logs) correctly attribute work to historical dates.
+- **Manual Override by Placement**: Restricted the automatic "force re-process" behavior exclusively to the `Production_Incoming` (`REFERENCE_FOLDER_ID`) root. Files dropped here bypass the `PROCESSED` metadata check, providing a surgical, intentional way to trigger re-ingestion without aggressive recursive scanning.
+- **Diagnostic Transparency**: Added detailed logging to the `System_Logs` sheet, showing the identified date column and a summary of added vs. skipped rows for every file run.
+- **Files touched:** `src/01_Engine_Archive.js`, `src/02_Utilities.js`.
+
+> [!info] 2026-04-13: Drive intake decision recorded — stay GAS-only, preserve webhook future path
+- **Current decision**: Keep the existing Apps Script timed-trigger discovery flow for Drive-fed imports. Power Automate reliably lands files into Google Drive, and the current GAS-only watcher pattern is already operationally sufficient.
+- **Reasoning**: Avoid adding Google Cloud webhook infrastructure just to shave a few seconds off transfer detection. The extra moving parts are not justified for the current workflow.
+- **Future option preserved**: If near-real-time detection becomes necessary later, add a minimal Cloud Run receiver for Google Drive `changes.watch`, filter events to explicit target folder IDs, and hand off to the existing GAS import path rather than rewriting ingestion logic.
+- **Files touched:** `CLAUDE.md`, `AGENT_LOG.md`.
+
 > [!success] 2026-04-08: SIGNAL Performance Optimization & High-Signal Tracking
 - **Targeted Drive Ingestion**: Refactored `getSignalDrive` to perform a keyword-based targeted scan for `CDs_and_Permits` and `BOMs` folders. Eliminated the slow full-tree traversal, resulting in significantly faster loading times (< 3s) and guaranteed tracking of critical project documentation.
 - **Rolling 24-Hour Snapshot**: Updated the "Current" timeframe logic to use a strict rolling 24-hour lookback from the exact time of the request. This ensures recent activity is always visible even when the master archive hasn't been updated for several hours.

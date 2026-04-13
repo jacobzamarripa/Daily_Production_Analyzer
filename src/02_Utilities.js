@@ -1737,7 +1737,6 @@ function forceRescanIncoming() {
 
   // Cleanup
   populateQuickBaseTabDirectly(allParsedRowsForQB);
-  autoArchiveProcessedFiles();
   
   logMsg("✅ EMERGENCY SCAN COMPLETE: Recovered " + newRowsAppended.length + " new rows.");
   SpreadsheetApp.getUi().alert("Emergency Scan Complete.\n\nRecovered " + newRowsAppended.length + " rows that were previously skipped.\nFiles have been archived.");
