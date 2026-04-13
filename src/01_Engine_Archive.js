@@ -1499,8 +1499,10 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     finalMirrorHeaders = [...currentMirrorHeaders, ...missingHeaders]; 
   }
   
-  let reviewData = [], highlightsData = [];
+  let reviewMap = new Map();
   let submittedFdhs = new Set();
+
+  logMsg("BENNY ENGINE: Processing " + histData.length + " archive rows for " + normalizedTargets.length + " target dates.");
 
   histData.forEach((row, idx) => {
     if (idx === 0) return; 
@@ -1635,10 +1637,23 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       rowObj["Archive_Row"] = idx + 1;
       
       let mappedRow = finalMirrorHeaders.map(h => rowObj[h] !== undefined ? rowObj[h] : "");
-      reviewData.push(mappedRow);
-      highlightsData.push({ rowState: diag.rowState, adaePaletteIdx: diag.adaePaletteIdx, colors: diag.colors, summary: diag.summary, gaps: adminGapsStr, flags: diag.flags, flagColors: diag.flagColors, cleanComment: diag.cleanComment, draft: diag.draft, benchmark: benchmarkDict[fdhId] || ""}); 
+      
+      // DEDUPLICATION: Only keep the latest report for this FDH within the range
+      // Archive is usually processed oldest to newest, so later reports overwrite earlier ones.
+      reviewMap.set(fdhId, {
+        mappedRow: mappedRow,
+        highlights: { rowState: diag.rowState, adaePaletteIdx: diag.adaePaletteIdx, colors: diag.colors, summary: diag.summary, gaps: adminGapsStr, flags: diag.flags, flagColors: diag.flagColors, cleanComment: diag.cleanComment, draft: diag.draft, benchmark: benchmarkDict[fdhId] || ""}
+      });
     }
   });
+
+  let reviewData = [], highlightsData = [];
+  reviewMap.forEach(val => {
+    reviewData.push(val.mappedRow);
+    highlightsData.push(val.highlights);
+  });
+
+  logMsg("BENNY ENGINE: Review built with " + reviewData.length + " unique project reports.");
 
   // GHOST ROW INJECTION — Active projects with no submission today
   const GHOST_ACTIVE_STAGES = ["FIELD CX", "PERMITTING", "CONSTRUCTION", "ACTIVE"];
