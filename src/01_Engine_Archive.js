@@ -1468,6 +1468,17 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
   const styleSheet = ss.getSheetByName(STYLE_MASTER);
   let targetDates = Array.isArray(targetDateStr) ? targetDateStr : [targetDateStr];
+  const normalizeDate = (d) => {
+    if (!d) return "";
+    let obj = (d instanceof Date) ? d : new Date(d);
+    if (isNaN(obj.getTime())) return String(d).split('T')[0].trim();
+    let yr = obj.getFullYear();
+    let mo = String(obj.getMonth() + 1).padStart(2, '0');
+    let da = String(obj.getDate()).padStart(2, '0');
+    return `${yr}-${mo}-${da}`;
+  };
+
+  const normalizedTargets = targetDates.map(normalizeDate).filter(Boolean);
   
   let refDict = optionalRefDict || getReferenceDictionary();
   let vendorDict = getVendorLiveDictionary(refDict);
@@ -1494,23 +1505,9 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   histData.forEach((row, idx) => {
     if (idx === 0) return; 
     
-    // ⚡ PERFORMANCE FIX: Fast native JS date string matching
-    let rowDateStr = "";
-    let altDateStr = "";
-    if (row[0] instanceof Date) {
-        let d = row[0];
-        let yr = d.getFullYear();
-        let mo = String(d.getMonth() + 1).padStart(2, '0');
-        let day = String(d.getDate()).padStart(2, '0');
-        rowDateStr = `${yr}-${mo}-${day}`;
-        altDateStr = `${d.getMonth() + 1}/${d.getDate()}/${yr}`;
-    } else {
-        rowDateStr = String(row[0]).split("T")[0].trim();
-        let parts = rowDateStr.split('-');
-        if (parts.length === 3) altDateStr = `${parseInt(parts[1])}/${parseInt(parts[2])}/${parts[0]}`;
-    }
+    let rowDate = normalizeDate(row[0]);
     
-    if (targetDates.includes(rowDateStr) || targetDates.includes(altDateStr)) {
+    if (normalizedTargets.includes(rowDate)) {
       let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")].toString().toUpperCase().trim();
       submittedFdhs.add(fdhId);
       let diag = runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict);
