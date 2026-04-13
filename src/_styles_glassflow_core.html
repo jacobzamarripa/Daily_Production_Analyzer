@@ -1089,7 +1089,7 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
   }
 }
 .v2-shell-glassflow .email-card {
-    margin: 0 16px 0 0 !important;
+    margin: 0 !important;
     border-radius: 0 !important;
     border: none !important;
     border-bottom: 1px solid color-mix(in srgb, var(--border) 84%, transparent) !important;
@@ -1099,6 +1099,7 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
     box-shadow: none !important;
     padding: 18px 18px 16px !important;
     transition: background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
+    box-sizing: border-box !important;
 }
 .v2-shell-glassflow .email-card:hover {
     transform: none !important;
@@ -1137,6 +1138,8 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
     display: flex !important;
     align-items: flex-start;
     gap: 8px;
+    flex-wrap: wrap !important;
+    justify-content: flex-end;
 }
 .v2-shell-glassflow .em-pill-stack .glass-pill {
     font-size: 10px !important;
@@ -1152,10 +1155,9 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
 }
 .v2-shell-glassflow .em-tags {
     display: flex !important;
-    flex-wrap: nowrap;
+    flex-wrap: wrap !important;
     gap: 6px !important;
     margin-top: 2px;
-    overflow: hidden;
 }
 .v2-shell-glassflow .em-tags .tag {
     font-size: 9px !important;

@@ -431,8 +431,7 @@
   margin-bottom: 0;
   position: sticky;
   top: 0;
-  background: var(--card-bg);
-  opacity: 0.96;
+  background: color-mix(in srgb, var(--card-bg) 96%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 10;
@@ -469,12 +468,17 @@
 .dash-flag-feed .email-card {
   margin: 0 !important;
   width: 100% !important;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
   border-radius: 0 !important;
   border-left: none !important;
   border-right: none !important;
   border-top: none !important;
   border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+.dash-flag-feed .email-card:hover {
+  transform: none !important;
 }
 
 .dash-flag-feed .email-card:last-of-type {
