@@ -135,7 +135,31 @@
               contentOffset = Math.max(52, Math.ceil((intendedDockBottom - workspaceRect.top) + GAP));
           }
           document.documentElement.style.setProperty('--dock-content-offset', `${contentOffset}px`);
-          document.documentElement.style.setProperty('--deck-card-max-height', `${Math.max(340, Math.floor(window.innerHeight - contentOffset - 132))}px`);
+          // In deck mode, measure the bottom dock and stage padding so the card + dock always fit.
+          // In other views, fall back to the original 132px conservative buffer.
+          let deckMaxH;
+          if (isDeckMode && !document.body.classList.contains('presentation-active')) {
+              const BOTTOM_CARD_GAP = 6; // matches .slide-action-deck margin-top
+              const DECK_STAGE_PAD_BOTTOM = 28; // matches .deck-stage padding-bottom
+              const bottomDock = getEl('slide-action-deck');
+              const bottomDockH = (bottomDock && bottomDock.classList.contains('visible'))
+                  ? Math.ceil(bottomDock.getBoundingClientRect().height || 52)
+                  : 52;
+              const bottomReserve = BOTTOM_CARD_GAP + bottomDockH + DECK_STAGE_PAD_BOTTOM;
+              deckMaxH = Math.max(340, Math.floor(window.innerHeight - workspaceRect.top - contentOffset - bottomReserve));
+          } else {
+              deckMaxH = Math.max(340, Math.floor(window.innerHeight - contentOffset - 132));
+          }
+          document.documentElement.style.setProperty('--deck-card-max-height', `${deckMaxH}px`);
+          const deckCard = getEl('deck-stage-card');
+          if (deckCard && isDeckMode && !document.body.classList.contains('presentation-active')) {
+              const stageHost = getEl('deck-stage');
+              const hostRect = stageHost ? stageHost.getBoundingClientRect() : { width: window.innerWidth - 48 };
+              const usableWidth = Math.max(320, Math.floor((hostRect.width || (window.innerWidth - 48)) - 24));
+              const cardWidth = Math.min(1100, usableWidth, Math.floor(deckMaxH * (16 / 9)));
+              deckCard.style.width = `${cardWidth}px`;
+              deckCard.style.maxHeight = `${deckMaxH}px`;
+          }
 
           // Schedule follow-up passes to handle rendering delays and CSS transitions after view switches
           if (!isSecondPass) {
