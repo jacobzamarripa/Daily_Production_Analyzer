@@ -867,10 +867,6 @@ function executeDailyAutomationPipeline() {
   const refDict = getReferenceDictionary();
   generateDailyReviewCore(targetDateStr, refDict, true);
   
-  // 🧠 Populate Export tab and generate the Daily Production CSV compilation
-  populateQuickBaseTabCore(targetDateStr);
-  exportQuickBaseCSVCore(true);
-  
   // 🔍 Run Gap Scan to backfill any missing reports for the last 7 days
   backfillMissingReports();
 }
