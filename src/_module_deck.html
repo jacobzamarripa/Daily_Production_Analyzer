@@ -579,82 +579,86 @@ function renderDeckStage() {
                     </div>
                 </div>
 
-                    <div class="deck-module">
-                        <div class="module-header ph-permitting">PIPELINE CONTROL</div>
-                        <div class="grid-density-date">
-                            ${row('Phase', actionWrap(`<select class="slide-input" id="q_phase" onchange="persistDeckInput(this)">
-                                <option value="">Select Phase</option>
-                                <option value="1">Phase 1</option>
-                                <option value="2">Phase 2</option>
-                                <option value="3">Phase 3</option>
-                                <option value="4">Phase 4</option>
-                                <option value="5">Phase 5</option>
-                            </select>`))}
-                            ${row('Stage', actionWrap(`<select class="slide-input" id="q_stage" onchange="persistDeckInput(this)">
-                                <option value="">Select Stage</option>
-                                <option value="1">Pre-Design</option>
-                                <option value="2">In Design</option>
-                                <option value="10">Permitting</option>
-                                <option value="3">In Construction</option>
-                                <option value="4">Complete / OFS</option>
-                            </select>`))}
-                            ${row('Status', actionWrap(`<select class="slide-input" id="q_status" onchange="persistDeckInput(this)">
-                                <option value="">Select Status</option>
-                                <option value="1">Active</option>
-                                <option value="2">On Hold</option>
-                                <option value="3">Cancelled</option>
-                                <option value="4">Delayed</option>
-                            </select>`))}
-                        </div>
-                    </div>
-                    <div class="deck-module">
-                        <div class="module-header ph-permitting">COMPLIANCE</div>
-                        <div class="grid-density-date">
-                            ${md('q_permit_sent', 'Sent for permitting?', item.qbRef?.permitSent, true)}
-                            ${md('q_permit_appr', 'Permit approved date?', item.qbRef?.permitAppr, true)}
-                        </div>
-                    </div>
-                    <div class="deck-module">
-                        <div class="module-header">SPECIAL CROSSINGS</div>
-                        <div class="grid-density-date">
-                            ${ms('q_is_xing', 'Special crossings present?', isXingActive)}
-                            <div class="xing-nested-edit" style="display:${isXingActive ? 'flex' : 'none'}; width:100%; grid-column: 1 / -1; flex-direction:column; gap:8px;">
-                                ${md('q_cross_sub', 'Crossing submitted?', item.qbRef?.crossSub)}
-                                ${md('q_cross_appr', 'Crossing approved?', item.qbRef?.crossAppr)}
-                                ${md('q_cross_dist', 'Approval distributed?', item.qbRef?.crossDist)}
+                <div class="deck-edit-mode">
+                    <div class="slide-ppt-grid">
+                        <div style="display:flex; flex-direction:column; gap:32px;">
+                            <div class="deck-module">
+                                <div class="module-header ph-permitting">COMPLIANCE</div>
+                                <div class="grid-density-date">
+                                    ${md('q_permit_sent', 'Sent for permitting?', item.qbRef?.permitSent, true)}
+                                    ${md('q_permit_appr', 'Permit approved date?', item.qbRef?.permitAppr, true)}
+                                </div>
+                            </div>
+                            <div class="deck-module">
+                                <div class="module-header">DISTRIBUTION</div>
+                                <div class="grid-density-check">
+                                    ${mc('q_cd_dist', 'CD Distributed?', item.qbRef?.cdDist)}
+                                    ${mc('q_splice_dist', 'Splice docs dist?', item.qbRef?.spliceDist)}
+                                    ${mc('q_strand_dist', 'Strand maps dist?', item.qbRef?.strandDist)}
+                                    ${mc('q_bom_sent', 'BOM Sent?', item.qbRef?.bomSent)}
+                                    ${mc('q_po_sent', 'PO Sent?', null)}
+                                    ${mc('q_sow_sign', 'SOW Signed?', item.qbRef?.sowSign)}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="deck-module">
-                        <div class="module-header">DISTRIBUTION</div>
-                        <div class="grid-density-check">
-                            ${mc('q_cd_dist', 'CD Distributed?', item.qbRef?.cdDist)}
-                            ${mc('q_splice_dist', 'Splice docs dist?', item.qbRef?.spliceDist)}
-                            ${mc('q_strand_dist', 'Strand maps dist?', item.qbRef?.strandDist)}
-                            ${mc('q_bom_sent', 'BOM Sent?', item.qbRef?.bomSent)}
-                            ${mc('q_po_sent', 'PO Sent?', null)}
-                            ${mc('q_sow_sign', 'SOW Signed?', item.qbRef?.sowSign)}
-                        </div>
-                    </div>
-                    <div class="deck-module">
-                        <div class="module-header">READINESS &amp; ARCHITECTURE</div>
-                        <div class="grid-density-check">
-                            ${mc('q_active_set', 'Active Set?', item.qbRef?.activeSet)}
-                            ${mc('q_active_pwr', 'Active has power?', item.qbRef?.activePwr)}
-                            ${mc('q_transport', 'Transport available?', item.qbRef?.transport)}
-                        </div>
-                        <div class="grid-density-date">
-                            ${mi('q_leg', 'FDH Leg ID?', item.qbRef?.leg)}
-                            ${mdl('q_how_fed', 'How is it fed? (Search)', item.qbRef?.howFed)}
-                        </div>
-                        <div class="stacked-text-group">
-                            ${mdl('q_what_feeds', 'What does it feed? (Search)', item.qbRef?.whatFeeds)}
-                            ${mta('q_island', 'Island missing components?', item.qbRef?.island)}
-                        </div>
-                        <div class="grid-density-date" style="margin-top:16px;">
-                            ${mc('q_ofs_change', 'OFS Date Changed?', item.qbRef?.ofsChange, 'toggleOfsRows(this.checked);')}
-                            <div class="ofs-reason-edit" style="display:${isOfsChangeActive ? 'flex' : 'none'}; width:100%;">
-                                ${mta('q_ofs_reason', 'OFS Change Reason?', item.qbRef?.ofsReason)}
+                        <div style="display:flex; flex-direction:column; gap:32px;">
+                            <div class="deck-module">
+                                <div class="module-header">SPECIAL CROSSINGS</div>
+                                <div class="grid-density-date">
+                                    ${ms('q_is_xing', 'Special crossings present?', isXingActive)}
+                                    <div class="xing-nested-edit" style="display:${isXingActive ? 'flex' : 'none'}; width:100%; grid-column: 1 / -1; flex-direction:column; gap:8px;">
+                                        ${md('q_cross_sub', 'Crossing submitted?', item.qbRef?.crossSub)}
+                                        ${md('q_cross_appr', 'Crossing approved?', item.qbRef?.crossAppr)}
+                                        ${md('q_cross_dist', 'Approval distributed?', item.qbRef?.crossDist)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="deck-module">
+                                <div class="module-header">READINESS &amp; ARCHITECTURE</div>
+                                <div class="grid-density-date" style="margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+                                    ${row('Phase', actionWrap(`<select class="slide-input" id="q_phase" onchange="persistDeckInput(this)">
+                                        <option value="">Select Phase</option>
+                                        <option value="1">Phase 1</option>
+                                        <option value="2">Phase 2</option>
+                                        <option value="3">Phase 3</option>
+                                        <option value="4">Phase 4</option>
+                                        <option value="5">Phase 5</option>
+                                    </select>`))}
+                                    ${row('Stage', actionWrap(`<select class="slide-input" id="q_stage" onchange="persistDeckInput(this)">
+                                        <option value="">Select Stage</option>
+                                        <option value="1">Pre-Design</option>
+                                        <option value="2">In Design</option>
+                                        <option value="10">Permitting</option>
+                                        <option value="3">In Construction</option>
+                                        <option value="4">Complete / OFS</option>
+                                    </select>`))}
+                                    ${row('Status', actionWrap(`<select class="slide-input" id="q_status" onchange="persistDeckInput(this)">
+                                        <option value="">Select Status</option>
+                                        <option value="1">Active</option>
+                                        <option value="2">On Hold</option>
+                                        <option value="3">Cancelled</option>
+                                        <option value="4">Delayed</option>
+                                    </select>`))}
+                                </div>
+                                <div class="grid-density-check">
+                                    ${mc('q_active_set', 'Active Set?', item.qbRef?.activeSet)}
+                                    ${mc('q_active_pwr', 'Active has power?', item.qbRef?.activePwr)}
+                                    ${mc('q_transport', 'Transport available?', item.qbRef?.transport)}
+                                </div>
+                                <div class="grid-density-date">
+                                    ${mi('q_leg', 'FDH Leg ID?', item.qbRef?.leg)}
+                                    ${mdl('q_how_fed', 'How is it fed? (Search)', item.qbRef?.howFed)}
+                                </div>
+                                <div class="stacked-text-group">
+                                    ${mdl('q_what_feeds', 'What does it feed? (Search)', item.qbRef?.whatFeeds)}
+                                    ${mta('q_island', 'Island missing components?', item.qbRef?.island)}
+                                </div>
+                                <div class="grid-density-date" style="margin-top:16px;">
+                                    ${mc('q_ofs_change', 'OFS Date Changed?', item.qbRef?.ofsChange, 'toggleOfsRows(this.checked);')}
+                                    <div class="ofs-reason-edit" style="display:${isOfsChangeActive ? 'flex' : 'none'}; width:100%;">
+                                        ${mta('q_ofs_reason', 'OFS Change Reason?', item.qbRef?.ofsReason)}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

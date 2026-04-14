@@ -271,9 +271,7 @@ body.mobile-admin-open .v2-shell-glassflow-dock {
 }
 
 /* Hide FABs when expanded views are open to clear airspace */
-body.mobile-detail-open #unified-filter-fab,
 body.mobile-admin-open #unified-filter-fab,
-body.mobile-detail-open #admin-hub-fab,
 body.mobile-admin-open #admin-hub-fab {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -798,7 +796,7 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
     display: none;
     flex-direction: column;
     gap: 8px;
-    z-index: var(--z-popover);
+    z-index: var(--z-max) !important;
     transform-origin: top right;
 }
 .v2-shell-glassflow .mobile-menu-panel.open {
