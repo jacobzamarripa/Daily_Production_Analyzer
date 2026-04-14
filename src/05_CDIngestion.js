@@ -16,7 +16,8 @@
  */
 
 // --- Configuration ---
-const CD_MODEL           = 'gemini-2.5-pro-preview-05-06';  // Same model as Python bridge
+const CD_MODEL           = 'gemini-2.5-pro';  // Flagship model requested by user
+const CD_FALLBACK_MODEL  = 'gemini-2.0-flash'; // High-limit fallback for 429 errors
 const CD_API_TIMEOUT_MS  = 300000;                           // 5 min per file (GAS hard limit is 6 min total)
 const CD_PROCESSED_TAG   = 'CD_PROCESSED';
 const CD_CLAIMED_TAG     = 'CD_CLAIMED';                     // Set before API call to prevent race with Python bridge
@@ -104,16 +105,17 @@ function processCDQueue() {
     const startMs = Date.now();
     const result = analyzeCD_(file, apiKey);
     const durationSec = Math.round((Date.now() - startMs) / 1000);
+    const usedModel = result.usedModel || CD_MODEL;
 
     if (result.success) {
-      const rows = result.rows.map(r => r.concat([`${CD_MODEL} | ${durationSec}s`, 'GAS']));
+      const rows = result.rows.map(r => r.concat([`${usedModel} | ${durationSec}s`, 'GAS']));
       writeCDRowsToSheet_(rows);
       file.setDescription(CD_PROCESSED_TAG);
       file.moveTo(folders.analyzed);
-      logMsg(`CDIngestion: ✓ "${filename}" → Analyzed/ (${durationSec}s, ${result.rows.length} row(s))`);
+      logMsg(`CDIngestion: ✓ "${filename}" → Analyzed/ (${durationSec}s, ${result.rows.length} row(s)) via ${usedModel}`);
     } else {
       // On failure: log to sheet, un-claim the file, leave in To_Analyze for Python bridge fallback
-      const errorRow = [filename, result.error, 'N/A', 'N/A', 'N/A', 'N/A', result.error, `${CD_MODEL} | ${durationSec}s`, 'GAS'];
+      const errorRow = [filename, result.error, 'N/A', 'N/A', 'N/A', 'N/A', result.error, `${usedModel} | ${durationSec}s`, 'GAS'];
       writeCDRowsToSheet_([errorRow]);
       file.setDescription('');  // Un-claim — Python bridge will pick it up
       logMsg(`CDIngestion: ✗ "${filename}" — ${result.error} — left in To_Analyze for local fallback`);
@@ -133,12 +135,13 @@ function processCDQueue() {
 
 // --- Gemini API call ---
 
-function analyzeCD_(file, apiKey) {
+function analyzeCD_(file, apiKey, isFallback = false) {
+  const model = isFallback ? CD_FALLBACK_MODEL : CD_MODEL;
   try {
     const blob = file.getBlob();
     const base64Data = Utilities.base64Encode(blob.getBytes());
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${CD_MODEL}:generateContent?key=${apiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const payload = JSON.stringify({
       contents: [{
@@ -158,6 +161,14 @@ function analyzeCD_(file, apiKey) {
     });
 
     const status = response.getResponseCode();
+    
+    // If rate limited and not already on fallback, try once with the Flash model
+    if (status === 429 && !isFallback) {
+      logMsg(`CDIngestion: ${CD_MODEL} rate limited. Retrying with ${CD_FALLBACK_MODEL}...`);
+      Utilities.sleep(2000); // Short pause before retry
+      return analyzeCD_(file, apiKey, true);
+    }
+
     if (status === 429) return { success: false, error: 'RATE LIMITED (429)' };
     if (status !== 200) return { success: false, error: `API ERROR (HTTP ${status})` };
 
@@ -176,7 +187,7 @@ function analyzeCD_(file, apiKey) {
     const cleanRows = rows.filter(r => !errorSignals.some(sig => r.join(' ').toLowerCase().includes(sig)));
     if (!cleanRows.length) return { success: false, error: 'GEMINI ERROR — model returned error text as table' };
 
-    return { success: true, rows: cleanRows };
+    return { success: true, rows: cleanRows, usedModel: model };
 
   } catch (e) {
     return { success: false, error: `EXCEPTION: ${e.message.substring(0, 100)}` };
@@ -265,6 +276,45 @@ function manualTriggerCDIngestion() {
   logMsg("CDIngestion: Manual trigger received from Web App.");
   processCDQueue();
   return getCDIngestionStatus();
+}
+
+/**
+ * Direct upload and immediate analysis of a CD PDF.
+ * @param {string} base64Data - The file content.
+ * @param {string} fileName - Original filename.
+ * @param {string} fdhId - The project ID to link the findings to.
+ * @returns {Object} - Success status and count of findings.
+ */
+function manualAnalyzeUploadedCD(base64Data, fileName, fdhId) {
+  logMsg(`CDIngestion: Manual upload received for ${fdhId} (${fileName}). Handing off to local bridge.`);
+
+  try {
+    const folders = getCDFolders_();
+    const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), MimeType.PDF, fileName);
+    
+    // Save to To_Analyze folder so the local Python bridge picks it up
+    const file = folders.toAnalyze.createFile(blob);
+    file.setDescription(`Web upload for ${fdhId}`);
+
+    return { success: true, fileName: fileName, fdh: fdhId };
+  } catch (e) {
+    logMsg(`CDIngestion ERROR (Upload): ${e.message}`);
+    throw e;
+  }
+}
+
+/**
+ * Retrieves the FDH ID from the very last row injected into the Special X-ings sheet.
+ * Used for post-upload verification in the asynchronous flow.
+ */
+function getLastIngestedCDFdh() {
+  const ss = SpreadsheetApp.openById(VENDOR_TRACKER_ID);
+  const sheet = ss.getSheetByName(XING_SHEET);
+  if (!sheet || sheet.getLastRow() < 2) return null;
+  
+  // Column 1 is "Project ID / FDH"
+  const val = sheet.getRange(sheet.getLastRow(), 1).getValue();
+  return String(val || '').trim();
 }
 
 /**

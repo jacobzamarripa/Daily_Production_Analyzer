@@ -30,6 +30,71 @@
       body.dark-mode .cd-intel-card.has-xing .cd-intel-text { color: #fde68a; }
       .cd-intel-card.has-xing .cd-subtitle { color: #92400e; }
       body.dark-mode .cd-intel-card.has-xing .cd-subtitle { color: #fde047; }
+
+      /* 📁 CD Drag & Drop Zone — now applied to the Special X-ings container */
+      .cd-dropzone {
+          cursor: pointer;
+          transition: all 0.2s ease;
+          position: relative;
+      }
+      .cd-dropzone:hover, .cd-dropzone.drag-over {
+          border-style: dashed !important;
+          border-color: var(--accent) !important;
+          background: color-mix(in srgb, var(--accent) 5%, var(--bg)) !important;
+      }
+      .cd-dropzone.analyzing {
+          border-style: solid !important;
+          border-color: #a855f7 !important;
+          background: rgba(168,85,247,0.05) !important;
+          cursor: wait !important;
+      }
+      .cd-dropzone.analyzing * {
+          opacity: 0.5;
+      }
+      .cd-dropzone.analyzing::after {
+          content: 'UPLOADING...';
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(168,85,247,0.1);
+          color: #a855f7;
+          font-weight: 900;
+          font-size: 10px;
+          letter-spacing: 1px;
+          z-index: 10;
+          border-radius: inherit;
+      }
+      .cd-dropzone.waiting {
+          border-style: solid !important;
+          border-color: var(--color-insight) !important;
+          background: rgba(168,85,247,0.05) !important;
+          cursor: wait !important;
+      }
+      .cd-dropzone.waiting::after {
+          content: 'PROCESSING...';
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--color-insight);
+          font-weight: 900;
+          font-size: 10px;
+          letter-spacing: 1px;
+          z-index: 10;
+          border-radius: inherit;
+      }
+      .cd-dropzone svg {
+          opacity: 0.7;
+          transition: opacity 0.2s;
+      }
+      .cd-dropzone:hover svg {
+          opacity: 1;
+          color: var(--accent);
+      }
+
       #p-comment[data-generated="true"] { color: #94a3b8; font-style: italic; }
       body.dark-mode #p-comment[data-generated="true"] { color: rgba(233,213,255,0.45); }
 

@@ -64,7 +64,7 @@
       function showToast(msg, type) {
           let t = getEl('toast-msg');
           if (!t) { t = document.createElement('div'); t.id = 'toast-msg'; document.body.appendChild(t); }
-          t.textContent = msg;
+          t.innerHTML = msg;
           t.className = 'toast-msg ' + (type === 'error' ? 'toast-error' : 'toast-ok');
           t.style.opacity = '1';
           clearTimeout(t._timer);

@@ -74,6 +74,8 @@ user approval. No exceptions.
 - commitToQueueWebApp() — no params, returns 
   { success, count } or { success, error }
 - generateAndSaveFDHNarrative() — Gemini draft
+- getLastIngestedCDFdh() — Post-upload verification
+- manualAnalyzeUploadedCD(base64Data, fileName, fdhId) — CD analysis
 - markStatusSyncComplete(fdhId) — QB status sync
 - getSurfaceHTML(isMobile) — returns HTML 
   string for document.write() router
