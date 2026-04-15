@@ -723,7 +723,7 @@ function populateQuickBaseTabCore(targetDates, vendorFilter = "ALL") {
   applyQuickBaseTabStyling(qbSheet);
 }
 
-function exportQuickBaseCSVCore(isSilent = false) {
+function exportQuickBaseCSVCore(isSilent = false, contextType = "ROUTINE") {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const qbSheet = ss.getSheetByName(QB_UPLOAD_SHEET);
   if (getTrueLastDataRow(qbSheet) < 2) return;
@@ -749,14 +749,51 @@ function exportQuickBaseCSVCore(isSilent = false) {
     const maxD = new Date(normalizedDates[normalizedDates.length - 1].replace(/-/g, '/') + " 00:00:00");
     const minFmt = Utilities.formatDate(minD, "GMT-5", "MM.dd.yy");
     const maxFmt = Utilities.formatDate(maxD, "GMT-5", "MM.dd.yy");
-    datePart = `${minFmt}-${maxFmt}`;
+    datePart = (minFmt === maxFmt) ? minFmt : `${minFmt}-${maxFmt}`;
   } else {
     let fallbackRaw = data[1][0];
     datePart = (fallbackRaw instanceof Date) ? Utilities.formatDate(fallbackRaw, "GMT-5", "MM.dd.yy") : String(fallbackRaw).split("T")[0].replace(/-/g, ".");
   }
 
   const vendorSuffix = vendors.length > 0 ? ` (${vendors.join(", ")})` : "";
-  let fileName = `Daily_Production_Report_${datePart}${vendorSuffix}.csv`;
+  let fileName = "";
+  
+  // 🔍 INTELLIGENT TAGGING: Check for existing reports to determine LATE vs CORRECTION
+  // Use datePart as the anchor for identifying report runs for this specific slice
+  let existingQuery = `title contains 'Daily_Production_Report_' and title contains '${datePart}' and mimeType = 'text/csv'`;
+  let existingFiles = DriveApp.getFolderById(COMPILED_FOLDER_ID).searchFiles(existingQuery);
+  let reportExists = existingFiles.hasNext();
+
+  if (contextType === "EMERGENCY") {
+    fileName = `Daily_Production_Report_(CORRECTION)_${datePart}${vendorSuffix}.csv`;
+  } else if (contextType === "SPECIFIC") {
+    fileName = `Daily_Production_Report_${datePart}${vendorSuffix}.csv`;
+  } else {
+    // ROUTINE or MANUAL
+    if (reportExists) {
+        let isLate = false;
+        let isCorrection = false;
+        let baselineFile = existingFiles.next();
+        let baselineText = "";
+        try { baselineText = baselineFile.getBlob().getDataAsString(); } catch(e) {}
+        
+        vendors.forEach(v => {
+            if (baselineText.includes(v)) isCorrection = true;
+            else isLate = true;
+        });
+        
+        let tag = "";
+        if (isCorrection && isLate) tag = "(LATE & CORRECTION)";
+        else if (isCorrection) tag = "(CORRECTION)";
+        else if (isLate) tag = "(LATE)";
+        
+        fileName = `Daily_Production_Report_${tag}_${datePart}${vendorSuffix}.csv`;
+    } else {
+        // Standard baseline naming
+        fileName = `Daily_Production_Report_${datePart}.csv`;
+    }
+  }
+
   fileName = fileName.replace(/[\\/:*?"<>|]/g, "_");
   DriveApp.getFolderById(COMPILED_FOLDER_ID).createFile(fileName, csvContent, MimeType.CSV);
   if (!isSilent) SpreadsheetApp.getUi().alert(`✅ CSV Exported: ${fileName}`);
