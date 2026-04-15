@@ -1956,13 +1956,23 @@ function getDashboardDataV2() {
  */
 function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
   try {
+    const buildStartMs = Date.now();
+    const payloadTimings = {};
     logMsg("🔄 V2 PAYLOAD: Building JSON Blob from Engine Data...");
     
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const refDictStartMs = Date.now();
     const refDict = getReferenceDictionary();
+    payloadTimings.referenceDictMs = Date.now() - refDictStartMs;
+    const vendorGoalsStartMs = Date.now();
     const vendorGoals = getVendorDailyGoals();
+    payloadTimings.vendorGoalsMs = Date.now() - vendorGoalsStartMs;
+    const cityCoordsStartMs = Date.now();
     const cityCoordinates = getCityCoordinates();
+    payloadTimings.cityCoordinatesMs = Date.now() - cityCoordsStartMs;
+    const fiberStatsStartMs = Date.now();
     const fiberStats = getVendorHybridStats();
+    payloadTimings.vendorHybridStatsMs = Date.now() - fiberStatsStartMs;
     const logSheet = ss.getSheetByName(CHANGE_LOG_SHEET);
     
     const getIdx = name => headers.indexOf(name);
@@ -2011,6 +2021,7 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
         return s;
     };
 
+    const changeLogReadStartMs = Date.now();
     let globalLogs = [];
     if (logSheet && logSheet.getLastRow() > 1) {
       const logData = logSheet.getDataRange().getValues();
@@ -2020,7 +2031,9 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
         globalLogs.push({ fdh: String(logData[j][0] || ""), type: String(logData[j][1] || ""), val: String(logData[j][2] || ""), user: String(logData[j][3] || "System"), time: timeDisplay });
       }
     }
+    payloadTimings.changeLogReadMs = Date.now() - changeLogReadStartMs;
 
+    const actionItemsStartMs = Date.now();
     let actionItems = [];
     reviewData.forEach((row, i) => {
       let hData = highlightsData[i];
@@ -2109,12 +2122,16 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
         rowNum: i + 2
       });
     });
+    payloadTimings.actionItemsAssemblyMs = Date.now() - actionItemsStartMs;
 
+    const vendorCityRecordsStartMs = Date.now();
+    const vendorCityRecords = buildVendorCityCoordinateRecords(actionItems, cityCoordinates);
+    payloadTimings.vendorCityRecordsMs = Date.now() - vendorCityRecordsStartMs;
     const payload = {
       actionItems: actionItems,
       globalLogs: globalLogs,
       vendorGoals: vendorGoals,
-      vendorCities: buildVendorCityCoordinateRecords(actionItems, cityCoordinates),
+      vendorCities: vendorCityRecords,
       totalRows: reviewData.length,
       headers: headers,
       refDataDate: String(PropertiesService.getScriptProperties().getProperty('refDataImportDate') || ""),
@@ -2128,11 +2145,16 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
       startupContractVersion: 2
     });
 
+    const payloadWriteStartMs = Date.now();
     const file = _getPayloadFileV2(true);
     file.setContent(JSON.stringify(payload));
+    payloadTimings.fileWriteMs = Date.now() - payloadWriteStartMs;
+    payloadTimings.totalMs = Date.now() - buildStartMs;
     
     // Clear Cache to force fresh load
     CacheService.getScriptCache().remove('dashboard_data_cache_v2_blob');
+    PropertiesService.getScriptProperties().setProperty('QB_LAST_PAYLOAD_TIMINGS', JSON.stringify(payloadTimings));
+    logMsg("V2 PAYLOAD timings: " + JSON.stringify(payloadTimings));
     logMsg("✅ V2 PAYLOAD: Successfully saved to Drive.");
     return true;
   } catch (e) {

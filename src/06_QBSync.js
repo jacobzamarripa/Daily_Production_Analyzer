@@ -171,7 +171,7 @@ function discoverAllQBFields() {
         totalFields += rows.length;
       }
     } else {
-      Logger.log("WARN: HTTP " + response.getResponseCode() + " for table " + tableName + " (" + tableId + ")");
+      logMsg("WARN", "discoverAllQBFields", "HTTP " + response.getResponseCode() + " for table " + tableName + " (" + tableId + ")");
     }
   }
 
@@ -311,14 +311,14 @@ function syncFromQBWebApp() {
       timings.deckEnrichmentMs = Date.now() - deckStartMs;
       logMsg("QB Deck Enrichment: " + Object.keys(fdhRowMap).length + " rows scanned across " + Object.keys(QB_DECK_QUERY_CONFIG).length + " tables.");
     } catch (deckErr) {
-      Logger.log("Deck enrichment WARN: " + deckErr.message);
+      logMsg("WARN", "syncFromQBWebApp.deckEnrichment", deckErr.message);
     }
 
     const changeLogStartMs = Date.now();
     try {
       syncChangeLogs();
     } catch (clErr) {
-      Logger.log("Change Log Sync Error: " + clErr.message);
+      logMsg("WARN", "syncFromQBWebApp.changeLogSync", clErr.message);
     }
     timings.changeLogSyncMs = Date.now() - changeLogStartMs;
     timings.totalSyncMs = Date.now() - syncStartMs;
@@ -327,7 +327,7 @@ function syncFromQBWebApp() {
     return { success: true, count: allRows.length, timestamp: timestamp, timings: timings };
 
   } catch (e) {
-    Logger.log("syncFromQBWebApp ERROR: " + e.message);
+    logMsg("WARN", "syncFromQBWebApp", e.message);
     return { success: false, error: e.message };
   }
 }
@@ -1159,7 +1159,7 @@ function _fetchTableAllFids(token, tableId, fids, where) {
 
     var resp = UrlFetchApp.fetch(url, opts);
     if (resp.getResponseCode() !== 200) {
-      Logger.log("WARN: QB query HTTP " + resp.getResponseCode() + " for table " + tableId);
+      logMsg("WARN", "_fetchTableAllFids", "QB query HTTP " + resp.getResponseCode() + " for table " + tableId);
       break;
     }
 
@@ -1367,9 +1367,11 @@ function _runQBSyncPhase1(e) {
       props.setProperties({ 'QB_SYNC_STATUS': 'error', 'QB_SYNC_ERROR': syncResult.error || 'Phase 1 failed' });
       return;
     }
+    const phase2QueuedAt = Date.now();
     // Stash Phase 1 result so Phase 2 can include it in the final meta
     props.setProperties({
       'QB_SYNC_PHASE':       '2',
+      'QB_SYNC_PHASE2_QUEUED_AT': String(phase2QueuedAt),
       'QB_SYNC_PHASE1_RESULT': JSON.stringify({
         count:     syncResult.count,
         timestamp: syncResult.timestamp,
@@ -1395,20 +1397,31 @@ function _runQBSyncPhase2(e) {
 
   const props = PropertiesService.getScriptProperties();
   try {
-    logMsg('QB Async Sync — Phase 2 start (engine rebuild)');
+    const phase2StartMs = Date.now();
     const phase1 = JSON.parse(props.getProperty('QB_SYNC_PHASE1_RESULT') || '{}');
+    const queuedAtMs = Number(props.getProperty('QB_SYNC_PHASE2_QUEUED_AT') || 0);
+    const phase2QueueLatencyMs = queuedAtMs ? phase2StartMs - queuedAtMs : null;
+    logMsg('QB Async Sync — Phase 2 start (engine rebuild)', 'queueLatencyMs=' + (phase2QueueLatencyMs === null ? 'unknown' : phase2QueueLatencyMs));
     const latestDate = _getLatestArchiveDate();
+    const rebuildStartMs = Date.now();
     generateDailyReviewCore(latestDate, null, false);
+    const payloadTimings = JSON.parse(props.getProperty('QB_LAST_PAYLOAD_TIMINGS') || '{}');
+    const phase2Timings = {
+      queueLatencyMs: phase2QueueLatencyMs,
+      rebuildMs: Date.now() - rebuildStartMs,
+      totalPhase2Ms: Date.now() - phase2StartMs
+    };
+    if (payloadTimings && Object.keys(payloadTimings).length) phase2Timings.payloadBuild = payloadTimings;
     props.setProperties({
       'QB_SYNC_STATUS': 'done',
       'QB_SYNC_RESULT': JSON.stringify({
         count:     phase1.count,
         timestamp: phase1.timestamp,
         date:      latestDate,
-        timings:   phase1.timings
+        timings:   Object.assign({}, phase1.timings || {}, phase2Timings)
       })
     });
-    logMsg('QB Async Sync — Phase 2 complete. date=' + latestDate + ', records=' + phase1.count);
+    logMsg('QB Async Sync — Phase 2 complete. date=' + latestDate + ', records=' + phase1.count + ', timings=' + JSON.stringify(phase2Timings));
   } catch (err) {
     logMsg('QB Async Sync Phase 2 ERROR: ' + err.message);
     props.setProperties({ 'QB_SYNC_STATUS': 'error', 'QB_SYNC_ERROR': err.message });

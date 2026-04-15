@@ -57,6 +57,12 @@ assert(/if \(!fdh\) \{\s*blankFdhCount\+\+;\s*return;\s*\}/m.test(qbSource), 'Ch
 assert(/if \(!knownFdhSet\.has\(fdh\)\) \{\s*droppedUnknownFdhCount\+\+;\s*return;\s*\}/m.test(qbSource), 'Change log sync drops unknown FDHs before row construction');
 assert(/sheet\.getRange\(1, 1, 1, sheet\.getLastColumn\(\)\)\.getValues\(\)\[0\]/.test(qbSource), 'FDH set helper reads only the header row');
 assert(/sheet\.getRange\(2, idx \+ 1, Math\.max\(sheet\.getLastRow\(\) - 1, 1\), 1\)\.getValues\(\)/.test(qbSource), 'FDH set helper reads only the FDH column');
+assert(/logMsg\("WARN", "syncFromQBWebApp\.deckEnrichment", deckErr\.message\);/.test(qbSource), 'Deck enrichment warnings use structured logMsg formatting');
+assert(/logMsg\("WARN", "_fetchTableAllFids", "QB query HTTP " \+ resp\.getResponseCode\(\) \+ " for table " \+ tableId\);/.test(qbSource), 'QB query warnings use structured logMsg formatting');
+assert(/'QB_SYNC_PHASE2_QUEUED_AT': String\(phase2QueuedAt\)/.test(qbSource), 'Async sync records when Phase 2 was queued');
+assert(/const phase2QueueLatencyMs = queuedAtMs \? phase2StartMs - queuedAtMs : null;/.test(qbSource), 'Async sync computes Phase 2 queue latency explicitly');
+assert(/V2 PAYLOAD timings: /.test(read('src/02_Utilities.js')), 'Payload builder logs step timings');
+
 assert(/const totalReviewRows = reviewData\.length;/.test(archiveSource), 'Review engine tracks total review row count');
 assert(/if \(totalReviewRows === 0\) \{[\s\S]*buildAndSaveDashboardPayloadV2\(\[\], finalMirrorHeaders, \[\]\);[\s\S]*Empty review fast path completed/m.test(archiveSource), 'Review engine has an empty-review fast path');
 assert(/Submitted review slice was empty; continuing with .* ghost rows only/.test(archiveSource), 'Review engine logs ghost-only review slices explicitly');
