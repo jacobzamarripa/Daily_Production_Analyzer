@@ -23,17 +23,47 @@ function getExistingKeys() {
      let f = data[i][fdhIdx] ? data[i][fdhIdx].toString().trim().toUpperCase() : "";
      if (!f) continue;
      
-     let dStr = "";
-     if (d instanceof Date) {
-         dStr = Utilities.formatDate(d, "GMT-5", "yyyy-MM-dd");
-     } else {
-         let tempD = new Date(d);
-         if (!isNaN(tempD.getTime())) dStr = Utilities.formatDate(tempD, "GMT-5", "yyyy-MM-dd");
-         else dStr = String(d).trim();
-     }
-     keys.add(dStr + "_" + f);
+     let dStr = normalizeDateString(d);
+     if (dStr) keys.add(dStr + "_" + f);
   }
   return keys;
+}
+
+/**
+ * 📊 LOAD TOTALS: Scans the archive to find the latest/maximum reported totals for each FDH.
+ */
+function getExistingTotals() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const histSheet = ss.getSheetByName(HISTORY_SHEET);
+  let totals = {};
+
+  if (!histSheet || histSheet.getLastRow() < 2) return totals;
+
+  let data = histSheet.getDataRange().getValues();
+  let fdhIdx = HISTORY_HEADERS.indexOf("FDH Engineering ID");
+  let totUGIdx = HISTORY_HEADERS.indexOf("Total UG Footage Completed");
+  let totAEIdx = HISTORY_HEADERS.indexOf("Total Strand Footage Complete?");
+  let totFIBIdx = HISTORY_HEADERS.indexOf("Total Fiber Footage Complete");
+  let totNAPIdx = HISTORY_HEADERS.indexOf("Total NAPs Completed");
+
+  for (let i = 1; i < data.length; i++) {
+    let fdh = String(data[i][fdhIdx] || "").toUpperCase().trim();
+    if (!fdh) continue;
+
+    if (!totals[fdh]) totals[fdh] = { ug: 0, ae: 0, fib: 0, nap: 0 };
+    
+    let tug = Number(data[i][totUGIdx]) || 0;
+    let tae = Number(data[i][totAEIdx]) || 0;
+    let tfib = Number(data[i][totFIBIdx]) || 0;
+    let tnap = Number(data[i][totNAPIdx]) || 0;
+    
+    // We track the maximum seen total (assuming vendors report cumulatively)
+    if (tug > totals[fdh].ug) totals[fdh].ug = tug;
+    if (tae > totals[fdh].ae) totals[fdh].ae = tae;
+    if (tfib > totals[fdh].fib) totals[fdh].fib = tfib;
+    if (tnap > totals[fdh].nap) totals[fdh].nap = tnap;
+  }
+  return totals;
 }
 
 function extractAutoFixedFdhFromComment(comment) {
@@ -154,25 +184,25 @@ function processIncomingForQuickBase(isSilent = false, isContinuation = false) {
   }
 
   const keys = getExistingKeys(); 
+  const totals = getExistingTotals();
   const refDict = getReferenceDictionary(); 
   let newRowsAppended = []; 
   let allProcessedDates = [];
   let allParsedRowsForQB = [];
-  
+
   // 🔄 Execute scan across both folders (Top-level only for speed and safety)
   const targetFolders = [REFERENCE_FOLDER_ID, INCOMING_FOLDER_ID];
   let status = { completed: true };
-  
+
   for (let folderId of targetFolders) {
     try {
       let folder = DriveApp.getFolderById(folderId);
       // Pass 'false' for recursive to lock to top-level only (Surgical Oversight)
       // Force re-process ONLY for REFERENCE_FOLDER_ID (Production Incoming)
       let force = (folderId === REFERENCE_FOLDER_ID);
-      let res = processFolderRecursive(folder, keys, refDict, "", false, newRowsAppended, allProcessedDates, force, allParsedRowsForQB, startTime, false);
+      let res = processFolderRecursive(folder, keys, refDict, "", false, newRowsAppended, allProcessedDates, force, allParsedRowsForQB, startTime, false, totals);
       if (res && res.completed === false) { status.completed = false; break; }
-    } catch (e) {
-      logMsg(`⚠️ Scan failed for folder ${folderId}: ${e.message}`);
+    } catch (e) {      logMsg(`⚠️ Scan failed for folder ${folderId}: ${e.message}`);
     }
   }
   
@@ -332,15 +362,15 @@ function applyQuickBaseTabStyling(qbSheet) {
   }
 }
 
-function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArchive, newRowsAppended = null, allProcessedDates = null, forceReprocess = false, allParsedRowsForQB = null, startTime = null, recursive = true) {
+function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArchive, newRowsAppended = null, allProcessedDates = null, forceReprocess = false, allParsedRowsForQB = null, startTime = null, recursive = true, existingTotals = {}) {
   let resolvedFolderDate = extractDateFromName(folder.getName());
   if (resolvedFolderDate) folderDate = resolvedFolderDate;
 
-  // Only query for valid Microsoft Excel formats natively. 
+  // Only query for valid Microsoft Excel formats natively.
   // (Prevents looping over Google Sheets, PDFs, etc.)
   const query = "mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType='application/vnd.ms-excel'";
   const files = folder.searchFiles(query);
-  
+
   while (files.hasNext()) {
     // ⏰ Time Budget Check: Exit if over 4.5 minutes (270,000ms) to allow for safe cleanup
     if (startTime && (new Date().getTime() - startTime > 270000)) {
@@ -348,13 +378,13 @@ function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArc
     }
 
     let file = files.next();
-    
+
     // Fallback name check for safety
     if (!file.getName().toLowerCase().endsWith(".xlsx")) {
       // Still log if something weird is identified as Excel but named incorrectly
       continue;
     }
-    
+
     if (file.getDescription() === "PROCESSED" && !forceReprocess) {
       // 🧠 SAFETY: If it's already processed but still in the incoming folder, move it now
       if (!isArchive) {
@@ -372,7 +402,7 @@ function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArc
     if (fDate && allProcessedDates !== null) allProcessedDates.push(fDate);
 
     try {
-        let result = parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppended, allProcessedDates, allParsedRowsForQB);
+        let result = parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppended, allProcessedDates, allParsedRowsForQB, existingTotals);
         let rows = result.rows;
         let fileArchiveDate = result.maxDate || fDate;
 
@@ -382,12 +412,12 @@ function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArc
               logMsg(`❌ ERROR: Could not find sheet "${HISTORY_SHEET}"!`);
               throw new Error(`Sheet "${HISTORY_SHEET}" not found.`);
             }
-            
+
             const trueLastRow = getTrueLastDataRow(sh);
             const writeRow = trueLastRow + 1;
-            
+
             logMsg(`✍️ Writing ${rows.length} rows to "${HISTORY_SHEET}" starting at Row ${writeRow}. (Sample: ${rows[0][HISTORY_HEADERS.indexOf("FDH Engineering ID")]} on ${rows[0][0]})`);
-            
+
             ensureCapacity(sh, trueLastRow + rows.length, HISTORY_HEADERS.length);
             sh.getRange(writeRow, 1, rows.length, HISTORY_HEADERS.length).setValues(rows);
             SpreadsheetApp.flush(); // 🚀 FORCE SAVE
@@ -411,13 +441,12 @@ function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArc
   if (recursive) {
     const subfolders = folder.getFolders();
     while (subfolders.hasNext()) {
-      let result = processFolderRecursive(subfolders.next(), existingKeys, refDict, folderDate, isArchive, newRowsAppended, allProcessedDates, forceReprocess, allParsedRowsForQB, startTime, true);
+      let result = processFolderRecursive(subfolders.next(), existingKeys, refDict, folderDate, isArchive, newRowsAppended, allProcessedDates, forceReprocess, allParsedRowsForQB, startTime, true, existingTotals);
       if (result && result.completed === false) return result;
     }
   }
   return { completed: true };
 }
-
 /**
  * Shared helper to find or create a date-stamped folder in the archive.
  */
@@ -439,7 +468,7 @@ function getArchiveFolderForDate(dateStr) {
   let formattedFolderName = `${m}.${d}.${yy}`;
   return archiveFolder.createFolder(formattedFolderName);
 }
-function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppended, allProcessedDates, allParsedRowsForQB = null) {
+function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppended, allProcessedDates, allParsedRowsForQB = null, existingTotals = {}) {
   let tempFile = Drive.Files.insert({ title: "[TEMP]_" + file.getName(), parents: [{id: file.getParents().next().getId()}] }, file.getBlob(), {convert: true});
   
   // 🧠 Resilience: Sometimes converted files aren't immediately "openable"
@@ -483,7 +512,7 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
 
       // 🧠 Value-Based Fallback: If header fails, check columns for date-like values
       for (let col = 0; col < fileHeaders.length; col++) {
-        let sample = rows.slice(0, 10).map(r => r[col]);
+        let sample = fullData.slice(headerRowIndex + 1, headerRowIndex + 11).map(r => r[col]);
         if (sample.some(v => v instanceof Date)) { idxCache[n] = col; return col; }
         if (sample.some(v => typeof v === 'string' && normalizeDateString(v) !== "")) { idxCache[n] = col; return col; }
       }
@@ -510,17 +539,14 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
     
     // 🔍 PRE-SCAN: Ensure we've identified the date column before processing
     let dateIdx = getIdx("Date");
-    if (dateIdx > -1) {
-      logMsg(`[Diagnostic] Date Column found at Index ${dateIdx} (Header: "${fileHeaders[dateIdx] || 'None'}")`);
-    } else {
-      logMsg(`[Diagnostic] Warning: No explicit Date column identified in "${file.getName()}"`);
-    }
+    
+    let filenameDate = normalizeDateString(extractDateFromName(file.getName()));
+    let folderDateNorm = normalizeDateString(folderDate);
+    let fallbackDate = deriveFallbackTargetDate(file);
 
     let dataToAppend = [];
     let skippedCount = 0;
     let maxDateFound = "";
-    let filenameDate = extractDateFromName(file.getName());
-    let targetDate = normalizeDateString(folderDate) || normalizeDateString(filenameDate) || deriveFallbackTargetDate(file);
 
     rows.forEach(row => {
       let fdhId = row[fdhIdx] ? row[fdhIdx].toString().trim().toUpperCase() : ""; 
@@ -528,42 +554,84 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
       
       let originalFdh = fdhId;
       let refData = refDict[fdhId];
+      let unmatchedComment = "";
+
       if (refDict && Object.keys(refDict).length > 0 && !refData) {
           let matched = attemptFuzzyMatch(fdhId, Object.keys(refDict));
           if (matched) { 
             logMsg(`🪄 AUTO-CORRECT (Ingestion): ${fdhId} -> ${matched}`); 
             fdhId = matched; 
             refData = refDict[fdhId];
+          } else {
+            unmatchedComment = `[No close match found in reference data for FDH: ${originalFdh}] `;
           }
       }
       let wasCorrected = (originalFdh !== fdhId);
+
       let vendorDateRaw = dateIdx === -1 ? "" : row[dateIdx];
       let normalizedVendorDate = normalizeDateString(vendorDateRaw);
       
-      // 🧠 RUNNING REPORTS: Allow rows with dates that don't match the file/folder date.
-      let rowTargetDate = normalizedVendorDate || targetDate;
+      // 🧠 DATE PRECEDENCE: File Name -> Typed in Row -> Folder Name -> Fallback
+      let rowTargetDate = filenameDate || normalizedVendorDate || folderDateNorm || fallbackDate;
 
       // Track the latest date found in the file for smarter archiving
       if (rowTargetDate && rowTargetDate > maxDateFound) {
         maxDateFound = rowTargetDate;
       }
       
+      let calculatedNotes = [];
+      let rowTotals = existingTotals[fdhId] || { ug: 0, ae: 0, fib: 0, nap: 0 };
+
+      const calculateDiscrepancy = (dailyH, totalH, type) => {
+          let dIdx = getIdx(dailyH);
+          let tIdx = getIdx(totalH);
+          if (dIdx === -1 || tIdx === -1) return;
+
+          let dailyVal = Number(row[dIdx]) || 0;
+          let totalVal = Number(row[tIdx]) || 0;
+          let prevTotal = rowTotals[type] || 0;
+
+          if (dailyVal === 0 && totalVal > prevTotal && prevTotal > 0) {
+              let diff = totalVal - prevTotal;
+              row[dIdx] = diff;
+              calculatedNotes.push(`Daily ${type.toUpperCase()} footage (${diff}') calculated from total discrepancy`);
+          }
+          // Update running total for this run
+          if (totalVal > rowTotals[type]) rowTotals[type] = totalVal;
+      };
+
+      calculateDiscrepancy("Daily UG Footage", "Total UG Footage Completed", "ug");
+      calculateDiscrepancy("Daily Strand Footage", "Total Strand Footage Complete?", "ae");
+      calculateDiscrepancy("Daily Fiber Footage", "Total Fiber Footage Complete", "fib");
+      calculateDiscrepancy("Daily NAPs/Encl. Completed", "Total NAPs Completed", "nap");
+      
+      // Save the updated totals back
+      existingTotals[fdhId] = rowTotals;
+
       let rowMapped = HISTORY_HEADERS.map(h => {
         if (h === "FDH Engineering ID") return fdhId; 
         let idx = getIdx(h);
         let val = (idx === -1) ? "" : row[idx];
         
         if (h === "Contractor") {
-          // 🧠 BACKFILL VENDOR: If spreadsheet is missing the contractor column, 
-          // use the official vendor from our reference data.
           let derivedVendor = refData ? refData.vendor : "";
           return (val && String(val).trim() !== "") ? val : derivedVendor;
         }
 
-        if (h === "Vendor Comment") { if (wasCorrected) val = `[Auto-Fixed FDH: ${originalFdh}] ` + (val || ""); return val; }
+        if (h === "Vendor Comment") { 
+            let prefix = "";
+            if (wasCorrected) prefix += `[Auto-Fixed FDH: ${originalFdh}] `;
+            if (unmatchedComment) prefix += unmatchedComment;
+            if (calculatedNotes.length > 0) prefix += `[${calculatedNotes.join(" | ")}] `;
+            return prefix + (val || ""); 
+        }
         
         if (h === "Date") return rowTargetDate;
-        if (isBooleanColumn(h) && typeof val === "string") { let cleanStr = val.trim().toLowerCase(); if (cleanStr === "true" || cleanStr === "yes") return true; if (cleanStr === "false" || cleanStr === "no") return false; }
+        if (isBooleanColumn(h) && typeof val === "string") { 
+            let cleanStr = val.trim().toLowerCase(); 
+            if (cleanStr === "true" || cleanStr === "yes") return true; 
+            if (cleanStr === "false" || cleanStr === "no") return false; 
+        }
         return val;
       });
       

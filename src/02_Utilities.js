@@ -174,6 +174,9 @@ function onOpen() {
     );
 
     main.addSubMenu(ui.createMenu('System Maintenance')
+      .addItem('Heal Master Archive Alignment', 'healMasterArchiveAlignment')
+      .addItem('Backup Master Archive (CSV)', 'backupMasterArchiveToCSV')
+      .addSeparator()
       .addItem('Configure Daily Automations', 'setupDailyTrigger')
       .addItem('Refresh Styles & Checkboxes', 'applyFormatting')
       .addItem('Clear Processed File Tags', 'resetFileTags')
@@ -841,7 +844,13 @@ function processDateSelection(dateStr, actionName) {
     generateDailyReviewCore(dateStr, null, false);
   }
 }
-function importArchiveFolder() { const keys = getExistingKeys(); const refDict = getReferenceDictionary(); processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null); SpreadsheetApp.getUi().alert("✅ Master Archive Updated."); }
+function importArchiveFolder() { 
+  const keys = getExistingKeys(); 
+  const totals = getExistingTotals();
+  const refDict = getReferenceDictionary(); 
+  processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null, null, false, null, null, true, totals); 
+  SpreadsheetApp.getUi().alert("✅ Master Archive Updated."); 
+}
 function _listProjectTriggersByHandler_(handlerName) {
   return ScriptApp.getProjectTriggers().filter(function(trigger) {
     return trigger.getHandlerFunction() === handlerName;
@@ -1904,6 +1913,7 @@ function forceRescanIncoming() {
   logMsg("🆘 EMERGENCY: Starting Force Re-scan of Incoming folders...");
   setupSheets();
   const keys = getExistingKeys();
+  const totals = getExistingTotals();
   const refDict = getReferenceDictionary();
   let newRowsAppended = [];
   let allProcessedDates = [];
@@ -1916,7 +1926,7 @@ function forceRescanIncoming() {
     try {
       let folder = DriveApp.getFolderById(folderId);
       // Pass 'false' for recursive to keep the emergency scan targeted
-      processFolderRecursive(folder, keys, refDict, "", false, newRowsAppended, allProcessedDates, true, allParsedRowsForQB, startTime, false);
+      processFolderRecursive(folder, keys, refDict, "", false, newRowsAppended, allProcessedDates, true, allParsedRowsForQB, startTime, false, totals);
     } catch (e) {
       logMsg("⚠️ Emergency scan failed for folder " + folderId + ": " + e.message);
     }
