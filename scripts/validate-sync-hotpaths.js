@@ -1,0 +1,64 @@
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const root = path.resolve(__dirname, '..');
+
+function read(relPath) {
+  return fs.readFileSync(path.join(root, relPath), 'utf8');
+}
+
+function extractFunction(source, name) {
+  const marker = `function ${name}(`;
+  const start = source.indexOf(marker);
+  if (start === -1) throw new Error(`Could not find ${name}`);
+
+  let braceStart = source.indexOf('{', start);
+  let depth = 0;
+  for (let i = braceStart; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === '{') depth++;
+    if (ch === '}') depth--;
+    if (depth === 0) return source.slice(start, i + 1);
+  }
+  throw new Error(`Could not parse ${name}`);
+}
+
+function assert(condition, label) {
+  if (!condition) throw new Error(`FAIL ${label}`);
+  console.log(`PASS ${label}`);
+}
+
+function assertEqual(actual, expected, label) {
+  if (actual !== expected) throw new Error(`${label}: expected "${expected}", received "${actual}"`);
+  console.log(`PASS ${label}`);
+}
+
+const configSource = read('src/00_Config.js');
+const qbSource = read('src/06_QBSync.js');
+const archiveSource = read('src/01_Engine_Archive.js');
+
+const context = { console };
+vm.createContext(context);
+
+[
+  extractFunction(configSource, 'formatLogMessage'),
+].forEach((snippet) => vm.runInContext(snippet, context));
+
+assertEqual(context.formatLogMessage('WARN'), 'WARN', 'Single-argument log formatting stays unchanged');
+assertEqual(
+  context.formatLogMessage('WARN', 'getVendorHybridStats', 'Missing fiber footage column'),
+  'WARN [getVendorHybridStats] Missing fiber footage column',
+  'Structured log formatting preserves level, scope, and detail'
+);
+
+assert(/const knownFdhSet = new Set\(\);/.test(qbSource), 'Change log sync builds a unified known FDH set');
+assert(/if \(!fdh\) \{\s*blankFdhCount\+\+;\s*return;\s*\}/m.test(qbSource), 'Change log sync drops blank FDHs before row construction');
+assert(/if \(!knownFdhSet\.has\(fdh\)\) \{\s*droppedUnknownFdhCount\+\+;\s*return;\s*\}/m.test(qbSource), 'Change log sync drops unknown FDHs before row construction');
+assert(/sheet\.getRange\(1, 1, 1, sheet\.getLastColumn\(\)\)\.getValues\(\)\[0\]/.test(qbSource), 'FDH set helper reads only the header row');
+assert(/sheet\.getRange\(2, idx \+ 1, Math\.max\(sheet\.getLastRow\(\) - 1, 1\), 1\)\.getValues\(\)/.test(qbSource), 'FDH set helper reads only the FDH column');
+assert(/const totalReviewRows = reviewData\.length;/.test(archiveSource), 'Review engine tracks total review row count');
+assert(/if \(totalReviewRows === 0\) \{[\s\S]*buildAndSaveDashboardPayloadV2\(\[\], finalMirrorHeaders, \[\]\);[\s\S]*Empty review fast path completed/m.test(archiveSource), 'Review engine has an empty-review fast path');
+assert(/Submitted review slice was empty; continuing with .* ghost rows only/.test(archiveSource), 'Review engine logs ghost-only review slices explicitly');
+
+console.log('\nSync hot-path validation passed.');

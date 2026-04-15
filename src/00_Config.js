@@ -117,7 +117,15 @@ const ROW_THEMES = { PERMITTING: { bg: "#faf5ff", text: "#a855f7", label: "🟣 
 const BENNY_COLORS = { RED: { bg: "#fee2e2", text: "#ef4444", name: "warn" }, YELLOW: { bg: "#fef08a", text: "#b45309", name: "mismatch" }, UG: { bg: "#ffedd5", text: "#ea580c", name: "ug" }, AE: { bg: "#f1f5f9", text: "#475569", name: "ae" }, FIB: { bg: "#ffe4e6", text: "#e11d48", name: "fib" }, NAP: { bg: "#e0e7ff", text: "#4f46e5", name: "nap" }, CLEAN: { bg: null, text: "#166534", name: "clean" }, GHOST: { bg: "#f1f5f9", text: "#64748b", name: "ghost" } };
 const TEXT_COLORS = { UG: "#f97316", AE: "#64748b", FIB: "#ff0000", NAP: "#6366f1", WARN: "#ef4444", MISMATCH: "#b45309", MAGIC: "#8b5cf6", BENCH: "#0f172a", DONE: "#22c55e", STAR: "#fbbf24", GHOST: "#64748b" };
 
-function logMsg(msg) { const ss = SpreadsheetApp.getActiveSpreadsheet(); let sh = ss.getSheetByName(LOG_SHEET); if (!sh) sh = ss.insertSheet(LOG_SHEET); if (sh.getLastRow() === 0) { sh.appendRow(["Timestamp", "Message Summary"]); sh.getRange("1:1").setBackground("#003366").setFontColor("white").setFontWeight("bold"); sh.setFrozenRows(1); sh.setColumnWidth(1, 150); sh.setColumnWidth(2, 600); } sh.appendRow([new Date(), msg]); }
+function formatLogMessage(msg, scope, detail) {
+  if (arguments.length <= 1) return String(msg || "");
+  const parts = [];
+  if (msg !== null && msg !== undefined && msg !== "") parts.push(String(msg));
+  if (scope !== null && scope !== undefined && scope !== "") parts.push("[" + String(scope) + "]");
+  if (detail !== null && detail !== undefined && detail !== "") parts.push(String(detail));
+  return parts.join(" ");
+}
+function logMsg(msg, scope, detail) { const ss = SpreadsheetApp.getActiveSpreadsheet(); let sh = ss.getSheetByName(LOG_SHEET); if (!sh) sh = ss.insertSheet(LOG_SHEET); if (sh.getLastRow() === 0) { sh.appendRow(["Timestamp", "Message Summary"]); sh.getRange("1:1").setBackground("#003366").setFontColor("white").setFontWeight("bold"); sh.setFrozenRows(1); sh.setColumnWidth(1, 150); sh.setColumnWidth(2, 600); } sh.appendRow([new Date(), formatLogMessage.apply(null, arguments)]); }
 function getTrueLastDataRow(sheet) { const data = sheet.getRange("C:C").getValues(); for (let i = data.length - 1; i >= 0; i--) { if (data[i][0] !== "" && data[i][0] !== null) return i + 1; } return 1; }
 function ensureCapacity(sheet, requiredRows, requiredCols) { let maxRows = sheet.getMaxRows(); let maxCols = sheet.getMaxColumns(); if (maxRows < requiredRows) sheet.insertRowsAfter(maxRows, requiredRows - maxRows); if (maxCols < requiredCols) sheet.insertColumnsAfter(maxCols, requiredCols - maxCols); }
 function trimAndFilterSheet(sheet, lastDataRow, lastDataCol) { let maxRows = sheet.getMaxRows(); let maxCols = sheet.getMaxColumns(); let safeRow = Math.max(lastDataRow, 2); if (maxRows > safeRow) sheet.deleteRows(safeRow + 1, maxRows - safeRow); if (maxCols > lastDataCol) sheet.deleteColumns(lastDataCol + 1, maxCols - lastDataCol); let range = sheet.getRange(1, 1, safeRow, lastDataCol); if (sheet.getFilter() !== null) sheet.getFilter().remove(); range.createFilter(); }

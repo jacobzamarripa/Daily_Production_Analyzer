@@ -11,22 +11,17 @@ const checks = [
   {
     label: 'WebApp auto-routes phone users into GlassFlow unless desktop is explicitly requested',
     file: 'src/WebApp.html',
-    patterns: [/autoRoutePhoneToGlassFlow/, /searchParams\.get\('v'\) === 'GlassFlow'/, /searchParams\.get\('shell'\) === 'desktop'/, /matchMedia\('\(pointer: coarse\) and \(max-width: 480px\)'\)/, /searchParams\.set\('v', 'GlassFlow'\)/, /location\.replace\(url\.toString\(\)\)/],
+    patterns: [/autoRoutePhoneToGlassFlow/, /searchParams\.get\('v'\) === 'GlassFlow'/, /searchParams\.get\('shell'\) === 'desktop'/, /matchMedia\('\(pointer: coarse\) and \(max-width: 600px\)'\)/, /searchParams\.set\('v', 'GlassFlow'\)/, /window\.location\.replace\(url\.toString\(\)\)/],
   },
   {
-    label: 'WebApp mounts the polymorphic mobile dock shell',
-    file: 'src/WebApp.html',
-    patterns: [/<div id="mobile-dock">/, /id="m-dock-queue"/, /id="m-dock-detail"/],
-  },
-  {
-    label: 'WebApp mounts the unified mobile search/filter sheet',
-    file: 'src/WebApp.html',
-    patterns: [/<div id="mobile-sf-overlay"/, /<div id="mobile-sf-sheet"/, /id="m-sf-search-input"/, /id="m-sf-sort-select"/],
-  },
-  {
-    label: 'WebApp keeps the mobile detail back bar in the shared reading pane',
+    label: 'Desktop shell keeps the shared mobile detail back bar in the reading pane',
     file: 'src/WebApp.html',
     patterns: [/id="mobile-back-btn"/, /onclick="closeMobileDetail\(\)"/, /id="mobile-back-title"/],
+  },
+  {
+    label: 'GlassFlow mobile shell mounts the dock-driven detail actions',
+    file: 'src/v2_shell_GlassFlow.html',
+    patterns: [/id="dock-btn-back"/, /id="dock-btn-skip"/, /id="btn-commit"/, /id="dock-btn-ai-draft"/],
   },
   {
     label: 'Phone queue open pushes into detail mode through shared pane state',
@@ -56,7 +51,7 @@ const checks = [
   {
     label: 'Desktop Review Hub header uses the unified count and KPI strip',
     file: 'src/WebApp.html',
-    patterns: [/id="ob-header-count"/, /review-hub-desktop-row-top/, /review-hub-desktop-row-tabs/, /review-hub-desktop-row-kpis/, /review-hub-kpi-strip/],
+    patterns: [/id="review-hub-main-header"/, /id="ob-header-count"/, /id="admin-kpi-header-wrap"/, /id="ob-panel-admin"/, /id="ob-panel-reviewed"/, /id="ob-panel-changelog"/],
   },
   {
     label: 'Phone filter presentation stays sheet-based behind the shared smart dock',

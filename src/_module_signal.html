@@ -119,6 +119,8 @@ var _signalLoadedTf = {};
 var _signalPrefetching = {};
 var _signalDriveRootFilter = 'all';
 var _signalSearchQuery = '';
+var _signalPollingTimer = null;
+var _signalPollingInitTimer = null;
 
 function _signalNormalizeTf(tf) {
   var raw = String(tf || '').toLowerCase().trim();
@@ -218,6 +220,13 @@ function _showStartupAfterSignal() {
   } else {
     completeStartup('detail');
   }
+}
+
+function resetSignalCaches() {
+  _signalCache.fast = {};
+  _signalCache.drive = {};
+  _signalLoadedTf = {};
+  _signalPrefetching = {};
 }
 
 // Fetches and caches a timeframe silently — no UI side-effects
@@ -695,11 +704,12 @@ function _signalClearSearch() {
  * 🛰️ Background Polling logic for "Option A"
  */
 function _initSignalPolling() {
-  if (window.__signalPollingActive) return;
+  if (window.__signalPollingActive || _signalPollingTimer) return;
   window.__signalPollingActive = true;
   
   // Poll every 5 minutes (300,000 ms)
-  setInterval(function() {
+  _signalPollingTimer = setInterval(function() {
+    if (document.visibilityState && document.visibilityState !== 'visible') return;
     // Only poll if the overlay isn't already open
     var overlay = document.getElementById('signal-overlay');
     if (overlay && overlay.classList.contains('visible')) return;
@@ -723,7 +733,12 @@ function _initSignalPolling() {
 }
 
 // Start polling on load (wait 10s for boot stability)
-setTimeout(_initSignalPolling, 10000);
+if (!_signalPollingInitTimer) {
+  _signalPollingInitTimer = setTimeout(function() {
+    _signalPollingInitTimer = null;
+    _initSignalPolling();
+  }, 10000);
+}
 
 window.openSignal = openSignal;
 window.closeSignal = closeSignal;
@@ -735,4 +750,5 @@ window._signalDismiss = _signalDismiss;
 window._signalOnSearch = _signalOnSearch;
 window._signalClearSearch = _signalClearSearch;
 window._signalNavigateToItem = _signalNavigateToItem;
+window.resetSignalCaches = resetSignalCaches;
 </script>

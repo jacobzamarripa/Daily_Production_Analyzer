@@ -1913,7 +1913,7 @@ function getDashboardDataV2() {
   const cached = getChunkedCache(cache, CACHE_KEY);
   if (cached) {
     try {
-      return JSON.parse(cached);
+      return _decoratePayloadMeta(JSON.parse(cached), { source: 'cache' });
     } catch (e) {
       logMsg("⚠️ V2 Cache Parse Error: " + e.message);
     }
@@ -1924,17 +1924,29 @@ function getDashboardDataV2() {
     const file = _getPayloadFileV2(false);
     if (!file) {
       logMsg("⚠️ V2 Payload File Not Found. Falling back to V1.");
-      return getDashboardData();
+      return _decoratePayloadMeta(getDashboardData(), {
+        source: 'v1-fallback',
+        fallback: true,
+        reason: 'missing-v2-payload'
+      });
     }
 
     const payloadStr = file.getBlob().getDataAsString();
     // Re-cache for future fast loads (30 mins)
     try { putChunkedCache(cache, CACHE_KEY, payloadStr, 1800); } catch(e) {}
     
-    return JSON.parse(payloadStr);
+    return _decoratePayloadMeta(JSON.parse(payloadStr), {
+      source: 'drive',
+      payloadFileId: file.getId(),
+      payloadUpdatedAt: file.getLastUpdated().toISOString()
+    });
   } catch (e) {
     logMsg("❌ V2 Payload Fetch Error: " + e.message);
-    return getDashboardData(); // Ultimate fallback
+    return _decoratePayloadMeta(getDashboardData(), {
+      source: 'v1-fallback',
+      fallback: true,
+      reason: 'v2-fetch-error'
+    }); // Ultimate fallback
   }
 }
 
@@ -2111,6 +2123,11 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData) {
       generatedAt: new Date().toISOString()
     };
 
+    _decoratePayloadMeta(payload, {
+      source: 'builder',
+      startupContractVersion: 2
+    });
+
     const file = _getPayloadFileV2(true);
     file.setContent(JSON.stringify(payload));
     
@@ -2138,6 +2155,10 @@ function patchDashboardPayloadV2(fdhId, updates) {
     
     if (idx > -1) {
       Object.assign(payload.actionItems[idx], updates);
+      _decoratePayloadMeta(payload, {
+        source: 'patch',
+        lastPatchedAt: new Date().toISOString()
+      });
       file.setContent(JSON.stringify(payload));
       CacheService.getScriptCache().remove('dashboard_data_cache_v2_blob');
       return true;
@@ -2169,6 +2190,23 @@ function _getPayloadFileV2(createIfMissing) {
   }
 }
 
+function _decoratePayloadMeta(payload, overrides) {
+  if (!payload || typeof payload !== 'object') return payload;
+
+  const nextMeta = Object.assign({}, payload._payloadMeta || {}, overrides || {});
+  const actionItems = Array.isArray(payload.actionItems) ? payload.actionItems : [];
+  const globalLogs = Array.isArray(payload.globalLogs) ? payload.globalLogs : [];
+
+  nextMeta.startupContractVersion = Number(nextMeta.startupContractVersion || 2);
+  nextMeta.generatedAt = nextMeta.generatedAt || payload.generatedAt || new Date().toISOString();
+  nextMeta.actionItemCount = actionItems.length;
+  nextMeta.globalLogCount = globalLogs.length;
+  nextMeta.hasFallback = !!nextMeta.fallback;
+
+  payload._payloadMeta = nextMeta;
+  return payload;
+}
+
 /**
  * 📡 Lightweight polling endpoint to detect if the Signal popup should be triggered.
  * Compares client's last seen time with the server's latest signal event.
@@ -2182,4 +2220,3 @@ function checkSignalUpdates(lastClientTimeMs) {
     latestEvent: latestEvent
   };
 }
-

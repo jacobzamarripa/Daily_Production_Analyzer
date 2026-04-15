@@ -796,14 +796,6 @@
               (queueCount > 0
                   ? `You have ${queueCount} item(s) still in the queue.\nHave you reviewed the current flagged projects before syncing?`
                   : "Queue is clear — safe to sync.");
-          const resetSignalCaches = function() {
-              if (typeof _signalCache !== 'undefined' && _signalCache) {
-                  _signalCache.fast = {};
-                  _signalCache.drive = {};
-              }
-              if (typeof _signalLoadedTf !== 'undefined') _signalLoadedTf = {};
-              if (typeof _signalPrefetching !== 'undefined') _signalPrefetching = {};
-          };
           if (!confirm(msg)) return;
           const btn = getEl('btn-qb-sync');
           if (btn) { btn.innerText = 'Syncing…'; btn.disabled = true; }
@@ -830,10 +822,10 @@
 
           function _onSyncDone(meta) {
               _finishSync(null);
-              resetSignalCaches();
+              if (typeof resetSignalCaches === 'function') resetSignalCaches();
               google.script.run
                   .withSuccessHandler(function(data) {
-                      initDashboard(data);
+                      applyDashboardPayload(data, 'qb-sync-complete');
                       const totalSec = meta.timings && meta.timings.totalMs ? (meta.timings.totalMs / 1000).toFixed(1) + 's' : '';
                       showToast('Synced ' + (meta.count || '?') + ' records · Dashboard rebuilt from ' + (meta.date || 'latest') + (totalSec ? ' · ' + totalSec : ''));
                       if (meta.timestamp) { globalRefDataDate = meta.timestamp; updateRefDataIndicator(); }
@@ -895,7 +887,7 @@
           google.script.run
               .withSuccessHandler(function(data) {
                   hideFrostedLoader();
-                  initDashboard(data);
+                  applyDashboardPayload(data, 'process-incoming');
                   const meta = data._actionMeta || {};
                   showToast(meta.message || 'Processed incoming reports and rebuilt dashboard');
               })
@@ -917,7 +909,7 @@
           google.script.run
               .withSuccessHandler(function(data) {
                   hideFrostedLoader();
-                  initDashboard(data);
+                  applyDashboardPayload(data, 'force-rescan');
                   const meta = data._actionMeta || {};
                   showToast(meta.message || 'Force re-scan complete');
               })
@@ -950,7 +942,7 @@
           google.script.run
               .withSuccessHandler(function(data) {
                   hideFrostedLoader();
-                  initDashboard(data);
+                  applyDashboardPayload(data, 'clean-archive');
                   const meta = data._actionMeta || {};
                   showToast(meta.message || 'Archive duplicates cleaned');
               })
@@ -972,7 +964,7 @@
           google.script.run
               .withSuccessHandler(function(data) {
                   hideFrostedLoader();
-                  initDashboard(data);
+                  applyDashboardPayload(data, 'repair-autofix');
                   const meta = data._actionMeta || {};
                   showToast(meta.message || 'Legacy auto-fixed FDHs repaired');
               })
@@ -1080,7 +1072,7 @@
           google.script.run.withSuccessHandler((data) => {
               hideFrostedLoader();
               if(btn) { btn.innerText = "Run Review"; btn.disabled = false; }
-              initDashboard(data);
+              applyDashboardPayload(data, 'run-review');
           }).withFailureHandler((err) => {
               hideFrostedLoader();
               if(btn) { btn.innerText = "Run Review"; btn.disabled = false; } alert("Engine Error: " + err.message);
@@ -1102,7 +1094,7 @@
               .withSuccessHandler((data) => {
                   hideFrostedLoader();
                   if(btn) { btn.innerText = "↻ Refresh"; btn.disabled = false; }
-                  initDashboard(data);
+                  applyDashboardPayload(data, 'ui-refresh');
                   showToast('↻ Dashboard refreshed');
               })
               .withFailureHandler((err) => {
@@ -1266,8 +1258,75 @@
           try { sessionStorage.setItem('gantt_hint_ok', '1'); } catch(e) {}
       }
 
+      function applyDashboardPayload(data, contextLabel) {
+          const payloadMeta = getPayloadMeta(data);
+          markStartupMetric('payload-apply-start', {
+              context: contextLabel || 'runtime',
+              source: payloadMeta.source || 'unknown',
+              actionItems: data && data.actionItems ? data.actionItems.length : 0
+          });
+          initDashboard(data, { context: contextLabel || 'runtime', payloadMeta: payloadMeta });
+      }
+
+      function hydrateDashboardSecondaryState(data) {
+          if (!data) return;
+          markStartupMetric('dashboard-secondary-start', {
+              actionItems: data && data.actionItems ? data.actionItems.length : 0
+          });
+
+          if (data.allFdhIds) {
+              globalAllFdhIds = data.allFdhIds;
+              let datalist = document.getElementById('fdh-list');
+              if (!datalist) {
+                  datalist = document.createElement('datalist');
+                  datalist.id = 'fdh-list';
+                  document.body.appendChild(datalist);
+              }
+              datalist.innerHTML = data.allFdhIds.sort().map(id => `<option value="${id}">`).join('');
+          }
+
+          allGlobalLogs = (data && data.globalLogs) ? data.globalLogs : [];
+          digestVendorCities = (data && data.vendorCities) ? data.vendorCities : [];
+
+          const userSelect = getEl('changelog-user');
+          if (userSelect) {
+              if (allGlobalLogs.length > 0) {
+                  let uniqueUsers = [...new Set(allGlobalLogs.map(l => l.user).filter(Boolean))].sort();
+                  userSelect.innerHTML = '<option value="ALL">All Users</option>' + uniqueUsers.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
+              } else {
+                  userSelect.innerHTML = '<option value="ALL">All Users</option>';
+              }
+          }
+
+          const logUserFilter = getEl('filter-log-user');
+          if (logUserFilter) {
+              if (allGlobalLogs.length > 0) {
+                  let uniqueUsers = [...new Set(allGlobalLogs.map(l => l.user).filter(Boolean))].sort();
+                  logUserFilter.innerHTML = '<option value="ALL">All Users</option>' + uniqueUsers.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
+              } else {
+                  logUserFilter.innerHTML = '<option value="ALL">All Users</option>';
+              }
+              logUserFilter.style.display = (currentGridPivot === 'changelog' || currentGridPivot === 'global-log') ? 'inline-flex' : 'none';
+          }
+
+          renderChangeLog();
+          updateChangelogBadge();
+          updateAdminBadge();
+          renderAdminPane(getActiveQueueItems());
+          renderOutbox();
+          openAdminPanelByDefault();
+
+          if (typeof applyTheme === 'function') {
+              applyTheme(_sysDark && _sysDark.matches);
+          }
+          markStartupMetric('dashboard-secondary-complete', {
+              globalLogs: allGlobalLogs.length
+          });
+      }
+
       window.onload = function() {
           reportStartupPhase('window-onload');
+          markStartupMetric('window-onload');
           if (checkViewportHandOff()) return;
 
           initDeckSwipe();
@@ -1294,10 +1353,20 @@
           google.script.run
               .withSuccessHandler(data => { 
                   if (bootTimeoutId) clearTimeout(bootTimeoutId);
-                  reportStartupPhase('dashboard-payload-success', { actionItems: data && data.actionItems ? data.actionItems.length : 0 });
+                  const payloadMeta = getPayloadMeta(data);
+                  reportStartupPhase('dashboard-payload-success', {
+                      actionItems: data && data.actionItems ? data.actionItems.length : 0,
+                      source: payloadMeta.source || 'unknown',
+                      fallback: !!payloadMeta.hasFallback
+                  });
+                  markStartupMetric('dashboard-payload-success', {
+                      source: payloadMeta.source || 'unknown',
+                      fallback: !!payloadMeta.hasFallback,
+                      actionItems: data && data.actionItems ? data.actionItems.length : 0
+                  });
                   hideSplash();
                   try {
-                      initDashboard(data);
+                      applyDashboardPayload(data, 'startup');
                   } catch (err) {
                       reportStartupPhase('dashboard-init-failure', err && err.stack ? err.stack : err);
                       showStartupFailure(
@@ -1354,46 +1423,19 @@
       // TODO: HIGH RISK - bootstrap contract for all views.
       // Extract last, after all consumers are modularized.
       // BOOTSTRAP ANCHOR: hydrates allActionItems/global payload state and fans out to every major desktop surface
-      function initDashboard(data) {
+      function initDashboard(data, options) {
         window._lastDashboardPayload = data;
+        const initContext = options && options.context ? options.context : 'runtime';
+        const payloadMeta = options && options.payloadMeta ? options.payloadMeta : getPayloadMeta(data);
         const initOk = safeExecute('initDashboard', () => {
+            markStartupMetric('dashboard-init-critical-start', {
+                context: initContext,
+                source: payloadMeta.source || 'unknown'
+            });
             hideSplash();
             restoreGanttViewSession();
-            if (data && data.allFdhIds) {
-                globalAllFdhIds = data.allFdhIds;
-                let datalist = document.getElementById('fdh-list');
-                if (!datalist) {
-                    datalist = document.createElement('datalist');
-                    datalist.id = 'fdh-list';
-                    document.body.appendChild(datalist);
-                }
-                datalist.innerHTML = data.allFdhIds.sort().map(id => `<option value="${id}">`).join('');
-            }
-            allGlobalLogs = (data && data.globalLogs) ? data.globalLogs : [];
-            digestVendorCities = (data && data.vendorCities) ? data.vendorCities : [];
-            const userSelect = getEl('changelog-user');
-            if (userSelect) {
-                if (allGlobalLogs.length > 0) {
-                    let uniqueUsers = [...new Set(allGlobalLogs.map(l => l.user).filter(Boolean))].sort();
-                    userSelect.innerHTML = '<option value="ALL">All Users</option>' + uniqueUsers.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
-                } else {
-                    userSelect.innerHTML = '<option value="ALL">All Users</option>';
-                }
-            }
-            const logUserFilter = getEl('filter-log-user');
-            if (logUserFilter) {
-                if (allGlobalLogs.length > 0) {
-                    let uniqueUsers = [...new Set(allGlobalLogs.map(l => l.user).filter(Boolean))].sort();
-                    logUserFilter.innerHTML = '<option value="ALL">All Users</option>' + uniqueUsers.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
-                } else {
-                    logUserFilter.innerHTML = '<option value="ALL">All Users</option>';
-                }
-                logUserFilter.style.display = (currentGridPivot === 'changelog' || currentGridPivot === 'global-log') ? 'inline-flex' : 'none';
-            }
             let groupSelect = getEl('group-by-select');
             if (groupSelect) groupSelect.value = currentGroupBy;
-            renderChangeLog();
-            updateChangelogBadge();
             if (!data || !data.actionItems || data.actionItems.length === 0) {
                 allActionItems = [];
                 setHtml('gantt-container', `<div class="empty-msg">All Clear ✓</div>`);
@@ -1409,10 +1451,6 @@
             reconcileStagedReviewItems();
             let activeQueueItems = getActiveQueueItems();
             updateRefDataIndicator();
-            updateAdminBadge();
-            renderAdminPane(activeQueueItems);
-            renderOutbox();
-            openAdminPanelByDefault();
             populateDropdown('filter-vendor', [...new Set(activeQueueItems.map(i => i.vendor).filter(Boolean))]); populateDropdown('filter-city', [...new Set(activeQueueItems.map(i => i.city).filter(Boolean))]);
             let ofsMonths = activeQueueItems.map(i => {
                 let meta = getEffectiveOfsMonthMeta(i);
@@ -1427,10 +1465,14 @@
             }
             applyFilters();
             showStartupSelector();
-            // Re-apply theme after bootstrap to ensure icon renders
-            if (typeof applyTheme === 'function') {
-                applyTheme(_sysDark && _sysDark.matches);
-            }
+            scheduleAfterFirstPaint(function() {
+                hydrateDashboardSecondaryState(data);
+            });
+            markStartupMetric('dashboard-init-critical-complete', {
+                context: initContext,
+                source: payloadMeta.source || 'unknown',
+                queueItems: activeQueueItems.length
+            });
         });
         if (!initOk) {
             reportStartupPhase('dashboard-init-failure', 'safeExecute(initDashboard) reported a UI crash');
@@ -1441,7 +1483,7 @@
             );
             return;
         }
-        reportStartupPhase('dashboard-init-complete');
+        reportStartupPhase('dashboard-init-complete', { context: initContext, source: payloadMeta.source || 'unknown' });
       }
 
       // window.addEventListener('orientationchange', () => { setTimeout(scrollGanttToToday, 350); });

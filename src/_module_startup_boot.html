@@ -5,6 +5,7 @@
 // DEPENDED ON BY: _module_webapp_core.html, WebApp.html startup runtime
 // ============================================================
 let bootInterval;
+window.__startupPerf = window.__startupPerf || { startedAt: Date.now(), marks: [] };
 
 function isMobileGlassFlowShell() {
     return !!(document.body && document.body.classList.contains('v2-shell-glassflow'));
@@ -64,6 +65,33 @@ function reportStartupPhase(phase, meta) {
     const logger = phase.includes('failure') || phase.includes('timeout') ? console.error : console.info;
     if (typeof meta === 'undefined') logger(`[startup] ${phase}`);
     else logger(`[startup] ${phase}`, meta);
+}
+
+function markStartupMetric(name, meta) {
+    if (!window.__startupPerf || !Array.isArray(window.__startupPerf.marks)) {
+        window.__startupPerf = { startedAt: Date.now(), marks: [] };
+    }
+    const mark = {
+        name: name,
+        atMs: Date.now() - (window.__startupPerf.startedAt || Date.now())
+    };
+    if (meta && typeof meta === 'object') Object.assign(mark, meta);
+    window.__startupPerf.marks.push(mark);
+    reportStartupPhase('metric:' + name, mark);
+    return mark;
+}
+
+function getPayloadMeta(payload) {
+    return (payload && payload._payloadMeta) ? payload._payloadMeta : {};
+}
+
+function scheduleAfterFirstPaint(fn) {
+    const runner = function() { setTimeout(fn, 0); };
+    if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(runner);
+    } else {
+        runner();
+    }
 }
 
 function showStartupFailure(title, message, detail) {

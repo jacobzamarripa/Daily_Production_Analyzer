@@ -1701,9 +1701,22 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     });
   });
 
+  const totalReviewRows = reviewData.length;
+  const ghostOnlyReview = reviewMap.size === 0 && totalReviewRows > 0;
+  if (ghostOnlyReview) {
+    logMsg("BENNY ENGINE: Submitted review slice was empty; continuing with " + totalReviewRows + " ghost rows only.");
+  }
+
   if (mirrorSheet.getLastRow() > 1) mirrorSheet.getRange(2,1,mirrorSheet.getLastRow()-1, mirrorSheet.getMaxColumns()).clearContent().clearDataValidations().setBackground(null).setFontColor(null).setFontWeight(null).setFontStyle("normal");
   
-  if (reviewData.length > 0) {
+  if (totalReviewRows === 0) {
+    ensureCapacity(mirrorSheet, 2, finalMirrorHeaders.length);
+    mirrorSheet.getRange(1, 1, 1, finalMirrorHeaders.length).setValues([finalMirrorHeaders]);
+    applyFormatting(mirrorSheet);
+    try { mirrorSheet.getRange(1, 1, 1, mirrorSheet.getMaxColumns()).shiftColumnGroupDepth(-10); } catch(e){}
+    buildAndSaveDashboardPayloadV2([], finalMirrorHeaders, []);
+    logMsg("BENNY ENGINE: Empty review fast path completed for " + normalizedTargets.length + " target dates.");
+  } else if (totalReviewRows > 0) {
     ensureCapacity(mirrorSheet, reviewData.length + 1, finalMirrorHeaders.length); 
     mirrorSheet.getRange(1, 1, 1, finalMirrorHeaders.length).setValues([finalMirrorHeaders]);
     mirrorSheet.getRange(2, 1, reviewData.length, finalMirrorHeaders.length).setValues(reviewData);

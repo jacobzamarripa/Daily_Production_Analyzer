@@ -340,6 +340,9 @@ function syncChangeLogs() {
   let sheet = ss.getSheetByName(CHANGE_LOG_SHEET) || ss.insertSheet(CHANGE_LOG_SHEET);
   const refFdhSet = _getSheetFdhSet(ss.getSheetByName(REF_SHEET), "FDH Engineering ID");
   const archiveFdhSet = _getSheetFdhSet(ss.getSheetByName(HISTORY_SHEET), "FDH Engineering ID");
+  const knownFdhSet = new Set();
+  refFdhSet.forEach(function(fdh) { knownFdhSet.add(fdh); });
+  archiveFdhSet.forEach(function(fdh) { knownFdhSet.add(fdh); });
 
   const headers = ["FDH Engineering ID", "Type of Change", "New Value", "Updated By", "Date & Time Updated"];
   const fieldUrl = QB_API_BASE + "/fields?tableId=" + CHANGE_LOG_TABLE_ID;
@@ -443,7 +446,19 @@ function syncChangeLogs() {
     return _extractValue(cell.value);
   };
 
-  const rows = data.map(function(rec) {
+  const rows = [];
+  let blankFdhCount = 0;
+  let droppedUnknownFdhCount = 0;
+  data.forEach(function(rec) {
+    const fdh = String(getCellText(rec, fdhFid) || "").trim().toUpperCase();
+    if (!fdh) {
+      blankFdhCount++;
+      return;
+    }
+    if (!knownFdhSet.has(fdh)) {
+      droppedUnknownFdhCount++;
+      return;
+    }
     const userVal = getCellText(rec, updatedByFid);
     const updatedAtVal = getCellText(rec, updatedAtFid);
     const dateObj = new Date(updatedAtVal);
@@ -454,13 +469,13 @@ function syncChangeLogs() {
     const timeStr  = Utilities.formatDate(dateObj, "GMT-6", "HH:mm");
     const dateStr  = Utilities.formatDate(dateObj, "GMT-6", "MM/dd/yy");
     const displayDate = timeStr === "00:00" ? dateStr : dateStr + " " + timeStr;
-    return [
-      getCellText(rec, fdhFid),
+    rows.push([
+      fdh,
       getCellText(rec, typeFid),
       getCellText(rec, valueFid),
       userVal || "System",
       displayDate
-    ];
+    ]);
   });
 
   const props = PropertiesService.getScriptProperties();
@@ -471,21 +486,6 @@ function syncChangeLogs() {
     logMsg(`🔔 SIGNAL: New QuickBase changes detected (Latest: ${new Date(maxChangeTime).toISOString()})`);
   }
 
-  const scrubbedRows = [];
-  let blankFdhCount = 0;
-  let droppedUnknownFdhCount = 0;
-  rows.forEach(function(row) {
-    const fdh = String(row[0] || "").trim().toUpperCase();
-    if (!fdh) {
-      blankFdhCount++;
-      return;
-    }
-    if (refFdhSet.has(fdh) || archiveFdhSet.has(fdh)) {
-      scrubbedRows.push(row);
-      return;
-    }
-    droppedUnknownFdhCount++;
-  });
   if (blankFdhCount > 0) {
     logMsg("QB Change Log sync: " + blankFdhCount + " rows dropped for blank FDH after raw extraction fallback.");
   }
@@ -494,10 +494,10 @@ function syncChangeLogs() {
   }
 
   sheet.clear();
-  ensureCapacity(sheet, Math.max(scrubbedRows.length + 1, 2), headers.length);
+  ensureCapacity(sheet, Math.max(rows.length + 1, 2), headers.length);
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-  if (scrubbedRows.length > 0) {
-    sheet.getRange(2, 1, scrubbedRows.length, headers.length).setValues(scrubbedRows);
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
   }
   sheet.getRange("1:1").setBackground("#0f172a").setFontColor("white").setFontWeight("bold");
   // Note on first header cell: link to full QB change log for history beyond 7 days
@@ -506,13 +506,13 @@ function syncChangeLogs() {
     "https://omnifiber.quickbase.com/nav/app/bts3c49dd/table/" + CHANGE_LOG_TABLE_ID
   );
   sheet.setFrozenRows(1);
-  trimAndFilterSheet(sheet, scrubbedRows.length + 1, headers.length);
+  trimAndFilterSheet(sheet, rows.length + 1, headers.length);
   CacheService.getScriptCache().removeAll([
     'dashboard_data_cache_v12_meta', 'dashboard_data_cache_v12',
     'SIGNAL_FAST_current', 'SIGNAL_FAST_week', 'SIGNAL_FAST_month',
     'SIGNAL_FAST_V2_current', 'SIGNAL_FAST_V2_week', 'SIGNAL_FAST_V2_month'
   ]);
-  return { success: true, count: scrubbedRows.length };
+  return { success: true, count: rows.length };
 }
 
 
@@ -1094,13 +1094,13 @@ function _getSheetFdhSet(sheet, headerName) {
   const keys = new Set();
   if (!sheet || sheet.getLastRow() < 2) return keys;
 
-  const data = sheet.getDataRange().getValues();
-  const headers = (data[0] || []).map(function(h) { return String(h || "").trim(); });
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(function(h) { return String(h || "").trim(); });
   const idx = headers.indexOf(headerName);
   if (idx === -1) return keys;
 
-  for (let i = 1; i < data.length; i++) {
-    const key = String(data[i][idx] || "").trim().toUpperCase();
+  const columnValues = sheet.getRange(2, idx + 1, Math.max(sheet.getLastRow() - 1, 1), 1).getValues();
+  for (let i = 0; i < columnValues.length; i++) {
+    const key = String(columnValues[i][0] || "").trim().toUpperCase();
     if (key) keys.add(key);
   }
   return keys;
