@@ -1325,6 +1325,7 @@ function syncAndRebuildDashboard() {
  */
 function kickoffQBSync() {
   const props = PropertiesService.getScriptProperties();
+  const kickoffStartedAt = Date.now();
 
   // Guard against double-triggering — but reset if stale (> 14 min covers both phases)
   if (props.getProperty('QB_SYNC_STATUS') === 'running') {
@@ -1335,20 +1336,29 @@ function kickoffQBSync() {
   }
 
   // Clean up any orphaned triggers from prior failed runs
-  ScriptApp.getProjectTriggers()
+  const deletedTriggerCount = ScriptApp.getProjectTriggers()
     .filter(function(t) {
       const fn = t.getHandlerFunction();
       return fn === '_runQBSyncPhase1' || fn === '_runQBSyncPhase2';
     })
-    .forEach(function(t) { ScriptApp.deleteTrigger(t); });
+    .reduce(function(count, t) {
+      ScriptApp.deleteTrigger(t);
+      return count + 1;
+    }, 0);
+
+  const runId = String(kickoffStartedAt);
 
   props.setProperties({
     'QB_SYNC_STATUS':  'running',
     'QB_SYNC_PHASE':   '1',
-    'QB_SYNC_STARTED': String(Date.now())
+    'QB_SYNC_STARTED': String(kickoffStartedAt),
+    'QB_SYNC_RUN_ID': runId
   });
 
+  const phase1TriggerCreatedAt = Date.now();
+  props.setProperty('QB_SYNC_PHASE1_TRIGGER_CREATED_AT', String(phase1TriggerCreatedAt));
   ScriptApp.newTrigger('_runQBSyncPhase1').timeBased().after(1000).create();
+  logMsg('QB Async Sync kickoff scheduled', 'runId=' + runId + ', deletedTriggers=' + deletedTriggerCount + ', phase1TriggerDelayMs=' + (phase1TriggerCreatedAt - kickoffStartedAt));
   return { pending: true };
 }
 
@@ -1363,25 +1373,33 @@ function _runQBSyncPhase1(e) {
 
   const props = PropertiesService.getScriptProperties();
   try {
-    logMsg('QB Async Sync — Phase 1 start (QB fetch + sheet writes)');
+    const phase1StartMs = Date.now();
+    const runId = props.getProperty('QB_SYNC_RUN_ID') || 'unknown';
+    const phase1TriggerCreatedAt = Number(props.getProperty('QB_SYNC_PHASE1_TRIGGER_CREATED_AT') || 0);
+    const phase1TriggerLatencyMs = phase1TriggerCreatedAt ? phase1StartMs - phase1TriggerCreatedAt : null;
+    logMsg('QB Async Sync — Phase 1 start (QB fetch + sheet writes)', 'runId=' + runId + ', triggerLatencyMs=' + (phase1TriggerLatencyMs === null ? 'unknown' : phase1TriggerLatencyMs));
     const syncResult = syncFromQBWebApp();
     if (!syncResult.success) {
       props.setProperties({ 'QB_SYNC_STATUS': 'error', 'QB_SYNC_ERROR': syncResult.error || 'Phase 1 failed' });
       return;
     }
     const phase2QueuedAt = Date.now();
+    const phase2TriggerCreatedAt = Date.now();
     // Stash Phase 1 result so Phase 2 can include it in the final meta
     props.setProperties({
       'QB_SYNC_PHASE':       '2',
       'QB_SYNC_PHASE2_QUEUED_AT': String(phase2QueuedAt),
+      'QB_SYNC_PHASE2_TRIGGER_CREATED_AT': String(phase2TriggerCreatedAt),
       'QB_SYNC_PHASE1_RESULT': JSON.stringify({
         count:     syncResult.count,
         timestamp: syncResult.timestamp,
-        timings:   syncResult.timings
+        timings:   syncResult.timings,
+        triggerLatencyMs: phase1TriggerLatencyMs,
+        runId: runId
       })
     });
-    logMsg('QB Async Sync — Phase 1 complete (' + syncResult.count + ' records). Chaining Phase 2.');
     ScriptApp.newTrigger('_runQBSyncPhase2').timeBased().after(1000).create();
+    logMsg('QB Async Sync — Phase 1 complete (' + syncResult.count + ' records). Chaining Phase 2.', 'runId=' + runId + ', phase2TriggerDelayMs=' + (phase2TriggerCreatedAt - phase2QueuedAt));
   } catch (err) {
     logMsg('QB Async Sync Phase 1 ERROR: ' + err.message);
     props.setProperties({ 'QB_SYNC_STATUS': 'error', 'QB_SYNC_ERROR': err.message });
@@ -1401,14 +1419,20 @@ function _runQBSyncPhase2(e) {
   try {
     const phase2StartMs = Date.now();
     const phase1 = JSON.parse(props.getProperty('QB_SYNC_PHASE1_RESULT') || '{}');
+    const runId = props.getProperty('QB_SYNC_RUN_ID') || phase1.runId || 'unknown';
     const queuedAtMs = Number(props.getProperty('QB_SYNC_PHASE2_QUEUED_AT') || 0);
+    const phase2TriggerCreatedAt = Number(props.getProperty('QB_SYNC_PHASE2_TRIGGER_CREATED_AT') || 0);
     const phase2QueueLatencyMs = queuedAtMs ? phase2StartMs - queuedAtMs : null;
-    logMsg('QB Async Sync — Phase 2 start (engine rebuild)', 'queueLatencyMs=' + (phase2QueueLatencyMs === null ? 'unknown' : phase2QueueLatencyMs));
+    const phase2TriggerLatencyMs = phase2TriggerCreatedAt ? phase2StartMs - phase2TriggerCreatedAt : null;
+    logMsg('QB Async Sync — Phase 2 start (engine rebuild)', 'runId=' + runId + ', queueLatencyMs=' + (phase2QueueLatencyMs === null ? 'unknown' : phase2QueueLatencyMs) + ', triggerLatencyMs=' + (phase2TriggerLatencyMs === null ? 'unknown' : phase2TriggerLatencyMs));
     const latestDate = _getLatestArchiveDate();
     const rebuildStartMs = Date.now();
     generateDailyReviewCore(latestDate, null, false);
     const payloadTimings = JSON.parse(props.getProperty('QB_LAST_PAYLOAD_TIMINGS') || '{}');
     const phase2Timings = {
+      runId: runId,
+      phase1TriggerLatencyMs: phase1.triggerLatencyMs == null ? null : phase1.triggerLatencyMs,
+      phase2TriggerLatencyMs: phase2TriggerLatencyMs,
       queueLatencyMs: phase2QueueLatencyMs,
       rebuildMs: Date.now() - rebuildStartMs,
       totalPhase2Ms: Date.now() - phase2StartMs

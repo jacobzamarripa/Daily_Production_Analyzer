@@ -61,7 +61,14 @@ assert(/sheet\.getRange\(2, idx \+ 1, Math\.max\(sheet\.getLastRow\(\) - 1, 1\),
 assert(/logMsg\("WARN", "syncFromQBWebApp\.deckEnrichment", deckErr\.message\);/.test(qbSource), 'Deck enrichment warnings use structured logMsg formatting');
 assert(/logMsg\("WARN", "_fetchTableAllFids", "QB query HTTP " \+ resp\.getResponseCode\(\) \+ " for table " \+ tableId\);/.test(qbSource), 'QB query warnings use structured logMsg formatting');
 assert(/'QB_SYNC_PHASE2_QUEUED_AT': String\(phase2QueuedAt\)/.test(qbSource), 'Async sync records when Phase 2 was queued');
+assert(/QB_SYNC_PHASE1_TRIGGER_CREATED_AT/.test(qbSource), 'Async sync records when Phase 1 trigger was scheduled');
+assert(/'QB_SYNC_PHASE2_TRIGGER_CREATED_AT': String\(phase2TriggerCreatedAt\)/.test(qbSource), 'Async sync records when Phase 2 trigger was scheduled');
+assert(/'QB_SYNC_RUN_ID': runId/.test(qbSource), 'Async sync tags each run with a run ID');
+assert(/deletedTriggers=/.test(qbSource), 'Async kickoff logs orphaned trigger cleanup count');
+assert(/const phase1TriggerLatencyMs = phase1TriggerCreatedAt \? phase1StartMs - phase1TriggerCreatedAt : null;/.test(qbSource), 'Async sync computes Phase 1 trigger latency explicitly');
 assert(/const phase2QueueLatencyMs = queuedAtMs \? phase2StartMs - queuedAtMs : null;/.test(qbSource), 'Async sync computes Phase 2 queue latency explicitly');
+assert(/const phase2TriggerLatencyMs = phase2TriggerCreatedAt \? phase2StartMs - phase2TriggerCreatedAt : null;/.test(qbSource), 'Async sync computes Phase 2 trigger latency explicitly');
+assert(/phase1TriggerLatencyMs: phase1\.triggerLatencyMs == null \? null : phase1\.triggerLatencyMs,/.test(qbSource), 'Async sync persists Phase 1 trigger latency into Phase 2 timing summary');
 assert(/V2 PAYLOAD timings: /.test(read('src/02_Utilities.js')), 'Payload builder logs step timings');
 
 assert(/const totalReviewRows = reviewData\.length;/.test(archiveSource), 'Review engine tracks total review row count');

@@ -1,5 +1,11 @@
 # Agent Log — Omni PMO App
 
+> [!info] 2026-04-15: Turn-20 mental state checkpoint — Phase 2 stabilized, focus shifts to trigger latency
+- **Confirmed wins:** Phase 2 rebuild cost has been materially reduced through mirror-write fast paths, payload `refDict` reuse, and short-lived dictionary caching. Latest validated rebuild landed around **48.8s**, down from prior ~71s and far below the earlier ~201s baseline.
+- **Current bottleneck:** End-to-end async sync time is now dominated by the scheduler gap between Phase 1 completion and Phase 2 start (`queueLatencyMs` reached ~169s in the latest production log), not rebuild compute.
+- **Operational posture:** Keep the two-phase sync contract intact. Prefer instrumentation and explicit guardrails before any attempt to collapse, merge, or refactor trigger flow.
+- **Active slice:** Added trigger-chain instrumentation around kickoff, Phase 1 scheduling, and Phase 2 scheduling so the next logs can distinguish orphan cleanup, trigger scheduling delay, and actual Apps Script trigger latency.
+
 > [!success] 2026-04-13: Automated API Sync & Signal Polling Implementation
 - **Consolidated Automation Schedule**: Updated `setupDailyTrigger` to run strictly at **7:00 AM**, **12:00 PM**, and **4:00 PM**, aligning with peak workflow windows.
 - **API Pipeline Integration**: Injected the `syncFromQBWebApp()` QuickBase API sync directly into the `executeDailyAutomationPipeline`. This ensures the reference data is always refreshed *before* folder ingestion and dashboard generation.
