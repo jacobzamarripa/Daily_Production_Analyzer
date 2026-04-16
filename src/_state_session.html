@@ -29,6 +29,10 @@ let stagedDeckItems = [];
 // EXTRACT WITH: initDashboard, updateRefDataIndicator, triggerQBSync
 // WORKSTREAM 3 RISK: High
 let globalRefDataDate = "";
+// STATE: globalLastIngestionDate
+// READS: detail card footer (p-last-check)
+// WRITES: bootstrap payload load and process incoming success
+let globalLastIngestionDate = "";
 // STATE: isPresentationMode
 // READS: deck theme sync, dock state, deck idle handling
 // WRITES: presentation mode toggle

@@ -890,9 +890,9 @@ function openPane(item, cardEl) {
         let d = new Date();
         let dateStr = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear().toString().slice(-2);
 
-        setTxt('p-date', `REPORT DATE: ${item.reportDate ? formatDate(item.reportDate) : dateStr}`);
-        setTxt('p-last-check', `LAST CHECKED: ${lastCheckedStr === 'NEVER' ? 'NEVER' : formatDate(lastCheckedStr)}`);
-        updateRefDataIndicator();
+        setTxt('p-date', (item.reportDate ? `REPORT DATE: ${formatDate(item.reportDate)}` : "REPORT DATE: TBD"));
+        setTxt('p-last-check', (globalLastIngestionDate ? `LAST CHECKED: ${formatDate(globalLastIngestionDate)}` : "LAST CHECKED: NEVER"));
+        setTxt('p-ref-data', (globalRefDataDate ? `QB SYNC: ${formatDate(globalRefDataDate)}` : "QB SYNC: —"));
 
         let smartNote = item.geminiInsight ? item.geminiInsight : generateSmartComment(item, daysLeft, isOverdue);
         let pComment = getEl('p-comment');

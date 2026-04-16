@@ -640,6 +640,7 @@ function getDashboardData() {
     totalRows: data.length - 1,
     headers: headers,
     refDataDate: refDataDate,
+    lastIngestionTime: String(PropertiesService.getScriptProperties().getProperty('LAST_INGESTION_DATETIME') || ""),
     allFdhIds: Object.keys(refDict),
     fiberStats: fiberStats
   };

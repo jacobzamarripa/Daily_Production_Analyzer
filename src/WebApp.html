@@ -681,7 +681,7 @@
                               <div id="p-gemini-date" style="font-size:9px; font-style:italic; color:#a855f7;"></div>
                           </div>
                           <textarea id="p-comment" class="chat-bubble" oninput="this.dataset.generated='false'"></textarea>
-                          <div class="review-actions">
+                          <div class="review-actions" style="margin-top: 12px;">
                               <button class="btn-ai" onclick="askGeminiForDraft(this)" style="margin-right:auto;">DRAFT W/GEMINI</button>
                               <button class="btn btn-skip" onclick="skipReview()">Skip (Clear)</button>
                               <button class="btn btn-primary" id="btn-commit" onclick="commitReview()" style="display:inline-flex;align-items:center;gap:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Commit</button>
@@ -697,9 +697,9 @@
                       <div class="review-meta">
                           <span id="p-date" class="hover-trigger" onmouseenter="hl('Date')" onmouseleave="hl('')" style="cursor:pointer;">REPORT DATE: TBD</span>
                           <span class="review-meta-sep">|</span>
-                          <span id="p-last-check" class="hover-trigger" onmouseenter="hl('QB Context & Gaps')" onmouseleave="hl('')" style="cursor:pointer;">LAST CHECKED: NEVER</span>
+                          <span id="p-last-check" class="hover-trigger" onmouseenter="hl('Last Time Report Engine Ran')" onmouseleave="hl('')" style="cursor:pointer;">LAST CHECKED: NEVER</span>
                           <span class="review-meta-sep">|</span>
-                          <span id="p-ref-data" style="cursor:default;">REF DATA: —</span>
+                          <span id="p-ref-data" class="hover-trigger" onmouseenter="hl('Last Time Reference Data was Synced')" onmouseleave="hl('')" style="cursor:pointer;">QB SYNC: —</span>
                       </div>
                       <span id="p-view-record" style="margin-left:auto;"></span>
                   </div>

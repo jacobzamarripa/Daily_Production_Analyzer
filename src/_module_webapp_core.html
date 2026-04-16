@@ -1401,7 +1401,9 @@
             }
             allActionItems = data.actionItems; globalHeaders = data.headers;
             globalRefDataDate = data.refDataDate || "";
+            globalLastIngestionDate = data.lastIngestionTime || "";
             reconcileStagedReviewItems();
+
             let activeQueueItems = getActiveQueueItems();
             updateRefDataIndicator();
             populateDropdown('filter-vendor', [...new Set(activeQueueItems.map(i => i.vendor).filter(Boolean))]); populateDropdown('filter-city', [...new Set(activeQueueItems.map(i => i.city).filter(Boolean))]);
