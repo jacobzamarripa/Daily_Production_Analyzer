@@ -19,24 +19,37 @@ function renderQuickPeek(item) {
     const targetDateVal = item.targetDate || item.cxEnd || '';
     const targetDateLabel = targetDateVal ? formatDate(targetDateVal) : 'TBD';
 
-    let pEnd = safeDate(item.cxEnd || item.targetDate);
+    let cxEnd = safeDate(item.cxEnd || item.targetDate);
+    let ofsDate = getEffectiveOfsDate(item);
     let today = new Date();
     today.setHours(0,0,0,0);
-    let daysLeft = 0;
-    if (pEnd) daysLeft = Math.ceil((pEnd - today) / 86400000);
 
-    const isComplete = (item.stage || '').toLowerCase().includes('ofs') || (item.status || '').toLowerCase().includes('complete');
+    let activeTargetLabel = "COMPLETE";
+    let activeTargetDate = cxEnd;
+    if (ofsDate && (!cxEnd || today >= cxEnd)) {
+        activeTargetLabel = "OFS";
+        activeTargetDate = ofsDate;
+    }
+
+    let daysLeft = activeTargetDate ? Math.ceil((activeTargetDate - today) / 86400000) : 0;
+
+    const isOFS = (item.stage || '').toLowerCase().includes('ofs');
+    const isComplete = (item.status || '').toLowerCase().includes('complete');
     const isPermit = (item.stage || '').toLowerCase().includes('permit');
     const isOnHold = (item.status || '').toLowerCase().includes('hold');
-    const isOverdue = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
+    
+    let finalEnd = ofsDate || cxEnd;
+    const isOverdue = finalEnd && today > finalEnd && !isOFS && !isOnHold && !isPermit;
 
     let sColor = '#facc15';
-    if (isComplete) sColor = '#22c55e';
+    if (isOFS) sColor = '#2563eb';
+    else if (isOverdue) sColor = '#ef4444';
+    else if (isComplete) sColor = '#22c55e';
     else if (isPermit) sColor = '#a855f7';
     else if (isOnHold) sColor = '#94a3b8';
-    else if (isOverdue) sColor = '#ef4444';
 
-    const daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
+    let label = `DAYS TO ${activeTargetLabel}`;
+    const daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`;
 
     const v = item.vel;
     const ofsMeta = getEffectiveOfsMonthMeta(item, today);

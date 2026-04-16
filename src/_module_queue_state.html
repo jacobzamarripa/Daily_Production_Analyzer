@@ -278,19 +278,31 @@ function renderList(items) {
         let pillCls = getQueuePillClass(item.stage, item.status);
 
         let pEnd = safeDate(item.cxEnd);
-        let daysLeft = pEnd ? Math.ceil((pEnd - new Date()) / 86400000) : 0;
-        let isComplete = (item.stage || "").toLowerCase().includes('ofs') || (item.status || "").toLowerCase().includes('complete');
+        let ofsDate = getEffectiveOfsDate(item);
+        let activeTargetLabel = "COMPLETE";
+        let activeTargetDate = pEnd;
+        if (ofsDate && (!pEnd || today >= pEnd)) {
+            activeTargetLabel = "OFS";
+            activeTargetDate = ofsDate;
+        }
+
+        let daysLeft = activeTargetDate ? Math.ceil((activeTargetDate - today) / 86400000) : 0;
+        let isOFS = (item.stage || "").toLowerCase().includes('ofs');
+        let isComplete = (item.status || "").toLowerCase().includes('complete');
         let isPermit = (item.stage || "").toLowerCase().includes('permit');
         let isOnHold = (item.status || "").toLowerCase().includes('hold');
-        let isOverdue = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
+        
+        let finalEnd = ofsDate || pEnd;
+        let isOverdue = finalEnd && today > finalEnd && !isOFS && !isOnHold && !isPermit;
 
         let bodyHtml = '';
         if (pivot === 'schedule') {
             let sColor = "#facc15";
-            if (isComplete) sColor = "#22c55e";
+            if (isOFS) sColor = "#2563eb";
+            else if (isOverdue) sColor = "#ef4444";
+            else if (isComplete) sColor = "#22c55e";
             else if (isPermit) sColor = "#a855f7";
             else if (isOnHold) sColor = "#94a3b8";
-            else if (isOverdue) sColor = "#ef4444";
             let pStart = safeDate(item.cxStart);
             let pct = 0;
             if (pStart && pEnd && pEnd - pStart > 0) pct = Math.max(0, Math.min(100, ((new Date() - pStart) / (pEnd - pStart)) * 100));
@@ -317,6 +329,7 @@ function renderList(items) {
             let ofsMonthStr = ofsMeta.label;
             let isOFSMonth = ofsMeta.isCurrentMonth;
             let ofsPillClass = 'vel-footer-pill vel-footer-pill--ofs' + (isOFSMonth ? ' is-current' : '');
+            let label = `DAYS TO ${activeTargetLabel}`;
             if (v) {
                 bodyHtml = `
                     <div class="velocity-grid" style="align-content:flex-start; gap:8px; margin-bottom:8px; flex-grow:0;">
@@ -326,7 +339,7 @@ function renderList(items) {
                         ${buildVelocityBar('Splicing', v.nap.daily, v.nap.tot, v.nap.bom, 'NAP', daysLeft)}
                     </div>
                     <div class="qb-vel-footer" style="margin-top:auto; border-top:1px solid var(--border); padding-top:8px;">
-                        <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`}</div>
+                        <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`}</div>
                         <div style="display:flex; gap:6px;">
                             <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px;">BSLS: ${item.bsls}</div>
                             <div class="${ofsPillClass}" style="font-size:8px; padding:2px 6px;">OFS: ${ofsMonthStr}</div>
@@ -603,21 +616,29 @@ function openPane(item, cardEl, force) {
         let isComplete = stat.includes('complete');
         let isOnHold = stat.includes('hold');
 
-        let hasEnd = item.cxEnd && item.cxEnd !== "";
-        let isOverdue = false;
-        if (hasEnd) {
-            let end = safeDate(item.cxEnd);
-            let today = new Date();
-            today.setHours(0, 0, 0, 0);
-            if (end && today > end && !isOFS && !isComplete && !isOnHold && !isPermit) isOverdue = true;
+        let ofsDate = getEffectiveOfsDate(item);
+        let pStart = safeDate(item.cxStart);
+        let pEnd = safeDate(item.cxEnd);
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let activeTargetLabel = "COMPLETE";
+        let activeTargetDate = pEnd;
+        if (ofsDate && (!pEnd || today >= pEnd)) {
+            activeTargetLabel = "OFS";
+            activeTargetDate = ofsDate;
         }
+
+        let isOverdue = false;
+        let finalEnd = ofsDate || pEnd;
+        if (finalEnd && today > finalEnd && !isOFS && !isOnHold && !isPermit) isOverdue = true;
 
         let statusColor = "#facc15";
         if (isOFS) statusColor = "#2563eb";
-        else if (isPermit) statusColor = "#a855f7";
-        else if (isComplete) statusColor = "#22c55e";
-        else if (isOnHold) statusColor = "#94a3b8";
         else if (isOverdue) statusColor = "#ef4444";
+        else if (isComplete) statusColor = "#22c55e";
+        else if (isPermit) statusColor = "#a855f7";
+        else if (isOnHold) statusColor = "#94a3b8";
 
         let unifiedCard = getEl('main-qb-grid');
         if (unifiedCard) {
@@ -642,22 +663,21 @@ function openPane(item, cardEl, force) {
             if (velGrid) velGrid.classList.toggle('is-muted', isMuted);
         }
 
-        let hasStart = item.cxStart && item.cxStart !== "";
-        setHtml('p-cx-start', `CX START: <span style="color:var(--text-main)">${hasStart ? formatDate(item.cxStart) : "TBD"}</span>`);
-        setHtml('p-cx-end', `CX COMPLETE: <span style="color:var(--text-main)">${hasEnd ? formatDate(item.cxEnd) : "TBD"}</span>`);
+        setHtml('p-cx-start', `CX START: <span style="color:var(--text-main)">${pStart ? formatDate(item.cxStart) : "TBD"}</span>`);
+        setHtml('p-cx-end', `CX COMPLETE: <span style="color:var(--text-main)">${pEnd ? formatDate(item.cxEnd) : "TBD"}</span>`);
 
         let scheduleFill = getEl('p-time-fill');
         let scheduleTodayIndicator = getEl('p-today-indicator');
         let scheduleTodayLine = getEl('p-today-line');
         let scheduleTodayLabel = getEl('p-today-label');
         let daysLeft = 0;
-        let pStart = safeDate(item.cxStart);
-        let pEnd = safeDate(item.cxEnd);
+        if (activeTargetDate) {
+            daysLeft = Math.ceil((activeTargetDate - today) / 86400000);
+        }
 
-        if (hasStart && hasEnd && pStart && pEnd && scheduleFill) {
+        if (pStart && pEnd && scheduleFill) {
             let total = pEnd - pStart;
-            let elap = new Date() - pStart;
-            daysLeft = Math.ceil((pEnd - new Date()) / 86400000);
+            let elap = today - pStart;
             let pct = total > 0 ? Math.max(0, Math.min(100, (elap / total) * 100)) : 0;
             scheduleFill.style.width = `${pct}%`;
             scheduleFill.style.background = statusColor;
@@ -665,7 +685,7 @@ function openPane(item, cardEl, force) {
             scheduleFill.style.width = "0%";
         }
 
-        let cardToday = getTimelineTodayIndicator(pStart, pEnd, new Date());
+        let cardToday = getTimelineTodayIndicator(pStart, pEnd, today);
         if (scheduleTodayIndicator && scheduleTodayLine && scheduleTodayLabel && cardToday) {
             scheduleTodayIndicator.style.display = 'block';
             scheduleTodayIndicator.style.left = `${cardToday.clampedPct}%`;
@@ -856,7 +876,7 @@ function openPane(item, cardEl, force) {
         }
         setHtml('p-prod-bars', barsHtml || "<div style='font-size:11px; color:var(--text-muted); font-style:italic; grid-column:span 2;'>No active production tracking.</div>");
 
-        let effectiveLight = item.isLight || st.includes('ofs') || stat.includes('complete');
+        let effectiveLight = item.isLight || st.includes('ofs');
         let lightHtml = effectiveLight ? `<span style="height:6px; width:6px; background:#22c55e; border-radius:50%; box-shadow:0 0 8px #22c55e;"></span> <span style="color:#22c55e;">LIGHT PRESENT</span>` : `<span style="height:6px; width:6px; background:#94a3b8; border-radius:50%;"></span> <span style="color:#94a3b8;">PENDING LIGHT</span>`;
         setHtml('p-light-pill', lightHtml);
         let trackerFooter = getEl('p-tracker-pill');
@@ -869,7 +889,8 @@ function openPane(item, cardEl, force) {
         let ofsMonthStr = ofsMeta.label;
         let isOFSMonth = ofsMeta.isCurrentMonth;
 
-        setTxt('p-days-left', daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`);
+        let label = `DAYS TO ${activeTargetLabel}`;
+        setTxt('p-days-left', daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`);
         setTxt('p-bsls', `BSLS: ${item.bsls}`);
         let pOfs = getEl('p-ofs');
         if (pOfs) {
@@ -1068,13 +1089,14 @@ function applyFilters() {
         currentFilterStats.pieCounts = {};
 
         filtered.forEach(item => {
+            let ofsD = getEffectiveOfsDate(item);
             let start = safeDate(item.cxStart) || safeDate(item.reportDate) || new Date(today);
-            let end = safeDate(item.cxEnd) || getEffectiveOfsDate(item) || safeDate(item.targetDate) || new Date(start.getTime() + 86400000 * 30);
+            let end = ofsD || safeDate(item.cxEnd) || safeDate(item.targetDate) || new Date(start.getTime() + 86400000 * 30);
             if (isNaN(start)) start = new Date(today);
             if (isNaN(end)) end = new Date(start.getTime() + 86400000 * 7);
             if (end < start) end = new Date(start.getTime() + 86400000);
 
-            let isComplete = (item.stage || "").toLowerCase().includes('ofs') || (item.status || "").toLowerCase().includes('complete');
+            let isOFS = (item.stage || "").toLowerCase().includes('ofs');
             let isOnHold = (item.status || "").toLowerCase().includes('hold');
 
             let stageName = item.stage || 'Unknown';
@@ -1091,7 +1113,6 @@ function applyFilters() {
             let v = item.vendor || "Unknown";
             currentFilterStats.bslByVendor[v] = (currentFilterStats.bslByVendor[v] || 0) + bslNum;
 
-            let ofsD = getEffectiveOfsDate(item);
             let mKey = (ofsD && !isNaN(ofsD.getTime()))
                 ? ofsD.toLocaleString('default', { month: 'short', timeZone: 'UTC' }).toUpperCase()
                 : 'TBD';
@@ -1099,13 +1120,13 @@ function applyFilters() {
             if (!currentFilterStats.bslMatrix[v]) currentFilterStats.bslMatrix[v] = {};
             currentFilterStats.bslMatrix[v][mKey] = (currentFilterStats.bslMatrix[v][mKey] || 0) + bslNum;
 
-            if (!isComplete && !isOnHold) {
-                if (today < start) {
-                    pendingProjCount++;
-                    currentFilterStats.lifecycle.pending++;
-                } else if (today > end) {
+            if (!isOFS && !isOnHold) {
+                if (today > end) {
                     overdueProjCount++;
                     currentFilterStats.lifecycle.overdue++;
+                } else if (today < start) {
+                    pendingProjCount++;
+                    currentFilterStats.lifecycle.pending++;
                 } else {
                     activeProjCount++;
                     currentFilterStats.lifecycle.active++;

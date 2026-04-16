@@ -464,20 +464,35 @@ function renderDeckStage() {
           syncSlideThemeButton();
         }
 
-        let pEnd = safeDate(item.cxEnd);
+        let cxEnd = safeDate(item.cxEnd);
+        let ofsDate = getEffectiveOfsDate(item);
         let today = new Date(); today.setHours(0,0,0,0);
-        let daysLeft = pEnd ? Math.ceil((pEnd - today) / 86400000) : 0;
-        let isComplete = (item.stage||'').toLowerCase().includes('ofs') || (item.status||'').toLowerCase().includes('complete');
+
+        let activeTargetLabel = "COMPLETE";
+        let activeTargetDate = cxEnd;
+        if (ofsDate && (!cxEnd || today >= cxEnd)) {
+            activeTargetLabel = "OFS";
+            activeTargetDate = ofsDate;
+        }
+
+        let daysLeft = activeTargetDate ? Math.ceil((activeTargetDate - today) / 86400000) : 0;
+        
+        const isOFS = (item.stage || '').toLowerCase().includes('ofs');
+        let isComplete = (item.status||'').toLowerCase().includes('complete');
         let isPermit = (item.stage||'').toLowerCase().includes('permit');
         let isOnHold = (item.status||'').toLowerCase().includes('hold');
-        let isOverdue = pEnd && today > pEnd && !isComplete && !isOnHold && !isPermit;
+        
+        let finalEnd = ofsDate || cxEnd;
+        let isOverdue = finalEnd && today > finalEnd && !isOFS && !isOnHold && !isPermit;
 
-        let sColor = isComplete ? '#22c55e' : isPermit ? '#a855f7' : isOnHold ? '#94a3b8' : isOverdue ? '#ef4444' : '#facc15';
+        let sColor = isOFS ? '#2563eb' : isOverdue ? '#ef4444' : isComplete ? '#22c55e' : isPermit ? '#a855f7' : isOnHold ? '#94a3b8' : '#facc15';
         let ofsMeta = getEffectiveOfsMonthMeta(item, today);
         let ofsMonthStr = ofsMeta.label;
         let isOFSMonth = ofsMeta.isCurrentMonth;
         let ofsPillClass = 'vel-footer-pill vel-footer-pill--ofs' + (isOFSMonth ? ' is-current' : '');
-        let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
+        
+        let label = `DAYS TO ${activeTargetLabel}`;
+        let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`;
 
         let deckReportDate = formatDate(item.reportDate || item.date);
         let deckLastCheck = formatDate(item.lastChecked);

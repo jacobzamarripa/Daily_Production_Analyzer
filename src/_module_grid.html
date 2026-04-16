@@ -143,21 +143,32 @@ function _performRenderGrid() {
 
         let pStart = safeDate(item.cxStart);
         let pEnd = safeDate(item.cxEnd);
-        let daysLeft = pEnd ? Math.ceil((pEnd - now) / 86400000) : 0;
+        let ofsDate = getEffectiveOfsDate(item);
+
+        let activeTargetLabel = "COMPLETE";
+        let activeTargetDate = pEnd;
+        if (ofsDate && (!pEnd || today >= pEnd)) {
+            activeTargetLabel = "OFS";
+            activeTargetDate = ofsDate;
+        }
+
+        let daysLeft = activeTargetDate ? Math.ceil((activeTargetDate - today) / 86400000) : 0;
         let st = (item.stage || "").toLowerCase();
         let stat = (item.status || "").toLowerCase();
         let isOFS = st.includes('ofs');
         let isComplete = stat.includes('complete');
         let isPermit = st.includes('permit') || st.includes('pre-con') || st.includes('vendor assignment');
         let isOnHold = stat.includes('hold');
-        let isOverdue = pEnd && today > pEnd && !isOFS && !isComplete && !isOnHold && !isPermit;
+
+        let finalEnd = ofsDate || pEnd;
+        let isOverdue = finalEnd && today > finalEnd && !isOFS && !isOnHold && !isPermit;
         let isMuted = isComplete || isOFS || isPermit;
         let muteClass = isMuted ? 'is-muted' : '';
 
         if (isOFS) glowCls = 'glow-ofs';
+        else if (isOverdue) glowCls = 'glow-overdue';
         else if (isComplete) glowCls = 'glow-complete';
         else if (isPermit) glowCls = 'glow-permit';
-        else if (isOverdue) glowCls = 'glow-overdue';
         else glowCls = 'glow-active';
 
         if (currentGridPivot === 'schedule') {
@@ -170,7 +181,11 @@ function _performRenderGrid() {
                 pct = Math.max(0, Math.min(100, (elap / total) * 100));
             }
             let sColor = "#facc15";
-            if (isOFS) sColor = "#2563eb"; else if (isPermit) sColor = "#a855f7"; else if (isComplete) sColor = "#22c55e"; else if (isOnHold) sColor = "#94a3b8"; else if (isOverdue) sColor = "#ef4444";
+            if (isOFS) sColor = "#2563eb"; 
+            else if (isOverdue) sColor = "#ef4444"; 
+            else if (isComplete) sColor = "#22c55e"; 
+            else if (isPermit) sColor = "#a855f7"; 
+            else if (isOnHold) sColor = "#94a3b8"; 
             let xingCls = item.isXing ? 'xing' : '';
             let xingBadge = item.isXing ? `<div style="position:absolute; bottom:4px; right:4px; display:flex; align-items:center; gap:4px; background:#171717; color:#facc15; padding:1px 6px; border-radius:4px; font-size:8px; font-weight:900; border:1px solid #facc15;">X-ING</div>` : '';
             let targetRadius = item.isXing ? "9px 9px 0 0" : "12px 12px 0 0";
@@ -197,7 +212,8 @@ function _performRenderGrid() {
             `;
         } else if (currentGridPivot === 'velocity') {
             let v = item.velocity || item.vel;
-            let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `DAYS LEFT: ${daysLeft}`;
+            let label = `DAYS TO ${activeTargetLabel}`;
+            let daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`;
             let ofsMeta = getEffectiveOfsMonthMeta(item, today);
             let ofsMonthStr = ofsMeta.label;
             let isOFSMonth = ofsMeta.isCurrentMonth;
