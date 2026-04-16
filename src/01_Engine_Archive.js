@@ -1655,17 +1655,21 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   
   let reviewMap = new Map();
   let submittedFdhs = new Set();
+  let latestReportMap = new Map(); // 🧠 LATEST STATE TRACKER: FDH -> {row, idx}
 
   logMsg("BENNY ENGINE: Processing " + histData.length + " archive rows for " + normalizedTargets.length + " target dates.");
 
   timerStartMs = Date.now();
+  const fdhIdIdx = HISTORY_HEADERS.indexOf("FDH Engineering ID");
   histData.forEach((row, idx) => {
     if (idx === 0) return; 
     
+    let fdhId = row[fdhIdIdx].toString().toUpperCase().trim();
+    latestReportMap.set(fdhId, { row: row, idx: idx }); // Archive is chronological; last one wins.
+
     let rowDate = normalizeDate(row[0]);
     
     if (normalizedTargets.includes(rowDate)) {
-      let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")].toString().toUpperCase().trim();
       submittedFdhs.add(fdhId);
       let diag = runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict);
       
@@ -1812,6 +1816,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
 
   // GHOST ROW INJECTION — Active projects with no submission today
   const GHOST_ACTIVE_STAGES = ["FIELD CX", "PERMITTING", "CONSTRUCTION", "ACTIVE"];
+  const targetDateObj = normalizedTargets.length > 0 ? new Date(normalizedTargets[0] + "T12:00:00") : new Date();
   timerStartMs = Date.now();
   Object.keys(refDict).forEach(ghostFdhId => {
     if (submittedFdhs.has(ghostFdhId)) return;
@@ -1823,39 +1828,98 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     if (statUp.includes("COMPLETE") || statUp.includes("ON HOLD")) return;
     if (!GHOST_ACTIVE_STAGES.some(s => stageUp.includes(s))) return;
 
+    const latest = latestReportMap.get(ghostFdhId);
     let ghostRowObj = {};
-    finalMirrorHeaders.forEach(h => { ghostRowObj[h] = ""; });
-    ghostRowObj["FDH Engineering ID"] = ghostFdhId;
-    ghostRowObj["City"]               = ref.city || "-";
-    ghostRowObj["Stage"]              = ref.stage || "-";
-    ghostRowObj["Status"]             = ref.status || "-";
-    ghostRowObj["BSLs"]               = ref.bsls || "-";
-    ghostRowObj["Budget OFS"]         = ref.canonicalOfsDate || ref.forecastedOFS || "-";
-    let ghostCx = resolveCxDates(ghostFdhId, ref, lkvDict, histData, HISTORY_HEADERS);
-    ghostRowObj["CX Start"]    = ghostCx.cxStart;
-    ghostRowObj["CX Complete"] = ghostCx.cxComplete;
-    ghostRowObj["CX Inferred"] = ghostCx.inferredLabel;
-    ghostRowObj["Contractor"]         = ref.vendor;
-    ghostRowObj["Health Flags"]       = "MISSING DAILY REPORT";
-    ghostRowObj["Action Required"]    = `Vendor (${ref.vendor}) did not submit a daily report.`;
-    ghostRowObj["Field Production"]   = "No daily report submitted today.";
-    ghostRowObj["Vendor Comment"]     = "Missing daily report.";
-    ghostRowObj["Historical Milestones"] = benchmarkDict[ghostFdhId] || "No history logged.";
-    ghostRowObj["Archive_Row"]        = "";
+    
+    if (latest) {
+      // 🧠 UPGRADE: Use latest known report data instead of zeroes
+      const lRow = latest.row;
+      HISTORY_HEADERS.forEach((h, i) => {
+        ghostRowObj[h] = lRow[i];
+      });
+      
+      let reportDate = new Date(lRow[0]);
+      let daysAgo = Math.floor((targetDateObj - reportDate) / (1000 * 60 * 60 * 24));
+      
+      let staleFlag = "STALE REPORT";
+      let staleColor = TEXT_COLORS.GHOST;
+      let staleDraft = `Vendor (${ref.vendor}) did not submit a daily report today. Last report was ${daysAgo} day(s) ago.`;
 
-    reviewData.push(finalMirrorHeaders.map(h => ghostRowObj[h] !== undefined ? ghostRowObj[h] : ""));
-    highlightsData.push({
-      rowState:       "ACTIVE",
-      adaePaletteIdx: "GHOST",
-      colors:         { warn: [], mismatch: [], ug: [], ae: [], fib: [], nap: [] },
-      summary:        "No daily report submitted today.",
-      gaps:           "",
-      flags:          "MISSING DAILY REPORT",
-      flagColors:     [TEXT_COLORS.GHOST],
-      cleanComment:   "Missing daily report.",
-      draft:          `Vendor (${ref.vendor}) did not submit a daily report.`,
-      benchmark:      benchmarkDict[ghostFdhId] || ""
-    });
+      if (daysAgo >= 2) {
+        staleFlag = `STALE REPORT (${daysAgo} Days)`;
+        staleColor = TEXT_COLORS.WARN; // Red (#ef4444)
+      } else if (daysAgo === 1) {
+        staleFlag = `STALE REPORT (Yesterday)`;
+        staleColor = TEXT_COLORS.MISMATCH; // Yellow/Orange (#b45309)
+      }
+
+      ghostRowObj["Health Flags"]    = staleFlag;
+      ghostRowObj["Action Required"] = staleDraft;
+      ghostRowObj["Vendor Comment"]  = lRow[HISTORY_HEADERS.indexOf("Vendor Comment")] || "No update provided.";
+      ghostRowObj["Archive_Row"]     = latest.idx + 1;
+
+      // Ensure other fields are synced with Ref Data
+      ghostRowObj["City"]               = ref.city || "-";
+      ghostRowObj["Stage"]              = ref.stage || "-";
+      ghostRowObj["Status"]             = ref.status || "-";
+      ghostRowObj["BSLs"]               = ref.bsls || "-";
+      ghostRowObj["Budget OFS"]         = ref.canonicalOfsDate || ref.forecastedOFS || "-";
+
+      let ghostCx = resolveCxDates(ghostFdhId, ref, lkvDict, histData, HISTORY_HEADERS);
+      ghostRowObj["CX Start"]           = ghostCx.cxStart;
+      ghostRowObj["CX Complete"]        = ghostCx.cxComplete;
+      ghostRowObj["CX Inferred"]        = ghostCx.inferredLabel;
+      ghostRowObj["Historical Milestones"] = benchmarkDict[ghostFdhId] || "No history logged.";
+
+      reviewData.push(finalMirrorHeaders.map(h => ghostRowObj[h] !== undefined ? ghostRowObj[h] : ""));
+      highlightsData.push({
+        rowState:       "ACTIVE",
+        adaePaletteIdx: "GHOST",
+        colors:         { warn: [], mismatch: [], ug: [], ae: [], fib: [], nap: [] },
+        summary:        `Last Report: ${Utilities.formatDate(reportDate, "GMT-5", "MM/dd/yy")}`,
+        gaps:           "",
+        flags:          staleFlag,
+        flagColors:     [staleColor],
+        cleanComment:   ghostRowObj["Vendor Comment"],
+        draft:          staleDraft,
+        benchmark:      benchmarkDict[ghostFdhId] || ""
+      });
+
+    } else {
+      // TRULY MISSING: No history at all
+      finalMirrorHeaders.forEach(h => { ghostRowObj[h] = ""; });
+      ghostRowObj["FDH Engineering ID"] = ghostFdhId;
+      ghostRowObj["City"]               = ref.city || "-";
+      ghostRowObj["Stage"]              = ref.stage || "-";
+      ghostRowObj["Status"]             = ref.status || "-";
+      ghostRowObj["BSLs"]               = ref.bsls || "-";
+      ghostRowObj["Budget OFS"]         = ref.canonicalOfsDate || ref.forecastedOFS || "-";
+      let ghostCx = resolveCxDates(ghostFdhId, ref, lkvDict, histData, HISTORY_HEADERS);
+      ghostRowObj["CX Start"]    = ghostCx.cxStart;
+      ghostRowObj["CX Complete"] = ghostCx.cxComplete;
+      ghostRowObj["CX Inferred"] = ghostCx.inferredLabel;
+      ghostRowObj["Contractor"]         = ref.vendor;
+      ghostRowObj["Health Flags"]       = "MISSING DAILY REPORT";
+      ghostRowObj["Action Required"]    = `Vendor (${ref.vendor}) has NEVER submitted a daily report for this project.`;
+      ghostRowObj["Field Production"]   = "No daily report history found.";
+      ghostRowObj["Vendor Comment"]     = "Missing daily report.";
+      ghostRowObj["Historical Milestones"] = benchmarkDict[ghostFdhId] || "No history logged.";
+      ghostRowObj["Archive_Row"]        = "";
+
+      reviewData.push(finalMirrorHeaders.map(h => ghostRowObj[h] !== undefined ? ghostRowObj[h] : ""));
+      highlightsData.push({
+        rowState:       "ACTIVE",
+        adaePaletteIdx: "GHOST",
+        colors:         { warn: [], mismatch: [], ug: [], ae: [], fib: [], nap: [] },
+        summary:        "No daily report history found.",
+        gaps:           "",
+        flags:          "MISSING DAILY REPORT",
+        flagColors:     [TEXT_COLORS.WARN],
+        cleanComment:   "Missing daily report.",
+        draft:          `Vendor (${ref.vendor}) has NEVER submitted a daily report.`,
+        benchmark:      benchmarkDict[ghostFdhId] || ""
+      });
+    }
   });
   markTiming("ghostRowInjectionMs", timerStartMs);
 

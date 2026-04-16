@@ -167,7 +167,16 @@
                   plain.includes("FORMAT ERROR")
               )) { highestSev = "warn"; }
           });
-          if (highestSev === "info" && rawFlags.some(f => f === "MISSING DAILY REPORT")) highestSev = "ghost";
+          if (highestSev === "info") {
+              if (rawFlags.some(f => {
+                  let up = String(f).toUpperCase();
+                  return up === "MISSING DAILY REPORT" || (up.includes("STALE REPORT") && !up.includes("YESTERDAY"));
+              })) {
+                  highestSev = "crit";
+              } else if (rawFlags.some(f => String(f).toUpperCase().includes("YESTERDAY"))) {
+                  highestSev = "warn";
+              }
+          }
           return highestSev;
       }
 
@@ -310,6 +319,10 @@
             plain.includes('DELAYING DOWNSTREAM')
           ) return 'chip-warn';
           if (f.includes('🪄') || f.includes('🟣') || plain.includes('TRACKER UPDATE') || plain.includes('TRANSPORT OVERRIDE')) return 'chip-magic';
+          if (f.includes('STALE REPORT')) {
+              if (f.includes('YESTERDAY')) return 'chip-warn';
+              return 'tag-red';
+          }
           if (f === 'MISSING DAILY REPORT') return 'chip-ghost';
           if (f.includes('🚨') || f.includes('🛑') || plain.includes('LIGHTING RISK') || plain.includes('OVERRUN')) return 'tag-red';
           if (f.includes('🚩')) return 'chip-warn';
