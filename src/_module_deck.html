@@ -223,12 +223,26 @@ function getDeckItems() {
     return filteredItems || [];
 }
 
-function centerQueueCardByFdh(fdh, behavior) {
+function centerQueueCardByFdh(fdh, behavior, force) {
+    // 1. GRID-ONLY: Only center if view mode is grid.
+    if (typeof currentViewMode === 'undefined' || currentViewMode !== 'grid') return;
+
     const container = getEl('inbox-list');
     if (!container || !fdh) return;
+
+    // 2. Identify target card
     const target = container.querySelector(`[data-fdh="${CSS.escape(String(fdh || ''))}"]`) || getEl(`card-${fdh}`) || getEl(`queue-grid-card-${fdh}`);
     if (!target) return;
-    const top = target.offsetTop - (container.clientHeight / 2) + (target.offsetHeight / 2);
+
+    // 3. Robust offset calculation (handle groups/nested offsetParents)
+    let offsetTop = target.offsetTop;
+    let curr = target.offsetParent;
+    while (curr && curr !== container) {
+        offsetTop += curr.offsetTop;
+        curr = curr.offsetParent;
+    }
+
+    const top = offsetTop - (container.clientHeight / 2) + (target.offsetHeight / 2);
     container.scrollTo({ top: Math.max(0, top), behavior: behavior || 'smooth' });
 }
 
@@ -249,7 +263,7 @@ function updateDeckStageSelection() {
     document.querySelectorAll('.inbox-list .grid-card.is-selected').forEach(card => card.classList.remove('is-selected'));
     if (!active) return;
     document.querySelectorAll(`.inbox-list [data-fdh="${CSS.escape(String(active.fdh || ''))}"]`).forEach(card => card.classList.add('is-selected'));
-    centerQueueCardByFdh(active.fdh, 'smooth');
+    centerQueueCardByFdh(active.fdh, 'smooth', true);
 }
 
 function navDeck(dir) {
@@ -337,7 +351,7 @@ function navGlobal(dir, isVertical) {
     }
 
     if (currentWorkspaceView === 'grid') openPaneFromGrid(items[nextIdx].fdh);
-    else openPane(items[nextIdx], document.getElementById(`card-${items[nextIdx].fdh}`));
+    else openPane(items[nextIdx], document.getElementById(`card-${items[nextIdx].fdh}`), true);
 }
 
 function showCinemaTooltip() {

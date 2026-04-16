@@ -44,6 +44,8 @@ let isPresentationMode = false; // Controls Theater blackout
 const CHANGELOG_PULSE_SESSION_KEY = 'changelogPulseSeen';
 const STAGED_REVIEW_SESSION_KEY = 'dpa.stagedReviewItems.v1';
 const STAGED_REVIEW_COLLAPSED_SESSION_KEY = 'dpa.stagedReviewCollapsed.v1';
+const QB_SYNC_COLLAPSED_SESSION_KEY = 'dpa.qbSyncCollapsed.v1';
+const MANAGER_REVIEW_COLLAPSED_SESSION_KEY = 'dpa.managerReviewCollapsed.v1';
 const GANTT_VIEW_SCROLL_SESSION_KEY = 'dpa.ganttScroll.v1';
 const GANTT_VIEW_FOCUS_SESSION_KEY = 'dpa.ganttFocus.v1';
 const GROUP_BY_SESSION_KEY = 'dpa.queueGroupBy.v1';
@@ -58,4 +60,6 @@ const REVIEWED_TRAY_STORAGE_KEY = 'dpa.reviewedTray.v1';
 // WRITES: reviewed tray collapse toggles and persistence
 // EXTRACT WITH: stagedDeckItems, persistStagedReviewSession
 let isStagedReviewCollapsed = false;
+let isQbSyncCollapsed = false;
+let isManagerReviewCollapsed = false;
 </script>

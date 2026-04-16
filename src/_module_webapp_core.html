@@ -436,6 +436,8 @@
           try {
               sessionStorage.setItem(STAGED_REVIEW_SESSION_KEY, JSON.stringify(stagedDeckItems || []));
               sessionStorage.setItem(STAGED_REVIEW_COLLAPSED_SESSION_KEY, isStagedReviewCollapsed ? '1' : '0');
+              sessionStorage.setItem(QB_SYNC_COLLAPSED_SESSION_KEY, isQbSyncCollapsed ? '1' : '0');
+              sessionStorage.setItem(MANAGER_REVIEW_COLLAPSED_SESSION_KEY, isManagerReviewCollapsed ? '1' : '0');
           } catch (e) {}
       }
 
@@ -449,11 +451,22 @@
           }
           try {
               isStagedReviewCollapsed = sessionStorage.getItem(STAGED_REVIEW_COLLAPSED_SESSION_KEY) === '1';
+              isQbSyncCollapsed = sessionStorage.getItem(QB_SYNC_COLLAPSED_SESSION_KEY) === '1';
+              isManagerReviewCollapsed = sessionStorage.getItem(MANAGER_REVIEW_COLLAPSED_SESSION_KEY) === '1';
           } catch (e) {
               isStagedReviewCollapsed = false;
+              isQbSyncCollapsed = false;
+              isManagerReviewCollapsed = false;
           }
       }
 
+      function toggleReviewHubSection(type) {
+          if (type === 'staged') isStagedReviewCollapsed = !isStagedReviewCollapsed;
+          if (type === 'qb') isQbSyncCollapsed = !isQbSyncCollapsed;
+          if (type === 'reviewed') isManagerReviewCollapsed = !isManagerReviewCollapsed;
+          persistStagedReviewSession();
+          renderOutbox();
+      }
       function reconcileStagedReviewItems() {
           let activeFdhs = new Set(getActiveQueueItems().map(item => String(item.fdh || '')));
           let seen = new Set();
@@ -464,16 +477,6 @@
               return true;
           });
           persistStagedReviewSession();
-      }
-
-      function setStagedReviewCollapsed(collapsed) {
-          isStagedReviewCollapsed = !!collapsed;
-          persistStagedReviewSession();
-          renderOutbox();
-      }
-
-      function toggleStagedReviewSection() {
-          setStagedReviewCollapsed(!isStagedReviewCollapsed);
       }
 
       function getStagedReviewItems() {
@@ -586,8 +589,8 @@
           if (!nextItem) return;
 
           const cardEl = getEl('card-' + nextItem.fdh);
-          openPane(nextItem, cardEl);
-          centerQueueCardByFdh(nextItem.fdh, 'smooth');
+          openPane(nextItem, cardEl, true);
+          centerQueueCardByFdh(nextItem.fdh, 'smooth', true);
       }
 
       function syncMobileSFSort() {

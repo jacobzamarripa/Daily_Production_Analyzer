@@ -154,16 +154,17 @@
       .admin-kpi.active.boms { background: #022c22; border-color: #34d399; }
       .admin-kpi.active.boms .admin-kpi-val, .admin-kpi.active.boms .admin-kpi-label { color: #6ee7b7; }
 
-      .email-card { margin: 0 !important; padding: 14px 16px 12px; border: none; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s, border-color 0.3s; background: color-mix(in srgb, var(--card-bg) 92%, transparent); border-left: 4px solid transparent; display: flex; flex-direction: column; gap: 7px; content-visibility: auto; contain-intrinsic-size: auto 1px 80px; box-sizing: border-box !important; }
+      .email-card { margin: 0 !important; padding: 14px 16px 12px; border: none; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s, border-color 0.3s; background: color-mix(in srgb, var(--card-bg) 92%, transparent); border-left: 4px solid transparent; display: flex; flex-direction: column; gap: 7px; box-sizing: border-box !important; }
       .email-card:hover {
             background: var(--bg);
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
       .email-card.selected {
-            background: rgba(59, 130, 246, 0.08);
-            border-color: rgba(59, 130, 246, 0.2);
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.4);
             border-left: 4px solid #3b82f6 !important;
+            box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3) !important;
         }
       
       /* Dense view — compact, no tags */

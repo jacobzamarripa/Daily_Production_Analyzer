@@ -26,7 +26,7 @@ const checks = [
   {
     label: 'Phone queue open pushes into detail mode through shared pane state',
     file: 'src/_module_queue_state.html',
-    patterns: [/function openPane\(item, cardEl\)/, /window\.innerWidth <= 480/, /classList\.add\('mobile-detail-open'\)/, /syncMobileDockContext/],
+    patterns: [/function openPane\(item, cardEl/, /window\.innerWidth <= 480/, /classList\.add\('mobile-detail-open'\)/, /syncMobileDockContext/],
   },
   {
     label: 'Mobile shell helpers manage back navigation and search/filter sheet state',
@@ -36,7 +36,7 @@ const checks = [
   {
     label: 'Mobile queue navigation reuses the shared openPane selection flow',
     file: 'src/_module_webapp_core.html',
-    patterns: [/function navigateMobileQueue\(dir\)/, /filteredItems\.length/, /openPane\(nextItem, cardEl\)/, /centerQueueCardByFdh\(nextItem\.fdh, 'smooth'\)/],
+    patterns: [/function navigateMobileQueue\(dir\)/, /filteredItems\.length/, /openPane\(nextItem, cardEl/, /centerQueueCardByFdh\(nextItem\.fdh, 'smooth'/],
   },
   {
     label: 'Dock context sync distinguishes queue, detail, and deck modes on phone widths',

@@ -272,24 +272,10 @@ function renderAdminPane(items) {
         });
     }
 
-    // --- Quickbase Writeback Queue ---
-    html += `
-      <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 4px;">
-          <div style="font-size:11px; font-weight:900; color:var(--text-main); text-transform:uppercase; letter-spacing:0.05em;">Pending Quickbase Syncs</div>
-          <button class="btn" onclick="commitAllPending()" style="font-size:10px; padding:2px 8px; background:var(--accent); color:#fff; border:none;">Sync All</button>
-        </div>
-        <div id="qb-writeback-list">
-          <div class="empty-msg" style="padding:10px;">Loading queue...</div>
-        </div>
-      </div>
-    `;
-
     if (html === '') html = '<div class="empty-msg" style="padding:40px 20px;">No items in this category.</div>';
     pane.innerHTML = html;
     
     // Trigger the writeback list refresh
-    if (typeof refreshPendingWritebacks === 'function') refreshPendingWritebacks();
     if (typeof refreshCDIngestionInfo === 'function') refreshCDIngestionInfo();
 }
 
@@ -493,9 +479,12 @@ function renderOutbox() {
     const list = getEl('outbox-list');
     if (!list) return;
     if (typeof committedItems === 'undefined' || typeof stagedDeckItems === 'undefined') return;
+    
     const stagedItems = getStagedReviewItems();
     const reviewedItems = committedItems || [];
-    const totalCount = stagedItems.length + reviewedItems.length;
+    const qbItems = typeof pendingWritebacks !== 'undefined' ? pendingWritebacks : [];
+    
+    const totalCount = stagedItems.length + reviewedItems.length + qbItems.length;
     setTxt('ob-count', totalCount);
     syncReviewHubHeaderCount();
     let tabBadge = getEl('ob-count');
@@ -513,15 +502,19 @@ function renderOutbox() {
         opts = opts || {};
         let isCollapsible = !!opts.collapsible;
         let isCollapsed = !!opts.collapsed;
+        
+        // AUTO-COLLAPSE RULE: If count is 0, start collapsed regardless of preference
+        if (count === 0) isCollapsed = true;
+
         let section = document.createElement('div');
-        if (type === 'staged') section.style.borderBottom = '1px solid var(--border)';
+        if (type === 'qb' || type === 'staged') section.style.borderBottom = '1px solid var(--border)';
 
         let header = document.createElement('div');
         header.className = `ob-header ob-header-${type}`;
         header.style.padding = '6px 14px 6px 11px';
         if (isCollapsible) {
             header.style.cursor = 'pointer';
-            header.onclick = function() { toggleStagedReviewSection(); };
+            header.onclick = function() { toggleReviewHubSection(type); };
         }
         let titleEl = document.createElement('div');
         titleEl.className = 'review-hub-section-title';
@@ -529,7 +522,7 @@ function renderOutbox() {
 
         let labelEl = document.createElement('div');
         labelEl.className = 'review-hub-section-label';
-        labelEl.textContent = type === 'staged' ? 'Deck Staging' : 'Manager Review';
+        labelEl.textContent = type === 'staged' ? 'Deck Staging' : (type === 'qb' ? 'Quickbase Sync' : 'Manager Review');
 
         let nameEl = document.createElement('div');
         nameEl.className = 'review-hub-section-name';
@@ -572,29 +565,50 @@ function renderOutbox() {
             let empty = document.createElement('div');
             empty.className = 'empty-msg';
             empty.style.cssText = 'padding:14px 16px; margin:0; font-size:11px;';
-            empty.textContent = type === 'staged' ? 'No staged items.' : 'No reviewed items.';
+            empty.textContent = type === 'staged' ? 'No staged items.' : (type === 'qb' ? 'No pending syncs.' : 'No reviewed items.');
             body.appendChild(empty);
             section.appendChild(body);
             return section;
         }
 
-        items.forEach(function(item) {
+        items.forEach(function(item, idx) {
             let card = document.createElement('div');
             card.className = 'ob-card';
-            card.onclick = function() { openPane(item, null); };
-            card.innerHTML = `
-                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-                    <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
-                    <span class="tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}">${type === 'staged' ? 'STAGED' : 'REVIEWED'}</span>
-                </div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${esc(item.vendor || item.city || 'Unknown')}</div>
-                <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; max-height:30px; overflow:hidden;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
+            
+            if (type === 'qb') {
+                const isCollision = item.status === 'collision';
+                if (isCollision) card.style.borderLeft = '3px solid #ef4444';
+                card.onclick = function() { selectItemForNav(item.fdh); };
+                const btnLabel = isCollision ? 'FORCE' : 'Review';
+                const btnBg = isCollision ? '#ef4444' : 'var(--accent)';
+                card.innerHTML = `
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                        <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
+                        <button class="btn" onclick="event.stopPropagation(); reviewAndCommitSingle(${idx})" style="padding:2px 6px; font-size:9px; background:${btnBg}; color:#fff; border:none; font-weight:900;">${btnLabel}</button>
+                    </div>
+                    <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Type: ${esc(item.type)}</div>
+                    ${isCollision ? `<div style="font-size:9px; font-weight:900; color:#ef4444; margin-top:4px;">⚠️ DATA COLLISION</div>` : ''}
+                `;
+            } else {
+                card.onclick = function() { openPane(item, null); };
+                card.innerHTML = `
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                        <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
+                        <span class="tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}">${type === 'staged' ? 'STAGED' : 'REVIEWED'}</span>
+                    </div>
+                    <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${esc(item.vendor || item.city || 'Unknown')}</div>
+                    <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; max-height:30px; overflow:hidden;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
+            }
             body.appendChild(card);
         });
 
         section.appendChild(body);
         return section;
     };
+
+    list.appendChild(createSection('Quickbase Syncs', qbItems.length, [
+        { label: 'Sync All', onClick: function() { commitAllPending(); } }
+    ], qbItems, 'qb', { collapsible: true, collapsed: isQbSyncCollapsed }));
 
     list.appendChild(createSection('Staged', stagedItems.length, [
         { label: '↑ Export Batch', onClick: function() { promptBatchDeckExport(); } },
@@ -604,6 +618,6 @@ function renderOutbox() {
     list.appendChild(createSection('Reviewed', reviewedItems.length, [
         { label: '↑ Export', onClick: function() { promptEmailExport(); } },
         { label: 'Clear', onClick: function() { clearReviewedTray(); } }
-    ], reviewedItems, 'reviewed'));
+    ], reviewedItems, 'reviewed', { collapsible: true, collapsed: isManagerReviewCollapsed }));
 }
 </script>

@@ -211,8 +211,8 @@ function applyViewMode() {
 function selectItemForNav(fdh) {
     let item = (allActionItems || []).find(i => i.fdh === fdh);
     if (item) {
-        openPane(item, null);
-        centerQueueCardByFdh(item.fdh, 'smooth');
+        openPane(item, null, true);
+        centerQueueCardByFdh(item.fdh, 'smooth', true);
     }
 }
 
@@ -544,16 +544,22 @@ function buildVelocityBar(name, daily, tot, bom, typeKey, daysLeft) {
     </div>`;
 }
 
-function openPane(item, cardEl) {
+function openPane(item, cardEl, force) {
     safeExecute('openPane', () => {
         currentActiveItem = item;
         renderChangeLog();
         currentQueueIndex = filteredItems.indexOf(item);
-        document.querySelectorAll('.email-card.selected').forEach(c => c.classList.remove('selected'));
-        if (cardEl) cardEl.classList.add('selected');
-        document.querySelectorAll('.grid-card.is-selected').forEach(c => c.classList.remove('is-selected'));
-        document.querySelectorAll(`.grid-card[data-fdh="${CSS.escape(String(item.fdh || ''))}"]`).forEach(c => c.classList.add('is-selected'));
-        centerQueueCardByFdh(item.fdh, 'smooth');
+
+        // 1. Unified Selection Highlight (FDH-based)
+        const fdhEscaped = CSS.escape(String(item.fdh || ''));
+        document.querySelectorAll('.email-card.selected, .grid-card.is-selected').forEach(c => {
+            c.classList.remove('selected', 'is-selected');
+        });
+        document.querySelectorAll(`[data-fdh="${fdhEscaped}"]`).forEach(c => {
+            c.classList.add(c.classList.contains('email-card') ? 'selected' : 'is-selected');
+        });
+
+        centerQueueCardByFdh(item.fdh, 'smooth', force);
 
         setStyle('welcome-screen', 'display', 'none');
         setStyle('detail-layout', 'display', 'flex');
