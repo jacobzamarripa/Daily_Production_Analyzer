@@ -688,6 +688,15 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
               if (cleanStr === "true" || cleanStr === "yes") return true; 
               if (cleanStr === "false" || cleanStr === "no") return false; 
           }
+
+          // 🧠 NEW: Reference Data Enrichment (Ensure mirror data points are recorded in the archive)
+          if (refData) {
+            if (h === "BSLs") return (refData.bsls && refData.bsls !== "-") ? refData.bsls : val;
+            if (h === "Budget OFS") return (refData.canonicalOfsDate || refData.forecastedOFS || val);
+            if (h === "CX Start") return (refData.cxStart || val);
+            if (h === "CX Complete") return (refData.cxComplete || val);
+          }
+
           return val;
         });
       };

@@ -47,11 +47,11 @@ function backupMasterArchiveToCSV() {
 
 /**
  * 🛠️ SURGICAL HEAL: Fixes alignment issues in the Master Archive caused by column insertions.
- * Identifies rows where data is shifted 4 columns to the left and pushes them right to align with HISTORY_HEADERS.
+ * Identifies rows where data was shifted 4 columns to the RIGHT and pulls them LEFT to align with the intended layout.
  */
 function healMasterArchiveAlignment() {
   const ui = SpreadsheetApp.getUi();
-  const response = ui.alert("🛠️ HEAL MASTER ARCHIVE", "This will shift data in misaligned rows 4 columns to the right to match the new H-K headers.\n\nA CSV backup will be created first.\n\nProceed?", ui.ButtonSet.YES_NO);
+  const response = ui.alert("🛠️ HEAL MASTER ARCHIVE", "This will shift data in misaligned rows 4 columns to the LEFT to restore Daily UG Footage to column H.\n\nThe 4 extra columns (BSLs, OFS, CX) will be moved to the end of the sheet.\n\nA CSV backup will be created first.\n\nProceed?", ui.ButtonSet.YES_NO);
   
   if (response !== ui.Button.YES) return;
 
@@ -64,54 +64,58 @@ function healMasterArchiveAlignment() {
   const data = sh.getDataRange().getValues();
   const headers = data[0];
   
-  // Columns H-K indices are 7, 8, 9, 10
-  const expectedHIdx = 7; // "BSLs"
-  const expectedLIdx = 11; // "Daily UG Footage"
-  
   let healCount = 0;
-  let newRows = [headers];
+  let newRows = [HISTORY_HEADERS]; // Use the fresh headers from Config
 
   for (let i = 1; i < data.length; i++) {
     let row = data[i];
     
-    // 🔍 HEURISTIC: If column H (BSLs) has a number that looks like footage,
-    // and column L (Daily UG) is empty, it's likely an old misaligned row.
-    let colHVal = row[expectedHIdx];
-    let colLVal = row[expectedLIdx];
+    // 🔍 HEURISTIC: Bad rows have UG data starting at index 11 (Column L) instead of index 7 (Column H).
+    // In these bad rows, index 7 (H) through 10 (K) are typically empty or contain BSL/CX strings.
+    let colHVal = row[7];
+    let colLVal = row[11];
 
-    // BSLs and Budget OFS are usually empty or strings in the archive unless sync'd.
-    // Daily UG Footage is almost always a number in old records.
     let isMisaligned = false;
-    if (colHVal !== "" && !isNaN(Number(colHVal)) && colLVal === "") {
-        // Double check: if it was shifted, column AC (Vendor Comment) would be at column Y.
-        // History headers length is 33. Old length was 29.
+    // If H is empty/non-numeric AND L has a number, it's a shifted row.
+    if ((colHVal === "" || isNaN(Number(colHVal))) && colLVal !== "" && !isNaN(Number(colLVal))) {
         isMisaligned = true;
     }
 
     if (isMisaligned) {
-      let healedRow = [...row];
-      // Shift indices 7 (H) to the end of the old row (29 columns) to index 11 (L)
-      // Old data: [0...6] [7...28]
-      // New data: [0...6] [7,8,9,10] [11...32]
+      let healedRow = new Array(HISTORY_HEADERS.length).fill("");
       
-      let oldDataPart = row.slice(7, 29); // The data that got pushed left
-      healedRow[7] = "";  // BSLs
-      healedRow[8] = "";  // Budget OFS
-      healedRow[9] = "";  // CX Start
-      healedRow[10] = ""; // CX Complete
-      
-      for (let j = 0; j < oldDataPart.length; j++) {
-        healedRow[11 + j] = oldDataPart[j];
+      // 1. Copy first 7 columns (0-6: Date, Contractor, ID, Locates, Cabinets, Light, Target Date)
+      for (let j = 0; j < 7; j++) healedRow[j] = row[j];
+
+      // 2. Capture the BSLs/OFS/CX data that was at 7, 8, 9, 10
+      let bsls = row[7];
+      let ofs  = row[8];
+      let cxs  = row[9];
+      let cxe  = row[10];
+
+      // 3. Shift the rest of the data (from index 11 to 32) LEFT by 4 columns (to index 7-28)
+      // Original 11 (Daily UG) -> 7
+      // ...
+      // Original 32 (Vendor Comment) -> 28
+      for (let j = 11; j <= 32; j++) {
+        if (j < row.length) {
+          healedRow[j - 4] = row[j];
+        }
       }
-      
-      // Ensure row length matches HISTORY_HEADERS
-      while (healedRow.length < HISTORY_HEADERS.length) healedRow.push("");
-      if (healedRow.length > HISTORY_HEADERS.length) healedRow = healedRow.slice(0, HISTORY_HEADERS.length);
+
+      // 4. Place the captured BSLs/OFS/CX data at the NEW end of the row (indices 29, 30, 31, 32)
+      healedRow[29] = bsls;
+      healedRow[30] = ofs;
+      healedRow[31] = cxs;
+      healedRow[32] = cxe;
 
       newRows.push(healedRow);
       healCount++;
     } else {
-      newRows.push(row);
+      // If not misaligned, ensure it matches the new length
+      let existingRow = [...row];
+      while (existingRow.length < HISTORY_HEADERS.length) existingRow.push("");
+      newRows.push(existingRow.slice(0, HISTORY_HEADERS.length));
     }
   }
 
