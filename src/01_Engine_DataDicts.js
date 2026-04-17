@@ -211,8 +211,9 @@ function getReferenceDictionary() {
     let qbBomSentIdx    = getIdx("QB_BOM_Sent");
     let qbSowSignIdx    = getIdx("QB_SOW_Sign");
     let qbOfsReasonIdx  = getIdx("QB_Ofs_Reason");
-    let qbBlockedByIdx  = getIdx("QB_Blocked_By");
-    let qbBlocksIdx     = getIdx("QB_Blocks");
+    let qbLinkIdsIdx    = getIdx("QB_Link_IDs");
+    let qbPredecessorsIdx = getIdx("QB_Predecessors");
+    let qbSuccessorsIdx = getIdx("QB_Successors");
     let drgIdx          = ["DRG", "Direct Vendor", "Direct Vendor Tracking", "DRG Tracker", "Direct Vendor Tracker"]
       .map(getIdx)
       .find(function(idx) { return idx > -1; });
@@ -294,8 +295,9 @@ function getReferenceDictionary() {
              bomSent:    qbBomSentIdx    > -1 ? String(r[qbBomSentIdx]    || "") : "",
              poSent:     bomPoIdx        > -1 ? String(r[bomPoIdx]        || "") : "",
              sowSign:    qbSowSignIdx    > -1 ? String(r[qbSowSignIdx]    || "") : "",
-             blockedBy:  qbBlockedByIdx  > -1 ? String(r[qbBlockedByIdx]  || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean) : [],
-             blocks:     qbBlocksIdx     > -1 ? String(r[qbBlocksIdx]     || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean) : [],
+             linkIds:    qbLinkIdsIdx    > -1 ? String(r[qbLinkIdsIdx]    || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean) : [],
+             predecessors: qbPredecessorsIdx > -1 ? String(r[qbPredecessorsIdx] || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean) : [],
+             successors:   qbSuccessorsIdx   > -1 ? String(r[qbSuccessorsIdx]   || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean) : [],
              phase:      stageIdx > -1 ? String(r[stageIdx] || "") : "", 
              stage:      stageIdx > -1 ? String(r[stageIdx] || "") : "", 
              status:     statusIdx > -1 ? String(r[statusIdx] || "") : "",

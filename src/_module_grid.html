@@ -228,13 +228,13 @@ function _performRenderGrid() {
                         ${buildVelocityBar('Splicing', v.nap.daily, v.nap.tot, v.nap.bom, 'NAP', daysLeft)}
                     </div>
                     <div class="qb-vel-footer" style="margin-top:auto; border-top:1px solid var(--border); padding-top:8px;">
-                        <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${daysLeftTxt}</div>
+                        <div style="font-size:9px; font-weight:900; color:var(--text-muted);">${isOFS ? "" : (daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`)}</div>
                         <div style="display:flex; gap:6px;">
                             <div class="vel-footer-pill" style="font-size:8px; padding:2px 6px;">BSLS: ${item.bsls}</div>
                             <div class="${ofsPillClass}" style="font-size:8px; padding:2px 6px;">OFS: ${ofsMonthStr}</div>
                         </div>
                     </div>
-                `;
+                    `;
             } else { bodyHtml = `<div style="font-style:italic; color:var(--text-muted);">No velocity data</div>`; }
         } else if (currentGridPivot === 'notes') {
             let vComment = item.vendorComment ? item.vendorComment : 'No update provided.';

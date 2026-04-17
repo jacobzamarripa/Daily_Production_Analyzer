@@ -49,7 +49,7 @@ function renderQuickPeek(item) {
     else if (isOnHold) sColor = '#94a3b8';
 
     let label = `DAYS TO ${activeTargetLabel}`;
-    const daysLeftTxt = daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`;
+    const daysLeftTxt = isOFS ? "" : (daysLeft < 0 ? `OVERDUE BY: ${Math.abs(daysLeft)} DAYS` : `${label}: ${daysLeft}`);
 
     const v = item.vel;
     const ofsMeta = getEffectiveOfsMonthMeta(item, today);

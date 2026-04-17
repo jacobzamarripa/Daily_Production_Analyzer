@@ -65,15 +65,15 @@ function renderMiniSld(item) {
                     if (direction === 'up') {
                         let isTrans = isMiniSldTransportReady(node.qbRef && node.qbRef.transport);
                         if (isTrans && fdh !== startFdh) { hasTransport = true; continue; }
-                        let blockedBy = node.qbRef && node.qbRef.blockedBy || [];
+                        let preds = node.qbRef && node.qbRef.predecessors || [];
                         let howFed = parseMiniSldFdh(node.qbRef && node.qbRef.howFed);
-                        let upItems = Array.from(new Set([...blockedBy, howFed].filter(Boolean)));
+                        let upItems = Array.from(new Set([...preds, howFed].filter(Boolean)));
                         if (upItems.length === 0 && fdh !== startFdh) hasUnknown = true;
                         else upItems.forEach(up => { if (!visited.has(up)) { visited.add(up); nextQueue.add(up); } });
                     } else {
-                        let blocks = node.qbRef && node.qbRef.blocks || [];
+                        let succs = node.qbRef && node.qbRef.successors || [];
                         let whatFeeds = parseMiniSldFdh(node.qbRef && node.qbRef.whatFeeds);
-                        let downItems = Array.from(new Set([...blocks, whatFeeds].filter(Boolean)));
+                        let downItems = Array.from(new Set([...succs, whatFeeds].filter(Boolean)));
                         if (downItems.length === 0 && fdh !== startFdh) hasUnknown = true;
                         else downItems.forEach(down => { if (!visited.has(down)) { visited.add(down); nextQueue.add(down); } });
                     }

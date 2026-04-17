@@ -1786,8 +1786,8 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
           }
 
           // 🧠 DEPENDENCY CHECK: Flag if any hard predecessor (from QB) is not yet complete/active.
-          if (refData.qbRef && refData.qbRef.blockedBy && refData.qbRef.blockedBy.length > 0) {
-              let blockers = refData.qbRef.blockedBy.filter(function(bId) {
+          if (refData.qbRef && refData.qbRef.predecessors && refData.qbRef.predecessors.length > 0) {
+              let blockers = refData.qbRef.predecessors.filter(function(bId) {
                   let bRef = refDict[bId.toUpperCase().trim()];
                   if (!bRef) return false; 
                   let bStage = (bRef.stage || "").toUpperCase();

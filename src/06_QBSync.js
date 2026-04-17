@@ -81,7 +81,7 @@ const QB_DECK_COLUMNS = [
   "QB_Active_Set",  "QB_Active_Pwr",  "QB_Leg",       "QB_Transport",
   "QB_How_Fed",     "QB_What_Feeds",  "QB_Island",    "QB_Ofs_Change", "QB_Ofs_Reason",
   "QB_CD_Dist",     "QB_Splice_Dist", "QB_Strand_Dist", "QB_BOM_Sent", "QB_SOW_Sign",
-  "QB_PM_RID",      "QB_Blocked_By",  "QB_Blocks"
+  "QB_PM_RID",      "QB_Link_IDs",    "QB_Predecessors", "QB_Successors"
 ];
 
 /**
@@ -373,14 +373,12 @@ function syncFDHDependencies(token, fdhRowMap, refHeaders, refValues) {
     });
   };
 
-  // User feedback: "Dependent FDH Project Link ID" and "Check and Balance"
-  // "Check and Balance" contains TDO04-F96->TDO04-F208
   const predField = findField(['PRIMARY PROJECT FDH ENGINEERING ID', 'PREDECESSOR', 'PARENT FDH', 'FROM FDH']);
   const succField = findField(['DEPENDENT FDH PROJECT LINK ID', 'SUCCESSOR', 'CHILD FDH', 'TO FDH']);
   const cbField   = findField(['CHECK AND BALANCE', 'LINK', 'DEPENDENCY']);
 
   if (!succField || !cbField) {
-    logMsg("WARN", "syncFDHDependencies", "Could not find expected fields in table " + QB_DEPENDENCY_TABLE_ID + ". Run discoverDependencyFields() to inspect labels.");
+    logMsg("WARN", "syncFDHDependencies", "Could not find expected fields in table " + QB_DEPENDENCY_TABLE_ID);
     return;
   }
 
@@ -390,35 +388,32 @@ function syncFDHDependencies(token, fdhRowMap, refHeaders, refValues) {
   const fids    = [succFid, cbFid];
   if (predFid) fids.push(predFid);
 
-  // Fetch all records from the dependency table
   const records = _fetchTableAllFids(token, QB_DEPENDENCY_TABLE_ID, fids);
   
-  // Maps to store aggregated relationships: Normalized FDH -> Set of original FDH IDs from project list
-  const blockedByMap = {}; // Normalized Successor -> [Set of original Predecessor IDs]
-  const blocksMap    = {}; // Normalized Predecessor -> [Set of original Successor IDs]
+  const linkIdMap      = {}; 
+  const predecessorsMap = {}; 
+  const successorsMap   = {}; 
 
   const stripTags = (val) => String(val || "").replace(/<[^>]*>/g, "").trim();
+  const extractFdhs = (str) => {
+    if (!str) return [];
+    // 🧠 AGGRESSIVE: Matches anything with letters/numbers followed by -F and digits.
+    const matches = String(str).toUpperCase().match(/[a-zA-Z0-9]+-F\d+/g);
+    return matches || [];
+  };
 
   records.forEach(function(rec) {
     const rawCb   = rec[String(cbFid)] ? _extractValue(rec[String(cbFid)].value) : "";
     const cbVal   = stripTags(rawCb);
-    const fSucc   = rec[String(succFid)] ? _extractValue(rec[String(succFid)].value) : "";
-    const fPred   = predFid && rec[String(predFid)] ? _extractValue(rec[String(predFid)].value) : "";
+    const rawS    = rec[String(succFid)] ? _extractValue(rec[String(succFid)].value) : "";
+    const rawP    = predFid && rec[String(predFid)] ? _extractValue(rec[String(predFid)].value) : "";
     
     let rawPred = "";
     let rawSucc = "";
 
-    const extractFdhs = (str) => {
-      if (!str) return [];
-      // Matches standard FDH pattern e.g., TDO04-F96 or TDO04-F096
-      const matches = String(str).toUpperCase().match(/[A-Z]{3}\d{2}-F\d+/g);
-      return matches || [];
-    };
-
-    // 🧠 Extract parts by looking for actual FDH patterns anywhere in the string
     const cbFdhs = extractFdhs(cbVal);
-    const succFdhs = extractFdhs(stripTags(fSucc));
-    const predFdhs = extractFdhs(stripTags(fPred));
+    const succFdhs = extractFdhs(stripTags(rawS));
+    const predFdhs = extractFdhs(stripTags(rawP));
 
     if (cbFdhs.length >= 2) {
       rawPred = cbFdhs[0];
@@ -427,7 +422,6 @@ function syncFDHDependencies(token, fdhRowMap, refHeaders, refValues) {
       rawPred = succFdhs[0];
       rawSucc = succFdhs[1];
     } else {
-      // Fallback: Individual fields
       if (predFdhs.length > 0) rawPred = predFdhs[0];
       if (succFdhs.length > 0) rawSucc = succFdhs[0];
     }
@@ -436,42 +430,47 @@ function syncFDHDependencies(token, fdhRowMap, refHeaders, refValues) {
       const normPred = _normalizeDependencyFdh(rawPred);
       const normSucc = _normalizeDependencyFdh(rawSucc);
 
-      if (!blockedByMap[normSucc]) blockedByMap[normSucc] = new Set();
-      blockedByMap[normSucc].add(rawPred); // Store the string as-is for the sheet, we will replace with official ID in the second loop
+      if (!linkIdMap[normPred]) linkIdMap[normPred] = new Set();
+      linkIdMap[normPred].add(cbVal || (rawPred + "->" + rawSucc));
+      if (!linkIdMap[normSucc]) linkIdMap[normSucc] = new Set();
+      linkIdMap[normSucc].add(cbVal || (rawPred + "->" + rawSucc));
 
-      if (!blocksMap[normPred]) blocksMap[normPred] = new Set();
-      blocksMap[normPred].add(rawSucc);
+      if (!predecessorsMap[normSucc]) predecessorsMap[normSucc] = new Set();
+      predecessorsMap[normSucc].add(rawPred);
+
+      if (!successorsMap[normPred]) successorsMap[normPred] = new Set();
+      successorsMap[normPred].add(rawSucc);
     }
   });
 
-  const blockedByColIdx = refHeaders.indexOf("QB_Blocked_By");
-  const blocksColIdx    = refHeaders.indexOf("QB_Blocks");
+  const linkColIdx = refHeaders.indexOf("QB_Link_IDs");
+  const predColIdx = refHeaders.indexOf("QB_Predecessors");
+  const succColIdx = refHeaders.indexOf("QB_Successors");
 
-  if (blockedByColIdx === -1 || blocksColIdx === -1) {
-    logMsg("WARN", "syncFDHDependencies", "Target columns QB_Blocked_By or QB_Blocks missing from " + REF_SHEET);
+  if (linkColIdx === -1 || predColIdx === -1 || succColIdx === -1) {
+    logMsg("WARN", "syncFDHDependencies", "Target columns missing from Reference_Data");
     return;
   }
 
-  // Pre-calculate normalized map of all official Project IDs to their row indices
   const normalizedProjectMap = {};
   for (const fdh in fdhRowMap) {
-    normalizedProjectMap[_normalizeDependencyFdh(fdh)] = fdh; // Normalized ID -> Official ID
+    normalizedProjectMap[_normalizeDependencyFdh(fdh)] = fdh;
   }
 
-  // Update refValues with aggregated dependency lists
   for (const fdh in fdhRowMap) {
     const rowIdx = fdhRowMap[fdh];
     const normFdh = _normalizeDependencyFdh(fdh);
 
-    if (blockedByMap[normFdh]) {
-      // Convert normalized predecessors back to official Project IDs where possible
-      const officialPreds = Array.from(blockedByMap[normFdh]).map(p => normalizedProjectMap[_normalizeDependencyFdh(p)] || p);
-      refValues[rowIdx][blockedByColIdx] = officialPreds.join(", ");
+    if (linkIdMap[normFdh]) {
+      refValues[rowIdx][linkColIdx] = Array.from(linkIdMap[normFdh]).join(", ");
     }
-    if (blocksMap[normFdh]) {
-      // Convert normalized successors back to official Project IDs where possible
-      const officialSuccs = Array.from(blocksMap[normFdh]).map(s => normalizedProjectMap[_normalizeDependencyFdh(s)] || s);
-      refValues[rowIdx][blocksColIdx] = officialSuccs.join(", ");
+    if (predecessorsMap[normFdh]) {
+      const officialPreds = Array.from(predecessorsMap[normFdh]).map(p => normalizedProjectMap[_normalizeDependencyFdh(p)] || p);
+      refValues[rowIdx][predColIdx] = officialPreds.join(", ");
+    }
+    if (successorsMap[normFdh]) {
+      const officialSuccs = Array.from(successorsMap[normFdh]).map(s => normalizedProjectMap[_normalizeDependencyFdh(s)] || s);
+      refValues[rowIdx][succColIdx] = officialSuccs.join(", ");
     }
   }
 
