@@ -855,13 +855,23 @@
             path.classList.add('is-hidden');
             return;
         }
+
+        // Hides the "Network Path" text label to save space in mobile shell
         const label = wrapper.firstElementChild;
-        if (label) label.remove();
-        const pills = wrapper.querySelectorAll('span[style*="font-size:10px"]');
-        if (pills[0]) pills[0].textContent = 'UP';
-        if (pills[2]) pills[2].textContent = 'DOWN';
+        if (label && label.innerText.includes('NETWORK PATH')) label.style.display = 'none';
+
         const nodeCards = wrapper.querySelectorAll('div[style*="border-radius:10px"]');
         path.classList.toggle('is-hidden', nodeCards.length === 0);
+
+        // 🧠 UX: Center the current node in the horizontal scroll path
+        const currentNode = wrapper.querySelector('#mini-sld-current');
+        const scrollContainer = wrapper.querySelector('div[style*="overflow-x:auto"]');
+        if (currentNode && scrollContainer) {
+            setTimeout(() => {
+                const left = currentNode.offsetLeft - (scrollContainer.offsetWidth / 2) + (currentNode.offsetWidth / 2);
+                scrollContainer.scrollTo({ left, behavior: 'smooth' });
+            }, 100);
+        }
     }
 
     function syncGlassFlowDetailGlow() {
