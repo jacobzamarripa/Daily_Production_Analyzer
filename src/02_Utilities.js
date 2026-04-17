@@ -847,12 +847,105 @@ function processDateSelection(dateStr, actionName) {
     generateDailyReviewCore(dateStr, null, false);
   }
 }
-function importArchiveFolder() { 
-  const keys = getExistingKeys(); 
+function importArchiveFolder() {
+  const ui = SpreadsheetApp.getUi();
+  const props = PropertiesService.getScriptProperties();
+  let stateStr = props.getProperty("ARCHIVE_IMPORT_STATE");
+  let folderIds = [];
+  
+  if (!stateStr) {
+    // 🧠 FIRST RUN: Gather all subfolders in the Archive
+    let archiveFolder = DriveApp.getFolderById(ARCHIVE_FOLDER_ID);
+    let subfolders = archiveFolder.getFolders();
+    while (subfolders.hasNext()) {
+      folderIds.push(subfolders.next().getId());
+    }
+    // Also include the root folder for any loose files
+    folderIds.push(ARCHIVE_FOLDER_ID);
+    
+    props.setProperty("ARCHIVE_IMPORT_STATE", JSON.stringify(folderIds));
+    ui.alert("🚀 ARCHIVE REBUILD STARTED", "The script will now process your archive in 4.5-minute batches.\n\nIt will automatically resume every 60 seconds until finished. You can close this window and walk away.", ui.ButtonSet.OK);
+  } else {
+    folderIds = JSON.parse(stateStr);
+  }
+
+  if (folderIds.length === 0) {
+    props.deleteProperty("ARCHIVE_IMPORT_STATE");
+    _deleteProjectTriggersByHandler_("importArchiveFolderResume");
+    ui.alert("✅ Master Archive Rebuild is 100% Complete!");
+    return;
+  }
+
+  _runArchiveImportBatch_(folderIds);
+}
+
+/**
+ * ⚡ Trigger-facing resumption stub
+ */
+function importArchiveFolderResume() {
+  _deleteProjectTriggersByHandler_("importArchiveFolderResume");
+  const props = PropertiesService.getScriptProperties();
+  const stateStr = props.getProperty("ARCHIVE_IMPORT_STATE");
+  if (!stateStr) return;
+
+  const folderIds = JSON.parse(stateStr);
+  if (folderIds.length === 0) {
+    props.deleteProperty("ARCHIVE_IMPORT_STATE");
+    logMsg("✅ Master Archive Rebuild finished in background.");
+    return;
+  }
+
+  _runArchiveImportBatch_(folderIds);
+}
+
+/**
+ * 🧠 Core batch logic shared by menu and trigger
+ */
+function _runArchiveImportBatch_(folderIds) {
+  const startTime = new Date().getTime();
+  const keys = getExistingKeys();
   const totals = getExistingTotals();
-  const refDict = getReferenceDictionary(); 
-  processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null, null, false, null, new Date().getTime(), true, totals); 
-  SpreadsheetApp.getUi().alert("✅ Master Archive Updated."); 
+  const refDict = getReferenceDictionary();
+  const props = PropertiesService.getScriptProperties();
+  let completedBatch = true;
+
+  while (folderIds.length > 0) {
+    // ⏰ Time Check: Leave buffer for cleanup (270s = 4.5 mins)
+    if (new Date().getTime() - startTime > 270000) {
+      completedBatch = false;
+      break;
+    }
+
+    let currentFolderId = folderIds.shift();
+    try {
+      let folder = DriveApp.getFolderById(currentFolderId);
+      // Process files in this folder only (recursive = false)
+      let result = processFolderRecursive(folder, keys, refDict, "", true, null, null, false, null, startTime, false, totals);
+      
+      if (result && result.completed === false) {
+        // Folder was only partially processed due to timeout
+        folderIds.unshift(currentFolderId);
+        completedBatch = false;
+        break;
+      }
+    } catch (e) {
+      logMsg(`❌ Error processing archive folder ${currentFolderId}: ${e.message}`);
+    }
+
+    // Save state after each folder
+    props.setProperty("ARCHIVE_IMPORT_STATE", JSON.stringify(folderIds));
+  }
+
+  if (!completedBatch) {
+    props.setProperty("ARCHIVE_IMPORT_STATE", JSON.stringify(folderIds));
+    _deleteProjectTriggersByHandler_("importArchiveFolderResume");
+    ScriptApp.newTrigger("importArchiveFolderResume").timeBased().after(60000).create();
+    logMsg(`⌛ ARCHIVE REBUILD PAUSED: ${folderIds.length} folders remaining. Automatically resuming in 60s...`);
+  } else {
+    props.deleteProperty("ARCHIVE_IMPORT_STATE");
+    logMsg("✅ ARCHIVE REBUILD FINISHED: All folders processed.");
+    try { SpreadsheetApp.getUi().alert("✅ Master Archive Rebuild is 100% Complete!"); } catch(e) {}
+  }
 }
 function _listProjectTriggersByHandler_(handlerName) {
   return ScriptApp.getProjectTriggers().filter(function(trigger) {
