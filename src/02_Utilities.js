@@ -851,7 +851,7 @@ function importArchiveFolder() {
   const keys = getExistingKeys(); 
   const totals = getExistingTotals();
   const refDict = getReferenceDictionary(); 
-  processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null, null, false, null, null, true, totals); 
+  processFolderRecursive(DriveApp.getFolderById(ARCHIVE_FOLDER_ID), keys, refDict, "", true, null, null, false, null, new Date().getTime(), true, totals); 
   SpreadsheetApp.getUi().alert("✅ Master Archive Updated."); 
 }
 function _listProjectTriggersByHandler_(handlerName) {
