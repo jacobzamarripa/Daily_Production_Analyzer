@@ -1,5 +1,11 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-16: Dependency Parsing Robustness & Full Map Scrolling integrated
+- **Robust Regex Extraction:** Refactored `06_QBSync.js` to aggressively regex FDH patterns (`[A-Z]{3}\d{2}-F\d+`) from all dependency fields. This breaks up concatenated link strings (e.g., `TDO04-F96->TDO04-F208`) into individual parts before mapping.
+- **Node Shrinking Fixed:** Updated `_module_mini_sld.html` with `flex: 0 0 auto` and `min-width: max-content` on all nodes. This prevents pills from shrinking to fit the viewport and enables proper horizontal side-scrolling.
+- **Topological Integrity:** Restored `UPSTREAM UNKNOWN` and `DOWNSTREAM UNKNOWN` placeholders at the ends of the recursive chains to provide a clear map of where information stops.
+- **Centering Polish:** Retained the smooth-scroll centering logic to ensure the current project remains the anchor of the visual map.
+
 > [!success] 2026-04-16: Quickbase FDH Dependencies (Table bvmsmt5cf) integrated
 - **Version Control:** Created `feat/quickbase-dependencies` branch for isolated development.
 - **Data Ingestion:** Added `syncFDHDependencies()` to `06_QBSync.js` to fetch and aggregate predecessor/successor pairs from Quickbase Table `bvmsmt5cf`. 

@@ -402,21 +402,34 @@ function syncFDHDependencies(token, fdhRowMap, refHeaders, refValues) {
   records.forEach(function(rec) {
     const rawCb   = rec[String(cbFid)] ? _extractValue(rec[String(cbFid)].value) : "";
     const cbVal   = stripTags(rawCb);
+    const fSucc   = rec[String(succFid)] ? _extractValue(rec[String(succFid)].value) : "";
+    const fPred   = predFid && rec[String(predFid)] ? _extractValue(rec[String(predFid)].value) : "";
     
     let rawPred = "";
     let rawSucc = "";
 
-    // 🧠 The "Check and Balance" field is the most reliable source for the exact FDH strings (e.g., TDO04-F96->TDO04-F208)
-    if (cbVal && cbVal.includes("->")) {
-      const parts = cbVal.split("->");
-      rawPred = parts[0].trim().toUpperCase();
-      rawSucc = parts[1].trim().toUpperCase();
+    const extractFdhs = (str) => {
+      if (!str) return [];
+      // Matches standard FDH pattern e.g., TDO04-F96 or TDO04-F096
+      const matches = String(str).toUpperCase().match(/[A-Z]{3}\d{2}-F\d+/g);
+      return matches || [];
+    };
+
+    // 🧠 Extract parts by looking for actual FDH patterns anywhere in the string
+    const cbFdhs = extractFdhs(cbVal);
+    const succFdhs = extractFdhs(stripTags(fSucc));
+    const predFdhs = extractFdhs(stripTags(fPred));
+
+    if (cbFdhs.length >= 2) {
+      rawPred = cbFdhs[0];
+      rawSucc = cbFdhs[1];
+    } else if (succFdhs.length >= 2) {
+      rawPred = succFdhs[0];
+      rawSucc = succFdhs[1];
     } else {
-      // Fallback to individual fields if Check and Balance is empty or unformatted
-      const fSucc = rec[String(succFid)] ? _extractValue(rec[String(succFid)].value) : "";
-      const fPred = predFid && rec[String(predFid)] ? _extractValue(rec[String(predFid)].value) : "";
-      rawPred = stripTags(fPred).toUpperCase();
-      rawSucc = stripTags(fSucc).toUpperCase();
+      // Fallback: Individual fields
+      if (predFdhs.length > 0) rawPred = predFdhs[0];
+      if (succFdhs.length > 0) rawSucc = succFdhs[0];
     }
 
     if (rawPred && rawSucc && rawPred !== rawSucc) {
