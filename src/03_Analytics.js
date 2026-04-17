@@ -68,9 +68,9 @@ function buildBenchmarkDictionary(historicalData, headers, refDict) {
           if (!m.light && r[lightIdx] === true) m.light = dateStr;
 
           // UG Tracking
-          let ugDaily = Number(r[ugDailyIdx]) || 0;
-          let ugTot = Number(r[ugTotIdx]) || 0;
-          let ugBom = Number(r[ugBOMIdx]) || 0;
+          let ugDaily = safeParseFootage(r[ugDailyIdx]);
+          let ugTot = safeParseFootage(r[ugTotIdx]);
+          let ugBom = safeParseFootage(r[ugBOMIdx]);
           m.ugMaxDaily = Math.max(m.ugMaxDaily, ugDaily);
           m.ugMaxTot = Math.max(m.ugMaxTot, ugTot);
           m.ugMaxBom = Math.max(m.ugMaxBom, ugBom);
@@ -78,9 +78,9 @@ function buildBenchmarkDictionary(historicalData, headers, refDict) {
           if (!m.ugEnd && ugTot > 0 && ugBom > 0 && ugTot >= ugBom) m.ugEnd = dateStr;
 
           // AE Tracking
-          let aeDaily = Number(r[aeDailyIdx]) || 0;
-          let aeTot = Number(r[aeTotIdx]) || 0;
-          let aeBom = Number(r[aeBOMIdx]) || 0;
+          let aeDaily = safeParseFootage(r[aeDailyIdx]);
+          let aeTot = safeParseFootage(r[aeTotIdx]);
+          let aeBom = safeParseFootage(r[aeBOMIdx]);
           m.aeMaxDaily = Math.max(m.aeMaxDaily, aeDaily);
           m.aeMaxTot = Math.max(m.aeMaxTot, aeTot);
           m.aeMaxBom = Math.max(m.aeMaxBom, aeBom);
@@ -88,9 +88,9 @@ function buildBenchmarkDictionary(historicalData, headers, refDict) {
           if (!m.aeEnd && aeTot > 0 && aeBom > 0 && aeTot >= aeBom) m.aeEnd = dateStr;
 
           // Fiber Tracking
-          let fibDaily = Number(r[fibDailyIdx]) || 0;
-          let fibTot = Number(r[fibTotIdx]) || 0;
-          let fibBom = Number(r[fibBOMIdx]) || 0;
+          let fibDaily = safeParseFootage(r[fibDailyIdx]);
+          let fibTot = safeParseFootage(r[fibTotIdx]);
+          let fibBom = safeParseFootage(r[fibBOMIdx]);
           m.fibMaxDaily = Math.max(m.fibMaxDaily, fibDaily);
           m.fibMaxTot = Math.max(m.fibMaxTot, fibTot);
           m.fibMaxBom = Math.max(m.fibMaxBom, fibBom);
@@ -98,9 +98,9 @@ function buildBenchmarkDictionary(historicalData, headers, refDict) {
           if (!m.fibEnd && fibTot > 0 && fibBom > 0 && fibTot >= fibBom) m.fibEnd = dateStr;
 
           // NAP Tracking
-          let napDaily = Number(r[napDailyIdx]) || 0;
-          let napTot = Number(r[napTotIdx]) || 0;
-          let napBom = Number(r[napBOMIdx]) || 0;
+          let napDaily = safeParseFootage(r[napDailyIdx]);
+          let napTot = safeParseFootage(r[napTotIdx]);
+          let napBom = safeParseFootage(r[napBOMIdx]);
           m.napMaxDaily = Math.max(m.napMaxDaily, napDaily);
           m.napMaxTot = Math.max(m.napMaxTot, napTot);
           m.napMaxBom = Math.max(m.napMaxBom, napBom);

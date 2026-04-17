@@ -41,6 +41,7 @@ function getExistingTotals() {
 
   let data = histSheet.getDataRange().getValues();
   let fdhIdx = HISTORY_HEADERS.indexOf("FDH Engineering ID");
+  let dateIdx = HISTORY_HEADERS.indexOf("Date");
   let totUGIdx = HISTORY_HEADERS.indexOf("Total UG Footage Completed");
   let totAEIdx = HISTORY_HEADERS.indexOf("Total Strand Footage Complete?");
   let totFIBIdx = HISTORY_HEADERS.indexOf("Total Fiber Footage Complete");
@@ -50,18 +51,28 @@ function getExistingTotals() {
     let fdh = String(data[i][fdhIdx] || "").toUpperCase().trim();
     if (!fdh) continue;
 
-    if (!totals[fdh]) totals[fdh] = { ug: 0, ae: 0, fib: 0, nap: 0 };
+    let dateVal = data[i][dateIdx];
+    let dateStr = (dateVal instanceof Date) ? Utilities.formatDate(dateVal, "GMT-5", "yyyy-MM-dd") : normalizeDateString(dateVal);
+
+    if (!totals[fdh]) {
+      totals[fdh] = { 
+        ug: { val: 0, date: "" }, 
+        ae: { val: 0, date: "" }, 
+        fib: { val: 0, date: "" }, 
+        nap: { val: 0, date: "" } 
+      };
+    }
     
-    let tug = Number(data[i][totUGIdx]) || 0;
-    let tae = Number(data[i][totAEIdx]) || 0;
-    let tfib = Number(data[i][totFIBIdx]) || 0;
-    let tnap = Number(data[i][totNAPIdx]) || 0;
+    let tug = safeParseFootage(data[i][totUGIdx]);
+    let tae = safeParseFootage(data[i][totAEIdx]);
+    let tfib = safeParseFootage(data[i][totFIBIdx]);
+    let tnap = safeParseFootage(data[i][totNAPIdx]);
     
-    // We track the maximum seen total (assuming vendors report cumulatively)
-    if (tug > totals[fdh].ug) totals[fdh].ug = tug;
-    if (tae > totals[fdh].ae) totals[fdh].ae = tae;
-    if (tfib > totals[fdh].fib) totals[fdh].fib = tfib;
-    if (tnap > totals[fdh].nap) totals[fdh].nap = tnap;
+    // We track the maximum seen total and its corresponding date
+    if (tug > totals[fdh].ug.val) { totals[fdh].ug.val = tug; totals[fdh].ug.date = dateStr; }
+    if (tae > totals[fdh].ae.val) { totals[fdh].ae.val = tae; totals[fdh].ae.date = dateStr; }
+    if (tfib > totals[fdh].fib.val) { totals[fdh].fib.val = tfib; totals[fdh].fib.date = dateStr; }
+    if (tnap > totals[fdh].nap.val) { totals[fdh].nap.val = tnap; totals[fdh].nap.date = dateStr; }
   }
   return totals;
 }
@@ -422,16 +433,23 @@ function processFolderRecursive(folder, existingKeys, refDict, folderDate, isArc
             sh.getRange(writeRow, 1, rows.length, HISTORY_HEADERS.length).setValues(rows);
             SpreadsheetApp.flush(); // 🚀 FORCE SAVE
             logMsg(`✅ Write complete and flushed to "${HISTORY_SHEET}".`);
+        } else {
+            logMsg(`ℹ️ No new archive rows for ${file.getName()} (Likely duplicates or empty).`);
         }
 
         file.setDescription("PROCESSED");
 
         // 🚀 IMMEDIATE MOVE: Prevent re-scanning on timeout/resume
+        // Moving this out of the 'rows.length > 0' check so processed but duplicate files still get moved.
         if (!isArchive) {
           logMsg(`📦 Archiving file: ${file.getName()}... Target: ${fileArchiveDate}`);
           let targetFolder = getArchiveFolderForDate(fileArchiveDate);
-          file.moveTo(targetFolder);
-          logMsg(`✅ File archived: ${file.getName()} to folder ${fileArchiveDate}`);
+          if (targetFolder) {
+            file.moveTo(targetFolder);
+            logMsg(`✅ File archived: ${file.getName()} to folder ${fileArchiveDate}`);
+          } else {
+            logMsg(`⚠️ Could not find/create archive folder for ${fileArchiveDate}. File left in place.`);
+          }
         }
     } catch (e) {
         logMsg(`❌ Failed to process file ${file.getName()}: ${e.message}`);
@@ -505,6 +523,19 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
     if (exact !== -1) { idxCache[n] = exact; return exact; }
 
     // 🕵️ Robust Column Hunt
+    const isFootageSearch = n.includes("footage") || n.includes("completed");
+
+    const searchHeaders = (variants) => {
+      return fileHeaders.findIndex(h => {
+        let match = variants.every(v => h.includes(v));
+        if (match && isFootageSearch) {
+          // 🛡️ Guard: Reject footage candidates that are actually dates or BOMs
+          if (h.includes("date") || h.includes("target") || h.includes("bom") || h.includes("ofs") || h.includes("quantity")) return false;
+        }
+        return match;
+      });
+    };
+
     if (n === "date") {
       let variants = ["date", "report", "daily", "work", "production", "activity", "service", "log", "timestamp"];
       let found = fileHeaders.findIndex(h => variants.some(v => h.includes(v)) && !h.includes("target") && !h.includes("ofs"));
@@ -519,15 +550,14 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
     }
 
     if (n === "contractor") {
-      let variants = ["contractor", "vendor", "partner", "company"];
-      let found = fileHeaders.findIndex(h => variants.some(v => h.includes(v)));
+      let found = searchHeaders(["contractor"]) || searchHeaders(["vendor"]) || searchHeaders(["partner"]) || searchHeaders(["company"]);
       if (found !== -1) { idxCache[n] = found; return found; }
     }
 
     let result = -1;
-    if (n.includes("ug complete")) result = fileHeaders.findIndex(fh => fh.includes("ug") && fh.includes("complete"));
-    else if (n.includes("strand complete")) result = fileHeaders.findIndex(fh => fh.includes("strand") && fh.includes("complete"));
-    else if (n.includes("fiber complete")) result = fileHeaders.findIndex(fh => fh.includes("fiber") && fh.includes("complete"));
+    if (n.includes("ug complete")) result = searchHeaders(["ug", "complete"]);
+    else if (n.includes("strand complete")) result = searchHeaders(["strand", "complete"]);
+    else if (n.includes("fiber complete")) result = searchHeaders(["fiber", "complete"]);
     else if (n === "vendor comment") result = fileHeaders.findIndex(fh => fh.includes("comment") || fh.includes("note"));
     
     idxCache[n] = result;
@@ -580,24 +610,46 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
       }
       
       let calculatedNotes = [];
-      let rowTotals = existingTotals[fdhId] || { ug: 0, ae: 0, fib: 0, nap: 0 };
+      let calculatedOverrides = {};
+      let rowTotals = existingTotals[fdhId] || { 
+        ug: { val: 0, date: "" }, 
+        ae: { val: 0, date: "" }, 
+        fib: { val: 0, date: "" }, 
+        nap: { val: 0, date: "" } 
+      };
 
       const calculateDiscrepancy = (dailyH, totalH, type) => {
           let dIdx = getIdx(dailyH);
           let tIdx = getIdx(totalH);
           if (dIdx === -1 || tIdx === -1) return;
 
-          let dailyVal = Number(row[dIdx]) || 0;
-          let totalVal = Number(row[tIdx]) || 0;
-          let prevTotal = rowTotals[type] || 0;
+          let dailyVal = safeParseFootage(row[dIdx]);
+          let totalVal = safeParseFootage(row[tIdx]);
+          let prevEntry = rowTotals[type] || { val: 0, date: "" };
+          let prevVal = prevEntry.val || 0;
+          let prevDate = prevEntry.date || "";
 
-          if (dailyVal === 0 && totalVal > prevTotal && prevTotal > 0) {
-              let diff = totalVal - prevTotal;
-              row[dIdx] = diff;
-              calculatedNotes.push(`Daily ${type.toUpperCase()} footage (${diff}') calculated from total discrepancy`);
+          if (dailyVal === 0 && totalVal > prevVal && prevVal > 0) {
+              // 🛡️ Recency Guard: Only calculate if the previous entry is within 7 days
+              let canCalc = false;
+              if (prevDate && rowTargetDate) {
+                  let d1 = new Date(prevDate);
+                  let d2 = new Date(rowTargetDate);
+                  let diffDays = (d2.getTime() - d1.getTime()) / 86400000;
+                  if (diffDays >= 0 && diffDays <= 7) canCalc = true;
+              }
+
+              if (canCalc) {
+                  let diff = totalVal - prevVal;
+                  calculatedOverrides[dailyH] = diff;
+                  calculatedNotes.push(`Daily ${type.toUpperCase()} (+${diff}') from Total Jump (${prevVal} [on ${prevDate}] -> ${totalVal})`);
+              }
           }
           // Update running total for this run
-          if (totalVal > rowTotals[type]) rowTotals[type] = totalVal;
+          if (totalVal > rowTotals[type].val) {
+            rowTotals[type].val = totalVal;
+            rowTotals[type].date = rowTargetDate;
+          }
       };
 
       calculateDiscrepancy("Daily UG Footage", "Total UG Footage Completed", "ug");
@@ -608,44 +660,55 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
       // Save the updated totals back
       existingTotals[fdhId] = rowTotals;
 
-      let rowMapped = HISTORY_HEADERS.map(h => {
-        if (h === "FDH Engineering ID") return fdhId; 
-        let idx = getIdx(h);
-        let val = (idx === -1) ? "" : row[idx];
-        
-        if (h === "Contractor") {
-          let derivedVendor = refData ? refData.vendor : "";
-          return (val && String(val).trim() !== "") ? val : derivedVendor;
-        }
+      const buildMappedRow = (overrides = null) => {
+        return HISTORY_HEADERS.map(h => {
+          if (h === "FDH Engineering ID") return fdhId; 
+          let idx = getIdx(h);
+          let val = (idx === -1) ? "" : row[idx];
+          
+          // Apply calculation overrides if present (QB path only)
+          if (overrides && overrides[h] !== undefined) val = overrides[h];
 
-        if (h === "Vendor Comment") { 
-            let prefix = "";
-            if (wasCorrected) prefix += `[Auto-Fixed FDH: ${originalFdh}] `;
-            if (unmatchedComment) prefix += unmatchedComment;
-            if (calculatedNotes.length > 0) prefix += `[${calculatedNotes.join(" | ")}] `;
-            return prefix + (val || ""); 
-        }
-        
-        if (h === "Date") return rowTargetDate;
-        if (isBooleanColumn(h) && typeof val === "string") { 
-            let cleanStr = val.trim().toLowerCase(); 
-            if (cleanStr === "true" || cleanStr === "yes") return true; 
-            if (cleanStr === "false" || cleanStr === "no") return false; 
-        }
-        return val;
-      });
-      
-      if (allProcessedDates !== null && rowMapped[0]) allProcessedDates.push(rowMapped[0]);
-      if (allParsedRowsForQB !== null) allParsedRowsForQB.push(rowMapped);
-      
+          if (h === "Contractor") {
+            let derivedVendor = refData ? refData.vendor : "";
+            return (val && String(val).trim() !== "") ? val : derivedVendor;
+          }
+
+          if (h === "Vendor Comment") { 
+              let prefix = "";
+              if (wasCorrected) prefix += `[Auto-Fixed FDH: ${originalFdh}] `;
+              if (unmatchedComment) prefix += unmatchedComment;
+              if (overrides && calculatedNotes.length > 0) prefix += `[${calculatedNotes.join(" | ")}] `;
+              return prefix + (val || ""); 
+          }
+          
+          if (h === "Date") return rowTargetDate;
+          if (isBooleanColumn(h) && typeof val === "string") { 
+              let cleanStr = val.trim().toLowerCase(); 
+              if (cleanStr === "true" || cleanStr === "yes") return true; 
+              if (cleanStr === "false" || cleanStr === "no") return false; 
+          }
+          return val;
+        });
+      };
+
+      let rowMappedArchive = buildMappedRow(); // RAW
+      let rowMappedQB = buildMappedRow(calculatedOverrides); // CALCULATED (Audited)
+
+      // 🧠 ARCHIVE WRITE GUARD: Only append to Master Archive if it's a new unique entry
       let key = rowTargetDate + "_" + fdhId;
       if (!existingKeys.has(key)) { 
-          dataToAppend.push(rowMapped); 
+          dataToAppend.push(rowMappedArchive); 
           existingKeys.add(key); 
-          if (newRowsAppended !== null) newRowsAppended.push(rowMapped); 
+          if (newRowsAppended !== null) newRowsAppended.push(rowMappedArchive); 
       } else {
           skippedCount++;
       }
+
+      // 🧠 QB TAB WRITE GUARD: Always push to QuickBase upload, even if it's a duplicate in the archive
+      // (Allows the user to re-process files to see updated calculations/notes)
+      if (allParsedRowsForQB !== null) allParsedRowsForQB.push(rowMappedQB);
+      if (allProcessedDates !== null && rowMappedArchive[0]) allProcessedDates.push(rowMappedArchive[0]);
     });
 
     if (dataToAppend.length > 0 || skippedCount > 0) {
