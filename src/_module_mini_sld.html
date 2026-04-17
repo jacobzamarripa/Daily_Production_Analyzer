@@ -52,32 +52,37 @@ function renderMiniSld(item) {
         let layers = [];
         let queue = new Set([startFdh]);
         let visited = new Set([startFdh]);
-        let limit = 10; // Safety limit for deep chains
+        let limit = 10; 
         
+        // Normalization helper for robust matching
+        const norm = (id) => String(id || '').toUpperCase().replace(/\s+/g, '').replace(/F0*(\d+)/, 'F$1');
+
         while (queue.size > 0 && limit-- > 0) {
             let nextQueue = new Set();
             let hasTransport = false;
             let hasUnknown = false;
 
             for (let fdh of queue) {
-                let node = (allActionItems || []).find(i => i.fdh === fdh);
+                const normFdh = norm(fdh);
+                let node = (allActionItems || []).find(i => norm(i.fdh) === normFdh);
+                
                 if (node) {
                     if (direction === 'up') {
                         let isTrans = isMiniSldTransportReady(node.qbRef && node.qbRef.transport);
-                        if (isTrans && fdh !== startFdh) { hasTransport = true; continue; }
+                        if (isTrans && normFdh !== norm(startFdh)) { hasTransport = true; continue; }
                         let preds = node.qbRef && node.qbRef.predecessors || [];
                         let howFed = parseMiniSldFdh(node.qbRef && node.qbRef.howFed);
                         let upItems = Array.from(new Set([...preds, howFed].filter(Boolean)));
-                        if (upItems.length === 0 && fdh !== startFdh) hasUnknown = true;
-                        else upItems.forEach(up => { if (!visited.has(up)) { visited.add(up); nextQueue.add(up); } });
+                        if (upItems.length === 0 && normFdh !== norm(startFdh)) hasUnknown = true;
+                        else upItems.forEach(up => { if (!visited.has(norm(up))) { visited.add(norm(up)); nextQueue.add(up); } });
                     } else {
                         let succs = node.qbRef && node.qbRef.successors || [];
                         let whatFeeds = parseMiniSldFdh(node.qbRef && node.qbRef.whatFeeds);
                         let downItems = Array.from(new Set([...succs, whatFeeds].filter(Boolean)));
-                        if (downItems.length === 0 && fdh !== startFdh) hasUnknown = true;
-                        else downItems.forEach(down => { if (!visited.has(down)) { visited.add(down); nextQueue.add(down); } });
+                        if (downItems.length === 0 && normFdh !== norm(startFdh)) hasUnknown = true;
+                        else downItems.forEach(down => { if (!visited.has(norm(down))) { visited.add(norm(down)); nextQueue.add(down); } });
                     }
-                } else if (fdh !== startFdh) {
+                } else if (normFdh !== norm(startFdh)) {
                     hasUnknown = true;
                 }
             }
