@@ -171,29 +171,47 @@ function getReferenceDictionary() {
   }
 
   if (refSheet && refSheet.getLastRow() > 1) {
-    let refHeaders = refSheet.getRange(1, 1, 1, refSheet.getLastColumn()).getValues()[0].map(String);
-    let fdhIdx = refHeaders.findIndex(h => h.toUpperCase().includes("FDH")); 
+    let refHeaders = refSheet.getRange(1, 1, 1, refSheet.getLastColumn()).getValues()[0].map(h => String(h || "").trim());
     
-    // 🧠 FIX: Bulletproof indexing against nulls
+    // 🧠 Bulletproof indexing helper
     let getIdx = (name) => refHeaders.findIndex(h => h != null && h.trim().toUpperCase() === name.toUpperCase());
     
-    let getIdxByAliases = (aliases) => aliases
-      .map(getIdx)
-      .find(function(idx) { return idx > -1; });
+    let getIdxByAliases = (aliases) => {
+        for (let a of aliases) {
+            let idx = getIdx(a);
+            if (idx > -1) return idx;
+        }
+        return -1;
+    };
 
-    let cityIdx = getIdx("City"), stageIdx = getIdx("Stage"), statusIdx = getIdx("Status"), bslIdx = Math.max(getIdx("BSLs"), getIdx("HHPs"), getIdx("BSL")); 
-    let ofsIdx = getIdxByAliases(["OFS DATE", "Budget OFS"]), cxStartIdx = getIdx("CX Start"), cxEndIdx = getIdx("CX Complete");
-    let bomUGIdx = getIdx("UG BOM Qty."), bomAEIdx = getIdx("AE BOM Qty."), bomFIBIdx = getIdx("Fiber BOM Qty."), bomNAPIdx = getIdx("NAPs BOM Qty.");
+    // 🧠 CORE FIX: Use the exact headers provided by the user for absolute mapping
+    let fdhIdx    = getIdx("FDH Engineering ID");
+    let cityIdx   = getIdx("City");
+    let stageIdx  = getIdx("Stage");
+    let statusIdx = getIdx("Status");
+    let bslIdx    = getIdxByAliases(["BSLs", "HHPs", "BSL"]);
+    let ofsIdx    = getIdxByAliases(["OFS DATE", "Budget OFS"]);
+    let cxStartIdx = getIdx("CX Start");
+    let cxEndIdx   = getIdx("CX Complete");
+
+    let bomUGIdx  = getIdx("UG BOM Qty.");
+    let bomAEIdx  = getIdx("AE BOM Qty.");
+    let bomFIBIdx = getIdx("Fiber BOM Qty.");
+    let bomNAPIdx = getIdx("NAPs BOM Qty.");
+    
+    // 🔍 AUDIT: Ensure we found the critical columns
+    logMsg("BENNY ENGINE [BOM Detection]: fdhIdx=" + fdhIdx + ", ug=" + bomUGIdx + ", ae=" + bomAEIdx + ", fib=" + bomFIBIdx + ", nap=" + bomNAPIdx);
+
     let ridIdx = getIdx("Record ID#"), bomDelIdx = getIdx("BOM in Deliverables"), spliceDelIdx = getIdx("Splice Sheet in Deliverables");
     let standDelIdx = getIdx("Stand Map in Deliverables"), cdDelIdx = getIdx("CD in Deliverables"), spliceDistIdx = getIdx("Splice Docs Distributed");
     let strandDistIdx = getIdx("Strand Maps"), cdDistIdx = getIdx("CD Distributed"), bomPoIdx = getIdx("BOM & PO sent"), sowIdx = getIdx("SOW sent");
     let cdIdx = cdDistIdx, specXIdx = getIdx("Special Crossings?"), specXDetailsIdx = getIdx("Special Crossing Details");
 
-    // 🧠 Robust numeric parser for BOM qtys
+    // 🧠 Robust numeric parser for BOM qtys (strips commas and non-numeric junk)
     const parseBOM = (val) => {
         if (val == null || val === "") return 0;
         if (typeof val === 'number') return val;
-        let clean = String(val).replace(/[, \t]/g, "").trim();
+        let clean = String(val).replace(/[^0-9.-]/g, "").trim();
         let num = parseFloat(clean);
         return isNaN(num) ? 0 : num;
     };
