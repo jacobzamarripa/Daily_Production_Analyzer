@@ -88,7 +88,7 @@ function renderDashKpiStrip() {
         var f = (i.flags || "").toUpperCase();
         return f.includes("ADMIN: CHECK CROSSINGS") ||
                f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS") ||
-               f.includes("MISSING BOM") || f.includes("CHECK BOM") || f.includes("VARIANCE") || f.includes("INPUT BOM");
+               f.includes("MISSING BOM") || f.includes("CHECK BOM") || f.includes("VARIANCE") || f.includes("INPUT BOM") || f.includes("REROUTE") || f.includes("DISCREPANCY");
     }).length;
 
     var cards = [

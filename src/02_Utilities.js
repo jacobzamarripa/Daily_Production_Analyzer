@@ -573,7 +573,7 @@ function getDashboardData() {
 
          const isFinished = stageStr.includes("OFS") || stageStr.includes("COMPLETE") || statStr.includes("OOS") || flags.includes("LIKELY OFS");
          if (isFinished) {
-             const irrelevantRisks = ["CHECK CROSSINGS", "CHECK BOM", "LIGHTING RISK", "STATUS MISMATCH", "PLEASE INPUT BOM", "HIGH UG VARIANCE", "HIGH STRAND VARIANCE", "MISSING UG BOM", "MISSING STRAND BOM", "ADMIN: REFRESH REF DATA"];
+             const irrelevantRisks = ["CHECK CROSSINGS", "CHECK BOM", "LIGHTING RISK", "STATUS MISMATCH", "PLEASE INPUT BOM", "HIGH UG VARIANCE", "HIGH STRAND VARIANCE", "HIGH FIBER VARIANCE", "MISSING BOM", "MISSING UG BOM", "MISSING STRAND BOM", "MISSING FIBER BOM", "MISSING SPLICING BOM", "POSSIBLE REROUTE", "BOM DISCREPANCY", "ADMIN: REFRESH REF DATA"];
              flags = flags.split("\n")
                  .filter(function(line) {
                      const upLine = line.toUpperCase();
@@ -2369,7 +2369,7 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData, opt
       const isFinished = stageStr.includes("OFS") || stageStr.includes("COMPLETE") || statusStr.includes("OOS") || currentFlags.includes("LIKELY OFS");
 
       if (isFinished) {
-        const irrelevantRisks = ["CHECK CROSSINGS", "CHECK BOM", "LIGHTING RISK", "STATUS MISMATCH", "PLEASE INPUT BOM", "HIGH UG VARIANCE", "HIGH STRAND VARIANCE", "MISSING UG BOM", "MISSING STRAND BOM", "ADMIN: REFRESH REF DATA"];
+        const irrelevantRisks = ["CHECK CROSSINGS", "CHECK BOM", "LIGHTING RISK", "STATUS MISMATCH", "PLEASE INPUT BOM", "HIGH UG VARIANCE", "HIGH STRAND VARIANCE", "HIGH FIBER VARIANCE", "MISSING BOM", "MISSING UG BOM", "MISSING STRAND BOM", "MISSING FIBER BOM", "MISSING SPLICING BOM", "POSSIBLE REROUTE", "BOM DISCREPANCY", "ADMIN: REFRESH REF DATA"];
         currentFlags = currentFlags.split("\n")
           .filter(function(line) {
             const upLine = line.toUpperCase();

@@ -191,8 +191,8 @@ function syncReviewHubHeaderCount() {
     if (activeTab === 'admin') {
         let items = getActiveQueueItems() || [];
         let crossings = items.filter(i => i.flags.includes("🚩 ADMIN: CHECK CROSSINGS") && !isCompleteOrOfs(i)).length;
-        let bomInput = items.filter(i => (i.flags.includes("⚠️ PLEASE INPUT BOM") || i.flags.includes("MISSING UG BOM") || i.flags.includes("MISSING STRAND BOM")) && !isCompleteOrOfs(i)).length;
-        let bomCheck = items.filter(i => (i.flags.includes("⚠️ CHECK BOM (UG/AE)") || i.flags.includes("HIGH UG VARIANCE") || i.flags.includes("HIGH STRAND VARIANCE")) && !isCompleteOrOfs(i)).length;
+        let bomInput = items.filter(i => (i.flags.includes("⚠️ PLEASE INPUT BOM") || i.flags.includes("MISSING BOM") || i.flags.includes("MISSING UG BOM") || i.flags.includes("MISSING STRAND BOM") || i.flags.includes("MISSING FIBER BOM") || i.flags.includes("MISSING SPLICING BOM")) && !isCompleteOrOfs(i)).length;
+        let bomCheck = items.filter(i => (i.flags.includes("⚠️ CHECK BOM (UG/AE)") || i.flags.includes("HIGH UG VARIANCE") || i.flags.includes("HIGH STRAND VARIANCE") || i.flags.includes("HIGH FIBER VARIANCE")) && !isCompleteOrOfs(i)).length;
         let status = items.filter(i => (i.flags.includes("🚩 STATUS MISMATCH") || i.flags.includes("🚩 MISSING QB STATUS")) && !isCompleteOrOfs(i)).length;
         total = crossings + bomInput + bomCheck + status;
     } else if (activeTab === 'reviewed') {
@@ -241,8 +241,8 @@ function renderAdminPane(items) {
     }
 
     let crossings = items.filter(i => i.flags.includes("🚩 ADMIN: CHECK CROSSINGS") && !isCompleteOrOfs(i));
-    let bomInput = items.filter(i => (i.flags.includes("⚠️ PLEASE INPUT BOM") || i.flags.includes("MISSING UG BOM") || i.flags.includes("MISSING STRAND BOM")) && !isCompleteOrOfs(i));
-    let bomCheck = items.filter(i => (i.flags.includes("⚠️ CHECK BOM (UG/AE)") || i.flags.includes("HIGH UG VARIANCE") || i.flags.includes("HIGH STRAND VARIANCE")) && !isCompleteOrOfs(i));
+    let bomInput = items.filter(i => (i.flags.includes("⚠️ PLEASE INPUT BOM") || i.flags.includes("MISSING BOM") || i.flags.includes("MISSING UG BOM") || i.flags.includes("MISSING STRAND BOM") || i.flags.includes("MISSING FIBER BOM") || i.flags.includes("MISSING SPLICING BOM")) && !isCompleteOrOfs(i));
+    let bomCheck = items.filter(i => (i.flags.includes("⚠️ CHECK BOM (UG/AE)") || i.flags.includes("HIGH UG VARIANCE") || i.flags.includes("HIGH STRAND VARIANCE") || i.flags.includes("HIGH FIBER VARIANCE")) && !isCompleteOrOfs(i));
     let status = items.filter(i => (i.flags.includes("🚩 STATUS MISMATCH") || i.flags.includes("🚩 MISSING QB STATUS")) && !isCompleteOrOfs(i));
     let bomsTotal = bomInput.length + bomCheck.length;
 
