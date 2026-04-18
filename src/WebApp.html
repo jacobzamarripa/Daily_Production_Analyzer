@@ -375,6 +375,11 @@
       <div id="critical-hub-overlay" class="critical-hub-overlay" onclick="closeCriticalHub()">
           <div id="critical-hub-panel" class="critical-hub-panel" onclick="event.stopPropagation()"></div>
       </div>
+      <button type="button" class="nav-search-trigger" id="btn-global-search-trigger" onclick="openGlobalSearch('desktop')" title="Search everywhere" aria-label="Open search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span class="nav-search-trigger-label">Search</span>
+        <span class="nav-search-trigger-badge" id="gs-badge-primary" aria-hidden="true">⌘K</span>
+      </button>
       <div class="nav-actions">
         <span id="nav-ref-age" class="ref-age-badge" style="display:none;"></span>
         <span class="gemini-badge ai-ok" id="gemini-badge" title="Gemini API calls used today" style="display:none"></span>
@@ -390,6 +395,27 @@
         <button class="btn-nav" onclick="toggleDarkMode()" id="btn-theme" title="Toggle dark mode"></button>
         <button class="btn-nav" onclick="toggleHelpPanel()" id="btn-help">?</button>
         <button class="btn-icon mobile-menu-toggle" id="btn-hamburger" onclick="toggleMobileMenu()" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      </div>
+    </div>
+
+    <!-- Global Spotlight Search Card -->
+    <div class="global-search-spotlight" id="global-search-spotlight" onclick="closeGlobalSearch(event)" aria-modal="true" role="dialog" aria-label="Search">
+      <div class="global-search-shell" id="global-search-shell" onclick="event.stopPropagation()">
+        <div class="global-search-field-wrap">
+          <span class="global-search-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
+          <input type="text" id="global-search-input" class="global-search-input" placeholder="Search everywhere…" autocomplete="off" oninput="handleGlobalSearchInput(event)" onkeydown="handleGlobalSearchKeydown(event)">
+          <span class="global-search-shortcut-badge" id="global-search-shortcut-badge" aria-hidden="true">
+            <span class="gs-badge-key" id="gs-badge-primary">⌘K</span>
+            <span class="gs-badge-sep">/</span>
+            <span class="gs-badge-key">/</span>
+          </span>
+          <button type="button" class="global-search-clear" aria-label="Clear search" onclick="clearGlobalSearch()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="global-search-dropdown" id="global-search-dropdown"></div>
       </div>
     </div>
 
@@ -486,17 +512,12 @@
       <button onclick="toggleHelpPanel(); toggleMobileMenu()">? Help</button>
     </div>
 
-    <div class="filter-strip smart-dock" id="filter-strip">
+        <div class="filter-strip smart-dock" id="filter-strip">
             <div class="dock-zone collapsed" id="dock-system-zone" style="justify-content: center; font-weight: 900; font-size: 11px; letter-spacing: 0.5px;">
                 <span id="dock-sys-spinner" class="dock-spinner" style="display:none;"></span>
                 <span id="dock-sys-msg"></span>
             </div>
-            <div class="dock-zone">
-                <input type="text" id="search-input" placeholder="Search projects..." autocomplete="off" oninput="handleSearchInput(event)">
-            </div>
-
             <div class="dock-zone" id="dock-launcher-zone">
-                <div class="dock-divider"></div>
                 <button class="btn hover-trigger" id="dock-btn-filters-launcher" onclick="toggleDesktopFiltersPanel()" aria-label="Toggle filters panel" aria-expanded="false" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Filters <span class="dock-filters-badge" id="dock-filters-badge" style="display:none;">0</span></button>
             </div>
 
@@ -514,7 +535,6 @@
             </div>
 
             <div class="dock-zone" id="dock-group-zone">
-                <div class="dock-divider"></div>
                 <select id="group-by-select" onchange="setGroupBy(this.value)">
                     <option value="none">Group By</option>
                     <option value="vendor">Vendor</option>
@@ -526,7 +546,6 @@
             </div>
 
             <div class="dock-zone collapsed" id="dock-pivot-zone">
-                <div class="dock-divider"></div>
                 <select id="grid-pivot-select" onchange="updateGridPivot()">
                     <option value="velocity">Field Velocity</option>
                     <option value="schedule">Project Schedule</option>
@@ -538,13 +557,11 @@
             </div>
 
             <div class="dock-zone collapsed" id="dock-focus-zone">
-                <div class="dock-divider"></div>
                 <button class="btn hover-trigger" id="dock-btn-face-toggle" onclick="primeDockMotionOrigin(this, 'focus'); toggleDetailFace()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Slide View</button>
                 <button class="btn hover-trigger" id="dock-btn-presentation" onclick="togglePresentationMode()" style="background:var(--card-bg); color:var(--text-main); border-color:var(--border);">Theater Mode</button>
             </div>
 
             <div class="dock-zone collapsed" id="dock-gantt-actions-zone">
-                <div class="dock-divider"></div>
                 <select id="gantt-sort-select" class="gantt-sort-select" onchange="syncGanttSort(this.value)">
                     <option value="end">CX Complete</option>
                     <option value="start">CX Start</option>
@@ -944,6 +961,7 @@
     <?!= include('_state_payload') ?>
     <?!= include('_state_analytics') ?>
     <?!= include('_state_ui_shell') ?>
+    <?!= include('_state_search') ?>
     <?!= include('_utils_shared') ?>
     <?!= include('_utils_notifications') ?>
     <?!= include('_utils_ui_tokens') ?>
@@ -965,6 +983,7 @@
     <?!= include('_module_startup_boot') ?>
     <?!= include('_module_startup_refdata') ?>
     <?!= include('_module_signal') ?>
+    <?!= include('_module_global_search') ?>
     <?!= include('_module_dashboard') ?>
     <?!= include('_module_ui_shell_helpers') ?>
     <?!= include('_module_mini_sld') ?>
