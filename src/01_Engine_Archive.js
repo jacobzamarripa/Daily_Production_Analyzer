@@ -1730,14 +1730,45 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
   const styleSheet = ss.getSheetByName(STYLE_MASTER);
   let targetDates = Array.isArray(targetDateStr) ? targetDateStr : [targetDateStr];
+
+  /**
+   * 🧠 AGGRESSIVE NORMALIZER: Always returns YYYY-MM-DD
+   */
   const normalizeDate = (d) => {
     if (!d) return "";
-    let obj = (d instanceof Date) ? d : new Date(d);
-    if (isNaN(obj.getTime())) return String(d).split('T')[0].trim();
+    let obj = (d instanceof Date) ? d : null;
+    
+    if (!obj) {
+        let s = String(d).trim();
+        // Handle ISO: 2026-04-18
+        let mIso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (mIso) return `${mIso[1]}-${mIso[2].padStart(2,'0')}-${mIso[3].padStart(2,'0')}`;
+        
+        // Handle US: 04/18/26 or 4/18/2026
+        let mUs = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})/);
+        if (mUs) {
+            let yr = mUs[3].length === 2 ? "20" + mUs[3] : mUs[3];
+            return `${yr}-${mUs[1].padStart(2,'0')}-${mUs[2].padStart(2,'0')}`;
+        }
+        obj = new Date(s);
+    }
+    
+    if (!obj || isNaN(obj.getTime())) return String(d).split('T')[0].trim();
+    
     let yr = obj.getFullYear();
     let mo = String(obj.getMonth() + 1).padStart(2, '0');
     let da = String(obj.getDate()).padStart(2, '0');
     return `${yr}-${mo}-${da}`;
+  };
+
+  /**
+   * 🧠 MIDNIGHT PARSER: Ensures local date comparison is time-blind
+   */
+  const parseDateToMidnight = (val) => {
+      const norm = normalizeDate(val);
+      if (!norm || norm.length < 10) return new Date(0); // 1970
+      const parts = norm.split('-');
+      return new Date(parts[0], parts[1]-1, parts[2], 0, 0, 0);
   };
 
   const normalizedTargets = targetDates.map(normalizeDate).filter(Boolean);
@@ -1989,7 +2020,13 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
 
   // GHOST ROW INJECTION — Active projects with no submission today
   const GHOST_ACTIVE_STAGES = ["FIELD CX", "PERMITTING", "CONSTRUCTION", "ACTIVE"];
-  const targetDateObj = normalizedTargets.length > 0 ? new Date(normalizedTargets[0] + "T12:00:00") : new Date();
+  const targetDateObj = parseDateToMidnight(normalizedTargets[0] || new Date());
+  
+  // 🔍 AUDIT: Verify date matching
+  if (histData.length > 1) {
+      logMsg("BENNY ENGINE [Date Match Audit]: target=" + normalizedTargets[0] + ", firstRowDate=" + normalizeDate(histData[1][0]));
+  }
+
   timerStartMs = Date.now();
   Object.keys(refDict).forEach(ghostFdhId => {
     if (submittedFdhs.has(ghostFdhId)) return;
@@ -2011,8 +2048,8 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
         ghostRowObj[h] = lRow[i];
       });
       
-      let reportDate = new Date(lRow[0]);
-      let daysAgo = Math.floor((targetDateObj - reportDate) / (1000 * 60 * 60 * 24));
+      let reportDate = parseDateToMidnight(lRow[0]);
+      let daysAgo = Math.round((targetDateObj - reportDate) / (1000 * 60 * 60 * 24));
       
       let staleFlag = "STALE REPORT";
       let staleColor = TEXT_COLORS.GHOST;
