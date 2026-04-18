@@ -267,19 +267,19 @@ function _performRenderGrid() {
                     <div style="background:var(--bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
                         <div style="font-size:9px; font-weight:900; color:#166534; margin-bottom:8px; text-transform:uppercase;">Deliverables</div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                            ${renderDeliverableChip("SPLICING", item.hasSpliceDel)}
-                            ${renderDeliverableChip("STRAND", item.hasStandDel)}
-                            ${renderDeliverableChip("CD", item.hasCDDel)}
-                            ${renderDeliverableChip("BOM", item.hasBOMDel)}
+                            ${renderDeliverableChip("SPLICING", item.hasSpliceDel, item)}
+                            ${renderDeliverableChip("STRAND", item.hasStandDel, item)}
+                            ${renderDeliverableChip("CD", item.hasCDDel, item)}
+                            ${renderDeliverableChip("BOM", item.hasBOMDel, item)}
                         </div>
                     </div>
                     <div style="background:var(--bg); padding:10px; border-radius:8px; border:1px solid var(--border);">
                         <div style="font-size:9px; font-weight:900; color:#1e40af; margin-bottom:8px; text-transform:uppercase;">Distributed</div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                            ${renderDeliverableChip("STRAND", item.hasStrandDist)}
-                            ${renderDeliverableChip("CD", item.hasCDDist)}
-                            ${renderDeliverableChip("BOM/PO", item.hasBOMPo)}
-                            ${renderDeliverableChip("SOW", item.hasSOW)}
+                            ${renderDeliverableChip("STRAND", item.hasStrandDist, item)}
+                            ${renderDeliverableChip("CD", item.hasCDDist, item)}
+                            ${renderDeliverableChip("BOM/PO", item.hasBOMPo, item)}
+                            ${renderDeliverableChip("SOW", item.hasSOW, item)}
                         </div>
                     </div>
                 </div>

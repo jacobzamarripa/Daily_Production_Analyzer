@@ -197,9 +197,19 @@ function saveQuickPeek(btn) {
         .saveDeckAnswers(payload);
 }
 
-function renderDeliverableChip(label, status) {
-    let dot = status ? '#22c55e' : '#ef4444';
-    let opacity = status ? '1' : '0.7';
+function renderDeliverableChip(label, status, item) {
+    let finalStatus = status;
+    
+    // Smart logic for BOM: Even if file exists (status=true), if data is missing (flags), show Red
+    if (label === 'BOM' && item && item.flags) {
+        const f = item.flags.toUpperCase();
+        if (f.includes('MISSING BOM') || f.includes('MISSING UG BOM') || f.includes('MISSING STRAND BOM') || f.includes('MISSING FIBER BOM') || f.includes('MISSING SPLICING BOM')) {
+            finalStatus = false;
+        }
+    }
+
+    let dot = finalStatus ? '#22c55e' : '#ef4444';
+    let opacity = finalStatus ? '1' : '0.7';
     return `<div style="display:inline-flex; align-items:center; padding:2px 8px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-size:9px; font-weight:900; opacity:${opacity}; gap:5px;">
               <span style="height:6px; width:6px; background:${dot}; border-radius:50%;"></span>${label}
             </div>`;

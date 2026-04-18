@@ -630,10 +630,11 @@ function getDashboardData() {
              referenceConfidenceTier: referenceMeta.tier,
              qbRef: refData ? (refData.qbRef || {}) : {},
              fiberTotalMiles: vStats.lifetime.miles,
-             vel: {                 ug: { tot: parseNum(data[i][ugTotIdx]), bom: parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },
-                 ae: { tot: parseNum(data[i][aeTotIdx]), bom: parseNum(data[i][aeBomIdx]), daily: parseNum(data[i][aeDailyIdx]) },
-                 fib: { tot: parseNum(data[i][fibTotIdx]), bom: parseNum(data[i][fibBomIdx]), daily: parseNum(data[i][fibDailyIdx]) },
-                 nap: { tot: parseNum(data[i][napTotIdx]), bom: parseNum(data[i][napBomIdx]), daily: parseNum(data[i][napDailyIdx]) }
+             vel: {
+                 ug: { tot: parseNum(data[i][ugTotIdx]), bom: (refData && refData.ugBOM > 0) ? refData.ugBOM : parseNum(data[i][ugBomIdx]), daily: parseNum(data[i][ugDailyIdx]) },
+                 ae: { tot: parseNum(data[i][aeTotIdx]), bom: (refData && refData.aeBOM > 0) ? refData.aeBOM : parseNum(data[i][aeBomIdx]), daily: parseNum(data[i][aeDailyIdx]) },
+                 fib: { tot: parseNum(data[i][fibTotIdx]), bom: (refData && refData.fibBOM > 0) ? refData.fibBOM : parseNum(data[i][fibBomIdx]), daily: parseNum(data[i][fibDailyIdx]) },
+                 nap: { tot: parseNum(data[i][napTotIdx]), bom: (refData && refData.napBOM > 0) ? refData.napBOM : parseNum(data[i][napBomIdx]), daily: parseNum(data[i][napDailyIdx]) }
              },
              rawRow: safeRawRow, 
              rowNum: i + 1
@@ -2424,10 +2425,10 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData, opt
         referenceConfidenceTier: referenceMeta.tier,
         qbRef: refData ? (refData.qbRef || {}) : {},
         vel: {
-            ug: { tot: parseNum(row[ugTotIdx]), bom: parseNum(row[ugBomIdx]), daily: parseNum(row[ugDailyIdx]) },
-            ae: { tot: parseNum(row[aeTotIdx]), bom: parseNum(row[aeBomIdx]), daily: parseNum(row[aeDailyIdx]) },
-            fib: { tot: parseNum(row[fibTotIdx]), bom: parseNum(row[fibBomIdx]), daily: parseNum(row[fibDailyIdx]) },
-            nap: { tot: parseNum(row[napTotIdx]), bom: parseNum(row[napBomIdx]), daily: parseNum(row[napDailyIdx]) }
+            ug: { tot: parseNum(row[ugTotIdx]), bom: (refData && refData.ugBOM > 0) ? refData.ugBOM : parseNum(row[ugBomIdx]), daily: parseNum(row[ugDailyIdx]) },
+            ae: { tot: parseNum(row[aeTotIdx]), bom: (refData && refData.aeBOM > 0) ? refData.aeBOM : parseNum(row[aeBomIdx]), daily: parseNum(row[aeDailyIdx]) },
+            fib: { tot: parseNum(row[fibTotIdx]), bom: (refData && refData.fibBOM > 0) ? refData.fibBOM : parseNum(row[fibBomIdx]), daily: parseNum(row[fibDailyIdx]) },
+            nap: { tot: parseNum(row[napTotIdx]), bom: (refData && refData.napBOM > 0) ? refData.napBOM : parseNum(row[napBomIdx]), daily: parseNum(row[napDailyIdx]) }
         },
         rowNum: i + 2
       });

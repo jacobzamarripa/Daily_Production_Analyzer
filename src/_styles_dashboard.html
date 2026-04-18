@@ -137,7 +137,7 @@
 /* === ROW 1: KPI STRIP === */
 .dash-kpi-strip {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto 1fr;
   gap: 12px;
 }
 
@@ -179,6 +179,7 @@
 }
 
 .dash-kpi-card.is-critical .dash-kpi-val { color: var(--color-critical); }
+.dash-kpi-card.is-admin .dash-kpi-val    { color: var(--color-insight); }
 .dash-kpi-card.is-ofs .dash-kpi-val      { color: var(--pill-ofs-txt); }
 .dash-kpi-card.is-permit .dash-kpi-val   { color: var(--pill-permit-txt); }
 .dash-kpi-card.is-complete .dash-kpi-val { color: var(--pill-complete-txt); }

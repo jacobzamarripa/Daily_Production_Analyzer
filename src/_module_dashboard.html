@@ -78,25 +78,35 @@ function renderDashKpiStrip() {
         else progressCount += cnt; // Group everything else as In Progress
     });
 
-    var critCount = (allActionItems || []).filter(function(i) {
-        return getSeverity(i.flags) === 'crit';
+    var items = (allActionItems || []);
+    var critCount = items.filter(function(i) {
+        return getSeverity(i.flags) === "crit" && !isCompleteOrOfs(i);
+    }).length;
+
+    var adminCount = items.filter(function(i) {
+        if (isCompleteOrOfs(i)) return false;
+        var f = (i.flags || "").toUpperCase();
+        return f.includes("ADMIN: CHECK CROSSINGS") ||
+               f.includes("STATUS MISMATCH") || f.includes("MISSING QB STATUS") ||
+               f.includes("MISSING BOM") || f.includes("CHECK BOM") || f.includes("VARIANCE") || f.includes("INPUT BOM");
     }).length;
 
     var cards = [
-        { label: 'OFS',        val: ofsCount,     cls: 'is-ofs' },
-        { label: 'Permitting', val: permitCount,   cls: 'is-permit' },
-        { label: 'Complete',   val: completeCount, cls: 'is-complete' },
-        { label: 'In Progress', val: progressCount, cls: 'is-progress' },
-        { label: 'Critical',   val: critCount,     cls: 'is-critical' }
+        { label: "OFS",         val: ofsCount,      cls: "is-ofs" },
+        { label: "Permitting",  val: permitCount,    cls: "is-permit" },
+        { label: "Complete",    val: completeCount,  cls: "is-complete" },
+        { label: "In Progress", val: progressCount,  cls: "is-progress" },
+        { label: "Admin",       val: adminCount,     cls: "is-admin" },
+        { label: "Critical",    val: critCount,      cls: "is-critical" }
     ];
 
     container.innerHTML = cards.map(function(c, idx) {
-        var sep = (idx === 4) ? '<div class="dash-kpi-sep"></div>' : '';
-        return sep + '<div class="dash-kpi-card ' + c.cls + '">' +
-            '<div class="dash-kpi-val">' + c.val + '</div>' +
-            '<div class="dash-kpi-label">' + esc(c.label) + '</div>' +
-        '</div>';
-    }).join('');
+        var sep = (idx === 5) ? "<div class=\"dash-kpi-sep\"></div>" : "";
+        return sep + "<div class=\"dash-kpi-card " + c.cls + "\">" +
+            "<div class=\"dash-kpi-val\">" + c.val + "</div>" +
+            "<div class=\"dash-kpi-label\">" + esc(c.label) + "</div>" +
+        "</div>";
+    }).join("");
 }
 
 function renderDashHealthDonut() {

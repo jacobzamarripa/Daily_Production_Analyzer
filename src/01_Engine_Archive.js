@@ -1204,9 +1204,11 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
      const allBomZero  = _ugBom === 0 && _aeBom === 0 && _fibBom === 0 && _napBom === 0;
 
      if (allBomZero) {
-         flags.push("MISSING BOM DATA");
-         flagColors.push(TEXT_COLORS.WARN);
-         drafts.push("No BOM quantities found in QB for any phase. Please verify BOM data has been entered for this project.");
+         if (dailyUG > 0 || dailyAE > 0 || dailyFIB > 0 || dailyNAP > 0) {
+             flags.push("MISSING BOM DATA");
+             flagColors.push(TEXT_COLORS.WARN);
+             drafts.push("Active progress reported but all BOM quantities in QB are 0. Please verify BOM data.");
+         }
      } else {
          if (dailyUG > 0 && _ugBom === 0) {
              flags.push("MISSING UG BOM");
@@ -1217,6 +1219,16 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
              flags.push("MISSING STRAND BOM");
              flagColors.push(TEXT_COLORS.WARN);
              drafts.push("Strand activity reported but Strand BOM is 0. Please update BOM in QuickBase.");
+         }
+         if (dailyFIB > 0 && _fibBom === 0) {
+             flags.push("MISSING FIBER BOM");
+             flagColors.push(TEXT_COLORS.WARN);
+             drafts.push("Fiber activity reported but Fiber BOM is 0. Please update BOM in QuickBase.");
+         }
+         if (dailyNAP > 0 && _napBom === 0) {
+             flags.push("MISSING SPLICING BOM");
+             flagColors.push(TEXT_COLORS.WARN);
+             drafts.push("Splicing activity reported but NAP BOM is 0. Please update BOM in QuickBase.");
          }
 
          const checkVariance = (name, rBom, vTot) => {

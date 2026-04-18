@@ -119,6 +119,11 @@ const QB_REFERENCE_FIELD_WHITELIST = [
   "CD Distributed",
   "BOM & PO sent",
   "SOW sent",
+  // BOM Quantities (Baseline Targets) — FID 27, 26, 59, 564
+  "UG Footage",
+  "AE Footage",
+  "Fiber Footage",
+  "Total Naps",
   // Special crossings — FID 525, 526
   "Special Crossings?", "Special Crossing Details",
   // Vendor — FID 757 (QB label). Remapped to "CX Vendor" in sheet via QB_LABEL_REMAP below.
@@ -129,7 +134,11 @@ const QB_REFERENCE_FIELD_WHITELIST = [
 // Maps QB field labels → the column header name the engine expects in Reference_Data.
 // Add entries here when QB's label differs from what getReferenceDictionary() looks for.
 const QB_LABEL_REMAP = {
-  "Construction Vendor": "CX Vendor"  // FID 757 — engine looks for "CX Vendor"
+  "Construction Vendor": "CX Vendor",  // FID 757 — engine looks for "CX Vendor"
+  "UG Footage": "UG BOM Qty.",         // FID 27
+  "AE Footage": "AE BOM Qty.",         // FID 26
+  "Fiber Footage": "Fiber BOM Qty.",   // FID 59
+  "Total Naps": "NAPs BOM Qty."        // FID 564
 };
 
 // --- 2. FIELD DISCOVERY (run once to build the Data Dictionary) ---
