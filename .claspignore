@@ -10,3 +10,4 @@ package-lock.json
 jsconfig.json
 _archive/**
 _docs_archive/**
+screenshots/**
