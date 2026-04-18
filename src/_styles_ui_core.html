@@ -423,7 +423,7 @@
 
     .global-search-result-footer {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       gap: 12px;
       margin-top: 2px;
@@ -442,6 +442,7 @@
       align-items: center;
     }
     .global-search-result-pills {
+      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -455,6 +456,7 @@
       padding: 2px 8px !important;
       line-height: 1.1 !important;
       font-weight: 900 !important;
+      margin-right: -4px; /* Tighten gap between pill and subtitle */
     }
 
     .global-search-result-pill {

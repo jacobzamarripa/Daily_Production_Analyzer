@@ -69,12 +69,12 @@
         severity = getSeverity(item.flags || '');
       }
 
-      // Pre-calculate status pill HTML to ensure it captures app state correctly
+      // Pre-calculate status pill HTML using the standard builder
       let statusHtml = '';
       if (typeof getQueueCombinedPill === 'function') {
-        const combined = getQueueCombinedPill(item);
-        const pCls = (typeof getQueuePillClass === 'function') ? getQueuePillClass(item.stage, item.status) : 'chip-active';
-        statusHtml = '<span class="glass-pill ' + pCls + '">' + _gsEsc(combined) + '</span>';
+        statusHtml = buildStatusPill(getQueueCombinedPill(item));
+      } else {
+        statusHtml = buildStatusPill(item.status || item.stage || '');
       }
 
       return {
@@ -82,8 +82,8 @@
         type: 'project',
         group: 'Projects',
         title: fdh,
-        subtitle: [item.vendor, item.city, item.stage].filter(Boolean).join(' | ') || 'Project result',
-        statusHtml: statusHtml, // Store pre-rendered HTML
+        subtitle: [item.city, item.vendor].filter(Boolean).join(' \u00b7 ') || 'Project result',
+        statusHtml: statusHtml, 
         severity: severity,
         keywords: [
           item.fdh, item.vendor, item.city, item.stage, item.status, item.flags, item.draft,
@@ -122,8 +122,8 @@
         type: 'activity',
         group: 'Review Activity',
         title: String(log.fdh || 'Activity'),
-        subtitle: [log.type, log.val, log.user, log.time].filter(Boolean).join(' | '),
-        status: log.type || '', 
+        subtitle: [log.type, log.val, log.user, log.time].filter(Boolean).join(' \u00b7 '),
+        statusHtml: buildStatusPill(log.type || ''), 
         severity: severity,
         keywords: [log.fdh, log.type, log.val, log.user, log.time].filter(Boolean).join(' \n '),
         target: { kind: 'activity', activityKey: key, fdh: String(log.fdh || '') },
@@ -145,8 +145,8 @@
           type: 'signal-qb',
           group: 'SIGNAL',
           title: String(change.fdh || 'QB Change'),
-          subtitle: ['QB', change.type, change.newVal, tf].filter(Boolean).join(' | '),
-          status: change.newVal || '',
+          subtitle: ['QB', change.type, change.newVal, tf].filter(Boolean).join(' \u00b7 '),
+          statusHtml: buildStatusPill(change.newVal || ''),
           keywords: [change.fdh, change.type, change.newVal, change.updatedBy, change.timestamp, tf].filter(Boolean).join(' \n '),
           target: { kind: 'signal', tab: 'qb', timeframe: tf, signalKey: signalId },
           highlightText: String(change.newVal || change.type || change.fdh || '')
@@ -352,9 +352,9 @@
         + '    <div class="global-search-result-meta">' + _gsEsc(result.group) + '</div>'
         + '  </div>'
         + '  <div class="global-search-result-footer">'
+        +      statusHtml
         + '    <div class="global-search-result-subtitle">' + _gsHighlight(result.subtitle, query) + '</div>'
         + '    <div class="global-search-result-pills">'
-        +        statusHtml
         + '      <span class="global-search-result-pill">' + accentLabel + '</span>'
         + '    </div>'
         + '  </div>';
@@ -367,8 +367,8 @@
         + '  </div>'
         + '  <div class="global-search-result-log-msg">' + _gsHighlight(result.subtitle, query) + '</div>'
         + '  <div class="global-search-result-footer">'
+        +      statusHtml
         + '    <div class="global-search-result-pills">'
-        +        statusHtml
         + '      <span class="global-search-result-pill">' + accentLabel + '</span>'
         + '    </div>'
         + '  </div>';
