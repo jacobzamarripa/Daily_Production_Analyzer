@@ -571,6 +571,17 @@ function getDashboardData() {
              cxInferred: cxInferredIdx > -1 ? String(data[i][cxInferredIdx] || "") : ""
          });
 
+         const isFinished = stageStr.includes("OFS") || stageStr.includes("COMPLETE") || statStr.includes("OOS") || flags.includes("LIKELY OFS");
+         if (isFinished) {
+             const irrelevantRisks = ["CHECK CROSSINGS", "CHECK BOM", "LIGHTING RISK", "STATUS MISMATCH", "PLEASE INPUT BOM", "HIGH UG VARIANCE", "HIGH STRAND VARIANCE", "MISSING UG BOM", "MISSING STRAND BOM", "ADMIN: REFRESH REF DATA"];
+             flags = flags.split("\n")
+                 .filter(function(line) {
+                     const upLine = line.toUpperCase();
+                     return !irrelevantRisks.some(function(risk) { return upLine.includes(risk); });
+                 })
+                 .join("\n").trim();
+         }
+
          actionItems.push({
              fdh: fdhIdx > -1 ? String(data[i][fdhIdx] || "") : "",
              vendor: vendorName,
@@ -2351,6 +2362,21 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData, opt
         cxInferred: cxInferredIdx > -1 ? String(row[cxInferredIdx] || "") : ""
       });
 
+      let currentFlags = String(row[flagsIdx] || "");
+      const stageStr = String(row[stageIdx] || "").toUpperCase();
+      const statusStr = String(row[statusIdx] || "").toUpperCase();
+      const isFinished = stageStr.includes("OFS") || stageStr.includes("COMPLETE") || statusStr.includes("OOS") || currentFlags.includes("LIKELY OFS");
+
+      if (isFinished) {
+        const irrelevantRisks = ["CHECK CROSSINGS", "CHECK BOM", "LIGHTING RISK", "STATUS MISMATCH", "PLEASE INPUT BOM", "HIGH UG VARIANCE", "HIGH STRAND VARIANCE", "MISSING UG BOM", "MISSING STRAND BOM", "ADMIN: REFRESH REF DATA"];
+        currentFlags = currentFlags.split("\n")
+          .filter(function(line) {
+            const upLine = line.toUpperCase();
+            return !irrelevantRisks.some(function(risk) { return upLine.includes(risk); });
+          })
+          .join("\n").trim();
+      }
+
       actionItems.push({
         fdh: fdhKey,
         vendor: String(row[vendorIdx] || ""),
@@ -2370,7 +2396,7 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData, opt
         cxInferred: cxInferredIdx > -1 ? String(row[cxInferredIdx] || "") : "",
         isXing: String(row[gapsIdx]).includes("X-ING YES"),
         gaps: String(row[gapsIdx] || ""),
-        flags: String(row[flagsIdx] || ""),
+        flags: currentFlags,
         draft: String(row[draftIdx] || ""),
         fieldProduction: String(row[summaryIdx] || ""),
         bench: String(row[benchIdx] || ""),

@@ -270,39 +270,34 @@ function renderDashFlagsFeed() {
     // Group items by their specific critical flags
     var groups = {};
     items.forEach(function(item) {
-        var critFlags = (item.flags || '').split('\n')
+        var critFlags = (item.flags || "").split("\n")
             .map(function(f) { return f.trim(); })
-            .filter(function(f) { return f.includes('🚨') || f.includes('🛑'); });
+            .filter(function(f) { return f.includes("🚨") || f.includes("🛑"); });
 
         critFlags.forEach(function(flag) {
-            var icon = flag.includes('🚨') ? '🚨' : '🛑';
-            var cleanText = flag.replace(/^[🚨🛑]\s*/, '').trim();
-            var groupKey = icon + ' ' + cleanText;
-            if (!groups[groupKey]) groups[groupKey] = [];
-            groups[groupKey].push(item);
+            var cleanText = cleanDiagnosticFlagText(flag);
+            if (!groups[cleanText]) groups[cleanText] = [];
+            groups[cleanText].push(item);
         });
     });
 
     var sortedKeys = Object.keys(groups).sort();
-    var html = '';
+    var html = "";
 
     sortedKeys.forEach(function(groupKey) {
         var groupItems = groups[groupKey];
-        var groupIcon = groupKey.split(' ')[0];
-        var text = groupKey.replace(groupIcon + ' ', '');
 
-        html += '<div class="dash-flag-group">' +
-            '<div class="dash-flag-group-header">' +
-                '<span class="dash-flag-group-icon">' + groupIcon + '</span>' +
-                '<span class="dash-flag-group-text">' + esc(text) + '</span>' +
-                '<span class="dash-flag-group-count">' + groupItems.length + '</span>' +
-            '</div>';
+        html += "<div class=\"dash-flag-group\">" +
+            "<div class=\"dash-flag-group-header\">" +
+                "<span class=\"dash-flag-group-text\">" + esc(groupKey) + "</span>" +
+                "<span class=\"dash-flag-group-count\">" + groupItems.length + "</span>" +
+            "</div>";
 
         groupItems.forEach(function(item) {
             html += getListCardHtml(item);
         });
 
-        html += '</div>';
+        html += "</div>";
     });
 
     container.innerHTML = html;
