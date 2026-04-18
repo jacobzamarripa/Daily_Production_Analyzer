@@ -405,7 +405,7 @@
     }
 
     return ''
-      + '<button class="global-search-result' + activeClass + typeClass + groupClass + severityClass + '" type="button" data-result-id="' + _gsEsc(result.id) + '" onclick="navigateGlobalSearchResult(' + JSON.stringify(result.id) + ')">'
+      + '<button class="global-search-result' + activeClass + typeClass + groupClass + severityClass + '" type="button" data-result-id="' + _gsEsc(result.id) + '" onclick="navigateGlobalSearchResult(\'' + _gsEsc(result.id) + '\')">'
       + cardInner
       + '</button>';
   }
