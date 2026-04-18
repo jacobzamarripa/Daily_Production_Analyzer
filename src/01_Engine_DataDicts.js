@@ -189,6 +189,15 @@ function getReferenceDictionary() {
     let strandDistIdx = getIdx("Strand Maps"), cdDistIdx = getIdx("CD Distributed"), bomPoIdx = getIdx("BOM & PO sent"), sowIdx = getIdx("SOW sent");
     let cdIdx = cdDistIdx, specXIdx = getIdx("Special Crossings?"), specXDetailsIdx = getIdx("Special Crossing Details");
 
+    // 🧠 Robust numeric parser for BOM qtys
+    const parseBOM = (val) => {
+        if (val == null || val === "") return 0;
+        if (typeof val === 'number') return val;
+        let clean = String(val).replace(/[, \t]/g, "").trim();
+        let num = parseFloat(clean);
+        return isNaN(num) ? 0 : num;
+    };
+
     // Deck reference values from QB multi-table join (populated by syncFromQBWebApp enrichment)
     let qbPermitSentIdx = getIdx("QB_Permit_Sent");
     let qbPermitApprIdx = getIdx("QB_Permit_Appr");
@@ -247,10 +256,10 @@ function getReferenceDictionary() {
            canonicalOfsDate: ofsIdx > -1 ? safeDate(r[ofsIdx]) : "",
            cxStart: cxStartIdx > -1 ? safeDate(r[cxStartIdx]) : "",
            cxComplete: cxEndIdx > -1 ? safeDate(r[cxEndIdx]) : "",
-           ugBOM: bomUGIdx > -1 ? Number(r[bomUGIdx]) || 0 : 0, 
-           aeBOM: bomAEIdx > -1 ? Number(r[bomAEIdx]) || 0 : 0,
-           fibBOM: bomFIBIdx > -1 ? Number(r[bomFIBIdx]) || 0 : 0, 
-           napBOM: bomNAPIdx > -1 ? Number(r[bomNAPIdx]) || 0 : 0,
+           ugBOM: bomUGIdx > -1 ? parseBOM(r[bomUGIdx]) : 0, 
+           aeBOM: bomAEIdx > -1 ? parseBOM(r[bomAEIdx]) : 0,
+           fibBOM: bomFIBIdx > -1 ? parseBOM(r[bomFIBIdx]) : 0, 
+           napBOM: bomNAPIdx > -1 ? parseBOM(r[bomNAPIdx]) : 0,
            rid: ridIdx > -1 ? String(r[ridIdx] || "").trim() : "",
            hasSOW: sowIdx > -1 ? isChecked(r[sowIdx]) : true, 
            hasBOM: bomPoIdx > -1 ? isChecked(r[bomPoIdx]) : true,

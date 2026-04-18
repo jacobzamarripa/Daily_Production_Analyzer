@@ -981,7 +981,31 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
   if (refData) {
     let status = refData.status.toLowerCase();
     if (status.includes("complete")) rowState = "COMPLETE"; else if (status.includes("on hold")) rowState = "ON_HOLD"; else if (refData.stage.toLowerCase().includes("ofs")) rowState = "OFS"; else if (refData.stage.toLowerCase().includes("permitting")) rowState = "PERMITTING";
-    if (rowState !== "COMPLETE" && rowState !== "OFS") { qbGaps.push((refData.hasSOW ? "✅📄 SOW" : "❌📄 SOW")); qbGaps.push((refData.hasCD ? "✅💿 CD" : "❌💿 CD")); qbGaps.push((refData.hasBOM ? "✅📦 BOM" : "❌📦 BOM")); }
+    
+    if (rowState !== "COMPLETE" && rowState !== "OFS") { 
+        qbGaps.push((refData.hasSOW ? "✅📄 SOW" : "❌📄 SOW")); 
+        qbGaps.push((refData.hasCD ? "✅💿 CD" : "❌💿 CD")); 
+        
+        // 🧠 Smart BOM Gap: Data-driven trigger
+        const dailyUG = Number(row[HISTORY_HEADERS.indexOf("Daily UG Footage")]) || 0;
+        const dailyAE = Number(row[HISTORY_HEADERS.indexOf("Daily Strand Footage")]) || 0;
+        const dailyFIB = Number(row[HISTORY_HEADERS.indexOf("Daily Fiber Footage")]) || 0;
+        const dailyNAP = Number(row[HISTORY_HEADERS.indexOf("Daily NAPs/Encl. Completed")]) || 0;
+        
+        let bomMissingData = false;
+        if (dailyUG > 0 && (refData.ugBOM || 0) === 0) bomMissingData = true;
+        if (dailyAE > 0 && (refData.aeBOM || 0) === 0) bomMissingData = true;
+        if (dailyFIB > 0 && (refData.fibBOM || 0) === 0) bomMissingData = true;
+        if (dailyNAP > 0 && (refData.napBOM || 0) === 0) bomMissingData = true;
+
+        if (bomMissingData) {
+            qbGaps.push("❌📦 BOM");
+        } else {
+            // If data is present for active phases, show green even if checkbox is off
+            const hasAnyBomData = (refData.ugBOM || 0) > 0 || (refData.aeBOM || 0) > 0 || (refData.fibBOM || 0) > 0 || (refData.napBOM || 0) > 0;
+            qbGaps.push((refData.hasBOM || hasAnyBomData) ? "✅📦 BOM" : "❌📦 BOM");
+        }
+    }
     if (refData.isSpecialX) qbGaps.push("⚠️ X-ING");
   }
 
