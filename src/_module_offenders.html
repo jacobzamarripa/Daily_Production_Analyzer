@@ -90,16 +90,18 @@
 .off-project-list.open { display: block; }
 .off-project-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px 6px 20px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 16px 7px 20px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 35%, transparent);
   transition: background 0.1s;
 }
 .off-project-row:last-child { border-bottom: none; }
 .off-project-row:hover { background: color-mix(in srgb, var(--accent) 4%, var(--bg)); }
+.off-project-row-top { display: flex; align-items: center; gap: 8px; }
 .off-project-fdh { font-size: 11px; font-weight: 800; color: var(--accent); min-width: 88px; flex-shrink: 0; }
 .off-project-meta { font-size: 11px; color: var(--text-muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.off-project-flags { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 96px; }
 </style>
 
 <script>
@@ -322,12 +324,25 @@
         html += '<div class="off-project-list' + (isExpanded ? ' open' : '') + '" id="off-pl-' + vKey + '">';
         vd.projects.forEach(function(p) {
           var stageStatus = [p.city, p.stage, p.status].filter(Boolean).join(' · ');
-          html += '<div class="off-project-row">'
+          // Top row: FDH + meta + Open button
+          var rowHtml = '<div class="off-project-row">'
+            + '<div class="off-project-row-top">'
             + '<span class="off-project-fdh">' + _esc(p.fdh || '—') + '</span>'
             + '<span class="off-project-meta">' + _esc(stageStatus) + '</span>'
-            + '<button class="signal-qb-open-btn" style="font-size:9px;padding:4px 8px"'
+            + '<button class="signal-qb-open-btn" style="font-size:9px;padding:4px 8px;flex-shrink:0"'
             + ' onclick="event.stopPropagation();_signalNavigateToItem(\'' + _esc(p.fdh) + '\')">Open Detail</button>'
             + '</div>';
+          // Flag chips row — each project's specific offences
+          if (p.flags && p.flags.length) {
+            rowHtml += '<div class="off-project-flags">';
+            p.flags.forEach(function(flag) {
+              var cls = (typeof getDiagnosticTagClass === 'function') ? getDiagnosticTagClass(flag) : 'chip-muted';
+              rowHtml += '<span class="glass-pill ' + cls + '" style="font-size:8px;padding:2px 7px">' + _esc(flag) + '</span>';
+            });
+            rowHtml += '</div>';
+          }
+          rowHtml += '</div>';
+          html += rowHtml;
         });
         html += '</div>';
       });

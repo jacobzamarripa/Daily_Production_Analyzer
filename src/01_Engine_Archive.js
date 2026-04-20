@@ -1008,10 +1008,12 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
     }
     if (refData.isSpecialX) qbGaps.push("X-ING");
 
-    // 🧠 CROSSING CHECK
+    // CROSSING CHECK — skip OFS and Complete projects; crossing status is irrelevant at those stages
     const xingVal = (refData.rawSpecialX || "").toString().trim().toLowerCase();
     const hasBeenChecked = refData.adminDate && refData.adminDate !== "";
-    if (xingVal === "" && !hasBeenChecked) {
+    const _xingStage  = (refData.stage  || "").toUpperCase();
+    const _xingStatus = (refData.status || "").toUpperCase();
+    if (xingVal === "" && !hasBeenChecked && !_xingStage.includes("OFS") && !_xingStatus.includes("COMPLETE")) {
         flags.push("ADMIN: CHECK CROSSINGS");
         flagColors.push("#991b1b");
     }
@@ -1213,7 +1215,7 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
       hCols.warn.push("FDH Engineering ID");
   }
   
-  if (targetDate && !isNaN(targetDate.getTime()) && !lightToCab && rowState !== "COMPLETE") { let daysToTarget = Math.ceil((targetDate - new Date()) / (1000 * 60 * 60 * 24)); if (daysToTarget <= 14) { flags.push(`LIGHTING RISK`); flagColors.push(TEXT_COLORS.WARN); hCols.warn.push("Target Completion Date", "Light to Cabinets"); } }
+  if (targetDate && !isNaN(targetDate.getTime()) && !lightToCab && rowState !== "COMPLETE") { let daysToTarget = Math.ceil((targetDate - new Date()) / (1000 * 60 * 60 * 24)); if (daysToTarget <= 2) { flags.push(`LIGHTING RISK`); flagColors.push(TEXT_COLORS.WARN); hCols.warn.push("Target Completion Date", "Light to Cabinets"); } }
   if (refData) {
       let howFed = parseFdhList((refData.qbRef && refData.qbRef.howFed) || refData.howFed);
       let whatFeeds = parseFdhList((refData.qbRef && refData.qbRef.whatFeeds) || refData.whatFeeds);
@@ -2080,18 +2082,33 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       });
       
       let reportDate = parseDateToMidnight(lRow[0]);
-      let daysAgo = Math.round((targetDateObj - reportDate) / (1000 * 60 * 60 * 24));
-      
+
+      // Count Mon–Fri days strictly after reportDate up to and including targetDateObj.
+      // This prevents Monday morning stale alerts when the last report was Thursday
+      // (only Friday counts as a missed business day, not Sat/Sun).
+      const _countBizDays = (from, to) => {
+        let n = 0;
+        let d = new Date(from.getTime());
+        d.setDate(d.getDate() + 1);
+        while (d <= to) {
+          const dow = d.getDay();
+          if (dow !== 0 && dow !== 6) n++;
+          d.setDate(d.getDate() + 1);
+        }
+        return n;
+      };
+      let daysAgo = _countBizDays(reportDate, targetDateObj);
+
       let staleFlag = "STALE REPORT";
       let staleColor = TEXT_COLORS.GHOST;
-      let staleDraft = `Vendor (${ref.vendor}) did not submit a daily report today. Last report was ${daysAgo} day(s) ago.`;
+      let staleDraft = `Vendor (${ref.vendor}) did not submit a daily report today. Last report was ${daysAgo} business day(s) ago.`;
 
       if (daysAgo >= 2) {
         staleFlag = `STALE REPORT (${daysAgo} Days)`;
-        staleColor = TEXT_COLORS.WARN; // Red (#ef4444)
+        staleColor = TEXT_COLORS.WARN;
       } else if (daysAgo === 1) {
         staleFlag = `STALE REPORT (Yesterday)`;
-        staleColor = TEXT_COLORS.MISMATCH; // Yellow/Orange (#b45309)
+        staleColor = TEXT_COLORS.MISMATCH;
       }
 
       // Merge stale flag with existing diagnostics

@@ -332,12 +332,19 @@
           if (f.includes('ON HOLD')) return 'chip-hold';
           if (plain.includes('ADMIN: CHECK CROSSINGS') || plain.includes('ADMIN: REFRESH REF DATA')) return 'chip-admin';
           if (plain.includes('STATUS MISMATCH') || plain.includes('MISSING QB STATUS')) return 'chip-warn';
+          // Field Anomaly: production inconsistencies — ghost work, variance overruns, pace anomalies
           if (
-            plain.includes('LIGHTING RISK') || plain.includes('SCOPE DEVIATION') || 
-            plain.includes('PACE') || plain.includes('CHECK BOM') || 
-            plain.includes('PLEASE INPUT BOM') || plain.includes('FORMAT ERROR') || 
-            plain.includes('BLOCKED BY UPSTREAM') || plain.includes('DELAYING DOWNSTREAM') ||
-            plain.includes('TRACKER VARIANCE') || plain.includes('BLOCKED BY PREDECESSOR')
+            plain.includes('GHOST') || plain.includes('VARIANCE') ||
+            plain.includes('OVERRUN') || plain.includes('REROUTE') ||
+            plain.includes('BOM DISCREPANCY') || plain.includes('PACE ANOMALY') ||
+            plain.includes('PACE') && (plain.includes('UG') || plain.includes('AE') || plain.includes('FIBER') || plain.includes('SPLICE'))
+          ) return 'chip-anomaly';
+          if (
+            plain.includes('LIGHTING RISK') || plain.includes('SCOPE DEVIATION') ||
+            plain.includes('CHECK BOM') || plain.includes('PLEASE INPUT BOM') ||
+            plain.includes('FORMAT ERROR') || plain.includes('BLOCKED BY UPSTREAM') ||
+            plain.includes('DELAYING DOWNSTREAM') || plain.includes('TRACKER VARIANCE') ||
+            plain.includes('BLOCKED BY PREDECESSOR')
           ) return 'chip-warn';
           if (plain.includes('TRANSPORT OVERRIDE') || plain.includes('TRACKER UPDATE') || plain.includes('AUTO-CORRECTED') || plain.includes('SOFT MATCH')) return 'chip-magic';
           if (f.includes('STALE REPORT')) {
@@ -345,7 +352,7 @@
               return 'tag-red';
           }
           if (f === 'MISSING DAILY REPORT') return 'chip-ghost';
-          if (plain.includes('INVALID DATE') || plain.includes('MISSING BOM') || plain.includes('OVERRUN')) return 'tag-red';
+          if (plain.includes('INVALID DATE') || plain.includes('MISSING BOM')) return 'tag-red';
           return 'chip-muted';
       }
 
