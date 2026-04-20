@@ -243,31 +243,59 @@
       .em-vendor { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; line-height: 1;}
       .em-pill-stack { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: 8px; }
       
-      .glass-pill { font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px; border: 1.5px solid; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-      .chip-active, .pill-active, .pill-default { color: var(--pill-active-txt); background: var(--pill-active-bg); border-color: var(--pill-active-bdr); }
-      .chip-ofs, .pill-ofs { color: var(--pill-ofs-txt); background: var(--pill-ofs-bg); border-color: var(--pill-ofs-bdr); }
-      .chip-permit, .pill-permit { color: var(--pill-permit-txt); background: var(--pill-permit-bg); border-color: var(--pill-permit-bdr); }
-      .chip-complete, .pill-complete { color: var(--pill-complete-txt); background: var(--pill-complete-bg); border-color: var(--pill-complete-bdr); }
-      .chip-hold, .pill-hold { color: var(--pill-hold-txt); background: var(--pill-hold-bg); border-color: var(--pill-hold-bdr); }
-      .chip-missing, .pill-missing { color: var(--pill-missing-txt); background: var(--pill-missing-bg); border-color: var(--pill-missing-bdr); }
-      .chip-drg, .pill-drg { color: var(--pill-drg-txt); background: var(--pill-drg-bg); border-color: var(--pill-drg-bdr); }
+      .glass-pill { 
+          display: inline-flex; 
+          align-items: center; 
+          justify-content: center;
+          padding: 3px 12px; 
+          font-size: 9px; 
+          font-weight: 900; 
+          border-radius: 999px; 
+          border: none; 
+          text-transform: uppercase; 
+          white-space: nowrap; 
+          box-shadow: 0 2px 4px rgba(0,0,0,0.12); 
+          box-sizing: border-box;
+      }
+      .chip-active, .pill-active, .pill-default { color: var(--pill-active-txt); background: var(--pill-active-bg); }
+      .chip-ofs, .pill-ofs { color: var(--pill-ofs-txt); background: var(--pill-ofs-bg); }
+      .chip-permit, .pill-permit { color: var(--pill-permit-txt); background: var(--pill-permit-bg); }
+      .chip-complete, .pill-complete { color: var(--pill-complete-txt); background: var(--pill-complete-bg); }
+      .chip-hold, .pill-hold { color: var(--pill-hold-txt); background: var(--pill-hold-bg); }
+      .chip-missing, .pill-missing { color: var(--pill-missing-txt); background: var(--pill-missing-bg); }
+      
       .pill-drg { text-decoration: none; }
-      .pill-drg:hover { transform: translateY(-1px); box-shadow: 0 6px 12px rgba(20, 184, 166, 0.18); }
+      .pill-drg:hover { transform: translateY(-1px); }
       .pill-drg-inline { font-size: 8px; padding: 2px 6px; }
       body.dark-mode {
-          --pill-active-txt: #fde047;   --pill-active-bg: rgba(133,77,14,0.35);   --pill-active-bdr: #facc15;
-          --pill-ofs-txt: #bfdbfe;      --pill-ofs-bg: rgba(37,99,235,0.28);      --pill-ofs-bdr: #60a5fa;
-          --pill-permit-txt: #e9d5ff;   --pill-permit-bg: rgba(107,33,168,0.35);  --pill-permit-bdr: #c084fc;
-          --pill-complete-txt: #86efac; --pill-complete-bg: rgba(21,128,61,0.35); --pill-complete-bdr: #4ade80;
-          --pill-hold-txt: #e2e8f0;     --pill-hold-bg: rgba(71,85,105,0.35);     --pill-hold-bdr: #94a3b8;
-          --pill-missing-txt: #fca5a5;  --pill-missing-bg: rgba(153,27,27,0.35);  --pill-missing-bdr: #f87171;
+          --pill-active-txt: #422006;   --pill-active-bg: #eab308;   --pill-active-bdr: transparent;
+          --pill-ofs-txt: #ffffff;      --pill-ofs-bg: #2563eb;      --pill-ofs-bdr: transparent;
+          --pill-permit-txt: #ffffff;   --pill-permit-bg: #9333ea;   --pill-permit-bdr: transparent;
+          --pill-complete-txt: #ffffff; --pill-complete-bg: #166534; --pill-complete-bdr: transparent;
+          --pill-hold-txt: #ffffff;     --pill-hold-bg: #3f3f46;     --pill-hold-bdr: transparent;
+          --pill-missing-txt: #ffffff;  --pill-missing-bg: #991b1b;  --pill-missing-bdr: transparent;
           --pill-drg-txt: #99f6e4;      --pill-drg-bg: rgba(13,148,136,0.28);     --pill-drg-bdr: #2dd4bf;
       }
       .is-muted { opacity: 0.45; transition: opacity 0.3s ease; }
       .grid-card:hover .is-muted { opacity: 0.8; }
 
       .em-tags { display: flex; flex-wrap: wrap !important; gap: 4px; margin-top: 2px; min-width: 0; }
-      .tag { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 8px; font-size: 8px; font-weight: 900; white-space: nowrap; border: 1px solid; letter-spacing: 0.01em; box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); }
+      .tag { 
+          display: inline-flex; 
+          align-items: center; 
+          justify-content: center;
+          padding: 3px 8px; 
+          border-radius: 4px; 
+          font-size: 8px; 
+          font-weight: 900; 
+          text-transform: uppercase;
+          white-space: nowrap; 
+          border: 1px solid; 
+          letter-spacing: 0.01em; 
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); 
+          box-sizing: border-box;
+      }
+      .chip-drg, .pill-drg { background: var(--pill-drg-bg); color: var(--pill-drg-txt); border-color: var(--pill-drg-bdr); }
       .chip-admin, .tag-admin, .tag-yellow { background: rgba(254, 252, 232, 0.72); color: #854d0e; border-color: #facc15; }
       .chip-warn { background: rgba(255, 251, 235, 0.72); color: #b45309; border-color: #f59e0b; }
       /* 🏁 High-Contrast Admin Crossing - Matches schedule popout button */

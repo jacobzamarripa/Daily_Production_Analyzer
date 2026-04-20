@@ -230,7 +230,7 @@ function getVendorTrackerTooltip(item) {
 function renderTrackerPill(item, options) {
     if (!isVendorTrackerLinked(item)) return '';
     let opts = options || {};
-    let classes = ['glass-pill', 'pill-drg'];
+    let classes = ['tag', 'pill-drg'];
     if (opts.inline) classes.push('pill-drg-inline');
     let defaultLabel = item && item.isTrackerLinked ? 'Tracker Linked' : 'DRG Tracker';
     let label = esc(opts.label || defaultLabel);
