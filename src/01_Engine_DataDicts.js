@@ -184,28 +184,39 @@ function getReferenceDictionary() {
         return -1;
     };
 
-    // 🧠 CORE FIX: Use the exact headers provided by the user for absolute mapping
-    let fdhIdx    = getIdx("FDH Engineering ID");
-    let cityIdx   = getIdx("City");
-    let stageIdx  = getIdx("Stage");
+    // 🧠 CORE FIX: Use flexible aliasing for absolute mapping
+    let fdhIdx    = getIdxByAliases(["FDH Engineering ID", "FDH ID", "Project ID", "FDH"]);
+    let cityIdx   = getIdxByAliases(["City", "Market"]);
+    let stageIdx  = getIdxByAliases(["Stage", "Phase"]);
     let statusIdx = getIdx("Status");
     let bslIdx    = getIdxByAliases(["BSLs", "HHPs", "BSL"]);
-    let ofsIdx    = getIdxByAliases(["OFS DATE", "Budget OFS"]);
+    let ofsIdx    = getIdxByAliases(["OFS DATE", "Budget OFS", "Target OFS"]);
     let cxStartIdx = getIdx("CX Start");
-    let cxEndIdx   = getIdx("CX Complete");
+    let cxEndIdx   = getIdxByAliases(["CX Complete", "CX End"]);
 
-    let bomUGIdx  = getIdx("UG BOM Qty.");
-    let bomAEIdx  = getIdx("AE BOM Qty.");
-    let bomFIBIdx = getIdx("Fiber BOM Qty.");
-    let bomNAPIdx = getIdx("NAPs BOM Qty.");
+    let bomUGIdx  = getIdxByAliases(["UG BOM Qty.", "UG BOM Quantity"]);
+    let bomAEIdx  = getIdxByAliases(["AE BOM Qty.", "Strand BOM Quantity", "AE BOM Quantity"]);
+    let bomFIBIdx = getIdxByAliases(["Fiber BOM Qty.", "Fiber BOM Quantity"]);
+    let bomNAPIdx = getIdxByAliases(["NAPs BOM Qty.", "NAP/Encl. BOM Qty.", "NAP BOM Quantity"]);
     
     // 🔍 AUDIT: Ensure we found the critical columns
-    logMsg("BENNY ENGINE [BOM Detection]: fdhIdx=" + fdhIdx + ", ug=" + bomUGIdx + ", ae=" + bomAEIdx + ", fib=" + bomFIBIdx + ", nap=" + bomNAPIdx);
+    if (fdhIdx === -1 || cityIdx === -1) {
+        logMsg("❌ CRITICAL ERROR [BOM Detection]: FDH or City column not found in Reference Data! fdhIdx=" + fdhIdx + ", cityIdx=" + cityIdx);
+    } else {
+        logMsg("BENNY ENGINE [BOM Detection]: fdhIdx=" + fdhIdx + ", ug=" + bomUGIdx + ", ae=" + bomAEIdx + ", fib=" + bomFIBIdx + ", nap=" + bomNAPIdx);
+    }
 
-    let ridIdx = getIdx("Record ID#"), bomDelIdx = getIdx("BOM in Deliverables"), spliceDelIdx = getIdx("Splice Sheet in Deliverables");
-    let standDelIdx = getIdx("Stand Map in Deliverables"), cdDelIdx = getIdx("CD in Deliverables"), spliceDistIdx = getIdx("Splice Docs Distributed");
-    let strandDistIdx = getIdx("Strand Maps"), cdDistIdx = getIdx("CD Distributed"), bomPoIdx = getIdx("BOM & PO sent"), sowIdx = getIdx("SOW sent");
-    let cdIdx = cdDistIdx, specXIdx = getIdx("Special Crossings?"), specXDetailsIdx = getIdx("Special Crossing Details");
+    let ridIdx = getIdx("Record ID#"), bomDelIdx = getIdxByAliases(["BOM in Deliverables", "BOM Deliverable"]);
+    let spliceDelIdx = getIdxByAliases(["Splice Sheet in Deliverables", "Splice Deliverable"]);
+    let standDelIdx = getIdxByAliases(["Stand Map in Deliverables", "Strand Deliverable"]);
+    let cdDelIdx = getIdxByAliases(["CD in Deliverables", "CD Deliverable"]);
+    let spliceDistIdx = getIdxByAliases(["Splice Docs Distributed", "Splice Docs Dist"]);
+    let strandDistIdx = getIdxByAliases(["Strand Maps", "Strand Maps Dist"]);
+    let cdDistIdx = getIdxByAliases(["CD Distributed", "CD Dist"]);
+    let bomPoIdx = getIdxByAliases(["BOM & PO sent", "BOM Sent", "PO Sent"]);
+    let sowIdx = getIdxByAliases(["SOW sent", "SOW Signed"]);
+    let cdIdx = cdDistIdx, specXIdx = getIdxByAliases(["Special Crossings?", "Xing?"]);
+    let specXDetailsIdx = getIdxByAliases(["Special Crossing Details", "Xing Details"]);
 
     // 🧠 Robust numeric parser for BOM qtys (strips commas and non-numeric junk)
     const parseBOM = (val) => {
@@ -247,7 +258,7 @@ function getReferenceDictionary() {
     let drgUrlIdx       = ["DRG Tracker URL", "Direct Vendor Tracker URL", "DRG URL", "Direct Vendor URL", "Tracker URL"]
       .map(getIdx)
       .find(function(idx) { return idx > -1; });
-    let vendorIdx = getIdx("CX Vendor");
+    let vendorIdx = getIdxByAliases(["CX Vendor", "Contractor", "Vendor"]);
     if (vendorIdx === -1) vendorIdx = getIdx("Contractor");
     if (vendorIdx === -1) vendorIdx = getIdx("Vendor");
 

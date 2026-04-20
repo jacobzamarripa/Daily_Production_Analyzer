@@ -77,6 +77,48 @@ function getExistingTotals() {
   return totals;
 }
 
+function countMissedReportBusinessDays(reportDate, targetDate) {
+  const toLocalMidnight = (value) => {
+    if (!value) return null;
+    if (value instanceof Date && !isNaN(value.getTime())) {
+      return new Date(value.getFullYear(), value.getMonth(), value.getDate(), 0, 0, 0, 0);
+    }
+
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    let parts = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (parts) return new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]), 0, 0, 0, 0);
+
+    parts = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if (parts) {
+      const year = parts[3].length === 2 ? Number(`20${parts[3]}`) : Number(parts[3]);
+      return new Date(year, Number(parts[1]) - 1, Number(parts[2]), 0, 0, 0, 0);
+    }
+
+    const parsed = new Date(raw);
+    if (isNaN(parsed.getTime())) return null;
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 0, 0, 0, 0);
+  };
+
+  const from = toLocalMidnight(reportDate);
+  const target = toLocalMidnight(targetDate);
+  if (!from || !target || isNaN(from.getTime()) || isNaN(target.getTime()) || target <= from) return 0;
+
+  const cursor = new Date(from.getTime());
+  cursor.setDate(cursor.getDate() + 1);
+
+  let missed = 0;
+  while (cursor <= target) {
+    const dow = cursor.getDay();
+    const isWeekday = dow !== 0 && dow !== 6;
+    const isMondayCarryMonday = cursor.getTime() === target.getTime() && dow === 1;
+    if (isWeekday && !isMondayCarryMonday) missed++;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return missed;
+}
+
 function extractAutoFixedFdhFromComment(comment) {
   let match = String(comment || "").match(/\[Auto-Fixed FDH: (.*?)\]/);
   return match ? String(match[1] || "").trim().toUpperCase() : "";
@@ -1418,9 +1460,16 @@ function buildCxLkvDictionary(mirrorSheet) {
   let stageCol = mHeaders.indexOf("Stage");
   let statusCol = mHeaders.indexOf("Status");
   let flagsCol = mHeaders.indexOf("Health Flags");
-  if (fdhCol < 0) return lkvDict;
+  
+  if (fdhCol < 0) {
+    logMsg("⚠️ buildCxLkvDictionary: FDH Engineering ID column not found in Mirror sheet.");
+    return lkvDict;
+  }
+
   for (let r = 1; r < mData.length; r++) {
-    let fdh = String(mData[r][fdhCol] || "").toUpperCase().trim();
+    let fdhRaw = mData[r][fdhCol];
+    if (fdhRaw == null || fdhRaw === "") continue;
+    let fdh = String(fdhRaw).toUpperCase().trim();
     if (!fdh) continue;
     if (!lkvDict[fdh]) lkvDict[fdh] = { cxStart: "", cxComplete: "", stage: "", status: "" };
     const _fmt = (val) => {
@@ -2042,7 +2091,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   logMsg("BENNY ENGINE: Review built with " + reviewData.length + " unique project reports.");
 
   // GHOST ROW INJECTION — Active projects with no submission today
-  const GHOST_ACTIVE_STAGES = ["FIELD CX", "PERMITTING", "CONSTRUCTION", "ACTIVE"];
+  const GHOST_ACTIVE_STAGES = ["FIELD CX", "PERMITTING", "CONSTRUCTION", "ACTIVE", "CX", "VENDOR ASSIGNMENT"];
   
   // 🧠 TARGET CAP: Ensure we don't calculate staleness against the future
   let rawTargetDate = parseDateToMidnight(normalizedTargets[0] || new Date());
@@ -2089,44 +2138,46 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       
       let reportDate = parseDateToMidnight(lRow[0]);
 
-      // Count Mon–Fri days strictly after reportDate up to and including targetDateObj.
-      // This prevents Monday morning stale alerts when the last report was Thursday
-      // (only Friday counts as a missed business day, not Sat/Sun).
-      const _countBizDays = (from, to) => {
-        let n = 0;
-        let d = new Date(from.getTime());
-        d.setDate(d.getDate() + 1);
-        while (d <= to) {
-          const dow = d.getDay();
-          if (dow !== 0 && dow !== 6) n++;
-          d.setDate(d.getDate() + 1);
-        }
-        return n;
-      };
-      let daysAgo = _countBizDays(reportDate, todayAtMidnight);
+      // Count only completed business days since the last report. Monday carries Friday
+      // so a Thursday latest report does not become stale until Tuesday.
+      let daysAgo = countMissedReportBusinessDays(reportDate, targetDateObj);
+      const isMondayCarry = targetDateObj.getDay() === 1 && daysAgo <= 1;
 
-      // 0 business days missed = weekend/holiday gap, not a real miss — skip ghost row
-      if (daysAgo === 0) return;
+      // 🧠 SUPPRESSION OVERRIDE: Always show active ghost projects to keep the dashboard count consistent.
+      // We no longer return early here if daysAgo === 0; we want all legitimate projects visible.
 
       let staleFlag = "STALE REPORT";
       let staleColor = TEXT_COLORS.GHOST;
       let staleDraft = `Vendor (${ref.vendor}) did not submit a daily report today. Last report was ${daysAgo} business day(s) ago.`;
 
-      if (daysAgo >= 2) {
-        staleFlag = `STALE REPORT (${daysAgo} Days)`;
+      if (isMondayCarry) {
+        staleFlag = "WEEKEND CARRY";
+        staleColor = TEXT_COLORS.GHOST;
+        staleDraft = `Weekend carry applied. Last report was ${Utilities.formatDate(reportDate, "GMT-5", "MM/dd/yy")}.`;
+      } else if (daysAgo >= 2) {
+        staleFlag = `STALE REPORT (${daysAgo} Business Days)`;
         staleColor = TEXT_COLORS.WARN;
       } else if (daysAgo === 1) {
-        staleFlag = `STALE REPORT (Yesterday)`;
-        staleColor = TEXT_COLORS.MISMATCH;
+        // Normal 1-day reporting lag - show project but don't mark as "STALE"
+        staleFlag = "REPORT PENDING";
+        staleColor = TEXT_COLORS.GHOST;
+        staleDraft = `Latest report is from the previous business day. Expected update later today.`;
+      } else {
+        // daysAgo is 0 (Up to date)
+        staleFlag = "CURRENT";
+        staleColor = TEXT_COLORS.DONE;
+        staleDraft = `Project is up to date based on the latest business day.`;
       }
 
       // Merge stale flag with existing diagnostics
-      if (diag.flags !== "No Anomalies" && diag.flags !== "") {
-          diag.flags = staleFlag + "\n" + diag.flags;
-          diag.flagColors.unshift(staleColor);
-      } else {
-          diag.flags = staleFlag;
-          diag.flagColors = [staleColor];
+      if (staleFlag !== "CURRENT") {
+          if (diag.flags !== "No Anomalies" && diag.flags !== "") {
+              diag.flags = staleFlag + "\n" + diag.flags;
+              diag.flagColors.unshift(staleColor);
+          } else {
+              diag.flags = staleFlag;
+              diag.flagColors = [staleColor];
+          }
       }
 
       ghostRowObj["Health Flags"]    = diag.flags;

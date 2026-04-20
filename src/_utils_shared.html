@@ -191,10 +191,10 @@
           if (highestSev === "info") {
               if (rawFlags.some(f => {
                   let up = String(f).toUpperCase();
-                  return up === "MISSING DAILY REPORT" || (up.includes("STALE REPORT") && !up.includes("YESTERDAY"));
+                  return up === "MISSING DAILY REPORT" || (up.includes("STALE REPORT") && !up.includes("1 BUSINESS DAY"));
               })) {
                   highestSev = "crit";
-              } else if (rawFlags.some(f => String(f).toUpperCase().includes("YESTERDAY"))) {
+              } else if (rawFlags.some(f => String(f).toUpperCase().includes("1 BUSINESS DAY"))) {
                   highestSev = "warn";
               }
           }
@@ -348,9 +348,10 @@
           ) return 'chip-warn';
           if (plain.includes('TRANSPORT OVERRIDE') || plain.includes('TRACKER UPDATE') || plain.includes('AUTO-CORRECTED') || plain.includes('SOFT MATCH')) return 'chip-magic';
           if (f.includes('STALE REPORT')) {
-              if (f.includes('YESTERDAY')) return 'chip-warn';
+              if (f.includes('1 BUSINESS DAY')) return 'chip-warn';
               return 'tag-red';
           }
+          if (plain.includes('WEEKEND CARRY')) return 'chip-ghost';
           if (f === 'MISSING DAILY REPORT') return 'chip-ghost';
           if (plain.includes('INVALID DATE') || plain.includes('MISSING BOM')) return 'tag-red';
           return 'chip-muted';
