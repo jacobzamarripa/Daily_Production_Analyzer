@@ -339,11 +339,13 @@
             plain.includes('PACE') && (plain.includes('UG') || plain.includes('AE') || plain.includes('FIBER') || plain.includes('SPLICE'))
           ) return 'chip-anomaly';
           if (
-            plain.includes('LIGHTING RISK') || plain.includes('SCOPE DEVIATION') ||
+            plain.includes('LIGHTING RISK') || plain.includes('BLOCKED BY PREDECESSOR') ||
+            plain.includes('BLOCKED BY UPSTREAM') || plain.includes('DELAYING DOWNSTREAM')
+          ) return 'chip-light-risk';
+          if (
+            plain.includes('SCOPE DEVIATION') ||
             plain.includes('CHECK BOM') || plain.includes('PLEASE INPUT BOM') ||
-            plain.includes('FORMAT ERROR') || plain.includes('BLOCKED BY UPSTREAM') ||
-            plain.includes('DELAYING DOWNSTREAM') || plain.includes('TRACKER VARIANCE') ||
-            plain.includes('BLOCKED BY PREDECESSOR')
+            plain.includes('FORMAT ERROR') || plain.includes('TRACKER VARIANCE')
           ) return 'chip-warn';
           if (plain.includes('TRANSPORT OVERRIDE') || plain.includes('TRACKER UPDATE') || plain.includes('AUTO-CORRECTED') || plain.includes('SOFT MATCH') || plain.includes('INFERRED STATE')) return 'chip-magic';
           if (f.includes('STALE REPORT')) {

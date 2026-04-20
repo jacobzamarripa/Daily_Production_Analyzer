@@ -353,6 +353,7 @@ function showHUD(e, fdh) {
             let tagCls = getDiagnosticTagClass(f);
             let color = tagCls === 'chip-complete' ? 'var(--pill-complete-txt)' :
                 tagCls === 'chip-magic' ? '#0f766e' :
+                tagCls === 'chip-light-risk' ? '#6366f1' :
                 tagCls === 'tag-red' ? '#fca5a5' :
                 'var(--color-review)';
             html += `<span style="font-size:9px; font-weight:bold; color:${color};">⚠️ ${cleanText}</span>`;

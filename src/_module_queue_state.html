@@ -207,7 +207,7 @@ function getListCardHtml(item) {
 
     rawFlags.slice(0, visibleTagLimit).forEach(f => {
         let tagCls = getDiagnosticTagClass(f);
-        if (tagCls === 'chip-admin' || tagCls === 'chip-admin-xing' || tagCls === 'chip-warn' || tagCls === 'chip-anomaly') { if(highestSev!=="crit") highestSev = "warn"; }
+        if (tagCls === 'chip-admin' || tagCls === 'chip-admin-xing' || tagCls === 'chip-warn' || tagCls === 'chip-anomaly' || tagCls === 'chip-light-risk') { if(highestSev!=="crit") highestSev = "warn"; }
         else if (tagCls === 'tag-red') highestSev = "crit";
         else if (tagCls === 'chip-ghost' && highestSev !== "crit" && highestSev !== "warn") highestSev = "ghost";
         tagParts.push(`<span class="tag ${tagCls}">${cleanDiagnosticFlagText(f)}</span>`);
