@@ -1098,10 +1098,15 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
   // DATE VALIDATION (Gantt Freeze Protection & Bad Data Filtering)
   const today = new Date();
   today.setHours(0,0,0,0);
-  const checkBounds = (d, label) => {
+  const checkBounds = (d, label, skipIfWithin60OfPeer) => {
     if (!d || isNaN(d.getTime())) return;
     let diff = (d.getTime() - today.getTime()) / 86400000;
     if (diff > 90) {
+      // CX Start/Complete pairs within 60 days of each other are likely valid — suppress the flag
+      if (skipIfWithin60OfPeer && !isNaN(skipIfWithin60OfPeer.getTime())) {
+        let peerDiff = Math.abs((d.getTime() - skipIfWithin60OfPeer.getTime()) / 86400000);
+        if (peerDiff <= 60) return;
+      }
       flags.push(`INVALID FUTURE DATE (${label})`);
       flagColors.push(TEXT_COLORS.WARN);
       drafts.push(`${label} (${Utilities.formatDate(d, "GMT-5", "MM/dd/yy")}) is > 90 days in the future. Please verify data entry.`);
@@ -1114,16 +1119,17 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
   checkBounds(targetDate, "Target Date");
   let cxSIdx = HISTORY_HEADERS.indexOf("CX Start");
   let cxEIdx = HISTORY_HEADERS.indexOf("CX Complete");
+  let cxStartObj = null, cxCompleteObj = null;
   if (cxSIdx > -1) {
     let d = row[cxSIdx];
-    let dObj = (d instanceof Date) ? d : new Date(d);
-    checkBounds(dObj, "CX Start");
+    cxStartObj = (d instanceof Date) ? d : new Date(d);
   }
   if (cxEIdx > -1) {
     let d = row[cxEIdx];
-    let dObj = (d instanceof Date) ? d : new Date(d);
-    checkBounds(dObj, "CX Complete");
+    cxCompleteObj = (d instanceof Date) ? d : new Date(d);
   }
+  if (cxStartObj) checkBounds(cxStartObj, "CX Start", cxCompleteObj);
+  if (cxCompleteObj) checkBounds(cxCompleteObj, "CX Complete", cxStartObj);
   const parseFdhList = (value) => String(value || "").split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
   const isTruthyTransport = (value) => {
       let normalized = String(value || "").trim().toLowerCase();
@@ -2097,7 +2103,10 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
         }
         return n;
       };
-      let daysAgo = _countBizDays(reportDate, targetDateObj);
+      let daysAgo = _countBizDays(reportDate, todayAtMidnight);
+
+      // 0 business days missed = weekend/holiday gap, not a real miss — skip ghost row
+      if (daysAgo === 0) return;
 
       let staleFlag = "STALE REPORT";
       let staleColor = TEXT_COLORS.GHOST;

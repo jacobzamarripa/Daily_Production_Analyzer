@@ -194,14 +194,23 @@
       var sortedGlobal = Object.keys(globalFlagCounts).sort(function(a, b) { return globalFlagCounts[b] - globalFlagCounts[a]; });
       var topFlag      = sortedGlobal[0] || null;
 
+      // Count Field Anomaly flags (chip-anomaly class)
+      var anomalyTotal = 0;
+      if (typeof getDiagnosticTagClass === 'function') {
+        Object.keys(globalFlagCounts).forEach(function(f) {
+          if (getDiagnosticTagClass(f) === 'chip-anomaly') anomalyTotal += globalFlagCounts[f];
+        });
+      }
+
       html += '<div class="signal-movers-row">';
 
       if (worstVendor) {
+        var worstPct = totalFlags > 0 ? Math.round(vendorMap[worstVendor].totalFlags / totalFlags * 100) : 0;
         html += '<div class="signal-mover-card">'
           + '<div class="signal-mover-name">' + _esc(worstVendor) + '</div>'
-          + '<div class="signal-mover-count">' + vendorMap[worstVendor].totalFlags + '</div>'
+          + '<div class="signal-mover-count">' + worstPct + '%</div>'
           + '<div class="signal-mover-label">Worst Offender</div>'
-          + '<div class="signal-mover-primary">' + vendorMap[worstVendor].projects.length + ' project' + (vendorMap[worstVendor].projects.length !== 1 ? 's' : '') + '</div>'
+          + '<div class="signal-mover-primary">' + vendorMap[worstVendor].totalFlags + ' flag' + (vendorMap[worstVendor].totalFlags !== 1 ? 's' : '') + ' · ' + vendorMap[worstVendor].projects.length + ' project' + (vendorMap[worstVendor].projects.length !== 1 ? 's' : '') + '</div>'
           + '</div>';
       }
 
@@ -221,6 +230,13 @@
           + '<div class="signal-mover-primary">across ' + topFlagVendorCount + ' vendor' + (topFlagVendorCount !== 1 ? 's' : '') + '</div>'
           + '</div>';
       }
+
+      html += '<div class="signal-mover-card">'
+        + '<div class="signal-mover-name">Field Anomalies</div>'
+        + '<div class="signal-mover-count chip-anomaly" style="display:inline-block;border-radius:6px;padding:2px 10px">' + anomalyTotal + '</div>'
+        + '<div class="signal-mover-label">Ghost · Variance · Overrun</div>'
+        + '<div class="signal-mover-primary">across active portfolio</div>'
+        + '</div>';
 
       html += '</div>';
     }
