@@ -50,7 +50,7 @@ const DIGEST_STAGE_ORDER = ['permitApproved', 'construction', 'completed', 'ofs'
 // WORKSTREAM 3 RISK: Low
 const DIGEST_STAGE_META = {
     permitApproved: { label: 'Permitting Approved', shortLabel: 'Permits', pillClass: 'pill-permit', accent: '#a855f7' },
-    construction:   { label: 'Construction', shortLabel: 'Construction', pillClass: 'pill-active', accent: '#f59e0b' },
+    construction:   { label: 'Construction', shortLabel: 'Construction', pillClass: 'pill-active', accent: '#3b82f6' },
     completed:      { label: 'Completed', shortLabel: 'Completed', pillClass: 'pill-complete', accent: '#22c55e' },
     ofs:            { label: 'OFS', shortLabel: 'OFS', pillClass: 'pill-ofs', accent: '#3b82f6' },
     other:          { label: 'Other', shortLabel: 'Other', pillClass: 'pill-default', accent: '#64748b' }
@@ -165,7 +165,7 @@ function getDigestScopeTone(entries, entry) {
     let ratio = sorted.length <= 1 ? 1 : (idx / (sorted.length - 1));
     if (ratio >= 0.75) return { fill: '#22c55e', pill: 'pill-complete' };
     if (ratio >= 0.5) return { fill: '#64748b', pill: 'pill-default' };
-    if (ratio >= 0.25) return { fill: '#f59e0b', pill: 'pill-active' };
+    if (ratio >= 0.25) return { fill: '#3b82f6', pill: 'pill-active' };
     return { fill: '#dc2626', pill: 'pill-missing' };
 }
 

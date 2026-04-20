@@ -352,7 +352,7 @@ function showHUD(e, fdh) {
             let cleanText = cleanDiagnosticFlagText(f);
             let tagCls = getDiagnosticTagClass(f);
             let color = tagCls === 'chip-complete' ? 'var(--pill-complete-txt)' :
-                tagCls === 'chip-magic' ? '#a855f7' :
+                tagCls === 'chip-magic' ? '#0f766e' :
                 tagCls === 'tag-red' ? '#fca5a5' :
                 'var(--color-review)';
             html += `<span style="font-size:9px; font-weight:bold; color:${color};">⚠️ ${cleanText}</span>`;

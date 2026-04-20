@@ -328,7 +328,8 @@
           if (f.includes('OFS') || f.includes('OPEN FOR SALE')) return 'chip-ofs';
           if (f.includes('COMPLETE')) return 'chip-complete';
           if (f.includes('ON HOLD')) return 'chip-hold';
-          if (plain.includes('ADMIN: CHECK CROSSINGS') || plain.includes('ADMIN: REFRESH REF DATA')) return 'chip-admin';
+          if (plain.includes('ADMIN: CHECK CROSSINGS')) return 'chip-admin-xing';
+          if (plain.includes('ADMIN: REFRESH REF DATA')) return 'chip-admin';
           if (plain.includes('STAGE MISMATCH')) return 'chip-warn';
           // Field Anomaly: production inconsistencies — ghost work, variance overruns, pace anomalies
           if (
