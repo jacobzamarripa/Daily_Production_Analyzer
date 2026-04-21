@@ -1181,11 +1181,19 @@ function _fetchReferenceTableSnapshot(token) {
   const allFields = _fetchTableFields(token, QB_TABLE_ID);
   if (!allFields.length) throw new Error("No fields returned for QuickBase table " + QB_TABLE_ID);
 
-  // --- Field selection: report-driven with whitelist fallback ---
-  // Primary: pull the FID list from QB report QB_REFERENCE_REPORT_ID.
-  //   The report's column selection is the source of truth — add/remove columns
-  //   in the QB report UI, no code change needed.
-  // Fallback: if the report API call fails, filter by QB_REFERENCE_FIELD_WHITELIST.
+  // 1. Map all fields by FID for robust lookup
+  const fieldMap = {};
+  allFields.forEach(function(f) { fieldMap[Number(f.id)] = f; });
+
+  // 2. Define the absolute critical fields we NEED (FID-based)
+  // BOMs: 27(UG), 26(AE), 59(Fiber), 564(NAP)
+  // Meta: 13(FDH), 38(City), 743(Phase), 745(Stage), 747(Status), 24(OFS), 227(CXE), 254(CXS), 15(BSL), 87(HHP), 3(RID)
+  const CRITICAL_FIDS = [13, 27, 26, 59, 564, 38, 743, 745, 747, 24, 227, 254, 15, 87, 3];
+  
+  var fidSet = new Set();
+  CRITICAL_FIDS.forEach(function(fid) { if (fieldMap[fid]) fidSet.add(fid); });
+
+  // 3. Merge fields from the QuickBase report if available
   var reportFids = null;
   try {
     var rResp = UrlFetchApp.fetch(QB_API_BASE + '/reports/' + QB_REFERENCE_REPORT_ID + '?tableId=' + QB_TABLE_ID, _qbHeaders(token));
@@ -1193,54 +1201,45 @@ function _fetchReferenceTableSnapshot(token) {
       var rData = JSON.parse(rResp.getContentText());
       var cols  = rData.query && rData.query.fields ? rData.query.fields : null;
       if (cols && cols.length > 0) {
-        reportFids = cols.map(Number);
-        logMsg('QB field selection: report ' + QB_REFERENCE_REPORT_ID + ' → ' + reportFids.length + ' fields');
+        cols.forEach(function(id) { fidSet.add(Number(id)); });
+        logMsg('QB field selection: Merged report ' + QB_REFERENCE_REPORT_ID + ' with critical FIDs');
       }
     }
   } catch (rErr) {
-    logMsg('QB report field fetch WARN (falling back to whitelist): ' + rErr.message);
-  }
-
-  var fields;
-  if (reportFids) {
-    var fidSet = {};
-    reportFids.forEach(function(id) { fidSet[id] = true; });
-
-    // 🧠 ENSURE CRITICAL FIELDS (FID-BASED): Force these FIDs into the sync set
-    // to bypass label mismatch risks. FIDs 27, 26, 59, 564 are BOM targets.
-    var criticalFids = [13, 27, 26, 59, 564, 38, 743, 745, 747, 24, 227, 254, 15, 87, 3];
-    criticalFids.forEach(function(id) { fidSet[id] = true; });
-
-    fields = allFields.filter(function(f) { return fidSet[Number(f.id)]; });
-  } else {
-    // Whitelist fallback — exact label match only (no broad FDH fuzzy to avoid junk fields)
-    fields = allFields.filter(function(f) {
-      return QB_REFERENCE_FIELD_WHITELIST.indexOf((f.label || '').trim()) > -1;
+    logMsg('QB report field fetch WARN (using critical + whitelist): ' + rErr.message);
+    // If report fails, also merge labels from whitelist for safety
+    allFields.forEach(function(f) {
+      if (QB_REFERENCE_FIELD_WHITELIST.indexOf((f.label || "").trim()) > -1) fidSet.add(Number(f.id));
     });
   }
 
-  // Always include FID 3 (Record ID#) — engine uses it for QB write-back
-  if (!fields.some(function(f) { return Number(f.id) === 3; })) {
-    var ridField = allFields.find(function(f) { return Number(f.id) === 3; });
-    if (ridField) fields.unshift(ridField);
-  }
+  // 4. Construct final field list (Ordered: Critical First, then others)
+  var finalFields = [];
+  var addedIds = new Set();
+  
+  CRITICAL_FIDS.forEach(function(fid) {
+    if (fieldMap[fid]) { finalFields.push(fieldMap[fid]); addedIds.add(fid); }
+  });
+  
+  fidSet.forEach(function(fid) {
+    if (!addedIds.has(fid) && fieldMap[fid]) { finalFields.push(fieldMap[fid]); addedIds.add(fid); }
+  });
 
-  const fids = fields.map(function(field) { return Number(field.id); }).filter(function(fid) { return fid > 0; });
+  logMsg('QB sync field audit: ' + finalFields.length + ' fields selected (including ' + CRITICAL_FIDS.length + ' critical).');
+
+  const fids = finalFields.map(function(f) { return Number(f.id); });
   const records = _fetchTableAllFids(token, QB_TABLE_ID, fids, QB_REFERENCE_WHERE);
 
-  // Apply label remaps so sheet headers match what the engine expects
-  const headers = fields.map(function(field) {
+  // 5. Build headers with remapping
+  const headers = finalFields.map(function(field) {
     var label = (field.label || '').trim();
     return QB_LABEL_REMAP[label] || label;
   });
 
-  logMsg('QB sync field audit: ' + fields.length + ' fields mapped. Final Headers: ' + headers.join(', '));
-
   const rows = records.map(function(record) {
-    return fields.map(function(field) {
+    return finalFields.map(function(field) {
       const cell = record[String(field.id)];
       var raw = cell ? _extractValue(cell.value) : "";
-      // Normalize vendor name regardless of QB label (handles "Construction Vendor" remap)
       if (QB_LABEL_REMAP[field.label] === 'CX Vendor' || (field.label || '').trim().toLowerCase() === 'cx vendor') {
         raw = _normalizeVendor(raw);
       }
@@ -1248,7 +1247,7 @@ function _fetchReferenceTableSnapshot(token) {
     });
   });
 
-  logMsg("QB Table Snapshot: " + rows.length + " records pulled from table " + QB_TABLE_ID);
+  logMsg("QB Table Snapshot: " + rows.length + " records, headers: " + headers.slice(0, 10).join(", ") + "...");
   return { headers: headers, rows: rows };
 }
 
