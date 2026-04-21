@@ -1205,13 +1205,12 @@ function _fetchReferenceTableSnapshot(token) {
   if (reportFids) {
     var fidSet = {};
     reportFids.forEach(function(id) { fidSet[id] = true; });
-    // 🧠 ENSURE CRITICAL FIELDS: Merge whitelist into report selection so the engine
-    // always has BOMs, Status, and Phase, even if the report UI is missing them.
-    allFields.forEach(function(f) {
-      if (QB_REFERENCE_FIELD_WHITELIST.indexOf((f.label || "").trim()) > -1) {
-        fidSet[Number(f.id)] = true;
-      }
-    });
+
+    // 🧠 ENSURE CRITICAL FIELDS (FID-BASED): Force these FIDs into the sync set
+    // to bypass label mismatch risks. FIDs 27, 26, 59, 564 are BOM targets.
+    var criticalFids = [13, 27, 26, 59, 564, 38, 743, 745, 747, 24, 227, 254, 15, 87, 3];
+    criticalFids.forEach(function(id) { fidSet[id] = true; });
+
     fields = allFields.filter(function(f) { return fidSet[Number(f.id)]; });
   } else {
     // Whitelist fallback — exact label match only (no broad FDH fuzzy to avoid junk fields)
@@ -1225,7 +1224,6 @@ function _fetchReferenceTableSnapshot(token) {
     var ridField = allFields.find(function(f) { return Number(f.id) === 3; });
     if (ridField) fields.unshift(ridField);
   }
-  logMsg('QB field filter: ' + fields.length + ' of ' + allFields.length + ' fields included for ' + QB_TABLE_ID);
 
   const fids = fields.map(function(field) { return Number(field.id); }).filter(function(fid) { return fid > 0; });
   const records = _fetchTableAllFids(token, QB_TABLE_ID, fids, QB_REFERENCE_WHERE);
@@ -1235,6 +1233,8 @@ function _fetchReferenceTableSnapshot(token) {
     var label = (field.label || '').trim();
     return QB_LABEL_REMAP[label] || label;
   });
+
+  logMsg('QB sync field audit: ' + fields.length + ' fields mapped. Final Headers: ' + headers.join(', '));
 
   const rows = records.map(function(record) {
     return fields.map(function(field) {

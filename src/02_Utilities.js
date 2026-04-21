@@ -156,8 +156,8 @@ function onOpen() {
     );
 
     main.addSubMenu(ui.createMenu('Quickbase Hub')
-      .addItem('Refresh Reference Data', 'importReferenceData')
-      .addItem('Sync Projects from Quickbase', 'importFDHProjects')
+      .addItem('1. Import Reference Data (CSV/Drive)', 'importReferenceData')
+      .addItem('2. Sync Projects from Quickbase (API)', 'importFDHProjects')
       .addItem('Discover Dependency Fields', 'discoverDependencyFields')
       .addItem('Discover Quickbase Fields', 'discoverAllQBFields')
       .addSeparator()
@@ -165,7 +165,6 @@ function onOpen() {
       .addItem('Export Status Queue (CSV)', 'exportCommittedQueueToCSV')
       .addItem('Direct Quickbase Writeback', 'writebackQBDirect')
     );
-
     main.addSubMenu(ui.createMenu('Exports & Reporting')
       .addItem('Export Director Review (XLSX)', 'exportDirectorReviewXLSX')
       .addItem('Export Vendor Corrections (XLSX)', 'exportVendorCorrectionsXLSX')
