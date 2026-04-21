@@ -108,6 +108,11 @@
     gap: 4px !important;
   }
 
+  html.surface-ipad .kpi-hud-label {
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
   html.surface-ipad .kpi-nav-container {
     gap: 4px !important;
     margin-left: 6px !important;
@@ -236,13 +241,7 @@
     max-width: min(90vw, 420px) !important;
   }
 
-  /* ── 11. CRITICAL HUB OVERLAY — FIT PORTRAIT ─────────────── */
-  html.surface-ipad .critical-hub-overlay,
-  html.surface-ipad .critical-hub-panel {
-    max-width: calc(100vw - 32px) !important;
-  }
-
-  /* ── 12. QUEUE LIST — SCROLLABLE WITH MOMENTUM ───────────── */
+  /* ── 11. QUEUE LIST — SCROLLABLE WITH MOMENTUM ───────────── */
   html.surface-ipad #inbox-list,
   html.surface-ipad .inbox-list-scroll,
   html.surface-ipad .queue-scroll {

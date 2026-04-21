@@ -1,9 +1,9 @@
 <script>
 // ============================================================
 // FILE: _module_dashboard.html | ROLE: Dashboard landing page — render and open/close
-// DEPENDS ON: _state_analytics.html (currentFilterStats, currentCriticalHubItems),
+// DEPENDS ON: _state_analytics.html (currentFilterStats),
 //   _state_queue.html (allActionItems), _utils_shared.html (esc, getSeverity, getEl),
-//   _module_critical_hub.html (getCriticalType, openCriticalHub),
+//   _module_critical_hub.html (getCriticalType),
 //   _module_startup_refdata.html (completeStartup)
 // DEPENDED ON BY: _module_signal.html (_showStartupAfterSignal),
 //   _module_router.html (switchWorkspaceView 'dashboard'),
@@ -39,7 +39,6 @@ function getDashboardSourceItems() {
 }
 
 function getDashboardActionableItems(sourceItems) {
-    if (Array.isArray(currentCriticalHubItems) && currentCriticalHubItems.length) return currentCriticalHubItems.slice();
     return (sourceItems || []).filter(function(item) {
         var sev = getSeverity(item.flags);
         return (sev === 'crit' || sev === 'warn') && !isCompleteOrOfs(item);
