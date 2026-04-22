@@ -238,6 +238,10 @@ function syncGanttViewportLayout() {
 }
 
 function switchWorkspaceView(mode) {
+    if (currentWorkspaceView === 'upload' && mode !== 'upload' && typeof _duConfirmLeaveWithUnsaved === 'function') {
+        if (!_duConfirmLeaveWithUnsaved('leave the upload workspace')) return;
+        if (typeof _duHasUnsavedChanges === 'function' && _duHasUnsavedChanges()) _duDirty = {};
+    }
     if (mode === 'dashboard') {
         if (typeof openDashboard === 'function') openDashboard();
         return;

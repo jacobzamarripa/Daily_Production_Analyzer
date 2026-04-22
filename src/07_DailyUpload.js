@@ -28,6 +28,23 @@ const UPLOAD_TRACKING_HEADERS = [
   "Upload Status", "Upload Date", "QB Record ID", "Batch ID", "Error Detail"
 ];
 
+const DAILY_UPLOAD_EDITABLE_FIELDS = {
+  "Locates Called In": true,
+  "Cabinets Set": true,
+  "Light to Cabinets": true,
+  "Target Completion Date": true,
+  "Daily UG Footage": true,
+  "Daily Strand Footage": true,
+  "Daily Fiber Footage": true,
+  "Daily NAPs/Encl. Completed": true,
+  "Drills": true,
+  "Missles": true,
+  "AE Crews": true,
+  "Fiber Pulling Crews": true,
+  "Splicing Crews": true,
+  "Construction Comments": true
+};
+
 // --- UTILITIES ---
 
 function _generateBatchId() {
@@ -486,15 +503,23 @@ function saveDailyUploadRowEdit(rowIdx, fieldName, newValue) {
     const sheet = ss.getSheetByName(QB_UPLOAD_SHEET);
     if (!sheet) return { ok: false, error: 'Sheet not found' };
 
+    if (!DAILY_UPLOAD_EDITABLE_FIELDS[fieldName]) {
+      return { ok: false, error: 'Field is locked: ' + fieldName };
+    }
+
     const colIdx = QB_HEADERS.indexOf(fieldName);
     if (colIdx < 0) return { ok: false, error: 'Unknown field: ' + fieldName };
 
     const statusCell = sheet.getRange(rowIdx, QB_HEADERS.length + 1).getValue().toString();
-    if (statusCell === UPLOAD_STATUS.UPLOADED) {
-      return { ok: false, error: 'Row is already uploaded and is locked.' };
+    if (statusCell === UPLOAD_STATUS.UPLOADED || statusCell === UPLOAD_STATUS.SKIPPED) {
+      return { ok: false, error: 'Row is already finalized and is locked.' };
+    }
+    if (statusCell && statusCell !== UPLOAD_STATUS.PENDING && statusCell !== UPLOAD_STATUS.FAILED && statusCell !== UPLOAD_STATUS.DUPLICATE) {
+      return { ok: false, error: 'Row status cannot be edited: ' + statusCell };
     }
 
-    sheet.getRange(rowIdx, colIdx + 1).setValue(newValue);
+    const nextValue = _sanitizeDailyUploadEditValue(fieldName, newValue);
+    sheet.getRange(rowIdx, colIdx + 1).setValue(nextValue);
 
     // Reset Failed → Pending so the row re-enters the queue
     if (statusCell === UPLOAD_STATUS.FAILED) {
@@ -506,6 +531,14 @@ function saveDailyUploadRowEdit(rowIdx, fieldName, newValue) {
   } catch(e) {
     return { ok: false, error: e.message };
   }
+}
+
+function _sanitizeDailyUploadEditValue(fieldName, newValue) {
+  var value = newValue === null || newValue === undefined ? '' : newValue.toString().trim();
+  if (fieldName === 'Locates Called In' || fieldName === 'Cabinets Set' || fieldName === 'Light to Cabinets') {
+    return /^(true|1|yes)$/i.test(value) ? 'TRUE' : 'FALSE';
+  }
+  return value;
 }
 
 // --- HISTORY ---
