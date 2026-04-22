@@ -7,6 +7,10 @@
 var _duQueue = [];
 var _duFiltered = [];
 var _duSelected = new Set();
+var _duPipeline = {};
+var _duTargetDate = '';
+var _duLoadedQueueDate = '';
+var _duLatestExport = null;
 var _duDirty = {};
 var _duSortCol = 'Date';
 var _duSortDir = 'desc';
@@ -73,6 +77,7 @@ var _DU_TABLE_COLS = [
 function initUploadWorkspace() {
   if (!_duInitialized) {
     _duMissingDate = _duTodayStr();
+    _duTargetDate = _duTodayIso(-1);
     window.addEventListener('beforeunload', _duBeforeUnload);
     document.addEventListener('keydown', _duHandleModalKeydown);
     _duInitialized = true;
@@ -89,6 +94,7 @@ function _duRefreshAll(options) {
   }
   if (!options.force && !_duConfirmLeaveWithUnsaved('refresh the upload queue')) return;
   _duSetTableLoading(true);
+  _duLoadPipelineStatus();
   _duLoadStats();
   _duLoadMissing();
   _duLoadQueue();
@@ -97,6 +103,23 @@ function _duRefreshAll(options) {
 
 function _duHandleRefresh() {
   _duRefreshAll();
+}
+
+function _duLoadPipelineStatus() {
+  google.script.run
+    .withSuccessHandler(function(status) {
+      _duPipeline = status || {};
+      if (!_duLoadedQueueDate) _duLoadedQueueDate = _duPipeline.recommendedDate || _duTargetDate || '';
+      if (_duPipeline.recommendedDate) _duTargetDate = _duPipeline.recommendedDate;
+      _duLatestExport = _duPipeline.latestExport || null;
+      _duRenderPipeline();
+    })
+    .withFailureHandler(function(err) {
+      _duPipeline = {};
+      _duRenderPipeline();
+      showToast('Failed to load upload pipeline status: ' + (err.message || err), 'error');
+    })
+    .getDailyPipelineStatus();
 }
 
 function _duLoadQueue() {
@@ -150,6 +173,115 @@ function _duLoadHistory() {
     })
     .withFailureHandler(function() {})
     .getDailyUploadHistory(30);
+}
+
+function _duRenderPipeline() {
+  var incomingEl = document.getElementById('upload-pipeline-incoming');
+  var targetEl = document.getElementById('upload-pipeline-target');
+  var finalEl = document.getElementById('upload-pipeline-final');
+  var queueMeta = document.getElementById('upload-queue-meta');
+  var targetInput = document.getElementById('upload-target-date');
+  if (targetInput && _duTargetDate) targetInput.value = _duTargetDate;
+
+  if (incomingEl) {
+    incomingEl.innerHTML =
+      '<div class="upload-pipeline-stat">' +
+        '<span class="upload-pipeline-stat-label">Archive Status</span>' +
+        '<span class="upload-pipeline-stat-value">' + _duEsc((_duPipeline.archiveStatus || 'idle').replace(/_/g, ' ')) + '</span>' +
+      '</div>' +
+      '<div class="upload-pipeline-meta">Latest archive date: ' + _duEsc(_duPipeline.latestArchiveDate || '—') + '</div>' +
+      '<div class="upload-pipeline-meta">Recommended queue date: ' + _duEsc(_duPipeline.recommendedDate || '—') + '</div>';
+  }
+
+  if (targetEl) {
+    targetEl.innerHTML =
+      '<div class="upload-pipeline-stat">' +
+        '<span class="upload-pipeline-stat-label">Loaded Queue Date</span>' +
+        '<span class="upload-pipeline-stat-value">' + _duEsc(_duLoadedQueueDate || _duPipeline.recommendedDate || 'Not loaded') + '</span>' +
+      '</div>' +
+      '<div class="upload-pipeline-meta">Current queue rows: ' + _duEsc(_duPipeline.queueRowCount || 0) + '</div>' +
+      '<div class="upload-pipeline-meta">Pending rows: ' + _duEsc(_duPipeline.pendingQueueCount || 0) + '</div>';
+  }
+
+  if (finalEl) {
+    finalEl.innerHTML = _duLatestExport
+      ? '<div class="upload-pipeline-stat"><span class="upload-pipeline-stat-label">Latest CSV Export</span><span class="upload-pipeline-stat-value">' + _duEsc(_duLatestExport.fileName || '—') + '</span></div>' +
+        '<div class="upload-pipeline-meta">Updated ' + _duEsc(_duLatestExport.modifiedAt || '—') + '</div>' +
+        '<div class="upload-pipeline-meta"><a href="' + _duEsc(_duLatestExport.fileUrl || '#') + '" target="_blank" rel="noopener">Open export file</a></div>'
+      : '<div class="upload-pipeline-meta">No CSV export has been generated yet for the current queue.</div>';
+  }
+
+  if (queueMeta) {
+    queueMeta.textContent = (_duLoadedQueueDate
+      ? 'Reviewing queue for ' + _duLoadedQueueDate
+      : 'Queue not explicitly loaded yet') + ' • ' + (_duPipeline.queueRowCount || 0) + ' row(s)';
+  }
+  _duRenderLastSync();
+}
+
+function _duRunIncomingPipeline() {
+  showToast('Processing incoming reports into Master Archive…', 'info');
+  google.script.run
+    .withSuccessHandler(function(result) {
+      _duPipeline.archiveStatus = result.archiveStatus || 'idle';
+      _duPipeline.latestArchiveDate = result.latestArchiveDate || _duPipeline.latestArchiveDate || '';
+      showToast((result.archiveRowsAdded || 0) + ' archive row(s) added.', 'success');
+      _duLoadPipelineStatus();
+      _duLoadQueue();
+      _duLoadStats();
+    })
+    .withFailureHandler(function(err) {
+      showToast('Incoming processing failed: ' + (err.message || err), 'error');
+    })
+    .runIncomingArchivePipeline();
+}
+
+function _duHandleTargetDateInput(value) {
+  _duTargetDate = value || _duTodayIso(-1);
+}
+
+function _duLoadRecommendedQueueDate() {
+  _duTargetDate = _duPipeline.recommendedDate || _duTodayIso(-1);
+  var targetInput = document.getElementById('upload-target-date');
+  if (targetInput) targetInput.value = _duTargetDate;
+  _duLoadQueueForDate(_duTargetDate);
+}
+
+function _duLoadQueueForDate(dateStr) {
+  var target = dateStr || _duTargetDate || _duTodayIso(-1);
+  showToast('Loading QuickBase upload tab for ' + target + '…', 'info');
+  google.script.run
+    .withSuccessHandler(function(result) {
+      _duLoadedQueueDate = result.targetDate || target;
+      _duPipeline.queueRowCount = result.rowCount || 0;
+      _duLoadQueue();
+      _duLoadStats();
+      _duRenderPipeline();
+      showToast('Queue loaded for ' + _duLoadedQueueDate + '.', 'success');
+    })
+    .withFailureHandler(function(err) {
+      showToast('Queue load failed: ' + (err.message || err), 'error');
+    })
+    .loadDailyUploadQueueForDate(target);
+}
+
+function _duExportPipelineCsv() {
+  showToast('Exporting current QuickBase upload tab to CSV…', 'info');
+  google.script.run
+    .withSuccessHandler(function(result) {
+      _duLatestExport = {
+        fileId: result.fileId,
+        fileName: result.fileName,
+        fileUrl: result.fileUrl,
+        modifiedAt: result.createdAt
+      };
+      _duRenderPipeline();
+      showToast('CSV exported to 01_Pending_Upload.', 'success');
+    })
+    .withFailureHandler(function(err) {
+      showToast('CSV export failed: ' + (err.message || err), 'error');
+    })
+    .exportCurrentDailyUploadCsv();
 }
 
 function _duPopulateVendorOptions() {
@@ -241,7 +373,10 @@ function _duRenderLastSync() {
   if (!el) return;
   var dirtyCount = _duDirtyCount();
   var syncText = _duLastLoadedAt ? 'Queue refreshed ' + _duFormatRelativeTime(_duLastLoadedAt) : 'Queue not loaded yet';
-  var dirtyText = dirtyCount > 0 ? ' • ' + dirtyCount + ' unsaved change' + (dirtyCount === 1 ? '' : 's') : '';
+  if (_duLoadedQueueDate) {
+    syncText = 'Loaded date ' + _duLoadedQueueDate + ' • ' + syncText;
+  }
+  var dirtyText = dirtyCount > 0 ? ' • ' + dirtyCount + ' unsaved queue change' + (dirtyCount === 1 ? '' : 's') : '';
   el.textContent = syncText + dirtyText;
 }
 
@@ -823,17 +958,8 @@ function _duOpenUploadResultModal(result) {
 }
 
 function _duExportCsv() {
-  if (_duDirtyCount() > 0 && !confirm('Export without saving staged edits first?')) return;
-  showToast('Exporting filtered view to Drive...', 'info');
-  var rowIndices = _duFiltered.map(function(r) { return r.rowIdx; });
-  google.script.run
-    .withSuccessHandler(function() {
-      showToast('CSV exported to Drive.', 'success');
-    })
-    .withFailureHandler(function(err) {
-      showToast('Export failed: ' + (err.message || err), 'error');
-    })
-    .exportDailyUploadViewToCSV(rowIndices);
+  if (_duDirtyCount() > 0 && !confirm('Export the current queue without saving queue edits first?')) return;
+  _duExportPipelineCsv();
 }
 
 function _duOpenEmailDraft(idx) {
@@ -1351,6 +1477,12 @@ function _duTodayStr() {
   var mm = String(d.getMonth() + 1).padStart(2, '0');
   var dd = String(d.getDate()).padStart(2, '0');
   return mm + '/' + dd + '/' + d.getFullYear();
+}
+
+function _duTodayIso(offsetDays) {
+  var d = new Date();
+  d.setDate(d.getDate() + (offsetDays || 0));
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 function _duIsoDate(mmddyyyy) {

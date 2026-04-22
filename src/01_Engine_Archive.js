@@ -853,7 +853,7 @@ function populateQuickBaseTabCore(targetDates, vendorFilter = "ALL") {
 function exportQuickBaseCSVCore(isSilent = false, contextType = "ROUTINE") {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const qbSheet = ss.getSheetByName(QB_UPLOAD_SHEET);
-  if (getTrueLastDataRow(qbSheet) < 2) return;
+  if (getTrueLastDataRow(qbSheet) < 2) return null;
   const data = qbSheet.getRange(1, 1, getTrueLastDataRow(qbSheet), QB_HEADERS.length).getValues();
   let csvContent = "";
   data.forEach(row => {
@@ -922,8 +922,16 @@ function exportQuickBaseCSVCore(isSilent = false, contextType = "ROUTINE") {
   }
 
   fileName = fileName.replace(/[\\/:*?"<>|]/g, "_");
-  DriveApp.getFolderById(COMPILED_FOLDER_ID).createFile(fileName, csvContent, MimeType.CSV);
+  const file = DriveApp.getFolderById(COMPILED_FOLDER_ID).createFile(fileName, csvContent, MimeType.CSV);
   if (!isSilent) SpreadsheetApp.getUi().alert(`CSV Exported: ${fileName}`);
+  return {
+    fileId: file.getId(),
+    fileName: fileName,
+    fileUrl: file.getUrl(),
+    folderId: COMPILED_FOLDER_ID,
+    createdAt: Utilities.formatDate(file.getDateCreated(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss'),
+    rowCount: Math.max(0, data.length - 1)
+  };
 }
 
 function buildInferenceHistoryContext(histData, histHeaders) {

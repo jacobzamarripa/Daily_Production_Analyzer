@@ -84,6 +84,8 @@ const DEFAULT_CITY_COORDS = {
 const QB_DAILY_LOG_TABLE_ID    = "bvay4aqkz";   // Daily Work Log table in QB
 const UPLOAD_LOG_SHEET         = "11-Upload_Log";
 const ENABLE_AUTO_DAILY_UPLOAD = false;          // Automation gate — off until explicitly flipped
+const DAILY_UPLOAD_SOURCE_FOLDER_ID = COMPILED_FOLDER_ID;
+const DAILY_UPLOAD_STAGE_SHEET      = "12-Upload_Staging";
 
 // Hardcoded FID map for bvay4aqkz — keyed by QB_HEADERS column name.
 // "FDH Engineering ID" → FID 22 ("FDH Project Engineering ID" in QB)

@@ -9,8 +9,13 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  width: 100%;
   background: color-mix(in srgb, var(--bg) 92%, #f8fafc);
-  overflow: hidden;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 
 #upload-workspace.ws-active {
@@ -26,29 +31,426 @@
 }
 
 .upload-shell {
-  padding: 12px 16px 0;
+  padding: 10px 28px 0;
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg) 96%, #ffffff);
+}
+
+.upload-intake-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(340px, 1.1fr);
+  gap: 12px;
+  padding: 0 0 12px;
+}
+
+.upload-stage-card,
+.upload-stage-preview-shell,
+.upload-queue-shell,
+.upload-history-section {
+  background: color-mix(in srgb, var(--card-bg) 88%, white);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+}
+
+.upload-stage-card {
+  padding: 13px 14px;
+}
+
+.upload-intake-grid-secondary {
+  margin-top: 12px;
+}
+
+.upload-card-head,
+.upload-stage-preview-head,
+.upload-queue-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upload-card-kicker {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.upload-card-title {
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.upload-source-note,
+.upload-stage-note,
+.upload-stage-warning,
+.upload-source-empty,
+.upload-stage-empty {
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.upload-pipeline-body {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-pipeline-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.upload-pipeline-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  background: color-mix(in srgb, white 82%, var(--bg));
+}
+
+.upload-pipeline-stat-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.upload-pipeline-stat-value,
+.upload-pipeline-meta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.upload-pipeline-meta {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.upload-field-date {
+  max-width: 220px;
+}
+
+.upload-stage-warning {
+  color: #92400e;
+}
+
+.upload-source-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.upload-source-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  background: color-mix(in srgb, white 80%, var(--bg));
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+}
+
+.upload-source-item.is-selected {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  background: color-mix(in srgb, white 75%, #eff6ff);
+}
+
+.upload-source-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.upload-source-item-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.upload-source-item-meta,
+.upload-source-item-action {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.upload-stage-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.upload-stage-summary {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.upload-stage-file-card {
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.03), rgba(59, 130, 246, 0.08));
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+}
+
+.upload-stage-file-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.upload-stage-file-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.upload-stage-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.upload-stage-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+  background: color-mix(in srgb, white 82%, var(--bg));
+}
+
+.upload-stage-chip-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.upload-stage-chip-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-main);
+}
+
+.upload-stage-preview-shell,
+.upload-queue-shell,
+.upload-history-section {
+  margin: 12px 28px 0;
+  padding: 14px;
+}
+
+.upload-stage-view-switch {
+  display: flex;
+  gap: 8px;
+}
+
+.upload-stage-preview-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.upload-stage-record {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, white 82%, var(--bg));
+}
+
+.upload-stage-record.has-blocking {
+  border-color: rgba(220, 38, 38, 0.26);
+  background: color-mix(in srgb, white 84%, #fef2f2);
+}
+
+.upload-stage-record-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upload-stage-record-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.upload-stage-record-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.upload-stage-disposition-group {
+  display: flex;
+  gap: 8px;
+}
+
+.upload-stage-disposition {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, white 82%, var(--bg));
+  color: var(--text-main);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.upload-stage-disposition.is-active {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  background: color-mix(in srgb, white 72%, #dbeafe);
+  color: #1d4ed8;
+}
+
+.upload-stage-disposition:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-stage-pill-row {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.upload-stage-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.upload-stage-pill.pill-blocking {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.upload-stage-pill.pill-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.upload-stage-field-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.upload-stage-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.upload-stage-field-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.upload-stage-field-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  word-break: break-word;
+}
+
+.upload-stage-preview-table-wrap {
+  margin-top: 14px;
+  overflow: auto;
+}
+
+.upload-stage-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1100px;
+}
+
+.upload-stage-table th,
+.upload-stage-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  font-size: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.upload-stage-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, white 95%, var(--bg));
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .upload-overview {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 12px;
+  gap: 8px;
+  padding-bottom: 10px;
 }
 
 .upload-overview-head {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .upload-overview-titleblock {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .upload-overview-kicker {
@@ -60,16 +462,16 @@
 }
 
 .upload-overview-title {
-  font-size: 24px;
-  line-height: 1.1;
+  font-size: 17px;
+  line-height: 1.08;
   font-weight: 800;
   color: var(--text-main);
-  max-width: 640px;
+  max-width: none;
 }
 
 .upload-overview-meta {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
 }
@@ -77,15 +479,15 @@
 .upload-kpi-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .upload-kpi-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  padding: 0 12px;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--card-bg) 90%, white);
@@ -100,7 +502,7 @@
 }
 
 .upload-kpi-value {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 900;
   color: var(--text-main);
 }
@@ -1225,9 +1627,26 @@
 }
 
 @media (max-width: 1024px) {
+  .upload-shell {
+    padding: 10px 20px 0;
+  }
+
+  .upload-stage-preview-shell,
+  .upload-queue-shell,
+  .upload-history-section {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
   .upload-overview-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .upload-intake-grid,
+  .upload-stage-field-grid,
+  .upload-stage-chip-grid {
+    grid-template-columns: 1fr 1fr;
   }
 
   .upload-field-search {
@@ -1237,11 +1656,21 @@
 
 @media (max-width: 768px) {
   .upload-shell {
-    padding: 10px 12px 0;
+    padding: 10px 14px 0;
   }
 
-  .upload-overview-title {
-    font-size: 20px;
+  .upload-intake-grid,
+  .upload-stage-field-grid,
+  .upload-stage-chip-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-stage-record-head,
+  .upload-card-head,
+  .upload-stage-preview-head,
+  .upload-queue-head {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .upload-toolbar {
@@ -1264,6 +1693,13 @@
 
   .upload-table {
     min-width: 1440px;
+  }
+
+  .upload-stage-preview-shell,
+  .upload-queue-shell,
+  .upload-history-section {
+    margin-left: 14px;
+    margin-right: 14px;
   }
 
   .upload-modal-overlay {

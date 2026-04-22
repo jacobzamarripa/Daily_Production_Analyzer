@@ -28,6 +28,44 @@ const UPLOAD_TRACKING_HEADERS = [
   "Upload Status", "Upload Date", "QB Record ID", "Batch ID", "Error Detail"
 ];
 
+const UPLOAD_SOURCE_HEADERS = [
+  "Source File ID", "Source File Name", "Stage Batch ID", "Stage Imported At"
+];
+
+const DAILY_UPLOAD_STAGE_HEADERS = [
+  "Batch ID", "Created At", "Source File ID", "Source File Name", "Source Modified Time",
+  "Source Mime Type", "Source Sheet Name", "Record Key", "Source Row Number",
+  "Initial Disposition", "Blocking Issues JSON", "Warnings JSON", "Record JSON"
+];
+
+const DAILY_UPLOAD_STAGE_DISPOSITIONS = {
+  APPROVE: "approve",
+  SKIP: "skip",
+  NEEDS_FIX: "needs_fix"
+};
+
+const DAILY_UPLOAD_HEADER_ALIASES = {
+  "Date": ["date", "report date", "daily report date"],
+  "Contractor": ["contractor", "vendor", "contractor name"],
+  "FDH Engineering ID": ["fdh engineering id", "fdh id", "fdh", "fdh project engineering id", "project engineering id"],
+  "Locates Called In": ["locates called in", "locates", "locates called"],
+  "Cabinets Set": ["cabinets set", "cabinet set"],
+  "Light to Cabinets": ["light to cabinets", "light to cabinet", "light"],
+  "Target Completion Date": ["target completion date", "target date", "completion date", "target ofs"],
+  "Daily UG Footage": ["daily ug footage", "ug footage", "ug ft", "daily ug ft"],
+  "Daily Strand Footage": ["daily strand footage", "strand footage", "strand ft", "daily strand ft"],
+  "Daily Fiber Footage": ["daily fiber footage", "fiber footage", "fiber ft", "daily fiber ft"],
+  "Daily NAPs/Encl. Completed": ["daily naps/encl. completed", "daily naps completed", "naps", "daily naps", "daily enclosures completed"],
+  "Drills": ["drills"],
+  "Missles": ["missles", "missiles"],
+  "AE Crews": ["ae crews", "ae crew"],
+  "Fiber Pulling Crews": ["fiber pulling crews", "fiber crews", "fiber pulling crew"],
+  "Splicing Crews": ["splicing crews", "splice crews", "splicing crew"],
+  "Construction Comments": ["construction comments", "comments", "vendor comments", "comment"]
+};
+
+const DAILY_UPLOAD_REQUIRED_FIELDS = ["Date", "Contractor", "FDH Engineering ID"];
+
 const DAILY_UPLOAD_EDITABLE_FIELDS = {
   "Locates Called In": true,
   "Cabinets Set": true,
@@ -54,6 +92,105 @@ function _generateBatchId() {
   return id;
 }
 
+function _getPipelineRecommendedDate() {
+  var d = new Date();
+  d.setDate(d.getDate() - 1);
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+}
+
+function _countDailyUploadQueueRows() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(QB_UPLOAD_SHEET);
+  if (!sheet) return 0;
+  return Math.max(0, getTrueLastDataRow(sheet) - 1);
+}
+
+function _getLatestCompiledUploadFileMeta() {
+  var folder = DriveApp.getFolderById(COMPILED_FOLDER_ID);
+  var files = folder.getFilesByType(MimeType.CSV);
+  var latest = null;
+  while (files.hasNext()) {
+    var file = files.next();
+    if (!latest || file.getLastUpdated() > latest.getLastUpdated()) latest = file;
+  }
+  if (!latest) return null;
+  return {
+    fileId: latest.getId(),
+    fileName: latest.getName(),
+    fileUrl: latest.getUrl(),
+    modifiedAt: Utilities.formatDate(latest.getLastUpdated(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss')
+  };
+}
+
+function getDailyPipelineStatus() {
+  var props = PropertiesService.getScriptProperties();
+  var latestArchiveDate = typeof _getLatestArchiveDate === 'function'
+    ? _getLatestArchiveDate()
+    : _getPipelineRecommendedDate();
+  var latestExport = _getLatestCompiledUploadFileMeta();
+  var stats = getDailyUploadStats();
+  return {
+    archiveStatus: props.getProperty('INGESTION_STATUS') || 'idle',
+    latestArchiveDate: latestArchiveDate,
+    recommendedDate: _getPipelineRecommendedDate(),
+    queueRowCount: _countDailyUploadQueueRows(),
+    pendingQueueCount: stats.pending || 0,
+    latestExport: latestExport,
+    lastCompletedAt: props.getProperty('INGESTION_LAST_COMPLETED_AT') || '',
+    lastStartedAt: props.getProperty('INGESTION_LAST_STARTED_AT') || ''
+  };
+}
+
+function runIncomingArchivePipeline() {
+  var beforeRows = 0;
+  var histSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HISTORY_SHEET);
+  if (histSheet) beforeRows = Math.max(0, getTrueLastDataRow(histSheet) - 1);
+
+  processIncomingForQuickBase(true, false);
+
+  var afterRows = beforeRows;
+  histSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HISTORY_SHEET);
+  if (histSheet) afterRows = Math.max(0, getTrueLastDataRow(histSheet) - 1);
+  var status = getDailyPipelineStatus();
+
+  return {
+    success: true,
+    step: 'incoming',
+    message: 'Incoming reports processed.',
+    archiveRowsAdded: Math.max(0, afterRows - beforeRows),
+    queueRowCount: status.queueRowCount,
+    archiveStatus: status.archiveStatus,
+    latestArchiveDate: status.latestArchiveDate
+  };
+}
+
+function loadDailyUploadQueueForDate(dateStr) {
+  if (!dateStr) dateStr = _getPipelineRecommendedDate();
+  populateQuickBaseTabCore(dateStr);
+  return {
+    success: true,
+    step: 'load_queue',
+    targetDate: dateStr,
+    rowCount: _countDailyUploadQueueRows(),
+    message: 'QuickBase upload queue loaded for ' + dateStr + '.'
+  };
+}
+
+function exportCurrentDailyUploadCsv() {
+  var meta = exportQuickBaseCSVCore(true, 'MANUAL');
+  if (!meta) throw new Error('The QuickBase upload tab is empty. Load a report date first.');
+  return {
+    success: true,
+    step: 'export_csv',
+    fileId: meta.fileId,
+    fileName: meta.fileName,
+    fileUrl: meta.fileUrl,
+    folderId: meta.folderId,
+    createdAt: meta.createdAt,
+    rowCount: meta.rowCount,
+    message: 'CSV exported to 01_Pending_Upload.'
+  };
+}
+
 function _getDailyUploadToken() {
   const token = PropertiesService.getScriptProperties().getProperty("QB_USER_TOKEN");
   if (!token) throw new Error("QB_USER_TOKEN not configured in Script Properties.");
@@ -69,13 +206,447 @@ function _ensureUploadTrackingHeaders() {
   const sheet = ss.getSheetByName(QB_UPLOAD_SHEET);
   if (!sheet || sheet.getLastRow() === 0) return;
 
-  const existingHeaders = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), QB_HEADERS.length + UPLOAD_TRACKING_HEADERS.length)).getValues()[0];
+  const headerCount = QB_HEADERS.length + UPLOAD_TRACKING_HEADERS.length + UPLOAD_SOURCE_HEADERS.length;
+  const existingHeaders = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), headerCount)).getValues()[0];
   UPLOAD_TRACKING_HEADERS.forEach((h, i) => {
     const colPos = QB_HEADERS.length + i; // 0-indexed
     if ((existingHeaders[colPos] || '').toString().trim() !== h) {
       sheet.getRange(1, colPos + 1).setValue(h);
     }
   });
+  UPLOAD_SOURCE_HEADERS.forEach((h, i) => {
+    const colPos = QB_HEADERS.length + UPLOAD_TRACKING_HEADERS.length + i; // 0-indexed
+    if ((existingHeaders[colPos] || '').toString().trim() !== h) {
+      sheet.getRange(1, colPos + 1).setValue(h);
+    }
+  });
+}
+
+function _normalizeUploadHeaderKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function _formatUploadDate(value) {
+  if (value instanceof Date && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'MM/dd/yyyy');
+  }
+  var raw = String(value || '').trim();
+  if (!raw) return '';
+  var parsed = new Date(raw);
+  if (isNaN(parsed.getTime())) return '';
+  return Utilities.formatDate(parsed, Session.getScriptTimeZone(), 'MM/dd/yyyy');
+}
+
+function _parseUploadBoolean(value) {
+  if (value === true || value === false) return value ? 'TRUE' : 'FALSE';
+  var raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^(true|yes|y|1|x)$/i.test(raw)) return 'TRUE';
+  if (/^(false|no|n|0)$/i.test(raw)) return 'FALSE';
+  return null;
+}
+
+function _parseUploadNumeric(value) {
+  if (value === null || value === undefined || value === '') return '';
+  if (typeof value === 'number') return value;
+  var raw = String(value).replace(/,/g, '').trim();
+  if (!raw) return '';
+  var num = parseFloat(raw);
+  return isNaN(num) ? null : num;
+}
+
+function _getUploadHeaderAliasMap() {
+  var map = {};
+  Object.keys(DAILY_UPLOAD_HEADER_ALIASES).forEach(function(target) {
+    DAILY_UPLOAD_HEADER_ALIASES[target].concat([target]).forEach(function(alias) {
+      map[_normalizeUploadHeaderKey(alias)] = target;
+    });
+  });
+  return map;
+}
+
+function _detectUploadSourceSheet(spreadsheet) {
+  var aliasMap = _getUploadHeaderAliasMap();
+  var best = null;
+  spreadsheet.getSheets().forEach(function(sheet) {
+    var maxRows = Math.min(sheet.getLastRow(), 10);
+    var maxCols = Math.min(sheet.getLastColumn(), 30);
+    if (maxRows < 1 || maxCols < 1) return;
+    var values = sheet.getRange(1, 1, maxRows, maxCols).getDisplayValues();
+    values.forEach(function(row, idx) {
+      var matched = 0;
+      row.forEach(function(cell) {
+        if (aliasMap[_normalizeUploadHeaderKey(cell)]) matched++;
+      });
+      if (!best || matched > best.score) {
+        best = { sheet: sheet, headerRow: idx + 1, score: matched };
+      }
+    });
+  });
+  if (!best || best.score < 3) throw new Error('No recognizable upload sheet was found in the selected Drive file.');
+  return best;
+}
+
+function _buildUploadColumnMapping(headerRow) {
+  var aliasMap = _getUploadHeaderAliasMap();
+  var targetToCol = {};
+  var unknownHeaders = [];
+  headerRow.forEach(function(cell, idx) {
+    var normalized = _normalizeUploadHeaderKey(cell);
+    if (!normalized) return;
+    var target = aliasMap[normalized];
+    if (target && targetToCol[target] === undefined) targetToCol[target] = idx;
+    else if (!target) unknownHeaders.push(String(cell).trim());
+  });
+  return { targetToCol: targetToCol, unknownHeaders: unknownHeaders };
+}
+
+function _getUploadStageSheet(createIfMissing) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(DAILY_UPLOAD_STAGE_SHEET);
+  if (!sheet && createIfMissing) {
+    sheet = ss.insertSheet(DAILY_UPLOAD_STAGE_SHEET);
+    sheet.hideSheet();
+    sheet.getRange(1, 1, 1, DAILY_UPLOAD_STAGE_HEADERS.length).setValues([DAILY_UPLOAD_STAGE_HEADERS]);
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function _clearUploadStageBatch(batchId) {
+  if (!batchId) return;
+  var sheet = _getUploadStageSheet(false);
+  if (!sheet || sheet.getLastRow() <= 1) return;
+  var values = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+  for (var i = values.length - 1; i >= 0; i--) {
+    if ((values[i][0] || '').toString() === batchId) {
+      sheet.deleteRow(i + 2);
+    }
+  }
+}
+
+function _resetUploadStageSheet() {
+  var sheet = _getUploadStageSheet(true);
+  if (sheet.getLastRow() > 1) {
+    sheet.deleteRows(2, sheet.getLastRow() - 1);
+  }
+}
+
+function _getQueueDuplicateLookup() {
+  var lookup = {};
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(QB_UPLOAD_SHEET);
+  if (!sheet || sheet.getLastRow() <= 1) return lookup;
+  var data = sheet.getDataRange().getValues();
+  var dateIdx = QB_HEADERS.indexOf('Date');
+  var fdhIdx = QB_HEADERS.indexOf('FDH Engineering ID');
+  var statusIdx = QB_HEADERS.length;
+  for (var i = 1; i < data.length; i++) {
+    var status = String(data[i][statusIdx] || '').trim();
+    if (status === UPLOAD_STATUS.SKIPPED) continue;
+    var dateStr = _formatUploadDate(data[i][dateIdx]);
+    var fdh = String(data[i][fdhIdx] || '').trim().toUpperCase();
+    if (!dateStr || !fdh) continue;
+    lookup[dateStr + '::' + fdh] = true;
+  }
+  return lookup;
+}
+
+function _buildStagedUploadRecord(rowValues, rowNumber, mapping, sourceHeaders, duplicateLookup) {
+  var record = {};
+  var blockingIssues = [];
+  var warnings = [];
+
+  QB_HEADERS.forEach(function(header) {
+    var sourceIdx = mapping.targetToCol[header];
+    var raw = sourceIdx === undefined ? '' : rowValues[sourceIdx];
+    if (DATE_COLUMNS.indexOf(header) >= 0) {
+      if (raw === '' || raw === null || raw === undefined) {
+        record[header] = '';
+      } else {
+        var dateStr = _formatUploadDate(raw);
+        if (!dateStr) {
+          record[header] = String(raw || '');
+          blockingIssues.push(header + ' is not a valid date');
+        } else {
+          record[header] = dateStr;
+        }
+      }
+      return;
+    }
+    if (CHECKBOX_COLUMNS.indexOf(header) >= 0) {
+      var boolVal = _parseUploadBoolean(raw);
+      if (boolVal === null) {
+        record[header] = String(raw || '');
+        blockingIssues.push(header + ' must be yes/no or true/false');
+      } else {
+        record[header] = boolVal;
+      }
+      return;
+    }
+    if (NUMERIC_COLUMNS.indexOf(header) >= 0) {
+      var num = _parseUploadNumeric(raw);
+      if (num === null) {
+        record[header] = String(raw || '');
+        blockingIssues.push(header + ' is not numeric');
+      } else {
+        record[header] = num;
+      }
+      return;
+    }
+    record[header] = raw === null || raw === undefined ? '' : String(raw).trim();
+  });
+
+  DAILY_UPLOAD_REQUIRED_FIELDS.forEach(function(field) {
+    if (!String(record[field] || '').trim()) blockingIssues.push('Missing ' + field);
+  });
+
+  var key = '';
+  if (record['Date'] && record['FDH Engineering ID']) {
+    key = record['Date'] + '::' + String(record['FDH Engineering ID']).trim().toUpperCase();
+    if (duplicateLookup[key]) warnings.push('Already present in the upload queue');
+    var qbDupe = checkDuplicateDailyRecord(record['Date'], record['FDH Engineering ID']);
+    if (qbDupe && qbDupe.isDuplicate) warnings.push('Existing QuickBase record ID ' + (qbDupe.existingRecordId || 'found'));
+  }
+
+  return {
+    recordKey: 'r' + rowNumber,
+    sourceRowNumber: rowNumber,
+    disposition: blockingIssues.length > 0 ? DAILY_UPLOAD_STAGE_DISPOSITIONS.NEEDS_FIX : DAILY_UPLOAD_STAGE_DISPOSITIONS.APPROVE,
+    blockingIssues: blockingIssues,
+    warnings: warnings,
+    values: record,
+    sourceHeaders: sourceHeaders
+  };
+}
+
+function _serializeUploadStageRows(batchId, source, records) {
+  return records.map(function(record) {
+    return [
+      batchId,
+      source.createdAt,
+      source.fileId,
+      source.fileName,
+      source.modifiedTime,
+      source.mimeType,
+      source.sheetName,
+      record.recordKey,
+      record.sourceRowNumber,
+      record.disposition,
+      JSON.stringify(record.blockingIssues || []),
+      JSON.stringify(record.warnings || []),
+      JSON.stringify(record.values || {})
+    ];
+  });
+}
+
+function _readUploadStageBatch(batchId) {
+  var sheet = _getUploadStageSheet(false);
+  if (!sheet || sheet.getLastRow() <= 1) return null;
+  var values = sheet.getDataRange().getValues();
+  var rows = values.slice(1).filter(function(row) { return String(row[0] || '') === String(batchId || ''); });
+  if (!rows.length) return null;
+
+  var source = {
+    fileId: rows[0][2] || '',
+    fileName: rows[0][3] || '',
+    modifiedTime: rows[0][4] || '',
+    mimeType: rows[0][5] || '',
+    sheetName: rows[0][6] || '',
+    createdAt: rows[0][1] || ''
+  };
+
+  var records = rows.map(function(row) {
+    var blockingIssues = [];
+    var warnings = [];
+    var valuesObj = {};
+    try { blockingIssues = JSON.parse(row[10] || '[]'); } catch (err) {}
+    try { warnings = JSON.parse(row[11] || '[]'); } catch (err) {}
+    try { valuesObj = JSON.parse(row[12] || '{}'); } catch (err) {}
+    return {
+      recordKey: row[7],
+      sourceRowNumber: row[8],
+      disposition: row[9] || DAILY_UPLOAD_STAGE_DISPOSITIONS.APPROVE,
+      blockingIssues: blockingIssues,
+      warnings: warnings,
+      values: valuesObj
+    };
+  });
+
+  return _buildUploadStagePayload(batchId, source, records);
+}
+
+function _buildUploadStagePayload(batchId, source, records) {
+  var summary = {
+    totalRows: records.length,
+    validRows: 0,
+    flaggedRows: 0,
+    duplicateCandidates: 0,
+    missingRequired: 0,
+    unknownHeaders: 0
+  };
+
+  records.forEach(function(record) {
+    if ((record.blockingIssues || []).length > 0 || (record.warnings || []).length > 0) summary.flaggedRows++;
+    else summary.validRows++;
+    if ((record.warnings || []).some(function(msg) { return /duplicate|quickbase/i.test(msg); })) summary.duplicateCandidates++;
+    if ((record.blockingIssues || []).some(function(msg) { return /^Missing /i.test(msg); })) summary.missingRequired++;
+  });
+
+  return {
+    batchId: batchId,
+    source: source,
+    summary: summary,
+    records: records,
+    canApprove: records.some(function(record) {
+      return record.disposition === DAILY_UPLOAD_STAGE_DISPOSITIONS.APPROVE && (!record.blockingIssues || record.blockingIssues.length === 0);
+    })
+  };
+}
+
+function listAvailableUploadDriveFiles() {
+  var folder = DriveApp.getFolderById(DAILY_UPLOAD_SOURCE_FOLDER_ID);
+  var iter = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+  var files = [];
+  while (iter.hasNext()) {
+    var file = iter.next();
+    files.push({
+      fileId: file.getId(),
+      fileName: file.getName(),
+      modifiedTime: Utilities.formatDate(file.getLastUpdated(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'),
+      mimeType: MimeType.GOOGLE_SHEETS,
+      size: file.getSize ? file.getSize() : '',
+      inferredVendor: '',
+      inferredDate: _formatUploadDate(file.getLastUpdated())
+    });
+  }
+  files.sort(function(a, b) { return String(b.modifiedTime).localeCompare(String(a.modifiedTime)); });
+  return files.slice(0, 25);
+}
+
+function stageUploadFileFromDrive(fileId) {
+  if (!fileId) throw new Error('No Drive file selected.');
+  var file = DriveApp.getFileById(fileId);
+  if (file.getMimeType() !== MimeType.GOOGLE_SHEETS) throw new Error('Only Google Sheets sources are supported in v1.');
+
+  var spreadsheet = SpreadsheetApp.openById(fileId);
+  var detected = _detectUploadSourceSheet(spreadsheet);
+  var sourceSheet = detected.sheet;
+  var lastRow = sourceSheet.getLastRow();
+  var lastCol = sourceSheet.getLastColumn();
+  if (lastRow <= detected.headerRow) throw new Error('The selected file does not contain any data rows below its header.');
+
+  var values = sourceSheet.getRange(detected.headerRow, 1, lastRow - detected.headerRow + 1, lastCol).getValues();
+  var displayValues = sourceSheet.getRange(detected.headerRow, 1, lastRow - detected.headerRow + 1, lastCol).getDisplayValues();
+  var headers = displayValues[0];
+  var mapping = _buildUploadColumnMapping(headers);
+  var duplicateLookup = _getQueueDuplicateLookup();
+  var records = [];
+
+  for (var i = 1; i < values.length; i++) {
+    var rowValues = values[i];
+    var displayRow = displayValues[i];
+    var hasContent = rowValues.some(function(cell) { return cell !== '' && cell !== null && cell !== undefined; });
+    if (!hasContent) continue;
+    records.push(_buildStagedUploadRecord(rowValues, detected.headerRow + i, mapping, headers, duplicateLookup));
+  }
+
+  if (!records.length) throw new Error('No eligible rows were found in the selected source sheet.');
+
+  var batchId = _generateBatchId();
+  var source = {
+    fileId: file.getId(),
+    fileName: file.getName(),
+    modifiedTime: Utilities.formatDate(file.getLastUpdated(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm'),
+    mimeType: file.getMimeType(),
+    sheetName: sourceSheet.getName(),
+    createdAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss')
+  };
+
+  _resetUploadStageSheet();
+  var sheet = _getUploadStageSheet(true);
+  var rows = _serializeUploadStageRows(batchId, source, records);
+  sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, DAILY_UPLOAD_STAGE_HEADERS.length).setValues(rows);
+
+  var payload = _buildUploadStagePayload(batchId, source, records);
+  payload.summary.unknownHeaders = mapping.unknownHeaders.length;
+  payload.unknownHeaders = mapping.unknownHeaders;
+  return payload;
+}
+
+function getStagedUploadBatch(batchId) {
+  return _readUploadStageBatch(batchId) || { batchId: '', source: null, summary: null, records: [], canApprove: false };
+}
+
+function getLatestStagedUploadBatch() {
+  var sheet = _getUploadStageSheet(false);
+  if (!sheet || sheet.getLastRow() <= 1) return null;
+  var values = sheet.getDataRange().getValues();
+  var latestBatchId = '';
+  var latestCreated = '';
+  values.slice(1).forEach(function(row) {
+    var created = String(row[1] || '');
+    if (!latestCreated || created > latestCreated) {
+      latestCreated = created;
+      latestBatchId = row[0];
+    }
+  });
+  return latestBatchId ? _readUploadStageBatch(latestBatchId) : null;
+}
+
+function approveStagedUploadBatch(batchId, options) {
+  options = options || {};
+  var staged = _readUploadStageBatch(batchId);
+  if (!staged) throw new Error('Staged batch not found.');
+
+  var dispositionMap = options.dispositions || {};
+  var approvedRows = [];
+  var skipped = 0;
+
+  staged.records.forEach(function(record) {
+    var disposition = dispositionMap[record.recordKey] || record.disposition;
+    if (disposition === DAILY_UPLOAD_STAGE_DISPOSITIONS.SKIP) {
+      skipped++;
+      return;
+    }
+    if (record.blockingIssues && record.blockingIssues.length > 0) return;
+    if (disposition !== DAILY_UPLOAD_STAGE_DISPOSITIONS.APPROVE) return;
+    approvedRows.push(record);
+  });
+
+  if (!approvedRows.length) throw new Error('No staged rows are eligible for import.');
+
+  _ensureUploadTrackingHeaders();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var queueSheet = ss.getSheetByName(QB_UPLOAD_SHEET);
+  if (!queueSheet) throw new Error(QB_UPLOAD_SHEET + ' sheet not found.');
+
+  var importedAt = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  var startRow = queueSheet.getLastRow() + 1;
+  var values = approvedRows.map(function(record) {
+    var row = QB_HEADERS.map(function(header) { return record.values[header] === undefined ? '' : record.values[header]; });
+    return row.concat(['', '', '', '', '']).concat([
+      staged.source.fileId || '',
+      staged.source.fileName || '',
+      batchId,
+      importedAt
+    ]);
+  });
+
+  queueSheet.getRange(startRow, 1, values.length, values[0].length).setValues(values);
+  _clearUploadStageBatch(batchId);
+
+  return {
+    batchId: batchId,
+    importedCount: values.length,
+    skippedCount: skipped + (staged.records.length - approvedRows.length - skipped),
+    rowIndices: values.map(function(_, idx) { return startRow + idx; }),
+    sourceFileName: staged.source.fileName || ''
+  };
+}
+
+function discardStagedUploadBatch(batchId) {
+  _clearUploadStageBatch(batchId);
+  return { ok: true, batchId: batchId };
 }
 
 // --- FID DISCOVERY ---

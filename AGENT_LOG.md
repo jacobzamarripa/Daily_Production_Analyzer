@@ -1,5 +1,13 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-22: Upload Center polish — scroll ownership, denser step cards, reduced header
+- **Scroll ownership restored:** Updated `src/_styles_daily_upload.html` and `src/_styles_layout.html` so `#upload-workspace` is the vertical scroll container in upload mode instead of clipping the full-screen surface with hidden overflow.
+- **Viewport gutters added:** Increased Upload Center side padding on desktop/tablet/mobile so the workflow surface, queue shell, and history sections no longer press against the shell edges.
+- **Header reduced:** Simplified the upload header in `src/WebApp.html` to a minimal `Upload Center` kicker with `Daily Upload` title while keeping the right-side sync/meta status.
+- **Step density tightened:** Reduced stage-card padding, header/title size, KPI chip bulk, pipeline stat padding, and action spacing so the 2x2 workflow reads more like a compact dashboard.
+- **Responsive behavior:** Preserved the existing 2-column desktop layout while keeping cleaner gutters and single-column stacking below `768px`.
+- **Verification:** `git diff --check -- src/_styles_daily_upload.html src/_styles_layout.html src/WebApp.html` passed. Runtime visual smoke test still needs in-browser confirmation on desktop and iPad widths.
+
 > [!success] 2026-04-22: Active Portfolio inventory decoupled from Daily Review membership
 - **Inventory source corrected:** Refactored `src/02_Utilities.js` so both dashboard payload builders now assemble `actionItems` from the full eligible `Reference_Data` inventory instead of iterating only the current Daily Review / mirror slice.
 - **Reporting overlay preserved:** Added shared payload assembly helpers that overlay mirror/review state when present, while synthesizing inventory-complete fallback rows from reference data when a project has no current review row.
