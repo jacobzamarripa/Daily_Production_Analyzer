@@ -26,6 +26,7 @@ var _duIsSaving = false;
 var _duInitialized = false;
 var _duModalRestoreFocus = null;
 var _duLastLoadedAt = null;
+var _duSearchTimeout = null;
 
 var _DU_COL_GROUP = {
   'Date':                       'col-dark-navy',
@@ -183,6 +184,14 @@ function _duApplyFilters() {
   _duRenderToolbar();
 }
 
+function _duDebouncedSearch(val) {
+  _duSearchQuery = val;
+  if (_duSearchTimeout) clearTimeout(_duSearchTimeout);
+  _duSearchTimeout = setTimeout(function() {
+    _duApplyFilters();
+  }, 250);
+}
+
 function _duSortableValue(value, col) {
   var raw = value === null || value === undefined ? '' : value;
   if (col === 'Date' || col === 'Target Completion Date') {
@@ -233,13 +242,15 @@ function _duRenderLastSync() {
   el.textContent = syncText + dirtyText;
 }
 
-function _duRenderMissingPanel() {
-  var el = document.getElementById('upload-missing-panel');
-  if (!el) return;
+function _duOpenMissingReportsModal() {
+  _duLoadMissing(); // Refresh data
+  _duRenderMissingModal();
+}
 
+function _duRenderMissingModal() {
   var summary = _duMissing.length === 0
-    ? '<span class="upload-missing-summary ok">All vendors reported for ' + _duEsc(_duMissingDate) + '.</span>'
-    : '<span class="upload-missing-summary warn">' + _duMissing.length + ' vendor' + (_duMissing.length === 1 ? '' : 's') + ' missing for ' + _duEsc(_duMissingDate) + '.</span>';
+    ? '<div class="upload-preview-note ok">All vendors reported for ' + _duEsc(_duMissingDate) + '.</div>'
+    : '<div class="upload-preview-note warn">' + _duMissing.length + ' vendor' + (_duMissing.length === 1 ? '' : 's') + ' missing for ' + _duEsc(_duMissingDate) + '.</div>';
 
   var rows = _duMissing.length === 0
     ? '<div class="upload-missing-empty">No outreach needed for this report date.</div>'
@@ -249,32 +260,44 @@ function _duRenderMissingPanel() {
             '<span class="upload-missing-vendor">' + _duEsc(m.vendor) + '</span>' +
             '<span class="upload-missing-meta">' + _duEsc(m.activeFdhCount) + ' active projects • Last reported ' + _duEsc(m.lastReportDate || '—') + '</span>' +
           '</div>' +
-          '<button class="upload-missing-draft-btn" type="button" onclick="event.stopPropagation(); _duOpenEmailDraft(' + i + ')">Draft Email</button>' +
+          '<button class="upload-missing-draft-btn" type="button" onclick="_duOpenEmailDraft(' + i + ')">Draft Email</button>' +
         '</div>';
       }).join('');
 
   var actions = _duMissing.length > 0
-    ? '<div class="upload-missing-draft-all"><button type="button" onclick="_duDraftAllEmails()">Copy All Drafts</button></div>'
+    ? '<div class="upload-missing-draft-all"><button type="button" class="upload-btn" onclick="_duDraftAllEmails()">Copy All Drafts</button></div>'
     : '';
 
-  el.innerHTML =
-    '<div class="upload-missing-header" onclick="_duToggleMissingPanel()">' +
-      '<div class="upload-missing-header-left">' +
-        '<span class="upload-missing-chevron">' + (_duMissingPanelOpen ? '▾' : '▸') + '</span>' +
-        '<span class="upload-missing-title">Missing Reports</span>' +
+  var body = 
+    '<div class="upload-modal-missing-wrap">' +
+      '<div class="upload-missing-header-modal">' +
+        '<div class="upload-field">' +
+          '<span class="upload-field-label">Report Date</span>' +
+          '<div class="upload-missing-header-right">' +
+            '<button type="button" class="upload-missing-today-btn" onclick="_duMissingDate=_duTodayStr(); _duLoadMissing(); setTimeout(_duRenderMissingModal, 100)">Today</button>' +
+            '<input type="date" class="upload-missing-date-picker" value="' + _duIsoDate(_duMissingDate) + '" onchange="_duOnMissingDateChange(this.value); setTimeout(_duRenderMissingModal, 100)">' +
+          '</div>' +
+        '</div>' +
         summary +
       '</div>' +
-      '<input type="date" class="upload-missing-date-picker" aria-label="Choose date for missing report review" value="' + _duIsoDate(_duMissingDate) + '" onchange="event.stopPropagation(); _duOnMissingDateChange(this.value)" onclick="event.stopPropagation()">' +
-    '</div>' +
-    '<div class="upload-missing-body' + (_duMissingPanelOpen ? ' is-open' : '') + '">' +
       '<div class="upload-missing-rows">' + rows + '</div>' +
       actions +
     '</div>';
+
+  _duOpenModal('Missing Daily Reports', body, [
+    { label: 'Close', cls: 'upload-btn', onclick: '_duCloseModal()' }
+  ]);
+}
+
+function _duRenderMissingPanel() {
+  // Logic moved to Modal variant, stub kept for silent refresh calls
+  if (document.getElementById('upload-modal-title') && document.getElementById('upload-modal-title').textContent.includes('Missing Daily Reports')) {
+    _duRenderMissingModal();
+  }
 }
 
 function _duToggleMissingPanel() {
-  _duMissingPanelOpen = !_duMissingPanelOpen;
-  _duRenderMissingPanel();
+  _duOpenMissingReportsModal();
 }
 
 function _duOnMissingDateChange(isoVal) {
@@ -492,9 +515,11 @@ function _duSaveDirtyRows() {
   if (_duIsSaving) return;
   var rowIds = Object.keys(_duDirty);
   if (rowIds.length === 0) return;
+  
+  var totalChanges = _duDirtyCount();
   _duIsSaving = true;
   _duRenderToolbar();
-  showToast('Saving ' + _duDirtyCount() + ' staged change(s)...', 'info');
+  showToast('Saving ' + totalChanges + ' staged change(s)...', 'info');
 
   var tasks = [];
   rowIds.forEach(function(rowIdx) {
@@ -503,47 +528,36 @@ function _duSaveDirtyRows() {
     });
   });
 
-  _duSaveDirtyTask(tasks, 0, [], []);
-}
-
-function _duSaveDirtyTask(tasks, idx, failures, completedRows) {
-  if (idx >= tasks.length) {
-    _duIsSaving = false;
-    completedRows.forEach(function(rowIdx) {
-      var row = _duGetRow(rowIdx);
-      if (row && row.uploadStatus === 'Failed') row.uploadStatus = 'Pending';
-    });
-    _duApplyFilters();
-    if (failures.length > 0) {
-      showToast('Some edits failed to save. Review the highlighted rows.', 'error');
-    } else {
-      showToast('Upload edits saved.', 'success');
-    }
-    return;
-  }
-
-  var task = tasks[idx];
   google.script.run
     .withSuccessHandler(function(result) {
+      _duIsSaving = false;
       if (result && result.ok) {
-        var row = _duGetRow(task.rowIdx);
-        if (row) row[task.field] = task.value;
-        if (_duDirty[task.rowIdx]) {
-          delete _duDirty[task.rowIdx][task.field];
-          if (Object.keys(_duDirty[task.rowIdx]).length === 0) delete _duDirty[task.rowIdx];
-        }
-        if (completedRows.indexOf(task.rowIdx) < 0) completedRows.push(task.rowIdx);
+        // Apply changes to local queue
+        tasks.forEach(function(task) {
+          var row = _duGetRow(task.rowIdx);
+          if (row) {
+            row[task.field] = task.value;
+            if (row.uploadStatus === 'Failed') row.uploadStatus = 'Pending';
+          }
+        });
+        _duDirty = {};
+        _duApplyFilters();
+        showToast('Upload edits saved.', 'success');
       } else {
-        failures.push(task);
+        var err = (result && result.error) ? result.error : 'Some edits failed to save.';
+        showToast(err, 'error');
+        _duRenderToolbar();
       }
-      _duSaveDirtyTask(tasks, idx + 1, failures, completedRows);
     })
-    .withFailureHandler(function() {
-      failures.push(task);
-      _duSaveDirtyTask(tasks, idx + 1, failures, completedRows);
+    .withFailureHandler(function(err) {
+      _duIsSaving = false;
+      showToast('Save failed: ' + (err.message || err), 'error');
+      _duRenderToolbar();
     })
-    .saveDailyUploadRowEdit(task.rowIdx, task.field, task.value);
+    .saveDailyUploadRowEditsBatch(tasks);
 }
+
+// _duSaveDirtyTask removed in favor of batched save function Above
 
 function _duRevertDirtyRows() {
   if (_duDirtyCount() === 0) return;

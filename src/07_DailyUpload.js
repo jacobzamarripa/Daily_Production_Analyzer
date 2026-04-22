@@ -498,36 +498,68 @@ function _writeUploadLogEntry(entry) {
  * @returns {Object} { ok, error }
  */
 function saveDailyUploadRowEdit(rowIdx, fieldName, newValue) {
+  return saveDailyUploadRowEditsBatch([{ rowIdx: rowIdx, field: fieldName, value: newValue }]);
+}
+
+/**
+ * Saves multiple cell edits back to 1-QuickBase_Upload in a single batch.
+ * @param {Array<Object>} tasks - [{ rowIdx, field, value }, ...]
+ * @returns {Object} { ok, count, errors }
+ */
+function saveDailyUploadRowEditsBatch(tasks) {
+  if (!tasks || !tasks.length) return { ok: true, count: 0 };
+
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(QB_UPLOAD_SHEET);
     if (!sheet) return { ok: false, error: 'Sheet not found' };
 
-    if (!DAILY_UPLOAD_EDITABLE_FIELDS[fieldName]) {
-      return { ok: false, error: 'Field is locked: ' + fieldName };
-    }
+    const dataRange = sheet.getDataRange();
+    const lastCol = sheet.getLastColumn();
+    const statusColIdx = QB_HEADERS.length + 1; // 1-indexed column for status
 
-    const colIdx = QB_HEADERS.indexOf(fieldName);
-    if (colIdx < 0) return { ok: false, error: 'Unknown field: ' + fieldName };
+    const errors = [];
+    let successCount = 0;
 
-    const statusCell = sheet.getRange(rowIdx, QB_HEADERS.length + 1).getValue().toString();
-    if (statusCell === UPLOAD_STATUS.UPLOADED || statusCell === UPLOAD_STATUS.SKIPPED) {
-      return { ok: false, error: 'Row is already finalized and is locked.' };
-    }
-    if (statusCell && statusCell !== UPLOAD_STATUS.PENDING && statusCell !== UPLOAD_STATUS.FAILED && statusCell !== UPLOAD_STATUS.DUPLICATE) {
-      return { ok: false, error: 'Row status cannot be edited: ' + statusCell };
-    }
+    tasks.forEach(function(task) {
+      const rowIdx = task.rowIdx;
+      const fieldName = task.field;
+      const newValue = task.value;
 
-    const nextValue = _sanitizeDailyUploadEditValue(fieldName, newValue);
-    sheet.getRange(rowIdx, colIdx + 1).setValue(nextValue);
+      if (!DAILY_UPLOAD_EDITABLE_FIELDS[fieldName]) {
+        errors.push({ rowIdx: rowIdx, field: fieldName, error: 'Field is locked' });
+        return;
+      }
 
-    // Reset Failed → Pending so the row re-enters the queue
-    if (statusCell === UPLOAD_STATUS.FAILED) {
-      sheet.getRange(rowIdx, QB_HEADERS.length + 1).setValue(UPLOAD_STATUS.PENDING);
-      sheet.getRange(rowIdx, QB_HEADERS.length + 5).setValue('');
-    }
+      const colIdx = QB_HEADERS.indexOf(fieldName);
+      if (colIdx < 0) {
+        errors.push({ rowIdx: rowIdx, field: fieldName, error: 'Unknown field' });
+        return;
+      }
 
-    return { ok: true };
+      // Check row status
+      const statusCell = sheet.getRange(rowIdx, statusColIdx).getValue().toString();
+      if (statusCell === UPLOAD_STATUS.UPLOADED || statusCell === UPLOAD_STATUS.SKIPPED) {
+        errors.push({ rowIdx: rowIdx, field: fieldName, error: 'Row is finalized' });
+        return;
+      }
+
+      const nextValue = _sanitizeDailyUploadEditValue(fieldName, newValue);
+      sheet.getRange(rowIdx, colIdx + 1).setValue(nextValue);
+
+      // Reset Failed → Pending
+      if (statusCell === UPLOAD_STATUS.FAILED) {
+        sheet.getRange(rowIdx, statusColIdx).setValue(UPLOAD_STATUS.PENDING);
+        sheet.getRange(rowIdx, statusColIdx + 4).setValue(''); // Clear error detail
+      }
+      successCount++;
+    });
+
+    return {
+      ok: errors.length === 0,
+      count: successCount,
+      errors: errors
+    };
   } catch(e) {
     return { ok: false, error: e.message };
   }
