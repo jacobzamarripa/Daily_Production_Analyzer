@@ -1002,72 +1002,68 @@
           </div>
         </div>
 
-        <div class="upload-intake-grid">
+        <div class="upload-pipeline-row">
+
+          <!-- Step 1 -->
           <section class="upload-stage-card">
             <div class="upload-card-head">
-              <div>
-                <div class="upload-card-kicker">Step 1</div>
-                <div class="upload-card-title">Process Incoming Reports</div>
-              </div>
+              <div class="upload-card-kicker">Step 1</div>
+              <div class="upload-card-title">Process Incoming</div>
             </div>
-            <div class="upload-source-note">Runs the existing archive ingestion flow against the incoming folders and refreshes the Master Archive / QB tab pipeline state.</div>
-            <div class="upload-pipeline-body" id="upload-pipeline-incoming" aria-live="polite"></div>
+            <div class="upload-pipeline-body" id="upload-pipeline-incoming" aria-live="polite">
+              <div class="du-incoming-badge du-incoming-badge--clear">Checking…</div>
+            </div>
             <div class="upload-pipeline-actions">
-              <button class="upload-btn btn-primary" type="button" onclick="_duRunIncomingPipeline()">Process Incoming</button>
-              <button class="upload-btn btn-ghost" type="button" onclick="_duHandleRefresh()">Refresh Status</button>
+              <button class="upload-btn btn-primary" type="button" onclick="_duRunIncomingPipeline()" title="Run archive ingestion against incoming report folders">Process Incoming</button>
+              <button class="upload-btn btn-ghost" type="button" onclick="_duHandleRefresh()" title="Refresh all pipeline status, queue, and stats">Refresh</button>
             </div>
           </section>
 
+          <!-- Step 2 -->
           <section class="upload-stage-card">
             <div class="upload-card-head">
-              <div>
-                <div class="upload-card-kicker">Step 2</div>
-                <div class="upload-card-title">Load QuickBase Upload Tab</div>
-              </div>
+              <div class="upload-card-kicker">Step 2</div>
+              <div class="upload-card-title">Load Date</div>
             </div>
-            <div class="upload-source-note">Production reports are typically for the previous day. Load yesterday by default, or override the date before review.</div>
-            <label class="upload-field upload-field-date">
-              <span class="upload-field-label">Target Report Date</span>
-              <input type="date" class="upload-search" id="upload-target-date" onchange="_duHandleTargetDateInput(this.value)">
-            </label>
-            <div class="upload-pipeline-body" id="upload-pipeline-target" aria-live="polite"></div>
+            <div class="upload-pipeline-body" id="upload-pipeline-target" aria-live="polite">
+              <span class="du-loaded-chip du-loaded-chip--empty">Not loaded</span>
+            </div>
             <div class="upload-pipeline-actions">
-              <button class="upload-btn btn-primary" type="button" onclick="_duLoadRecommendedQueueDate()">Load Yesterday</button>
-              <button class="upload-btn btn-ghost" type="button" onclick="_duLoadQueueForDate(document.getElementById('upload-target-date').value)">Load Selected Date</button>
+              <button class="upload-btn btn-primary" id="du-btn-load-yesterday" type="button" onclick="_duLoadRecommendedQueueDate()" title="Load data for yesterday (the recommended report date)">Load Yesterday</button>
+              <button class="upload-btn btn-ghost" id="du-btn-specific-date" type="button" onclick="_duToggleDatePicker()" title="Choose a specific historical date to load">Load a Specific Date</button>
             </div>
-          </section>
-        </div>
-
-        <div class="upload-intake-grid upload-intake-grid-secondary">
-          <section class="upload-stage-card">
-            <div class="upload-card-head">
-              <div>
-                <div class="upload-card-kicker">Step 3</div>
-                <div class="upload-card-title">Review Queue</div>
-              </div>
-            </div>
-            <div class="upload-source-note">Use the queue table below to inspect, edit, validate, dry run, and select the records that are ready for final QuickBase handoff.</div>
-            <div class="upload-pipeline-body">
-              <div class="upload-pipeline-stat">
-                <span class="upload-pipeline-stat-label">Queue Status</span>
-                <span class="upload-pipeline-stat-value" id="upload-queue-meta">Queue not loaded yet</span>
-              </div>
+            <div id="du-date-picker-wrap" style="display:none;align-items:center;gap:6px;margin-top:6px;padding:0 2px;">
+              <input type="date" class="upload-search" id="upload-target-date" onchange="_duHandleTargetDateInput(this.value)" style="flex:1;min-width:0;">
+              <button class="upload-btn btn-ghost" type="button" onclick="_duLoadQueueForDate(document.getElementById('upload-target-date').value)" title="Load queue for the selected date">Load</button>
             </div>
           </section>
 
+          <!-- Step 3 -->
           <section class="upload-stage-card">
             <div class="upload-card-head">
-              <div>
-                <div class="upload-card-kicker">Step 4</div>
-                <div class="upload-card-title">Finalize To QuickBase</div>
-              </div>
+              <div class="upload-card-kicker">Step 3</div>
+              <div class="upload-card-title">Review Queue</div>
             </div>
-            <div class="upload-source-note">Manual path exports the current queue to CSV in `01_Pending_Upload`. Direct path uses the existing API upload buttons in the queue toolbar below.</div>
-            <div class="upload-pipeline-body" id="upload-pipeline-final" aria-live="polite"></div>
+            <div class="upload-pipeline-body" id="upload-queue-meta" aria-live="polite">Queue not loaded yet</div>
             <div class="upload-pipeline-actions">
-              <button class="upload-btn btn-primary" type="button" onclick="_duExportPipelineCsv()">Export QB CSV</button>
+              <button class="upload-btn btn-primary" id="du-btn-approve-queue" type="button" disabled onclick="_duApproveQueue()" title="Load a date in Step 2 first">Approve Queue</button>
             </div>
           </section>
+
+          <!-- Step 4 -->
+          <section class="upload-stage-card upload-stage-card--locked" id="du-step4-card">
+            <div class="upload-card-head">
+              <div class="upload-card-kicker">Step 4</div>
+              <div class="upload-card-title">Finalize to QB</div>
+            </div>
+            <div class="upload-pipeline-body" id="upload-pipeline-final" aria-live="polite">
+              <div class="upload-pipeline-meta">Approve Step 3 to unlock.</div>
+            </div>
+            <div class="upload-pipeline-actions">
+              <button class="upload-btn btn-primary" id="du-btn-export-step4" type="button" disabled onclick="_duPreflightExport()" title="Export current queue to 01_Pending_Upload as a QB CSV">Export QB CSV</button>
+            </div>
+          </section>
+
         </div>
       </div>
 
@@ -1091,28 +1087,28 @@
               <span class="upload-field-label">Search</span>
               <input type="text" class="upload-search" id="upload-search" aria-label="Search upload rows by FDH, vendor, or date" placeholder="Search approved queue rows" oninput="_duDebouncedSearch(this.value)">
             </label>
-            <button class="upload-btn btn-ghost" id="upload-btn-editmode" type="button" aria-pressed="false" onclick="_duToggleEditMode()">
+            <button class="upload-btn btn-ghost" id="upload-btn-editmode" type="button" aria-pressed="false" onclick="_duToggleEditMode()" title="Toggle inline cell editing for the queue">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
               Edit Mode Off
             </button>
           </div>
           <div class="upload-toolbar-right">
             <span class="upload-selection-info" id="upload-sel-info" aria-live="polite"></span>
-            <button class="upload-btn btn-ghost" id="upload-btn-save" type="button" disabled onclick="_duSaveDirtyRows()">Save</button>
-            <button class="upload-btn btn-ghost" id="upload-btn-revert" type="button" disabled onclick="_duRevertDirtyRows()">Revert</button>
-            <button class="upload-btn btn-ghost" type="button" onclick="_duExportPipelineCsv()" title="Export current QuickBase upload tab to 01_Pending_Upload">
+            <button class="upload-btn btn-ghost" id="upload-btn-save" type="button" disabled onclick="_duSaveDirtyRows()" title="Save pending inline edits to the staging sheet">Save</button>
+            <button class="upload-btn btn-ghost" id="upload-btn-revert" type="button" disabled onclick="_duRevertDirtyRows()" title="Discard all unsaved inline edits">Revert</button>
+            <button class="upload-btn btn-ghost" type="button" onclick="_duExportPipelineCsv()" title="Export current queue to 01_Pending_Upload as a CSV file">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Export QB CSV
             </button>
-            <button class="upload-btn btn-ghost" type="button" onclick="_duOpenMissingReportsModal()">
+            <button class="upload-btn btn-ghost" type="button" onclick="_duOpenMissingReportsModal()" title="Show vendors who have not submitted a report for this date">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               Missing Reports
             </button>
-            <button class="upload-btn" id="upload-btn-dryrun" type="button" disabled onclick="_duRunDryRun()">
+            <button class="upload-btn" id="upload-btn-dryrun" type="button" disabled onclick="_duRunDryRun()" title="Simulate QB upload without writing any records — shows what would succeed or fail">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               Dry Run
             </button>
-            <button class="upload-btn btn-primary" id="upload-btn-upload" type="button" disabled onclick="_duOpenPreview()">
+            <button class="upload-btn btn-primary" id="upload-btn-upload" type="button" disabled onclick="_duOpenPreview()" title="Upload selected records directly to QuickBase via API">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Upload 0 Records ↑
             </button>

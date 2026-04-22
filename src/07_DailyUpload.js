@@ -121,6 +121,20 @@ function _getLatestCompiledUploadFileMeta() {
   };
 }
 
+function listProductionIncomingFiles() {
+  var folder = DriveApp.getFolderById(REFERENCE_FOLDER_ID);
+  var iter = folder.getFiles();
+  var files = [];
+  while (iter.hasNext() && files.length < 50) {
+    var f = iter.next();
+    files.push({
+      name: f.getName(),
+      modified: Utilities.formatDate(f.getLastUpdated(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm')
+    });
+  }
+  return { count: files.length, files: files };
+}
+
 function getDailyPipelineStatus() {
   var props = PropertiesService.getScriptProperties();
   var latestArchiveDate = typeof _getLatestArchiveDate === 'function'
@@ -128,6 +142,7 @@ function getDailyPipelineStatus() {
     : _getPipelineRecommendedDate();
   var latestExport = _getLatestCompiledUploadFileMeta();
   var stats = getDailyUploadStats();
+  var incoming = listProductionIncomingFiles();
   return {
     archiveStatus: props.getProperty('INGESTION_STATUS') || 'idle',
     latestArchiveDate: latestArchiveDate,
@@ -136,7 +151,9 @@ function getDailyPipelineStatus() {
     pendingQueueCount: stats.pending || 0,
     latestExport: latestExport,
     lastCompletedAt: props.getProperty('INGESTION_LAST_COMPLETED_AT') || '',
-    lastStartedAt: props.getProperty('INGESTION_LAST_STARTED_AT') || ''
+    lastStartedAt: props.getProperty('INGESTION_LAST_STARTED_AT') || '',
+    incomingFileCount: incoming.count,
+    incomingFiles: incoming.files
   };
 }
 

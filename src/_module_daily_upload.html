@@ -33,6 +33,10 @@ var _duLastLoadedAt = null;
 var _duSearchTimeout = null;
 var _duValidation = {};
 var _duSwimlaneOpen = { issues: true, ready: true, uploaded: false };
+var _duQueueApproved = false;
+var _duIncomingCount = 0;
+var _duIncomingFiles = [];
+var _duShowDatePicker = false;
 
 var _DU_COL_GROUP = {
   'Date':                       'col-dark-navy',
@@ -112,6 +116,8 @@ function _duLoadPipelineStatus() {
       if (!_duLoadedQueueDate) _duLoadedQueueDate = _duPipeline.recommendedDate || _duTargetDate || '';
       if (_duPipeline.recommendedDate) _duTargetDate = _duPipeline.recommendedDate;
       _duLatestExport = _duPipeline.latestExport || null;
+      _duIncomingCount = _duPipeline.incomingFileCount || 0;
+      _duIncomingFiles = _duPipeline.incomingFiles || [];
       _duRenderPipeline();
     })
     .withFailureHandler(function(err) {
@@ -131,12 +137,14 @@ function _duLoadQueue() {
       });
       _duDirty = {};
       _duEditMode = false;
+      _duQueueApproved = false;
       _duLastLoadedAt = new Date();
       _duPopulateVendorOptions();
       _duApplyFilters();
       _duSetTableLoading(false);
       _duRenderToolbar();
       _duRenderLastSync();
+      _duRenderStepGates();
     })
     .withFailureHandler(function(err) {
       _duSetTableLoading(false);
@@ -177,46 +185,183 @@ function _duLoadHistory() {
 
 function _duRenderPipeline() {
   var incomingEl = document.getElementById('upload-pipeline-incoming');
-  var targetEl = document.getElementById('upload-pipeline-target');
-  var finalEl = document.getElementById('upload-pipeline-final');
-  var queueMeta = document.getElementById('upload-queue-meta');
+  var targetEl   = document.getElementById('upload-pipeline-target');
+  var finalEl    = document.getElementById('upload-pipeline-final');
+  var queueMeta  = document.getElementById('upload-queue-meta');
   var targetInput = document.getElementById('upload-target-date');
   if (targetInput && _duTargetDate) targetInput.value = _duTargetDate;
 
+  // Step 1 body
   if (incomingEl) {
-    incomingEl.innerHTML =
+    var archStatus = (_duPipeline.archiveStatus || 'idle').replace(/_/g, ' ');
+    var incomingBadge = _duIncomingCount > 0
+      ? '<div class="du-incoming-badge du-incoming-badge--alert">' +
+          '<span class="du-incoming-pulse"></span>' +
+          _duIncomingCount + ' file' + (_duIncomingCount === 1 ? '' : 's') + ' pending' +
+        '</div>'
+      : '<div class="du-incoming-badge du-incoming-badge--clear">Incoming folder is clear</div>';
+    incomingEl.innerHTML = incomingBadge +
       '<div class="upload-pipeline-stat">' +
         '<span class="upload-pipeline-stat-label">Archive Status</span>' +
-        '<span class="upload-pipeline-stat-value">' + _duEsc((_duPipeline.archiveStatus || 'idle').replace(/_/g, ' ')) + '</span>' +
+        '<span class="upload-pipeline-stat-value">' + _duEsc(archStatus) + '</span>' +
       '</div>' +
-      '<div class="upload-pipeline-meta">Latest archive date: ' + _duEsc(_duPipeline.latestArchiveDate || '—') + '</div>' +
-      '<div class="upload-pipeline-meta">Recommended queue date: ' + _duEsc(_duPipeline.recommendedDate || '—') + '</div>';
+      '<div class="upload-pipeline-meta">Latest: ' + _duEsc(_duPipeline.latestArchiveDate || '—') + '</div>';
   }
 
+  // Step 2 body — show loaded date badge + date-picker toggle
   if (targetEl) {
-    targetEl.innerHTML =
-      '<div class="upload-pipeline-stat">' +
-        '<span class="upload-pipeline-stat-label">Loaded Queue Date</span>' +
-        '<span class="upload-pipeline-stat-value">' + _duEsc(_duLoadedQueueDate || _duPipeline.recommendedDate || 'Not loaded') + '</span>' +
-      '</div>' +
-      '<div class="upload-pipeline-meta">Current queue rows: ' + _duEsc(_duPipeline.queueRowCount || 0) + '</div>' +
-      '<div class="upload-pipeline-meta">Pending rows: ' + _duEsc(_duPipeline.pendingQueueCount || 0) + '</div>';
+    var loadedLabel = _duLoadedQueueDate
+      ? '<span class="du-loaded-chip">Loaded: ' + _duEsc(_duLoadedQueueDate) + '</span>'
+      : '<span class="du-loaded-chip du-loaded-chip--empty">Not loaded</span>';
+    targetEl.innerHTML = loadedLabel +
+      '<div class="upload-pipeline-meta">' + (_duPipeline.pendingQueueCount || 0) + ' pending row(s)</div>';
   }
 
+  // Step 2 Load Yesterday gate
+  var btnYesterday = document.getElementById('du-btn-load-yesterday');
+  if (btnYesterday) {
+    btnYesterday.disabled = _duIncomingCount > 0;
+    btnYesterday.title = _duIncomingCount > 0 ? 'Process incoming files in Step 1 first' : 'Load data for yesterday';
+  }
+
+  // Step 2 date picker wrap visibility
+  var pickerWrap = document.getElementById('du-date-picker-wrap');
+  if (pickerWrap) pickerWrap.style.display = _duShowDatePicker ? 'flex' : 'none';
+
+  // Step 4 body
   if (finalEl) {
     finalEl.innerHTML = _duLatestExport
-      ? '<div class="upload-pipeline-stat"><span class="upload-pipeline-stat-label">Latest CSV Export</span><span class="upload-pipeline-stat-value">' + _duEsc(_duLatestExport.fileName || '—') + '</span></div>' +
-        '<div class="upload-pipeline-meta">Updated ' + _duEsc(_duLatestExport.modifiedAt || '—') + '</div>' +
-        '<div class="upload-pipeline-meta"><a href="' + _duEsc(_duLatestExport.fileUrl || '#') + '" target="_blank" rel="noopener">Open export file</a></div>'
-      : '<div class="upload-pipeline-meta">No CSV export has been generated yet for the current queue.</div>';
+      ? '<div class="upload-pipeline-stat"><span class="upload-pipeline-stat-label">Latest Export</span><span class="upload-pipeline-stat-value">' + _duEsc(_duLatestExport.fileName || '—') + '</span></div>' +
+        '<div class="upload-pipeline-meta"><a href="' + _duEsc(_duLatestExport.fileUrl || '#') + '" target="_blank" rel="noopener">Open file</a></div>'
+      : '<div class="upload-pipeline-meta">No CSV export yet.</div>';
   }
 
+  // Queue meta (Step 3 body)
   if (queueMeta) {
-    queueMeta.textContent = (_duLoadedQueueDate
-      ? 'Reviewing queue for ' + _duLoadedQueueDate
-      : 'Queue not explicitly loaded yet') + ' • ' + (_duPipeline.queueRowCount || 0) + ' row(s)';
+    if (_duQueue.length > 0) {
+      queueMeta.innerHTML = _duBuildVendorSummaryHtml();
+    } else {
+      queueMeta.textContent = _duLoadedQueueDate ? 'Queue empty for ' + _duLoadedQueueDate : 'Queue not loaded yet';
+    }
   }
+
+  _duRenderStepGates();
   _duRenderLastSync();
+}
+
+function _duBuildVendorSummaryHtml() {
+  var vendorMap = {};
+  _duQueue.forEach(function(r) {
+    var v = r['Contractor'] || 'Unknown';
+    if (!vendorMap[v]) vendorMap[v] = 0;
+    vendorMap[v]++;
+  });
+  var vendors = Object.keys(vendorMap).sort();
+  var rows = vendors.map(function(v) {
+    return '<span class="du-vendor-chip">' + _duEsc(v) + ' <em>' + vendorMap[v] + ' FDH' + (vendorMap[v] === 1 ? '' : 's') + '</em></span>';
+  }).join('');
+  return '<div class="du-vendor-summary">' +
+    '<div class="du-vendor-summary-total">' + vendors.length + ' vendor' + (vendors.length === 1 ? '' : 's') + ' · ' + _duQueue.length + ' total rows</div>' +
+    '<div class="du-vendor-chips">' + rows + '</div>' +
+  '</div>';
+}
+
+function _duRenderStepGates() {
+  // Step 3 Approve button
+  var btnApprove = document.getElementById('du-btn-approve-queue');
+  if (btnApprove) {
+    var hasQueue = _duQueue.length > 0;
+    var hasIssues = hasQueue && _duQueue.some(function(r) {
+      var v = _duValidation[r.rowIdx] || { errors: [], warnings: [] };
+      return v.errors.length > 0;
+    });
+    btnApprove.disabled = !hasQueue;
+    if (_duQueueApproved) {
+      btnApprove.textContent = 'Approved ✓';
+      btnApprove.classList.add('du-btn-approved');
+      btnApprove.classList.remove('du-btn-warn');
+      btnApprove.title = 'Queue is approved. Step 4 is unlocked.';
+    } else if (!hasQueue) {
+      btnApprove.textContent = 'Approve Queue';
+      btnApprove.classList.remove('du-btn-approved', 'du-btn-warn');
+      btnApprove.title = 'Load a date in Step 2 first';
+    } else if (hasIssues) {
+      btnApprove.textContent = 'Approve with Issues';
+      btnApprove.classList.add('du-btn-warn');
+      btnApprove.classList.remove('du-btn-approved');
+      btnApprove.title = 'Queue has validation errors — proceed with caution';
+    } else {
+      btnApprove.textContent = 'Approve Queue';
+      btnApprove.classList.remove('du-btn-approved', 'du-btn-warn');
+      btnApprove.title = 'Approve this queue to unlock Step 4 export';
+    }
+  }
+
+  // Step 4 card lock
+  var step4Card = document.getElementById('du-step4-card');
+  if (step4Card) {
+    step4Card.classList.toggle('upload-stage-card--locked', !_duQueueApproved);
+  }
+  var btnExport4 = document.getElementById('du-btn-export-step4');
+  if (btnExport4) btnExport4.disabled = !_duQueueApproved;
+}
+
+function _duToggleDatePicker() {
+  _duShowDatePicker = !_duShowDatePicker;
+  var pickerWrap = document.getElementById('du-date-picker-wrap');
+  if (pickerWrap) pickerWrap.style.display = _duShowDatePicker ? 'flex' : 'none';
+  var btnSpecific = document.getElementById('du-btn-specific-date');
+  if (btnSpecific) btnSpecific.textContent = _duShowDatePicker ? 'Hide Date Picker' : 'Load a Specific Date';
+}
+
+function _duApproveQueue() {
+  if (_duQueue.length === 0) {
+    showToast('Load a date in Step 2 before approving.', 'warn');
+    return;
+  }
+  _duQueueApproved = true;
+  _duRenderStepGates();
+  showToast('Queue approved. Step 4 is now unlocked.', 'success');
+}
+
+function _duPreflightExport() {
+  if (!_duQueueApproved) {
+    showToast('Approve the queue in Step 3 before exporting.', 'warn');
+    return;
+  }
+  var eligible = _duGetEligibleSelected();
+  var pendingRows = _duQueue.filter(function(r) { return r.uploadStatus === 'Pending'; });
+  var checkRows = eligible.length > 0 ? eligible : pendingRows.map(function(r) { return r.rowIdx; });
+  if (checkRows.length === 0) {
+    showToast('No pending rows to export.', 'warn');
+    return;
+  }
+
+  // Build vendor breakdown for confirmation modal
+  var vendorMap = {};
+  _duQueue.forEach(function(r) {
+    if (checkRows.indexOf(r.rowIdx) !== -1) {
+      var v = r['Contractor'] || 'Unknown';
+      if (!vendorMap[v]) vendorMap[v] = 0;
+      vendorMap[v]++;
+    }
+  });
+  var vendorLines = Object.keys(vendorMap).sort().map(function(v) {
+    return '<li>' + _duEsc(v) + ': ' + vendorMap[v] + ' row' + (vendorMap[v] === 1 ? '' : 's') + '</li>';
+  }).join('');
+
+  var body =
+    '<div class="upload-preview-note">' +
+      '<strong>' + checkRows.length + ' row' + (checkRows.length === 1 ? '' : 's') + '</strong> will be written to <em>01_Pending_Upload</em> as a CSV.' +
+    '</div>' +
+    '<div class="upload-pipeline-meta" style="margin:8px 0 4px">Vendor breakdown:</div>' +
+    '<ul style="margin:0 0 10px 16px;padding:0;font-size:11px;color:var(--text-main)">' + vendorLines + '</ul>' +
+    '<div class="upload-preview-note warn">Tip: After export, verify the CSV before pushing it to QuickBase. Duplicates already in QB will be flagged on upload.</div>';
+
+  _duOpenModal('Confirm Export to QB CSV', body, [
+    { label: 'Confirm Export', cls: 'upload-btn btn-primary', onclick: '_duCloseModal(); _duExportPipelineCsv();' },
+    { label: 'Cancel', cls: 'upload-btn', onclick: '_duCloseModal()' }
+  ]);
 }
 
 function _duRunIncomingPipeline() {
@@ -317,6 +462,7 @@ function _duApplyFilters() {
   _duBuildValidation();
   _duRenderTable();
   _duRenderToolbar();
+  _duRenderStepGates();
 }
 
 function _duDebouncedSearch(val) {
