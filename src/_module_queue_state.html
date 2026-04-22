@@ -692,8 +692,21 @@ function openPane(item, cardEl, force) {
         syncRawDataStripState();
 
         setTxt('p-fdh', item.fdh || "N/A");
-        setTxt('p-meta', item.city || "Unknown City");
-        setTxt('p-vendor-display', (item.allVendors && item.allVendors.length > 0) ? item.allVendors.join(" / ") : (item.vendor || "No Vendor"));
+        let cityDisplay = String(item.city || '').trim();
+        let vendorDisplay = String((item.allVendors && item.allVendors.length > 0) ? item.allVendors.join(" / ") : (item.vendor || '')).trim();
+        if (!cityDisplay && !vendorDisplay) {
+            cityDisplay = 'Unknown City';
+            vendorDisplay = 'No Vendor';
+        } else if (!cityDisplay) {
+            cityDisplay = vendorDisplay;
+            vendorDisplay = '';
+        } else if (!vendorDisplay) {
+            vendorDisplay = '';
+        }
+        setTxt('p-meta', cityDisplay);
+        setTxt('p-vendor-display', vendorDisplay);
+        let metaSep = getEl('p-meta-sep');
+        if (metaSep) metaSep.style.display = vendorDisplay ? 'inline-flex' : 'none';
         setTxt('mobile-back-title', item.fdh || "Project");
 
         let pill = getEl('p-status');
@@ -902,11 +915,11 @@ function openPane(item, cardEl, force) {
                </div>`;
         }
 
-        let eeContainer = getEl('p-edit-engine');
+        let eeContainer = getEl('p-edit-engine-footer');
         if (eeContainer) {
             if (item.rid) {
                 let engineUrl = `https://omnifiber.quickbase.com/db/bts3c49e9?a=q&qid=1000071&dlta=mog~&query={'3'.EX.'${item.rid}'}`;
-                eeContainer.innerHTML = `<a href="${engineUrl}" target="_blank" style="text-decoration: none; font-size: 9px; font-weight: bold; color: var(--text-muted); background: var(--bg); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: inline-flex; align-items: center; gap:3px; transition: all 0.2s;">${icon('settings')} EDIT IN ENGINE</a>`;
+                eeContainer.innerHTML = `<a href="${engineUrl}" target="_blank" class="btn" style="padding: 5px 12px; font-size: 9px; color: var(--text-main); background: var(--bg); border-color: var(--border); text-decoration: none; display: inline-flex; align-items: center; white-space: nowrap;">EDIT IN ENGINE</a>`;
             } else {
                 eeContainer.innerHTML = '';
             }
@@ -915,7 +928,7 @@ function openPane(item, cardEl, force) {
         let vrContainer = getEl('p-view-record');
         if (vrContainer) {
             if (item.rid) {
-                vrContainer.innerHTML = `<a href="https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=${item.rid}" target="_blank" class="btn" style="padding: 5px 12px; font-size: 9px; color: var(--text-main); background: var(--bg); border-color: var(--border); text-decoration: none;">VIEW RECORD</a>`;
+                vrContainer.innerHTML = `<a href="https://omnifiber.quickbase.com/db/bts3c49e9?a=dr&rid=${item.rid}" target="_blank" class="btn" style="padding: 5px 12px; font-size: 9px; color: var(--text-main); background: var(--bg); border-color: var(--border); text-decoration: none; white-space: nowrap;">VIEW RECORD</a>`;
             } else {
                 vrContainer.innerHTML = '';
             }

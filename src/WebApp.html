@@ -653,12 +653,14 @@
                    <div class="qb-proj-title">
                        <div class="qb-proj-title-left">
                            <div class="qb-proj-id" id="p-fdh">FDH-123</div>
-                           <div class="qb-proj-meta" id="p-meta">City</div>
-                           <div class="qb-proj-meta" id="p-vendor-display" style="color:var(--text-main); font-weight:500;">Vendor</div>
+                           <div class="qb-proj-meta-row">
+                               <span class="qb-proj-meta" id="p-meta">City</span>
+                               <span class="qb-proj-meta-sep" id="p-meta-sep">|</span>
+                               <span class="qb-proj-meta" id="p-vendor-display">Vendor</span>
+                           </div>
                        </div>
                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
                            <div class="glass-pill" id="p-status" onmouseenter="hl('Status')" onmouseleave="hl('')">Field CX | In Progress</div>
-                           <span id="p-edit-engine"></span>
                        </div>
                    </div>
                    <div class="qb-time-bar detail-schedule-bar" onclick="openGanttForCurrentProject()" style="cursor:pointer;">
@@ -745,7 +747,10 @@
                           <span class="review-meta-sep">|</span>
                           <span id="p-ref-data" class="hover-trigger" onmouseenter="hl('Last Time Reference Data was Synced')" onmouseleave="hl('')" style="cursor:pointer;">QB SYNC: —</span>
                       </div>
-                      <span id="p-view-record" style="margin-left:auto;"></span>
+                      <div class="detail-footer-actions">
+                          <span id="p-edit-engine-footer"></span>
+                          <span id="p-view-record"></span>
+                      </div>
                   </div>
                </div>
 

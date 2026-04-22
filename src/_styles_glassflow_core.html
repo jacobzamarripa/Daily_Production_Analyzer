@@ -1444,6 +1444,33 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
   margin-top: 0 !important;
   line-height: 1.3;
 }
+.v2-shell-glassflow #project-schedule-card .qb-proj-meta-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+.v2-shell-glassflow #project-schedule-card .qb-proj-meta,
+.v2-shell-glassflow #project-schedule-card .qb-proj-meta-sep {
+  display: inline-block;
+  flex: 0 1 auto;
+  font-size: 16px !important;
+  line-height: 1.25;
+  color: var(--text-muted) !important;
+  vertical-align: middle;
+}
+.v2-shell-glassflow #project-schedule-card #p-meta,
+.v2-shell-glassflow #project-schedule-card #p-vendor-display {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v2-shell-glassflow #project-schedule-card .qb-proj-meta-sep {
+  font-weight: 700;
+}
 .v2-shell-glassflow .glassflow-hero-status-row {
   display: flex;
   align-items: flex-start;
@@ -1453,6 +1480,10 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
 .v2-shell-glassflow #p-status {
   margin-top: 0 !important;
   line-height: 1;
+}
+.v2-shell-glassflow #project-schedule-card #p-status {
+  font-size: 12px !important;
+  padding: 5px 11px !important;
 }
 .v2-shell-glassflow #p-target-wrap {
   flex-shrink: 0;
@@ -1650,6 +1681,27 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
   margin-top: 14px !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+.v2-shell-glassflow .detail-footer-actions {
+  margin-left: auto;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap !important;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.v2-shell-glassflow .detail-footer-actions > * {
+  display: inline-flex !important;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  width: auto !important;
+}
+.v2-shell-glassflow .detail-footer-actions a svg {
+  flex-shrink: 0;
 }
 .v2-shell-glassflow #p-deliverables-grid,
 .v2-shell-glassflow .qb-module:last-child {
