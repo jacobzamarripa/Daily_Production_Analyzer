@@ -807,6 +807,123 @@ function populateQuickBaseTabDirectly(parsedRows) {
   applyQuickBaseTabStyling(qbSheet);
 }
 
+function _buildPrevTotalsLookup(histSheet, dateArr) {
+  const allData = histSheet.getDataRange().getValues();
+  if (allData.length < 2) return {};
+
+  const fdhIdx   = HISTORY_HEADERS.indexOf("FDH Engineering ID");
+  const dateIdx  = HISTORY_HEADERS.indexOf("Date");
+  const ugIdx    = HISTORY_HEADERS.indexOf("Total UG Footage Completed");
+  const aeIdx    = HISTORY_HEADERS.indexOf("Total Strand Footage Complete?");
+  const fibIdx   = HISTORY_HEADERS.indexOf("Total Fiber Footage Complete");
+  const napIdx   = HISTORY_HEADERS.indexOf("Total NAPs Completed");
+
+  const lookup = {};
+  for (let i = 1; i < allData.length; i++) {
+    const row = allData[i];
+    const fdh = String(row[fdhIdx] || '').trim();
+    if (!fdh) continue;
+
+    const rawDate = row[dateIdx];
+    const dateStr = (rawDate instanceof Date)
+      ? Utilities.formatDate(rawDate, "GMT-5", "yyyy-MM-dd")
+      : String(rawDate).split("T")[0].trim();
+    if (!dateStr || dateArr.includes(dateStr)) continue;
+
+    if (!lookup[fdh]) lookup[fdh] = {
+      ug:  { val: 0, date: "" },
+      ae:  { val: 0, date: "" },
+      fib: { val: 0, date: "" },
+      nap: { val: 0, date: "" }
+    };
+
+    const ugVal  = safeParseFootage(row[ugIdx]);
+    const aeVal  = safeParseFootage(row[aeIdx]);
+    const fibVal = safeParseFootage(row[fibIdx]);
+    const napVal = safeParseFootage(row[napIdx]);
+
+    if (ugVal  > lookup[fdh].ug.val)  lookup[fdh].ug  = { val: ugVal,  date: dateStr };
+    if (aeVal  > lookup[fdh].ae.val)  lookup[fdh].ae  = { val: aeVal,  date: dateStr };
+    if (fibVal > lookup[fdh].fib.val) lookup[fdh].fib = { val: fibVal, date: dateStr };
+    if (napVal > lookup[fdh].nap.val) lookup[fdh].nap = { val: napVal, date: dateStr };
+  }
+  return lookup;
+}
+
+function _mapHistoryRowsWithCorrections(filteredRows, prevTotals) {
+  const hIdx = (h) => HISTORY_HEADERS.indexOf(h);
+
+  return filteredRows.map(row => {
+    const fdh     = String(row[hIdx("FDH Engineering ID")] || '').trim();
+    const rawDate = row[hIdx("Date")];
+    const rowDate = (rawDate instanceof Date)
+      ? Utilities.formatDate(rawDate, "GMT-5", "yyyy-MM-dd")
+      : String(rawDate).split("T")[0].trim();
+
+    const existingTotals = prevTotals[fdh] || {
+      ug:  { val: 0, date: "" },
+      ae:  { val: 0, date: "" },
+      fib: { val: 0, date: "" },
+      nap: { val: 0, date: "" }
+    };
+
+    const calculatedOverrides = {};
+    const calculatedNotes = [];
+
+    const applyCorrection = (dailyH, totalH, type) => {
+      const dailyVal = safeParseFootage(row[hIdx(dailyH)]);
+      const totalVal = safeParseFootage(row[hIdx(totalH)]);
+      const prev = existingTotals[type] || { val: 0, date: "" };
+      const prevVal  = prev.val  || 0;
+      const prevDate = prev.date || "";
+
+      if (dailyVal === 0 && totalVal > prevVal && prevVal > 0) {
+        const diff = totalVal - prevVal;
+        let gapDays = 0;
+        if (prevDate && rowDate) {
+          gapDays = Math.round((new Date(rowDate) - new Date(prevDate)) / 86400000);
+        }
+        calculatedOverrides[dailyH] = diff;
+        const gapNote = gapDays > 1 ? ` ⚠ ${gapDays}-day gap` : "";
+        calculatedNotes.push(`Daily ${type.toUpperCase()} (+${diff}') from Total Jump (${prevVal} [on ${prevDate}] -> ${totalVal})${gapNote}`);
+      }
+
+      if (dailyVal > 0 && totalVal > prevVal && prevVal > 0) {
+        const impliedDaily = totalVal - prevVal;
+        if (Math.abs(impliedDaily - dailyVal) > impliedDaily * 0.10) {
+          calculatedNotes.push(`DAILY/TOTAL MISMATCH: ${type.toUpperCase()} (reported daily: ${dailyVal}, total implies: ${impliedDaily})`);
+        }
+      }
+
+      if (totalVal > 0 && prevVal > 0 && totalVal < prevVal) {
+        calculatedNotes.push(`TOTAL REGRESSION: ${type.toUpperCase()} (prev max: ${prevVal} on ${prevDate}, now: ${totalVal})`);
+      }
+    };
+
+    applyCorrection("Daily UG Footage",           "Total UG Footage Completed",    "ug");
+    applyCorrection("Daily Strand Footage",        "Total Strand Footage Complete?", "ae");
+    applyCorrection("Daily Fiber Footage",         "Total Fiber Footage Complete",   "fib");
+    applyCorrection("Daily NAPs/Encl. Completed",  "Total NAPs Completed",           "nap");
+
+    return QB_HEADERS.map(h => {
+      const lookupH = h === "Construction Comments" ? "Vendor Comment" : h;
+      const idx = HISTORY_HEADERS.indexOf(lookupH);
+      let val = idx > -1 ? row[idx] : "";
+
+      if (calculatedOverrides[h] !== undefined) val = calculatedOverrides[h];
+
+      if (h === "Construction Comments") {
+        let comment = (typeof val === "string") ? val.replace(/\[Auto-Fixed FDH: .*?\]\s*/, "") : String(val || "");
+        if (calculatedNotes.length > 0) comment = `[${calculatedNotes.join(" | ")}] ` + comment;
+        return comment;
+      }
+
+      if (typeof val === "boolean") return val ? "TRUE" : "FALSE";
+      return val;
+    });
+  });
+}
+
 // 🧠 UPGRADED TO HANDLE BATCH ARRAYS & STYLE MASTER FORMATTING
 function populateQuickBaseTabCore(targetDates, vendorFilter = "ALL") {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -840,7 +957,8 @@ function populateQuickBaseTabCore(targetDates, vendorFilter = "ALL") {
   qbSheet.getRange(1, 1, 1, QB_HEADERS.length).setValues([QB_HEADERS]);
   
   if (filteredRows.length > 0) {
-    const qbData = mapHistoryRowsToQuickBaseRows(filteredRows);
+    const prevTotals = _buildPrevTotalsLookup(histSheet, dateArr);
+    const qbData = _mapHistoryRowsWithCorrections(filteredRows, prevTotals);
     ensureCapacity(qbSheet, qbData.length + 1, QB_HEADERS.length);
     qbSheet.getRange(2, 1, qbData.length, QB_HEADERS.length).setValues(qbData);
   } else {
