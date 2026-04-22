@@ -1759,6 +1759,9 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
 #review-hub-main-header:not(.is-admin-tab) ~ #admin-kpi-header-wrap {
   display: none !important;
 }
+#review-hub-main-header:not(.is-reviewed-tab) ~ #outbox-kpi-header-wrap {
+  display: none !important;
+}
 
 .admin-kpi-mini-wrap {
   display: grid;
@@ -1819,6 +1822,13 @@ body.mobile-gantt-open .gantt-hint-pill { display: flex; }
 .admin-kpi-mini.status.active { background: color-mix(in srgb, var(--color-review, #ef4444) 14%, transparent); border-color: color-mix(in srgb, var(--color-review, #ef4444) 42%, transparent); }
 .admin-kpi-mini.boms { color: var(--color-critical, #3b82f6); }
 .admin-kpi-mini.boms.active { background: color-mix(in srgb, var(--color-critical, #3b82f6) 14%, transparent); border-color: color-mix(in srgb, var(--color-critical, #3b82f6) 42%, transparent); }
+
+.admin-kpi-mini.staged { color: #a855f7; }
+.admin-kpi-mini.staged.active { background: color-mix(in srgb, #a855f7 14%, transparent); border-color: color-mix(in srgb, #a855f7 42%, transparent); }
+.admin-kpi-mini.qb { color: #0ea5e9; }
+.admin-kpi-mini.qb.active { background: color-mix(in srgb, #0ea5e9 14%, transparent); border-color: color-mix(in srgb, #0ea5e9 42%, transparent); }
+.admin-kpi-mini.reviewed { color: #10b981; }
+.admin-kpi-mini.reviewed.active { background: color-mix(in srgb, #10b981 14%, transparent); border-color: color-mix(in srgb, #10b981 42%, transparent); }
 
 
 .v2-shell-glassflow .admin-list-card,

@@ -42,6 +42,15 @@ function toggleAdminFilter(type) {
     renderAdminPane(getActiveQueueItems());
 }
 
+function toggleOutboxFilter(type) {
+    activeOutboxFilter = (activeOutboxFilter === type) ? type : type; // For now keep one active
+    let kpiS = getEl('kpi-outbox-staged'), kpiQ = getEl('kpi-outbox-qb'), kpiR = getEl('kpi-outbox-reviewed');
+    if (kpiS) kpiS.classList.toggle('active', activeOutboxFilter === 'staged');
+    if (kpiQ) kpiQ.classList.toggle('active', activeOutboxFilter === 'qb');
+    if (kpiR) kpiR.classList.toggle('active', activeOutboxFilter === 'reviewed');
+    renderOutbox();
+}
+
 function toggleAdminPanel() {
     let isOpen = document.body.classList.contains('admin-open');
     if (isOpen) {
@@ -208,9 +217,10 @@ function syncReviewHubHeaderCount() {
         let status = items.filter(i => (i.flags.includes("STATUS MISMATCH") || i.flags.includes("MISSING QB STATUS")) && !isCompleteOrOfs(i)).length;
         total = crossings + bomInput + bomCheck + status;
     } else if (activeTab === 'reviewed') {
-        let stagedCount = typeof stagedDeckItems !== 'undefined' ? stagedDeckItems.length : 0;
-        let reviewedCount = typeof committedItems !== 'undefined' ? committedItems.length : 0;
-        total = stagedCount + reviewedCount;
+        let stagedCount = (typeof stagedDeckItems !== 'undefined' && stagedDeckItems) ? stagedDeckItems.length : 0;
+        let reviewedCount = (typeof committedItems !== 'undefined' && committedItems) ? committedItems.length : 0;
+        let qbCount = (typeof pendingWritebacks !== 'undefined' && pendingWritebacks) ? pendingWritebacks.length : 0;
+        total = stagedCount + reviewedCount + qbCount;
     } else {
         return;
     }
@@ -514,15 +524,45 @@ function clearReviewedTray(silent) {
     if (!silent) showToast('Reviewed tray cleared');
 }
 
+function removeStagedItem(fdh) {
+    if (typeof stagedDeckItems === 'undefined') return;
+    stagedDeckItems = stagedDeckItems.filter(f => String(f) !== String(fdh));
+    if (typeof persistStagedReviewSession === 'function') persistStagedReviewSession();
+    if (typeof syncDockStagingButton === 'function') syncDockStagingButton();
+    if (typeof renderDeckStage === 'function') renderDeckStage();
+    renderOutbox();
+}
+
+function removeReviewedItem(fdh) {
+    if (typeof committedItems === 'undefined') return;
+    committedItems = committedItems.filter(i => String(i.fdh || '') !== String(fdh));
+    if (typeof persistReviewedTray === 'function') persistReviewedTray();
+    if (typeof updateAdminBadge === 'function') updateAdminBadge();
+    if (typeof renderAdminPane === 'function' && typeof getActiveQueueItems === 'function') renderAdminPane(getActiveQueueItems());
+    renderOutbox();
+}
+
 function renderOutbox() {
     const list = getEl('outbox-list');
     if (!list) return;
     if (typeof committedItems === 'undefined' || typeof stagedDeckItems === 'undefined') return;
-    
-    const stagedItems = getStagedReviewItems();
+
+    const stagedItems = getStagedReviewItems() || [];
     const reviewedItems = committedItems || [];
-    const qbItems = typeof pendingWritebacks !== 'undefined' ? pendingWritebacks : [];
-    
+    const qbItems = (typeof pendingWritebacks !== 'undefined' && pendingWritebacks) ? pendingWritebacks : [];
+
+    // 1. Sync counts to top KPI mini chips
+    setTxt('kpi-outbox-staged-val', stagedItems.length);
+    setTxt('kpi-outbox-qb-val', qbItems.length);
+    setTxt('kpi-outbox-reviewed-val', reviewedItems.length);
+
+    // 2. Highlight active chip
+    let kpiS = getEl('kpi-outbox-staged'), kpiQ = getEl('kpi-outbox-qb'), kpiR = getEl('kpi-outbox-reviewed');
+    if (kpiS) kpiS.classList.toggle('active', activeOutboxFilter === 'staged');
+    if (kpiQ) kpiQ.classList.toggle('active', activeOutboxFilter === 'qb');
+    if (kpiR) kpiR.classList.toggle('active', activeOutboxFilter === 'reviewed');
+
+    // 3. Overall count for tab badge
     const totalCount = stagedItems.length + reviewedItems.length + qbItems.length;
     setTxt('ob-count', totalCount);
     syncReviewHubHeaderCount();
@@ -531,132 +571,142 @@ function renderOutbox() {
         tabBadge.innerText = totalCount;
         tabBadge.style.display = totalCount > 0 ? 'inline-flex' : 'none';
     }
+
     list.innerHTML = '';
-    if (totalCount === 0) {
-        list.innerHTML = `<div class="empty-msg">No staged or reviewed items.</div>`;
+    
+    // 4. Identify items to render based on filter
+    let items = [];
+    let sectionActions = [];
+
+    if (activeOutboxFilter === 'staged') {
+        items = stagedItems;
+        sectionActions = [
+            { label: '↑ Export Batch', onClick: function() { if (typeof promptBatchDeckExport === 'function') promptBatchDeckExport(); } },
+            { label: 'Clear', onClick: function() { if (typeof clearStagedDeckItems === 'function') clearStagedDeckItems(); } }
+        ];
+    } else if (activeOutboxFilter === 'qb') {
+        // Map original index for reviewAndCommitSingle parity
+        items = qbItems.map((item, originalIdx) => {
+            const copy = JSON.parse(JSON.stringify(item));
+            copy._originalIdx = originalIdx;
+            return copy;
+        });
+        sectionActions = [
+            { label: 'Sync All', onClick: function() { if (typeof commitAllPending === 'function') commitAllPending(); } }
+        ];
+    } else if (activeOutboxFilter === 'reviewed') {
+        items = reviewedItems;
+        sectionActions = [
+            { label: '↑ Export History', onClick: function() { if (typeof promptEmailExport === 'function') promptEmailExport(); } },
+            { label: 'Clear History', onClick: function() { clearReviewedTray(); } }
+        ];
+    }
+
+    if (items.length === 0) {
+        list.innerHTML = `<div class="empty-msg" style="padding:24px 20px; text-align:center; color:var(--text-muted); opacity:0.8; font-size:11px;">No items in ${activeOutboxFilter === 'staged' ? 'Staging' : (activeOutboxFilter === 'qb' ? 'QB Sync' : 'Reviewed history')}.</div>`;
         return;
     }
 
-    const createSection = function(title, count, actions, items, type, opts) {
-        opts = opts || {};
-        let isCollapsible = !!opts.collapsible;
-        let isCollapsed = !!opts.collapsed;
-        
-        // AUTO-COLLAPSE RULE: If count is 0, start collapsed regardless of preference
-        if (count === 0) isCollapsed = true;
+    // 5. Action bar for current filtered view
+    let actionBar = document.createElement('div');
+    actionBar.className = 'outbox-action-bar';
+    actionBar.style.cssText = 'padding:10px 14px; display:flex; justify-content:center; gap:8px; border-bottom: 1px solid var(--border); background:var(--card-bg); position:sticky; top:0; z-index:10;';
+    sectionActions.forEach(def => {
+        let btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.cssText = 'font-size:10px; padding:4px 10px; font-weight:900;';
+        btn.textContent = def.label;
+        btn.onclick = function() { def.onClick(); };
+        actionBar.appendChild(btn);
+    });
+    list.appendChild(actionBar);
 
-        let section = document.createElement('div');
-        if (type === 'qb' || type === 'staged') section.style.borderBottom = '1px solid var(--border)';
-
-        let header = document.createElement('div');
-        header.className = `ob-header ob-header-${type}`;
-        header.style.padding = '6px 14px 6px 11px';
-        if (isCollapsible) {
-            header.style.cursor = 'pointer';
-            header.onclick = function() { toggleReviewHubSection(type); };
-        }
-        let titleEl = document.createElement('div');
-        titleEl.className = 'review-hub-section-title';
-        titleEl.style.cssText = 'flex-wrap: nowrap; overflow: hidden; min-width: 0;';
-
-        let labelEl = document.createElement('div');
-        labelEl.className = 'review-hub-section-label';
-        labelEl.textContent = type === 'staged' ? 'Deck Staging' : (type === 'qb' ? 'Quickbase Sync' : 'Manager Review');
-
-        let nameEl = document.createElement('div');
-        nameEl.className = 'review-hub-section-name';
-        nameEl.style.display = 'flex';
-        nameEl.style.alignItems = 'center';
-        nameEl.style.gap = '8px';
-        nameEl.innerHTML = `${isCollapsible ? `<span style="display:inline-flex; align-items:center; justify-content:center; width:14px; color:var(--text-main); font-size:11px;">${isCollapsed ? '&#9656;' : '&#9662;'}</span>` : ''}<span>${title}</span>`;
-
-        let countEl = document.createElement('div');
-        countEl.className = 'review-hub-section-count';
-        countEl.textContent = count;
-
-        titleEl.appendChild(labelEl);
-        titleEl.appendChild(nameEl);
-        let rightWrap = document.createElement('div');
-        rightWrap.style.cssText = 'display:flex; align-items:center; gap:6px; flex-shrink:0;';
-        let actionWrap = document.createElement('div');
-        actionWrap.style.cssText = 'display:flex; gap:6px;';
-        actions.forEach(function(def) {
-            let btn = document.createElement('button');
-            btn.className = 'btn';
-            btn.style.cssText = 'font-size:10px; padding:3px 8px;';
-            btn.textContent = def.label;
-            btn.onclick = function(event) {
-                event.stopPropagation();
-                def.onClick();
-            };
-            actionWrap.appendChild(btn);
+    // 6. Conditional Grouping Logic (Threshold: 10 items)
+    if (items.length < 10) {
+        // Render as flat list
+        let flatBody = document.createElement('div');
+        flatBody.style.padding = '8px';
+        items.forEach((item) => {
+            flatBody.appendChild(createOutboxCard(item, activeOutboxFilter));
         });
-        rightWrap.appendChild(countEl);
-        rightWrap.appendChild(actionWrap);
-        header.appendChild(titleEl);
-        header.appendChild(rightWrap);
-        section.appendChild(header);
+        list.appendChild(flatBody);
+    } else {
+        // Render as Vendor Groups
+        const vendorMap = {};
+        items.forEach(item => {
+            const vendor = (item.vendor || 'Unknown Vendor').toString().trim();
+            if (!vendorMap[vendor]) vendorMap[vendor] = [];
+            vendorMap[vendor].push(item);
+        });
+        const sortedVendors = Object.keys(vendorMap).sort((a, b) => a.localeCompare(b));
 
-        let body = document.createElement('div');
-        body.style.display = isCollapsed ? 'none' : '';
-
-        if (!items.length) {
-            let empty = document.createElement('div');
-            empty.className = 'empty-msg';
-            empty.style.cssText = 'padding:14px 16px; margin:0; font-size:11px;';
-            empty.textContent = type === 'staged' ? 'No staged items.' : (type === 'qb' ? 'No pending syncs.' : 'No reviewed items.');
-            body.appendChild(empty);
-            section.appendChild(body);
-            return section;
-        }
-
-        items.forEach(function(item, idx) {
-            let card = document.createElement('div');
-            card.className = 'ob-card';
+        sortedVendors.forEach(vendor => {
+            const vendorItems = vendorMap[vendor];
+            const groupKey = `outbox-${activeOutboxFilter}-${vendor.toLowerCase().replace(/\s+/g, '-')}`;
             
-            if (type === 'qb') {
-                const isCollision = item.status === 'collision';
-                if (isCollision) card.style.borderLeft = '3px solid #ef4444';
-                card.onclick = function() { selectItemForNav(item.fdh); };
-                const btnLabel = isCollision ? 'FORCE' : 'Review';
-                const btnBg = isCollision ? '#ef4444' : 'var(--accent)';
-                card.innerHTML = `
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-                        <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
-                        <button class="btn" onclick="event.stopPropagation(); reviewAndCommitSingle(${idx})" style="padding:2px 6px; font-size:9px; background:${btnBg}; color:#fff; border:none; font-weight:900;">${btnLabel}</button>
+            let groupEl = document.createElement('div');
+            groupEl.className = 'queue-group collapsed-state';
+            groupEl.setAttribute('data-key', groupKey);
+            
+            groupEl.innerHTML = `
+                <div class="queue-group-header" onclick="toggleAdminGroupSection(this)">
+                    <div class="queue-group-title">
+                        <span class="queue-group-toggle"></span>
+                        <span>${esc(vendor)}</span>
                     </div>
-                    <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Type: ${esc(item.type)}</div>
-                    ${isCollision ? `<div style="font-size:9px; font-weight:900; color:#ef4444; margin-top:4px;">⚠️ DATA COLLISION</div>` : ''}
-                `;
-            } else {
-                card.onclick = function() { openPane(item, null); };
-                card.innerHTML = `
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-                        <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
-                        <span class="tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}">${type === 'staged' ? 'STAGED' : 'REVIEWED'}</span>
-                    </div>
-                    <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">${esc(item.vendor || item.city || 'Unknown')}</div>
-                    <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:4px; max-height:30px; overflow:hidden;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
-            }
-            body.appendChild(card);
+                    <span class="queue-group-count">${vendorItems.length}</span>
+                </div>
+                <div class="queue-group-body collapsed">
+                    <div class="queue-group-body-inner" style="padding:4px 8px 8px;"></div>
+                </div>
+            `;
+            
+            let bodyInner = groupEl.querySelector('.queue-group-body-inner');
+            vendorItems.forEach((item) => {
+                bodyInner.appendChild(createOutboxCard(item, activeOutboxFilter));
+            });
+            
+            list.appendChild(groupEl);
         });
+    }
+}
 
-        section.appendChild(body);
-        return section;
-    };
-
-    list.appendChild(createSection('Quickbase Syncs', qbItems.length, [
-        { label: 'Sync All', onClick: function() { commitAllPending(); } }
-    ], qbItems, 'qb', { collapsible: true, collapsed: isQbSyncCollapsed }));
-
-    list.appendChild(createSection('Staged', stagedItems.length, [
-        { label: '↑ Export Batch', onClick: function() { promptBatchDeckExport(); } },
-        { label: 'Clear', onClick: function() { clearStagedDeckItems(); } }
-    ], stagedItems, 'staged', { collapsible: true, collapsed: isStagedReviewCollapsed }));
-
-    list.appendChild(createSection('Reviewed', reviewedItems.length, [
-        { label: '↑ Export', onClick: function() { promptEmailExport(); } },
-        { label: 'Clear', onClick: function() { clearReviewedTray(); } }
-    ], reviewedItems, 'reviewed', { collapsible: true, collapsed: isManagerReviewCollapsed }));
+/**
+ * Helper to create a single Outbox card element.
+ */
+function createOutboxCard(item, type) {
+    let card = document.createElement('div');
+    card.className = 'ob-card';
+    
+    if (type === 'qb') {
+        const isCollision = item.status === 'collision';
+        if (isCollision) card.style.borderLeft = '3px solid #ef4444';
+        card.onclick = function() { if (typeof selectItemForNav === 'function') selectItemForNav(item.fdh); };
+        const btnLabel = isCollision ? 'FORCE' : 'Review';
+        const btnBg = isCollision ? '#ef4444' : 'var(--accent)';
+        card.innerHTML = `
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
+                <button class="btn" onclick="event.stopPropagation(); if(typeof reviewAndCommitSingle==='function') reviewAndCommitSingle(${item._originalIdx})" style="padding:2px 8px; font-size:9px; background:${btnBg}; color:#fff; border:none; font-weight:900; border-radius:4px;">${btnLabel}</button>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Type: ${esc(item.type)}</div>
+            ${isCollision ? `<div style="font-size:9px; font-weight:900; color:#ef4444; margin-top:4px;">⚠️ DATA COLLISION</div>` : ''}
+        `;
+    } else {
+        card.onclick = function() { if (typeof openPane === 'function') openPane(item, null); };
+        const actionBtnLabel = type === 'staged' ? 'Remove' : 'Clear';
+        const actionFn = type === 'staged' ? `removeStagedItem('${item.fdh}')` : `removeReviewedItem('${item.fdh}')`;
+        
+        card.innerHTML = `
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                <div style="font-weight:900; font-size:12px; color:var(--text-main);">${esc(item.fdh)}</div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span class="tag ${type === 'staged' ? 'chip-magic' : 'chip-complete'}" style="margin:0;">${type === 'staged' ? 'STAGED' : 'REVIEWED'}</span>
+                    <button class="btn" onclick="event.stopPropagation(); ${actionFn}" style="padding:2px 6px; font-size:9px; background:transparent; color:var(--text-muted); border:1px solid var(--border); font-weight:900; border-radius:4px;">${actionBtnLabel}</button>
+                </div>
+            </div>
+            <div style="font-family:monospace; font-size:10px; color:var(--text-muted); margin-top:6px; max-height:40px; overflow:hidden;">${esc(type === 'staged' ? (item.comment || 'Ready for batch export') : (item.comment || 'Reviewed'))}</div>`;
+    }
+    return card;
 }
 </script>

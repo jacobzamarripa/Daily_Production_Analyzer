@@ -340,7 +340,9 @@
         #review-hub-main-header:not(.is-admin-tab) ~ #admin-kpi-header-wrap {
           display: none !important;
         }
-        /* Label & Value */
+        #review-hub-main-header:not(.is-reviewed-tab) ~ #outbox-kpi-header-wrap {
+          display: none !important;
+        }        /* Label & Value */
         .admin-kpi-mini-label { font-size: 8px; font-weight: 900; text-transform: uppercase; color: var(--text-muted); opacity: 0.8; }
         .admin-kpi-mini-val { font-size: 14px; font-weight: 900; color: var(--text-main); }
         /* Icon */
