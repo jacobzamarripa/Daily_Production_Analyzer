@@ -80,6 +80,34 @@ const DEFAULT_CITY_COORDS = {
   "YOUNGSTOWN": { city: "Youngstown", state: "OH", lat: 41.0998, lng: -80.6495 }
 };
 
+// --- DAILY UPLOAD ---
+const QB_DAILY_LOG_TABLE_ID    = "bvay4aqkz";   // Daily Work Log table in QB
+const UPLOAD_LOG_SHEET         = "11-Upload_Log";
+const ENABLE_AUTO_DAILY_UPLOAD = false;          // Automation gate — off until explicitly flipped
+
+// Hardcoded FID map for bvay4aqkz — keyed by QB_HEADERS column name.
+// "FDH Engineering ID" → FID 22 ("FDH Project Engineering ID" in QB)
+// "Daily NAPs/Encl. Completed" → FID 14 ("Daily NAPs/Enclosures Completed" in QB)
+const QB_DAILY_LOG_FID_MAP = {
+  "Date":                       6,
+  "Contractor":                 38,
+  "FDH Engineering ID":         22,
+  "Locates Called In":          7,
+  "Cabinets Set":               8,
+  "Light to Cabinets":          9,
+  "Target Completion Date":     10,
+  "Daily UG Footage":           11,
+  "Daily Strand Footage":       12,
+  "Daily Fiber Footage":        13,
+  "Daily NAPs/Encl. Completed": 14,
+  "Drills":                     15,
+  "Missles":                    16,
+  "AE Crews":                   17,
+  "Fiber Pulling Crews":        18,
+  "Splicing Crews":             19,
+  "Construction Comments":      20
+};
+
 const QB_UPLOAD_SHEET    = "1-QuickBase_Upload";
 const HISTORY_SHEET      = "2-Master_Archive";
 const MIRROR_SHEET       = "3-Daily_Review"; 

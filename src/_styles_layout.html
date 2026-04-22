@@ -55,6 +55,20 @@
         body.gantt-view-active .workspace {
           display: none !important;
         }
+        /* Upload Center — full viewport takeover matching Gantt pattern */
+        body.upload-view-active .workspace      { display: none !important; }
+        body.upload-view-active .filter-strip   { display: none !important; }
+        body.upload-view-active #active-filter-pills { display: none !important; }
+        body.upload-view-active #upload-workspace {
+          flex: 1 1 auto !important;
+          min-height: 0 !important;
+          display: flex !important;
+          border: 1px solid var(--border);
+          border-top: none;
+          border-radius: 0 0 var(--desktop-shell-radius) var(--desktop-shell-radius);
+          box-shadow: var(--desktop-shell-shadow);
+          background: var(--card-bg);
+        }
         /* Ensure outbox-pane bottom clears the workspace border-radius corner (overflow:hidden) */
         .outbox-pane {
           margin-bottom: var(--desktop-shell-radius, 16px) !important;

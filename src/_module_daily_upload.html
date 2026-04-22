@@ -1,0 +1,869 @@
+<script>
+// ============================================================
+// FILE: _module_daily_upload.html
+// ROLE: Upload Center workspace — daily production upload to QB
+// DEPENDS ON: 07_DailyUpload.js (backend), _styles_daily_upload.html
+// ============================================================
+
+// --- STATE ---
+
+var _duQueue      = [];         // Full queue from backend
+var _duFiltered   = [];         // After filter/search
+var _duSelected   = new Set();  // rowIdx values checked
+var _duDirty      = {};         // { rowIdx: { field: newVal } } unsaved inline edits
+var _duSortCol    = 'Date';
+var _duSortDir    = 'desc';
+var _duFilterStatus = 'all';
+var _duFilterVendor = 'all';
+var _duSearchQuery  = '';
+var _duStats      = {};
+var _duHistory    = [];
+var _duHistoryOpen = false;
+var _duMissing    = [];
+var _duMissingDate = '';
+var _duMissingPanelOpen = false;
+var _duColumnVis  = null; // null = all visible
+var _duSaveTimers = {}; // { "rowIdx:field": timeoutId }
+
+// Column → CSS class — matches QB Upload sheet header colors
+var _DU_COL_GROUP = {
+  'Date':                       'col-dark-navy',
+  'Contractor':                 'col-dark-navy',
+  'FDH Engineering ID':         'col-dark-navy col-fdh',
+  'Locates Called In':          'col-lime',
+  'Cabinets Set':               'col-lime',
+  'Light to Cabinets':          'col-lime',
+  'Target Completion Date':     'col-lime',
+  'Daily UG Footage':           'col-ug-footage',
+  'Daily Strand Footage':       'col-strand',
+  'Daily Fiber Footage':        'col-fiber',
+  'Daily NAPs/Encl. Completed': 'col-nap',
+  'Drills':                     'col-dark-navy',
+  'Missles':                    'col-dark-navy',
+  'AE Crews':                   'col-dark-navy',
+  'Fiber Pulling Crews':        'col-dark-navy',
+  'Splicing Crews':             'col-dark-navy',
+  'Construction Comments':      'col-dark-navy col-comments'
+};
+
+// Boolean columns — rendered as toggle checkboxes
+var _DU_BOOL_COLS = new Set(['Locates Called In', 'Cabinets Set', 'Light to Cabinets']);
+
+// Column resize state
+var _duColWidths = {};
+var _duResize    = null; // { th, idx, startX, startW }
+
+// All 17 QB_HEADERS in sheet order
+var _DU_TABLE_COLS = [
+  'Date', 'Contractor', 'FDH Engineering ID',
+  'Locates Called In', 'Cabinets Set', 'Light to Cabinets', 'Target Completion Date',
+  'Daily UG Footage', 'Daily Strand Footage', 'Daily Fiber Footage', 'Daily NAPs/Encl. Completed',
+  'Drills', 'Missles',
+  'AE Crews', 'Fiber Pulling Crews', 'Splicing Crews',
+  'Construction Comments'
+];
+
+// --- ENTRY POINT ---
+
+function initUploadWorkspace() {
+  _duMissingDate = _duTodayStr();
+  _duRefreshAll();
+  // Resize handles are injected once after the workspace is shown (thead is static)
+  setTimeout(_duInitColResizers, 50);
+}
+
+function _duRefreshAll() {
+  _duLoadStats();
+  _duLoadMissing();
+  _duLoadQueue();
+  _duLoadHistory();
+}
+
+// --- DATA LOADERS ---
+
+function _duLoadQueue() {
+  _duSetTableLoading(true);
+  google.script.run
+    .withSuccessHandler(function(items) {
+      _duQueue = items || [];
+      _duApplyFilters();
+      _duSetTableLoading(false);
+    })
+    .withFailureHandler(function(err) {
+      _duSetTableLoading(false);
+      showToast('Failed to load upload queue: ' + (err.message || err), 'error');
+    })
+    .getDailyUploadQueue();
+}
+
+function _duLoadStats() {
+  google.script.run
+    .withSuccessHandler(function(stats) {
+      _duStats = stats || {};
+      _duRenderKpis();
+    })
+    .withFailureHandler(function() {})
+    .getDailyUploadStats();
+}
+
+function _duLoadMissing() {
+  google.script.run
+    .withSuccessHandler(function(items) {
+      _duMissing = items || [];
+      _duRenderMissingPanel();
+    })
+    .withFailureHandler(function() {})
+    .getMissingReportVendors(_duMissingDate);
+}
+
+function _duLoadHistory() {
+  google.script.run
+    .withSuccessHandler(function(rows) {
+      _duHistory = rows || [];
+      _duRenderHistory();
+    })
+    .withFailureHandler(function() {})
+    .getDailyUploadHistory(30);
+}
+
+// --- FILTERS & SORT ---
+
+function _duApplyFilters() {
+  var q = (_duSearchQuery || '').toLowerCase();
+  _duFiltered = _duQueue.filter(function(r) {
+    if (_duFilterStatus !== 'all' && r.uploadStatus !== _duFilterStatus) return false;
+    if (_duFilterVendor !== 'all' && r['Contractor'] !== _duFilterVendor) return false;
+    if (q) {
+      var hay = (r['FDH Engineering ID'] + ' ' + r['Contractor'] + ' ' + r['Date']).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  _duFiltered.sort(function(a, b) {
+    var av = a[_duSortCol] || '', bv = b[_duSortCol] || '';
+    av = av.toString(); bv = bv.toString();
+    if (_duSortDir === 'asc') return av < bv ? -1 : av > bv ? 1 : 0;
+    return av > bv ? -1 : av < bv ? 1 : 0;
+  });
+
+  _duRenderTable();
+  _duRenderToolbar();
+}
+
+function _duSetSort(col) {
+  if (_duSortCol === col) {
+    _duSortDir = _duSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _duSortCol = col;
+    _duSortDir = col === 'Date' ? 'desc' : 'asc';
+  }
+  _duApplyFilters();
+}
+
+// --- RENDER: KPI BAR ---
+
+function _duRenderKpis() {
+  var el = document.getElementById('upload-kpi-bar');
+  if (!el) return;
+  var s = _duStats;
+  el.innerHTML = [
+    _duKpiCard('Pending',        s.pending       || 0, 'kpi-pending',  true),
+    _duKpiCard('Uploaded Today', s.uploadedToday || 0, 'kpi-uploaded', false),
+    _duKpiCard('Total Uploaded', s.uploadedTotal || 0, 'kpi-uploaded', false),
+    _duKpiCard('Failed',         s.failed        || 0, 'kpi-failed',   true)
+  ].join('');
+}
+
+function _duKpiCard(label, val, cls, clickable) {
+  return '<div class="upload-kpi-card ' + cls + (clickable ? ' is-clickable' : '') + '">' +
+    '<div class="upload-kpi-value">' + val + '</div>' +
+    '<div class="upload-kpi-label">' + label + '</div>' +
+    '</div>';
+}
+
+// --- RENDER: MISSING REPORTS PANEL ---
+
+function _duRenderMissingPanel() {
+  var el = document.getElementById('upload-missing-panel');
+  if (!el) return;
+
+  var countBadge = _duMissing.length > 0
+    ? '<span style="background:#a855f7;color:#fff;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:900;">' + _duMissing.length + ' missing</span>'
+    : '<span style="color:#22c55e;font-size:10px;font-weight:900;">✓ All reported</span>';
+
+  var chevronPath = _duMissingPanelOpen
+    ? '<polyline points="18 15 12 9 6 15"/>'
+    : '<polyline points="6 9 12 15 18 9"/>';
+  var chevron = '<span class="upload-missing-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' + chevronPath + '</svg></span>';
+
+  var rows = _duMissing.length === 0
+    ? '<div class="upload-missing-empty">All vendors reported for ' + _duMissingDate + '.</div>'
+    : _duMissing.map(function(m, i) {
+        return '<div class="upload-missing-row">' +
+          '<span class="upload-missing-vendor">' + _duEsc(m.vendor) + '</span>' +
+          '<span class="upload-missing-meta">' +
+            '<span>' + m.activeFdhCount + ' active projects</span>' +
+            '<span>Last reported: ' + _duEsc(m.lastReportDate || '—') + '</span>' +
+          '</span>' +
+          '<button class="upload-missing-draft-btn" onclick="event.stopPropagation(); _duOpenEmailDraft(' + i + ')">Draft Email</button>' +
+        '</div>';
+      }).join('');
+
+  var draftAll = _duMissing.length > 0
+    ? '<div class="upload-missing-draft-all"><button onclick="_duDraftAllEmails()">Draft All → Copy to Clipboard</button></div>'
+    : '';
+
+  el.innerHTML =
+    '<div class="upload-missing-header" onclick="_duToggleMissingPanel()">' +
+      chevron +
+      '<span class="upload-missing-title">Missing Reports</span>' +
+      '<span style="margin-left:8px;">' + countBadge + '</span>' +
+      '<input type="date" class="upload-missing-date-picker" id="upload-missing-date-input" value="' + _duIsoDate(_duMissingDate) + '" onchange="event.stopPropagation(); _duOnMissingDateChange(this.value)" onclick="event.stopPropagation()">' +
+    '</div>' +
+    '<div class="upload-missing-body"' + (_duMissingPanelOpen ? '' : ' style="display:none;"') + '>' +
+      '<div class="upload-missing-rows">' + rows + '</div>' +
+      draftAll +
+    '</div>';
+}
+
+function _duToggleMissingPanel() {
+  _duMissingPanelOpen = !_duMissingPanelOpen;
+  var body    = document.querySelector('#upload-missing-panel .upload-missing-body');
+  var chevron = document.querySelector('#upload-missing-panel .upload-missing-chevron svg');
+  if (body) body.style.display = _duMissingPanelOpen ? '' : 'none';
+  if (chevron) chevron.innerHTML = _duMissingPanelOpen
+    ? '<polyline points="18 15 12 9 6 15"/>'
+    : '<polyline points="6 9 12 15 18 9"/>';
+}
+
+function _duOnMissingDateChange(isoVal) {
+  // Convert yyyy-mm-dd to MM/dd/yyyy
+  if (!isoVal) return;
+  var parts = isoVal.split('-');
+  _duMissingDate = parts[1] + '/' + parts[2] + '/' + parts[0];
+  _duLoadMissing();
+}
+
+// --- RENDER: TOOLBAR ---
+
+function _duRenderToolbar() {
+  var selectedPending = Array.from(_duSelected).filter(function(ri) {
+    var r = _duQueue.find(function(x) { return x.rowIdx === ri; });
+    return r && (r.uploadStatus === 'Pending' || r.uploadStatus === 'Duplicate' || r.uploadStatus === 'Failed');
+  });
+  var selCount = selectedPending.length;
+
+  var selInfo = document.getElementById('upload-sel-info');
+  if (selInfo) selInfo.textContent = selCount > 0 ? selCount + ' selected' : '';
+
+  var btnDry = document.getElementById('upload-btn-dryrun');
+  var btnUpload = document.getElementById('upload-btn-upload');
+  if (btnDry)    btnDry.disabled    = selCount === 0;
+  if (btnUpload) btnUpload.disabled = selCount === 0;
+}
+
+// --- RENDER: TABLE ---
+
+function _duRenderTable() {
+  var tbody = document.getElementById('upload-table-body');
+  if (!tbody) return;
+
+  if (_duFiltered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="' + (_DU_TABLE_COLS.length + 2) + '" class="upload-empty" style="text-align:center;padding:40px;color:var(--text-muted);">No rows match the current filter.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = _duFiltered.map(function(row) {
+    var isUploaded  = row.uploadStatus === 'Uploaded';
+    var isFailed    = row.uploadStatus === 'Failed';
+    var isDupe      = row.uploadStatus === 'Duplicate';
+    var isDirty     = !!_duDirty[row.rowIdx];
+    var isChecked   = _duSelected.has(row.rowIdx);
+
+    var trClass = [
+      isUploaded ? 'row-uploaded' : '',
+      isFailed   ? 'row-failed'   : '',
+      isDupe     ? 'row-duplicate': '',
+      isDirty    ? 'row-dirty'    : ''
+    ].filter(Boolean).join(' ');
+
+    var checkboxDisabled = isUploaded ? 'disabled' : '';
+    var checkboxChecked  = isChecked  ? 'checked'  : '';
+
+    var cells = _DU_TABLE_COLS.map(function(col) {
+      var val = row[col];
+      if (val === null || val === undefined) val = '';
+      val = val.toString();
+      var grp    = _DU_COL_GROUP[col] || '';
+      var isBool = _DU_BOOL_COLS.has(col);
+      var tdClass = [grp, (!isUploaded && !isBool) ? 'upload-td-editable' : ''].filter(Boolean).join(' ');
+
+      if (isBool) {
+        var boolVal = ['true','1','yes'].indexOf(val.toLowerCase()) >= 0;
+        var boolCls = 'du-bool ' + (boolVal ? 'du-bool-t' : 'du-bool-f') + (isUploaded ? '' : ' clickable');
+        var boolAttrs = isUploaded ? '' : ' data-field="' + _duEsc(col) + '" data-rowidx="' + row.rowIdx + '" data-val="' + boolVal + '" onclick="_duToggleBool(this)"';
+        return '<td class="' + tdClass + '" style="text-align:center;padding:4px 8px;">' +
+          '<span class="' + boolCls + '"' + boolAttrs + '>' + (boolVal ? '✓' : '') + '</span></td>';
+      }
+
+      var editable = !isUploaded ? ' class="upload-cell-edit" contenteditable="true" spellcheck="false" data-field="' + _duEsc(col) + '" data-rowidx="' + row.rowIdx + '" onblur="_duOnCellBlur(this)" onkeydown="_duOnCellKeydown(event,this)"' : '';
+      return '<td' + (tdClass ? ' class="' + tdClass + '"' : '') + '><span' + editable + '>' + _duEsc(val) + '</span></td>';
+    }).join('');
+
+    var statusBadge = _duStatusBadge(row.uploadStatus);
+    var dirtyDot = isDirty ? '<span class="upload-dirty-dot"></span>' : '';
+    var errorTip = isFailed && row.errorDetail ? ' title="' + _duEsc(row.errorDetail.substring(0, 120)) + '"' : '';
+
+    return '<tr class="' + trClass + '" data-rowidx="' + row.rowIdx + '"' + errorTip + '>' +
+      '<td class="col-check"><input type="checkbox" class="upload-row-check" ' + checkboxChecked + ' ' + checkboxDisabled + ' onchange="_duToggleRow(' + row.rowIdx + ',this.checked)"></td>' +
+      cells +
+      '<td style="white-space:nowrap;">' + dirtyDot + statusBadge + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function _duStatusBadge(status) {
+  var map = {
+    'Pending':   ['status-pending',   '⏳ Pending'],
+    'Uploaded':  ['status-uploaded',  '✓ Uploaded'],
+    'Failed':    ['status-failed',    '✗ Failed'],
+    'Duplicate': ['status-duplicate', '⚠ Duplicate'],
+    'Skipped':   ['status-skipped',   '– Skipped']
+  };
+  var entry = map[status] || ['status-pending', status || '⏳ Pending'];
+  return '<span class="upload-status-badge ' + entry[0] + '">' + entry[1] + '</span>';
+}
+
+// --- SELECTION ---
+
+function _duToggleRow(rowIdx, checked) {
+  if (checked) _duSelected.add(rowIdx);
+  else         _duSelected.delete(rowIdx);
+  _duRenderToolbar();
+}
+
+function _duSelectAllPending() {
+  _duFiltered.forEach(function(r) {
+    if (r.uploadStatus !== 'Uploaded' && r.uploadStatus !== 'Skipped') {
+      _duSelected.add(r.rowIdx);
+    }
+  });
+  _duRenderTable();
+  _duRenderToolbar();
+}
+
+function _duClearSelection() {
+  _duSelected.clear();
+  _duRenderTable();
+  _duRenderToolbar();
+}
+
+function _duToggleSelectAll(checked) {
+  if (checked) _duSelectAllPending();
+  else         _duClearSelection();
+}
+
+// --- INLINE EDITING ---
+
+function _duOnCellBlur(el) {
+  var field  = el.getAttribute('data-field');
+  var rowIdx = parseInt(el.getAttribute('data-rowidx'), 10);
+  var val    = el.textContent.trim();
+  _duScheduleSave(rowIdx, field, val, el);
+}
+
+function _duOnCellKeydown(evt, el) {
+  if (evt.key === 'Enter') { evt.preventDefault(); el.blur(); }
+  if (evt.key === 'Tab')   { evt.preventDefault(); _duFocusNextCell(el); }
+  if (evt.key === 'Escape') { el.blur(); }
+}
+
+function _duFocusNextCell(el) {
+  var allEditable = Array.from(document.querySelectorAll('.upload-cell-edit'));
+  var idx = allEditable.indexOf(el);
+  if (idx >= 0 && idx < allEditable.length - 1) {
+    allEditable[idx + 1].focus();
+  }
+}
+
+function _duScheduleSave(rowIdx, field, val, el) {
+  var key = rowIdx + ':' + field;
+  clearTimeout(_duSaveTimers[key]);
+  _duSaveTimers[key] = setTimeout(function() {
+    _duSaveCell(rowIdx, field, val, el);
+  }, 500);
+}
+
+function _duSaveCell(rowIdx, field, val, el) {
+  if (!_duDirty[rowIdx]) _duDirty[rowIdx] = {};
+  _duDirty[rowIdx][field] = val;
+
+  el.classList.add('upload-cell-saving');
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      el.classList.remove('upload-cell-saving');
+      if (result.ok) {
+        var tick = document.createElement('span');
+        tick.className = 'upload-cell-tick';
+        tick.textContent = '✓';
+        el.parentNode.appendChild(tick);
+        setTimeout(function() { if (tick.parentNode) tick.parentNode.removeChild(tick); }, 2000);
+        // Update local queue record
+        var qRow = _duQueue.find(function(r) { return r.rowIdx === rowIdx; });
+        if (qRow) qRow[field] = val;
+      } else {
+        el.classList.add('upload-cell-err');
+        showToast('Save failed: ' + (result.error || 'Unknown error'), 'error');
+      }
+    })
+    .withFailureHandler(function(err) {
+      el.classList.remove('upload-cell-saving');
+      showToast('Save error: ' + (err.message || err), 'error');
+    })
+    .saveDailyUploadRowEdit(rowIdx, field, val);
+}
+
+// --- BOOLEAN TOGGLE ---
+
+function _duToggleBool(el) {
+  var field  = el.getAttribute('data-field');
+  var rowIdx = parseInt(el.getAttribute('data-rowidx'), 10);
+  var cur    = el.getAttribute('data-val') === 'true';
+  var next   = !cur;
+  el.setAttribute('data-val', next);
+  el.className = 'du-bool clickable ' + (next ? 'du-bool-t' : 'du-bool-f');
+  el.textContent = next ? '✓' : '';
+  var qRow = _duQueue.find(function(r) { return r.rowIdx === rowIdx; });
+  if (qRow) qRow[field] = next ? 'TRUE' : 'FALSE';
+  el.style.opacity = '0.5';
+  google.script.run
+    .withSuccessHandler(function() { el.style.opacity = ''; })
+    .withFailureHandler(function() { el.style.opacity = ''; showToast('Save failed', 'error'); })
+    .saveDailyUploadRowEdit(rowIdx, field, next ? 'TRUE' : 'FALSE');
+}
+
+// --- COLUMN RESIZE ---
+
+function _duInitColResizers() {
+  var ths = document.querySelectorAll('#upload-workspace .upload-table thead th');
+  ths.forEach(function(th, idx) {
+    if (th.classList.contains('col-check')) return;
+    if (th.querySelector('.col-resizer')) return;
+    var handle = document.createElement('div');
+    handle.className = 'col-resizer';
+    handle.addEventListener('mousedown', function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      _duResize = { th: th, idx: idx, startX: e.clientX, startW: th.offsetWidth };
+      handle.classList.add('is-dragging');
+      document.addEventListener('mousemove', _duOnColResize);
+      document.addEventListener('mouseup', _duStopColResize);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+    th.appendChild(handle);
+  });
+}
+
+function _duOnColResize(e) {
+  if (!_duResize) return;
+  var newW = Math.max(36, _duResize.startW + (e.clientX - _duResize.startX));
+  _duColWidths[_duResize.idx] = newW;
+  _duApplyColWidths();
+}
+
+function _duStopColResize() {
+  if (!_duResize) return;
+  var handle = _duResize.th.querySelector('.col-resizer');
+  if (handle) handle.classList.remove('is-dragging');
+  _duResize = null;
+  document.removeEventListener('mousemove', _duOnColResize);
+  document.removeEventListener('mouseup', _duStopColResize);
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+}
+
+function _duApplyColWidths() {
+  var el = document.getElementById('upload-col-widths');
+  if (!el) {
+    el = document.createElement('style');
+    el.id = 'upload-col-widths';
+    document.head.appendChild(el);
+  }
+  el.textContent = Object.keys(_duColWidths).map(function(i) {
+    var n = parseInt(i) + 1;
+    var w = _duColWidths[i];
+    return '.upload-table th:nth-child(' + n + '),.upload-table td:nth-child(' + n + '){width:' + w + 'px!important;min-width:' + w + 'px!important;max-width:' + w + 'px!important;}';
+  }).join('');
+}
+
+// --- DRY RUN ---
+
+function _duRunDryRun() {
+  var eligible = _duGetEligibleSelected();
+  if (eligible.length === 0) { showToast('Select at least one row to validate.', 'warn'); return; }
+
+  showToast('Running dry-run validation...', 'info');
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      _duOpenDryRunResultModal(result);
+    })
+    .withFailureHandler(function(err) {
+      showToast('Dry-run error: ' + (err.message || err), 'error');
+    })
+    .uploadDailyRecordsToQB(eligible, { dryRun: true, batchId: 'dry-' + Date.now() });
+}
+
+function _duOpenDryRunResultModal(result) {
+  var rows = (result.results || []).map(function(r) {
+    var statusIcon = r.isDuplicate ? '⚠ DUPE' : '✓';
+    var unmappedStr = (r.unmappedFields && r.unmappedFields.length > 0)
+      ? '<div class="upload-preview-warn">Unmapped: ' + _duEsc(r.unmappedFields.join(', ')) + '</div>'
+      : '';
+    return '<tr>' +
+      '<td>' + _duEsc(r.fdh || '') + '</td>' +
+      '<td>' + _duEsc(r.vendor || '') + '</td>' +
+      '<td>' + (r.mappedFields || 0) + ' / 17</td>' +
+      '<td>' + (r.isDuplicate ? '<span class="upload-preview-warn">' + statusIcon + '</span>' : '<span class="upload-preview-ok">✓ OK</span>') + '</td>' +
+      '<td>' + unmappedStr + (unmappedStr ? '' : '<span class="upload-preview-ok">All mapped</span>') + '</td>' +
+    '</tr>';
+  });
+
+  var body = '<p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;">Dry-run complete — no data was written. ' + result.results.length + ' row(s) validated.</p>' +
+    '<table class="upload-preview-table"><thead><tr><th>FDH</th><th>Vendor</th><th>Fields Mapped</th><th>Duplicate?</th><th>Notes</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+
+  _duOpenModal('Dry-Run Validation Report', body, [
+    { label: 'Close', cls: 'upload-btn', onclick: '_duCloseModal()' }
+  ]);
+}
+
+// --- PREVIEW & UPLOAD ---
+
+function _duOpenPreview() {
+  var eligible = _duGetEligibleSelected();
+  if (eligible.length === 0) { showToast('Select at least one pending row to upload.', 'warn'); return; }
+
+  var rows = eligible.map(function(ri) {
+    var r = _duQueue.find(function(x) { return x.rowIdx === ri; });
+    if (!r) return '';
+    var isDupe = r.uploadStatus === 'Duplicate';
+    var previewCols = ['Date','Contractor','FDH Engineering ID','Daily UG Footage','Daily Strand Footage','Daily Fiber Footage'];
+    var cells = previewCols.map(function(col) {
+      return '<td>' + _duEsc((r[col] || '').toString()) + '</td>';
+    }).join('');
+    return '<tr' + (isDupe ? ' class="is-dupe"' : '') + '>' +
+      '<td>' + ri + '</td>' + cells +
+      '<td>' + (isDupe ? '<span class="upload-preview-warn">⚠ Duplicate</span>' : '<span class="upload-preview-ok">OK</span>') + '</td>' +
+    '</tr>';
+  }).join('');
+
+  var dupeCount = eligible.filter(function(ri) {
+    var r = _duQueue.find(function(x) { return x.rowIdx === ri; });
+    return r && r.uploadStatus === 'Duplicate';
+  }).length;
+
+  var dupeNote = dupeCount > 0
+    ? '<div style="margin-bottom:10px;padding:8px 12px;background:color-mix(in srgb,#f97316 10%,var(--bg));border:1px solid color-mix(in srgb,#f97316 25%,var(--border));border-radius:8px;font-size:12px;font-weight:700;color:#c2410c;">⚠ ' + dupeCount + ' row(s) may be duplicates. They will be skipped unless you choose Force below.</div>'
+    : '';
+
+  var body = dupeNote +
+    '<p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;">' + eligible.length + ' row(s) will be uploaded to QuickBase Daily Work Log (<code>bvay4aqkz</code>).</p>' +
+    '<table class="upload-preview-table"><thead><tr><th>Row</th><th>Date</th><th>Contractor</th><th>FDH</th><th>UG Ft</th><th>Strand Ft</th><th>Fiber Ft</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+
+  var actions = [
+    { label: 'Cancel', cls: 'upload-btn', onclick: '_duCloseModal()' }
+  ];
+  if (dupeCount > 0) {
+    actions.push({ label: 'Upload (Skip Dupes)', cls: 'upload-btn btn-primary', onclick: '_duCloseModal(); _duExecuteUpload(' + JSON.stringify(eligible) + ', true, false)' });
+    actions.push({ label: 'Upload (Force All)', cls: 'upload-btn btn-danger', onclick: '_duCloseModal(); _duExecuteUpload(' + JSON.stringify(eligible) + ', false, true)' });
+  } else {
+    actions.push({ label: 'Confirm Upload ↑', cls: 'upload-btn btn-primary', onclick: '_duCloseModal(); _duExecuteUpload(' + JSON.stringify(eligible) + ', true, false)' });
+  }
+
+  _duOpenModal('Preview — Upload to QuickBase', body, actions);
+}
+
+function _duExecuteUpload(rowIndices, skipDuplicates, forceAll) {
+  if (!rowIndices || rowIndices.length === 0) return;
+
+  // Large batch confirmation
+  if (rowIndices.length > 10) {
+    _duOpenConfirmGate(rowIndices, skipDuplicates, forceAll);
+    return;
+  }
+
+  _duDoUpload(rowIndices, skipDuplicates, forceAll ? rowIndices : []);
+}
+
+function _duOpenConfirmGate(rowIndices, skipDuplicates, forceAll) {
+  var body = '<p style="font-size:13px;color:var(--text-main);margin:0 0 12px;font-weight:700;">You are about to upload <strong>' + rowIndices.length + ' rows</strong> to QuickBase. This action cannot be undone.</p>' +
+    '<p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;">Type <strong>UPLOAD</strong> below to confirm:</p>' +
+    '<input type="text" id="upload-confirm-gate-input" class="upload-confirm-input" placeholder="UPLOAD" oninput="_duCheckConfirmGate(this)">';
+
+  _duOpenModal('Confirm Batch Upload', body, [
+    { label: 'Cancel', cls: 'upload-btn', onclick: '_duCloseModal()' },
+    { label: 'Upload ' + rowIndices.length + ' Rows ↑', cls: 'upload-btn btn-primary', id: 'upload-confirm-gate-btn', disabled: true, onclick: '_duCloseModal(); _duDoUpload(' + JSON.stringify(rowIndices) + ',' + skipDuplicates + ',' + JSON.stringify(forceAll ? rowIndices : []) + ')' }
+  ]);
+}
+
+function _duCheckConfirmGate(el) {
+  var btn = document.getElementById('upload-confirm-gate-btn');
+  if (btn) btn.disabled = (el.value.trim().toUpperCase() !== 'UPLOAD');
+}
+
+function _duDoUpload(rowIndices, skipDuplicates, forceRows) {
+  showToast('Uploading ' + rowIndices.length + ' row(s) to QuickBase...', 'info');
+
+  var batchId = 'batch-' + Date.now().toString(36);
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      _duOpenUploadResultModal(result);
+      _duRefreshAll();
+    })
+    .withFailureHandler(function(err) {
+      showToast('Upload failed: ' + (err.message || err), 'error');
+      _duRefreshAll();
+    })
+    .uploadDailyRecordsToQB(rowIndices, {
+      batchId:        batchId,
+      skipDuplicates: !!skipDuplicates,
+      forceRows:      forceRows || []
+    });
+}
+
+function _duOpenUploadResultModal(result) {
+  var successRows = (result.results || []).filter(function(r) { return r.status === 'success'; });
+  var failedRows  = (result.results || []).filter(function(r) { return r.status === 'failed'; });
+  var dupeRows    = (result.results || []).filter(function(r) { return r.status === 'duplicate'; });
+
+  var summary = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">' +
+    '<div style="text-align:center;"><div style="font-size:28px;font-weight:900;color:#22c55e;">' + result.success + '</div><div style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;">Uploaded</div></div>' +
+    '<div style="text-align:center;"><div style="font-size:28px;font-weight:900;color:#ef4444;">' + result.failed + '</div><div style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;">Failed</div></div>' +
+    '<div style="text-align:center;"><div style="font-size:28px;font-weight:900;color:#f97316;">' + result.duplicates + '</div><div style="font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;">Duplicates</div></div>' +
+  '</div>';
+
+  var failDetail = failedRows.length > 0
+    ? '<div style="margin-top:12px;"><div style="font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Failed Rows</div>' +
+      failedRows.map(function(r) {
+        return '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);">' +
+          '<span style="font-weight:700;">Row ' + r.rowIdx + '</span> — ' + _duEsc(r.fdh || '') + ' — ' + _duEsc(r.error || '') + '</div>';
+      }).join('') + '</div>'
+    : '';
+
+  var batchNote = '<div style="margin-top:12px;font-size:10px;color:var(--text-muted);font-family:monospace;">Batch ID: ' + _duEsc(result.batchId || '') + '</div>';
+
+  _duOpenModal('Upload Complete', summary + failDetail + batchNote, [
+    { label: 'Close', cls: 'upload-btn btn-primary', onclick: '_duCloseModal()' }
+  ]);
+}
+
+// --- EXPORT ---
+
+function _duExportCsv() {
+  showToast('Exporting filtered view to Drive...', 'info');
+  var rowIndices = _duFiltered.map(function(r) { return r.rowIdx; });
+  google.script.run
+    .withSuccessHandler(function(url) {
+      showToast('CSV exported to Drive.', 'success');
+    })
+    .withFailureHandler(function(err) {
+      showToast('Export failed: ' + (err.message || err), 'error');
+    })
+    .exportDailyUploadViewToCSV(rowIndices);
+}
+
+// --- MISSING REPORT EMAILS ---
+
+function _duOpenEmailDraft(idx) {
+  var m = _duMissing[idx];
+  if (!m) return;
+
+  google.script.run
+    .withSuccessHandler(function(draft) {
+      var body = '<div style="margin-bottom:8px;font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);">Subject</div>' +
+        '<div class="upload-email-subject">' + _duEsc(draft.subject) + '</div>' +
+        '<div style="margin-bottom:8px;font-size:11px;font-weight:900;text-transform:uppercase;color:var(--text-muted);">Body</div>' +
+        '<div class="upload-email-body" id="upload-email-body-text">' + _duEsc(draft.body) + '</div>';
+
+      _duOpenModal('Email Draft — ' + m.vendor, body, [
+        { label: 'Close', cls: 'upload-btn', onclick: '_duCloseModal()' },
+        { label: '📋 Copy to Clipboard', cls: 'upload-btn btn-primary', onclick: '_duCopyEmailDraft(' + idx + ', ' + JSON.stringify(draft) + ')' }
+      ]);
+    })
+    .withFailureHandler(function(err) {
+      showToast('Draft error: ' + (err.message || err), 'error');
+    })
+    .draftMissingReportEmail(m.vendor, _duMissingDate, m.activeFdhs || []);
+}
+
+function _duCopyEmailDraft(idx, draft) {
+  var text = 'Subject: ' + draft.subject + '\n\n' + draft.body;
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Email copied to clipboard.', 'success');
+  }).catch(function() {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Email copied to clipboard.', 'success');
+  });
+}
+
+function _duDraftAllEmails() {
+  if (_duMissing.length === 0) return;
+  showToast('Drafting all missing vendor emails...', 'info');
+
+  var drafts = [];
+  var remaining = _duMissing.length;
+
+  _duMissing.forEach(function(m, i) {
+    google.script.run
+      .withSuccessHandler(function(draft) {
+        drafts.push('Subject: ' + draft.subject + '\n\n' + draft.body);
+        remaining--;
+        if (remaining === 0) {
+          var combined = drafts.join('\n\n' + '—'.repeat(60) + '\n\n');
+          navigator.clipboard.writeText(combined).then(function() {
+            showToast('All ' + _duMissing.length + ' email drafts copied to clipboard.', 'success');
+          }).catch(function() {
+            var ta = document.createElement('textarea');
+            ta.value = combined;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('All ' + _duMissing.length + ' email drafts copied to clipboard.', 'success');
+          });
+        }
+      })
+      .withFailureHandler(function() { remaining--; })
+      .draftMissingReportEmail(m.vendor, _duMissingDate, m.activeFdhs || []);
+  });
+}
+
+// --- HISTORY ---
+
+function _duRenderHistory() {
+  var el = document.getElementById('upload-history-list');
+  if (!el) return;
+
+  if (_duHistory.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">No upload history yet.</div>';
+    return;
+  }
+
+  el.innerHTML = _duHistory.map(function(row) {
+    var ts        = row['Timestamp'] || '';
+    var batchId   = row['Batch ID'] || '';
+    var isDry     = row['Dry Run?'] === 'YES';
+    var success   = row['Success']  || 0;
+    var failed    = row['Failed']   || 0;
+    var skipped   = row['Skipped']  || 0;
+    var rowCount  = row['Row Count'] || 0;
+
+    return '<div class="upload-history-row">' +
+      '<span class="upload-history-ts">' + _duEsc(ts.toString().substring(0,16)) + '</span>' +
+      (isDry ? '<span class="upload-history-dry-badge">Dry Run</span>' : '') +
+      '<div class="upload-history-counts">' +
+        '<span class="upload-history-count">' + rowCount + ' rows</span>' +
+        '<span class="upload-history-count success">✓ ' + success + '</span>' +
+        (failed  > 0 ? '<span class="upload-history-count failed">✗ ' + failed  + '</span>' : '') +
+        (skipped > 0 ? '<span class="upload-history-count skipped">– ' + skipped + '</span>' : '') +
+      '</div>' +
+      '<span class="upload-history-batch">' + _duEsc(batchId) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function _duToggleHistory() {
+  _duHistoryOpen = !_duHistoryOpen;
+  var toggle = document.getElementById('upload-history-toggle');
+  var list   = document.getElementById('upload-history-list');
+  if (toggle) toggle.classList.toggle('is-open', _duHistoryOpen);
+  if (list)   list.classList.toggle('is-open', _duHistoryOpen);
+}
+
+// --- GENERIC MODAL ---
+
+function _duOpenModal(title, bodyHtml, actions) {
+  var overlay = document.getElementById('upload-modal-overlay');
+  if (!overlay) return;
+
+  var actionBtns = (actions || []).map(function(a) {
+    var dis = a.disabled ? ' disabled' : '';
+    var id  = a.id ? ' id="' + a.id + '"' : '';
+    return '<button class="' + a.cls + '"' + id + dis + ' onclick="' + _duEsc(a.onclick) + '">' + _duEsc(a.label) + '</button>';
+  }).join('');
+
+  overlay.innerHTML =
+    '<div class="upload-modal" onclick="event.stopPropagation()">' +
+      '<div class="upload-modal-header">' +
+        '<div class="upload-modal-title">' + _duEsc(title) + '</div>' +
+        '<button class="upload-modal-close" onclick="_duCloseModal()">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+      '</div>' +
+      '<div class="upload-modal-body">' + bodyHtml + '</div>' +
+      '<div class="upload-modal-footer">' + actionBtns + '</div>' +
+    '</div>';
+
+  overlay.classList.add('visible');
+}
+
+function _duCloseModal() {
+  var overlay = document.getElementById('upload-modal-overlay');
+  if (overlay) overlay.classList.remove('visible');
+}
+
+// --- UTILITIES ---
+
+function _duGetEligibleSelected() {
+  return Array.from(_duSelected).filter(function(ri) {
+    var r = _duQueue.find(function(x) { return x.rowIdx === ri; });
+    return r && r.uploadStatus !== 'Uploaded' && r.uploadStatus !== 'Skipped';
+  });
+}
+
+function _duSetTableLoading(isLoading) {
+  var tbody = document.getElementById('upload-table-body');
+  if (!tbody) return;
+  if (isLoading) {
+    tbody.innerHTML = '<tr><td colspan="20" style="padding:40px;text-align:center;color:var(--text-muted);font-size:12px;">Loading queue...</td></tr>';
+  }
+}
+
+function _duEsc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function _duTodayStr() {
+  var d = new Date();
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  var yy = d.getFullYear();
+  return mm + '/' + dd + '/' + yy;
+}
+
+function _duIsoDate(mmddyyyy) {
+  if (!mmddyyyy) return '';
+  var p = mmddyyyy.split('/');
+  if (p.length === 3) return p[2] + '-' + p[0] + '-' + p[1];
+  return '';
+}
+
+function _duBuildVendorOptions() {
+  var vendors = Array.from(new Set(_duQueue.map(function(r) { return r['Contractor'] || ''; }).filter(Boolean))).sort();
+  return ['<option value="all">All Vendors</option>'].concat(
+    vendors.map(function(v) {
+      return '<option value="' + _duEsc(v) + '"' + (_duFilterVendor === v ? ' selected' : '') + '>' + _duEsc(v) + '</option>';
+    })
+  ).join('');
+}
+</script>

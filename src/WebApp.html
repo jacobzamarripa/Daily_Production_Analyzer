@@ -55,6 +55,7 @@
 	    <?!= include('_styles_gantt') ?>
 	    <?!= include('_styles_deck') ?>
 	    <?!= include('_styles_dashboard') ?>
+	    <?!= include('_styles_daily_upload') ?>
 	    <?!= include('_utils_icons') ?>
 	  </head>
     <body data-mview="queue">
@@ -344,6 +345,10 @@
               <div style="width: 1px; height: 14px; background: var(--border); margin: 0 4px;"></div>
               <button class="view-segment-btn" id="view-btn-gantt" onclick="primeDockMotionOrigin(this, 'gantt'); openGanttView()" title="Gantt View">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="15" y2="12"></line><line x1="3" y1="18" x2="18" y2="18"></line></svg>
+              </button>
+              <div style="width: 1px; height: 14px; background: var(--border); margin: 0 4px;"></div>
+              <button class="view-segment-btn" id="view-btn-upload" onclick="primeDockMotionOrigin(this, 'upload'); switchWorkspaceView('upload')" title="Upload Center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               </button>
           </div>
           <div class="view-segment-group view-tools">
@@ -939,6 +944,115 @@
       </div>
     </div>
 
+    <!-- Upload Center Workspace -->
+    <div id="upload-workspace">
+      <!-- KPI Bar -->
+      <div class="upload-kpi-bar" id="upload-kpi-bar">
+        <div class="upload-kpi-card kpi-pending"><div class="upload-kpi-value">—</div><div class="upload-kpi-label">Pending</div></div>
+        <div class="upload-kpi-card kpi-uploaded"><div class="upload-kpi-value">—</div><div class="upload-kpi-label">Uploaded Today</div></div>
+        <div class="upload-kpi-card kpi-uploaded"><div class="upload-kpi-value">—</div><div class="upload-kpi-label">Total Uploaded</div></div>
+        <div class="upload-kpi-card kpi-failed"><div class="upload-kpi-value">—</div><div class="upload-kpi-label">Failed</div></div>
+      </div>
+
+      <!-- Missing Reports Panel -->
+      <div id="upload-missing-panel" class="upload-missing-panel">
+        <div class="upload-missing-header">
+          <span class="upload-missing-title">Missing Reports</span>
+        </div>
+        <div class="upload-missing-empty">Loading...</div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="upload-toolbar">
+        <div class="upload-toolbar-left">
+          <select class="upload-select" id="upload-filter-status" onchange="_duFilterStatus=this.value; _duApplyFilters()">
+            <option value="all">All Rows</option>
+            <option value="Pending">Pending</option>
+            <option value="Uploaded">Uploaded</option>
+            <option value="Failed">Failed</option>
+            <option value="Duplicate">Duplicate</option>
+          </select>
+          <select class="upload-select" id="upload-filter-vendor" onchange="_duFilterVendor=this.value; _duApplyFilters()">
+            <option value="all">All Vendors</option>
+          </select>
+          <input type="text" class="upload-search" id="upload-search" placeholder="🔍 Search FDH..." oninput="_duSearchQuery=this.value; _duApplyFilters()">
+        </div>
+        <div class="upload-toolbar-right">
+          <button class="upload-btn btn-ghost" onclick="_duRefreshAll()" title="Refresh">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15.5-6.36L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15.5 6.36L3 16"/></svg>
+            Refresh
+          </button>
+          <button class="upload-btn" onclick="_duExportCsv()" title="Export filtered view to Drive">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Selection bar -->
+      <div class="upload-toolbar" style="padding-top:0; border-bottom:none; border-top:1px solid var(--border);">
+        <div class="upload-toolbar-left">
+          <button class="upload-btn btn-ghost" onclick="_duSelectAllPending()">Select All Pending</button>
+          <button class="upload-btn btn-ghost" onclick="_duClearSelection()">Clear</button>
+          <span class="upload-selection-info" id="upload-sel-info"></span>
+        </div>
+        <div class="upload-toolbar-right">
+          <button class="upload-btn" id="upload-btn-dryrun" disabled onclick="_duRunDryRun()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Dry Run
+          </button>
+          <button class="upload-btn btn-primary" id="upload-btn-upload" disabled onclick="_duOpenPreview()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Preview &amp; Upload
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Table -->
+      <div class="upload-table-wrap">
+        <table class="upload-table">
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" class="upload-row-check" onchange="_duToggleSelectAll(this.checked)" title="Select all pending"></th>
+              <th class="col-dark-navy"             onclick="_duSetSort('Date')">Date <span class="sort-arrow">↕</span></th>
+              <th class="col-dark-navy"             onclick="_duSetSort('Contractor')">Contractor <span class="sort-arrow">↕</span></th>
+              <th class="col-dark-navy col-fdh"     onclick="_duSetSort('FDH Engineering ID')">FDH Engineering ID <span class="sort-arrow">↕</span></th>
+              <th class="col-lime"                  onclick="_duSetSort('Locates Called In')">Locates <span class="sort-arrow">↕</span></th>
+              <th class="col-lime"                  onclick="_duSetSort('Cabinets Set')">Cabinets <span class="sort-arrow">↕</span></th>
+              <th class="col-lime"                  onclick="_duSetSort('Light to Cabinets')">Lit to Cab <span class="sort-arrow">↕</span></th>
+              <th class="col-lime"                  onclick="_duSetSort('Target Completion Date')">Target <span class="sort-arrow">↕</span></th>
+              <th class="col-ug-footage"            onclick="_duSetSort('Daily UG Footage')">UG Ft <span class="sort-arrow">↕</span></th>
+              <th class="col-strand"                onclick="_duSetSort('Daily Strand Footage')">Strand Ft <span class="sort-arrow">↕</span></th>
+              <th class="col-fiber"                 onclick="_duSetSort('Daily Fiber Footage')">Fiber Ft <span class="sort-arrow">↕</span></th>
+              <th class="col-nap"                   onclick="_duSetSort('Daily NAPs/Encl. Completed')">NAPs <span class="sort-arrow">↕</span></th>
+              <th class="col-dark-navy"             onclick="_duSetSort('Drills')">Drills</th>
+              <th class="col-dark-navy"             onclick="_duSetSort('Missles')">Missles</th>
+              <th class="col-dark-navy"             onclick="_duSetSort('AE Crews')">AE Crews</th>
+              <th class="col-dark-navy"             onclick="_duSetSort('Fiber Pulling Crews')">Fiber Crews</th>
+              <th class="col-dark-navy"             onclick="_duSetSort('Splicing Crews')">Splice Crews</th>
+              <th class="col-dark-navy col-comments">Comments</th>
+              <th class="col-teal">Status</th>
+            </tr>
+          </thead>
+          <tbody id="upload-table-body">
+            <tr><td colspan="13" style="padding:40px;text-align:center;color:var(--text-muted);font-size:12px;">Loading queue...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Batch History -->
+      <div class="upload-history-section">
+        <div class="upload-history-toggle" id="upload-history-toggle" onclick="_duToggleHistory()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          Batch History
+        </div>
+        <div class="upload-history-list" id="upload-history-list"></div>
+      </div>
+    </div>
+
+    <!-- Upload modal -->
+    <div class="upload-modal-overlay" id="upload-modal-overlay" onclick="_duCloseModal()"></div>
+
     <div class="gantt-panel" id="gantt-panel">
         <!-- Shared-shell mobile gantt hint (shown by JS on <=480px) -->
         <div id="gantt-scroll-hint" class="gantt-scroll-hint" style="display:none;" aria-live="polite">
@@ -1006,6 +1120,7 @@
     <?!= include('_module_ui_shell_helpers') ?>
     <?!= include('_module_mini_sld') ?>
     <?!= include('_module_qb_writeback') ?>
+    <?!= include('_module_daily_upload') ?>
     <?!= include('_module_webapp_core') ?>
 
 

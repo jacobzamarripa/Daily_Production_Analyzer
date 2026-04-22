@@ -111,10 +111,11 @@ function syncWorkspaceModeState() {
     isGridMode = (currentWorkspaceView === 'grid');
     isDeckMode = isSlideFaceActive();
 
-    document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active', 'digest-mode-active', 'dashboard-active');
+    document.body.classList.remove('grid-mode-active', 'deck-mode-active', 'gantt-view-active', 'digest-mode-active', 'dashboard-active', 'upload-view-active');
     if (isGridMode) document.body.classList.add('grid-mode-active');
     if (isDeckMode) document.body.classList.add('deck-mode-active');
-    if (currentWorkspaceView === 'gantt') document.body.classList.add('gantt-view-active');
+    if (currentWorkspaceView === 'gantt')  document.body.classList.add('gantt-view-active');
+    if (currentWorkspaceView === 'upload') document.body.classList.add('upload-view-active');
 }
 
 function syncWorkspaceChrome() {
@@ -282,6 +283,7 @@ function switchWorkspaceView(mode) {
     const paneContent = getEl('pane-content');
     const deckStage = getEl('deck-stage');
     const ganttPanel = getEl('gantt-panel');
+    const uploadWs = getEl('upload-workspace');
     if (grid) {
         grid.style.display = 'none';
         grid.style.flex = '';
@@ -304,7 +306,12 @@ function switchWorkspaceView(mode) {
         ganttPanel.style.flex = '';
         ganttPanel.style.height = '';
     }
+    if (uploadWs) uploadWs.classList.remove('ws-active');
     if (grid) grid.classList.toggle('active', isGridMode);
+
+    // Sync Upload nav button active state
+    const uploadBtn = getEl('view-btn-upload');
+    if (uploadBtn) uploadBtn.classList.toggle('active', normalizedMode === 'upload');
 
     setTimeout(() => {
         if (normalizedMode === 'detail') {
@@ -328,6 +335,13 @@ function switchWorkspaceView(mode) {
             if (ganttPanel) ganttPanel.style.display = 'flex';
             if (typeof showGanttScrollHint === 'function') showGanttScrollHint();
             applyFilters();
+        } else if (normalizedMode === 'upload') {
+            setAdminPanelOpen(false);
+            if (welcome) welcome.style.display = 'none';
+            if (paneContent) paneContent.style.display = 'none';
+            if (deckStage) deckStage.style.display = 'none';
+            if (uploadWs) uploadWs.classList.add('ws-active');
+            if (typeof initUploadWorkspace === 'function') initUploadWorkspace();
         }
 
         syncGanttIslandState();
