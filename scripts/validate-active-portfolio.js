@@ -24,7 +24,8 @@ assertPattern(utilities, /reason: 'approved-upcoming-60d'/, 'Portfolio helper su
 assertPattern(utilities, /reason: 'terminal-grace-window'/, 'Portfolio helper supports OFS\/complete grace window', 'src/02_Utilities.js');
 assertPattern(utilities, /reason: 'excluded-terminal-no-ofs-date'/, 'Portfolio helper excludes terminal items without OFS date', 'src/02_Utilities.js');
 assertPattern(utilities, /reason: 'excluded-post-grace'/, 'Portfolio helper expires terminal items after grace cutoff', 'src/02_Utilities.js');
-assertPattern(utilities, /reason:.*'active-default'/, 'Portfolio helper defaults non-terminal projects into Active Portfolio', 'src/02_Utilities.js');
+assertPattern(utilities, /reason:[\s\S]*'active-default'/, 'Portfolio helper defaults non-terminal projects into Active Portfolio', 'src/02_Utilities.js');
+assertPattern(utilities, /active-start-grace/, 'Portfolio helper supports start-day grace before missing-report enforcement', 'src/02_Utilities.js');
 assertPattern(utilities, /portfolioEligibilityReason:/, 'Dashboard payload stores portfolio eligibility reason', 'src/02_Utilities.js');
 assertPattern(utilities, /portfolioGraceUntil:/, 'Dashboard payload stores grace cutoff metadata', 'src/02_Utilities.js');
 

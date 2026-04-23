@@ -1316,18 +1316,13 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
   // DATE VALIDATION (Gantt Freeze Protection & Bad Data Filtering)
   const today = new Date();
   today.setHours(0,0,0,0);
-  const checkBounds = (d, label, skipIfWithin60OfPeer) => {
+  const checkBounds = (d, label) => {
     if (!d || isNaN(d.getTime())) return;
     let diff = (d.getTime() - today.getTime()) / 86400000;
-    if (diff > 90) {
-      // CX Start/Complete pairs within 60 days of each other are likely valid — suppress the flag
-      if (skipIfWithin60OfPeer && !isNaN(skipIfWithin60OfPeer.getTime())) {
-        let peerDiff = Math.abs((d.getTime() - skipIfWithin60OfPeer.getTime()) / 86400000);
-        if (peerDiff <= 60) return;
-      }
+    if (diff > 60) {
       flags.push(`INVALID FUTURE DATE (${label})`);
       flagColors.push(TEXT_COLORS.WARN);
-      drafts.push(`${label} (${Utilities.formatDate(d, "GMT-5", "MM/dd/yy")}) is > 90 days in the future. Please verify data entry.`);
+      drafts.push(`${label} (${Utilities.formatDate(d, "GMT-5", "MM/dd/yy")}) is > 60 days in the future. Please verify data entry.`);
     } else if (d.getFullYear() < 2020) {
       flags.push(`INVALID PAST DATE (${label})`);
       flagColors.push(TEXT_COLORS.WARN);
@@ -1346,8 +1341,13 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
     let d = row[cxEIdx];
     cxCompleteObj = (d instanceof Date) ? d : new Date(d);
   }
-  if (cxStartObj) checkBounds(cxStartObj, "CX Start", cxCompleteObj);
-  if (cxCompleteObj) checkBounds(cxCompleteObj, "CX Complete", cxStartObj);
+  if (cxStartObj && cxCompleteObj && !isNaN(cxStartObj.getTime()) && !isNaN(cxCompleteObj.getTime()) && cxStartObj.getTime() > cxCompleteObj.getTime()) {
+    flags.push("INVALID DATE CHRONOLOGY");
+    flagColors.push(TEXT_COLORS.WARN);
+    drafts.push(`CX chronology is invalid. CX Start (${Utilities.formatDate(cxStartObj, "GMT-5", "MM/dd/yy")}) is after CX Complete (${Utilities.formatDate(cxCompleteObj, "GMT-5", "MM/dd/yy")}).`);
+  }
+  if (cxStartObj) checkBounds(cxStartObj, "CX Start");
+  if (cxCompleteObj) checkBounds(cxCompleteObj, "CX Complete");
   const parseFdhList = (value) => String(value || "").split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
   const isTruthyTransport = (value) => {
       let normalized = String(value || "").trim().toLowerCase();
@@ -2429,7 +2429,8 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
 
     // A report is not missing if the start date has not passed yet.
     let startDate = cxDates.cxStart ? new Date(cxDates.cxStart) : null;
-    let isUpcomingWindowOnly = portfolioMeta.reason === 'approved-upcoming-60d';
+    let isUpcomingWindowOnly = portfolioMeta.reason === 'approved-upcoming-60d' || portfolioMeta.reason === 'active-upcoming-start';
+    let isStartGraceOnly = portfolioMeta.reason === 'active-start-grace' || portfolioMeta.reason === 'reported-start-grace';
     if (startDate && !isNaN(startDate.getTime())) {
         let todayAtMid = new Date();
         todayAtMid.setHours(0,0,0,0);
@@ -2504,6 +2505,10 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
         ghostRowObj["Health Flags"] = "UPCOMING START WINDOW";
         ghostRowObj["Action Required"] = "Action: Monitor schedule. Approved project is inside the rolling 60-day horizon and not expected to report yet.";
         ghostRowObj["Vendor Comment"] = "Approved upcoming project inside the 60-day planning window.";
+      } else if (isStartGraceOnly) {
+        ghostRowObj["Health Flags"] = "REPORT PENDING";
+        ghostRowObj["Action Required"] = "Action: Monitor start. First daily report is expected on the next business day after CX Start.";
+        ghostRowObj["Vendor Comment"] = "First daily report is due on the next business day after CX Start.";
       } else {
         ghostRowObj["Health Flags"]    = diag.flags;
         ghostRowObj["Action Required"] = (diag.draft ? diag.draft + "\n" : "") + staleDraft;
@@ -2542,10 +2547,12 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
         rowState:       "ACTIVE",
         adaePaletteIdx: "GHOST",
         colors:         diag.colors,
-        summary:        isUpcomingWindowOnly ? "Upcoming approved project inside 60-day planning window." : `Last Report: ${Utilities.formatDate(reportDate, "GMT-5", "MM/dd/yy")}`,
+        summary:        isUpcomingWindowOnly
+          ? "Upcoming approved project inside 60-day planning window."
+          : (isStartGraceOnly ? "Start-day grace window active. First report due next business day." : `Last Report: ${Utilities.formatDate(reportDate, "GMT-5", "MM/dd/yy")}`),
         gaps:           adminGapsStr,
         flags:          ghostRowObj["Health Flags"],
-        flagColors:     isUpcomingWindowOnly ? [TEXT_COLORS.GHOST] : diag.flagColors,
+        flagColors:     (isUpcomingWindowOnly || isStartGraceOnly) ? [TEXT_COLORS.GHOST] : diag.flagColors,
         cleanComment:   ghostRowObj["Vendor Comment"],
         draft:          ghostRowObj["Action Required"],
         benchmark:      benchmarkDict[ghostFdhId] || ""
@@ -2569,6 +2576,11 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
         ghostRowObj["Action Required"]    = "Action: Monitor schedule. Approved project is inside the rolling 60-day horizon and has not started reporting yet.";
         ghostRowObj["Field Production"]   = "No reporting history yet. Upcoming within the 60-day planning window.";
         ghostRowObj["Vendor Comment"]     = "Approved upcoming project inside the 60-day planning window.";
+      } else if (isStartGraceOnly) {
+        ghostRowObj["Health Flags"]       = "REPORT PENDING";
+        ghostRowObj["Action Required"]    = "Action: Monitor start. First daily report is expected on the next business day after CX Start.";
+        ghostRowObj["Field Production"]   = "Start-day grace window active. First daily report is not due until the next business day.";
+        ghostRowObj["Vendor Comment"]     = "First daily report is due on the next business day after CX Start.";
       } else {
         ghostRowObj["Health Flags"]       = "MISSING DAILY REPORT";
         ghostRowObj["Action Required"]    = `Action: Contact Vendor. Active project with no submission history. Verify if Field CX has started.`;

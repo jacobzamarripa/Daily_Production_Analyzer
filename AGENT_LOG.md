@@ -1,5 +1,14 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-04-23: Active Portfolio rule tuning + search-only archive access
+- **Missing-report threshold shifted:** Updated `src/02_Utilities.js` and `src/01_Engine_Archive.js` so projects do not become `MISSING DAILY REPORT` until one business day after `CX Start`; same-day starts now sit in a start-grace `REPORT PENDING` state instead of being chased immediately.
+- **CX date diagnostics tightened:** Replaced the old broad future-date logic in `src/01_Engine_Archive.js` with chronology-first validation (`CX Start > CX Complete`), retained pre-2020 invalid-date checks, and lowered future-date noise suppression to a `>60 days` threshold for CX dates.
+- **Search-only suppressed access added:** Extended `src/02_Utilities.js` to emit a lightweight `searchProjects` catalog for all reference-backed projects plus a `getProjectSearchHydration(fdh)` path so post-grace OFS / suppressed projects can be opened from explicit search without rejoining `actionItems`.
+- **Frontend search/detail wiring aligned:** Updated `src/_module_global_search.html`, `src/_module_queue_state.html`, `src/_module_grid.html`, and `src/_module_gantt.html` so a search-opened suppressed project can hydrate into the detail pane safely while remaining absent from normal queue/grid/gantt datasets.
+- **Queue pill clutter reduced:** Filtered `CX Deliverable` diagnostic pills out of Active Portfolio list cards only in `src/_module_queue_state.html`; the detail-card deliverables/distributed module remains unchanged.
+- **Regression coverage:** Added `scripts/validate-active-portfolio-search.js` and updated `scripts/validate-active-portfolio.js` to cover start-day grace, post-grace OFS exclusion, search-hydration wiring, and the queue-card pill suppression.
+- **Verification:** `node -e "const fs=require('fs'); ['src/01_Engine_Archive.js','src/02_Utilities.js'].forEach(p=>new Function(fs.readFileSync(p,'utf8'))); console.log('backend parse OK');"`, `node scripts/validate-active-portfolio.js`, `node scripts/validate-active-portfolio-payload.js`, `node scripts/validate-active-portfolio-search.js`, `node scripts/validate-global-search.js`, and `git diff --check -- src/01_Engine_Archive.js src/02_Utilities.js src/_module_queue_state.html src/_module_global_search.html src/_module_grid.html src/_module_gantt.html scripts/validate-active-portfolio-search.js` passed.
+
 > [!success] 2026-04-22: Daily Upload bulk preflight + batch QuickBase create
 - **Duplicate preflight collapsed:** Refactored `src/07_DailyUpload.js` so upload preflight now fetches existing QuickBase rows once per canonical upload date, then matches locally on `FDH + Date + Contractor` instead of calling `checkDuplicateDailyRecord()` once per row.
 - **Batch create added:** `uploadDailyRecordsToQB()` now groups non-duplicate rows into QuickBase `/records` payloads of `25` rows at a time, replacing the previous one-request-per-row insert path.

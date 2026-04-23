@@ -270,11 +270,20 @@ function applyViewMode() {
 }
 
 function selectItemForNav(fdh) {
-    let item = (allActionItems || []).find(i => i.fdh === fdh);
+    let item = findProjectItemByFdh(fdh);
     if (item) {
         openPane(item, null, true);
         centerQueueCardByFdh(item.fdh, 'smooth', true);
     }
+}
+
+function findProjectItemByFdh(fdh) {
+    const targetFdh = String(fdh || '');
+    if (!targetFdh) return null;
+    if (currentActiveItem && String(currentActiveItem.fdh || '') === targetFdh) return currentActiveItem;
+    return (allActionItems || []).find(function(item) {
+        return String(item && item.fdh || '') === targetFdh;
+    }) || null;
 }
 
 function getActiveQueueItems() {
@@ -283,7 +292,7 @@ function getActiveQueueItems() {
 }
 
 function getListCardHtml(item) {
-    let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== "");
+    let rawFlags = (item.flags || "").split('\n').map(f => f.trim()).filter(f => f !== "").filter(f => !/CX DELIVERABLE/i.test(cleanDiagnosticFlagText(f)));
     let highestSev = "info";
     let tagParts = [];
     let visibleTagLimit = isVendorTrackerLinked(item) ? 2 : 3;
@@ -496,7 +505,7 @@ function renderList(items) {
 }
 // ── OPTIMIZED CLICK HANDLER ──
 function handleCardClick(fdh) {
-    let item = (allActionItems || []).find(i => String(i.fdh) === String(fdh));
+    let item = findProjectItemByFdh(fdh);
     if (!item) return;
     let cardEl = getEl(`card-${fdh}`) || getEl(`queue-grid-card-${fdh}`);
     openPane(item, cardEl);

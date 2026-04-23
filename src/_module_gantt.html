@@ -272,7 +272,7 @@ function handleGanttClick(fdh) {
         openGanttView(fdh);
         return;
     }
-    const item = allActionItems.find(i => i.fdh === fdh);
+    const item = typeof findProjectItemByFdh === 'function' ? findProjectItemByFdh(fdh) : allActionItems.find(i => i.fdh === fdh);
     if (!item) return;
     ganttFocusedFdh = fdh;
     persistGanttViewSession();
@@ -329,7 +329,7 @@ function positionHUD(e, hud) {
 
 function showHUD(e, fdh) {
     if (hudLocked || !allActionItems) return;
-    let item = allActionItems.find(i => i.fdh === fdh);
+    let item = typeof findProjectItemByFdh === 'function' ? findProjectItemByFdh(fdh) : allActionItems.find(i => i.fdh === fdh);
     if (!item) return;
     let hud = getEl('gantt-hud');
     if (!hud) return;

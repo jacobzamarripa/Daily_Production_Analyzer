@@ -408,6 +408,26 @@ function _getPortfolioTimingAnchor(input) {
     null;
 }
 
+function _addPortfolioBusinessDays(dateLike, businessDaysToAdd) {
+  const startDate = _normalizePortfolioDate(dateLike);
+  const daysToAdd = Number(businessDaysToAdd) || 0;
+  if (!startDate || daysToAdd <= 0) return startDate;
+
+  const cursor = new Date(startDate.getTime());
+  let remaining = daysToAdd;
+  while (remaining > 0) {
+    cursor.setDate(cursor.getDate() + 1);
+    const dow = cursor.getDay();
+    if (dow !== 0 && dow !== 6) remaining--;
+  }
+  return cursor;
+}
+
+function _getPortfolioReportExpectationDate(input) {
+  if (!input) return null;
+  return _addPortfolioBusinessDays(input.cxStart, 1);
+}
+
 function _getPortfolioVisibilityMeta(input) {
   input = input || {};
   const today = _normalizePortfolioDate(input.referenceDate || new Date()) || new Date();
@@ -450,8 +470,9 @@ function _getPortfolioVisibilityMeta(input) {
 
   const cxStartDate = _normalizePortfolioDate(input.cxStart);
   const anchorDate = _getPortfolioTimingAnchor(input);
+  const reportExpectationDate = _getPortfolioReportExpectationDate(input);
 
-  const isPastStart = cxStartDate ? (cxStartDate.getTime() <= today.getTime()) : false;
+  const isPastReportExpectation = reportExpectationDate ? (reportExpectationDate.getTime() <= today.getTime()) : false;
   const inFutureWindow = !!(anchorDate && anchorDate.getTime() > today.getTime());
   const horizonDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 60);
   const withinHorizon = !!(anchorDate && anchorDate.getTime() <= horizonDate.getTime());
@@ -476,11 +497,11 @@ function _getPortfolioVisibilityMeta(input) {
 
   // 3. PRIORITIZE HISTORY & HOLD LOGIC
   if (hasHistory) {
-    // If it has history, it surfaces. But we only expect reports if it's NOT on hold.
+    const expectHistoryReport = !isHold && (reportExpectationDate ? isPastReportExpectation : true);
     return {
       includeInPortfolio: true,
-      expectDailyReport: !isHold,
-      reason: isHold ? 'active-hold' : 'reported-history',
+      expectDailyReport: expectHistoryReport,
+      reason: isHold ? 'active-hold' : (expectHistoryReport ? 'reported-history' : 'reported-start-grace'),
       graceUntil: null,
       isTerminalGraceOnly: false
     };
@@ -517,13 +538,15 @@ function _getPortfolioVisibilityMeta(input) {
   }
 
   // 8. CONSTRUCTION / FIELD CX (Everything else that made it this far)
-  // We surface it. We expect a report if it's past start date.
-  const expectReport = isPastStart;
+  // We surface it. Reporting begins one business day after CX Start.
+  const expectReport = reportExpectationDate ? isPastReportExpectation : true;
 
   return {
     includeInPortfolio: true,
     expectDailyReport: expectReport,
-    reason: expectReport ? 'active-default' : 'active-upcoming-start',
+    reason: expectReport
+      ? 'active-default'
+      : (cxStartDate && cxStartDate.getTime() > today.getTime() ? 'active-upcoming-start' : 'active-start-grace'),
     graceUntil: null,
     isTerminalGraceOnly: false
   };
@@ -707,6 +730,77 @@ function _deriveReportingStatusFromFlags(flags) {
   return "current";
 }
 
+function _buildProjectSearchCatalog(options) {
+  options = options || {};
+  const headers = options.headers || [];
+  const rows = options.rows || [];
+  const refDict = options.refDict || {};
+  const fieldMap = _createDashboardPayloadFieldAccessors(headers);
+  const overlayMap = _buildDashboardOverlayIndex(rows, fieldMap);
+  const searchProjects = [];
+
+  Object.keys(refDict).forEach(function(fdhKey) {
+    const refData = refDict[fdhKey] || {};
+    const overlay = overlayMap[fdhKey] || null;
+    const row = overlay ? overlay.row : [];
+    const getRowVal = function(idx, fallback) {
+      if (idx > -1 && row && row.length > idx) {
+        const val = row[idx];
+        if (val !== "" && val != null) return val;
+      }
+      return fallback;
+    };
+
+    const rawStage = String(getRowVal(fieldMap.stageIdx, refData.stage || "") || "");
+    const rawStatus = String(getRowVal(fieldMap.statusIdx, refData.status || "") || "");
+    const rawFlags = String(getRowVal(fieldMap.flagsIdx, "") || "");
+    const vendorName = String(getRowVal(fieldMap.vendorIdx, refData.vendor || "") || "").trim();
+    const cityName = String(getRowVal(fieldMap.cityIdx, refData.city || "") || "").trim();
+    const rawTargetDate = getRowVal(fieldMap.targetIdx, refData.canonicalOfsDate || refData.forecastedOFS || "");
+    const rawCxStart = getRowVal(fieldMap.cxStartIdx, refData.cxStart || "");
+    const rawCxEnd = getRowVal(fieldMap.cxEndIdx, refData.cxComplete || "");
+    const rawReportDate = getRowVal(fieldMap.dateIdx, "");
+    const rawMirrorOfsDate = getRowVal(fieldMap.ofsIdx, "");
+    const milestonesRaw = String(getRowVal(fieldMap.benchIdx, "") || "");
+    const portfolioMeta = _getPortfolioVisibilityMeta({
+      stage: rawStage,
+      status: rawStatus,
+      vendor: vendorName,
+      flags: rawFlags,
+      primaryOfsDate: refData.canonicalOfsDate || refData.forecastedOFS || "",
+      fallbackOfsDate: rawMirrorOfsDate,
+      targetDate: rawTargetDate,
+      cxStart: rawCxStart,
+      reportDate: rawReportDate,
+      hasHistory: !!overlay
+    });
+    const hasHandoff = milestonesRaw.includes("HANDOFF");
+    const visibleInPortfolio = portfolioMeta.includeInPortfolio || hasHandoff;
+
+    searchProjects.push({
+      fdh: fdhKey,
+      vendor: vendorName,
+      city: cityName,
+      stage: rawStage,
+      status: rawStatus,
+      flags: rawFlags,
+      draft: String(getRowVal(fieldMap.draftIdx, "") || ""),
+      vendorComment: String(getRowVal(fieldMap.vcIdx, "") || ""),
+      fieldProduction: String(getRowVal(fieldMap.summaryIdx, "") || ""),
+      reportDate: _dashboardParseDate(rawReportDate),
+      targetDate: _dashboardParseDate(rawTargetDate),
+      cxStart: _dashboardParseDate(rawCxStart),
+      cxEnd: _dashboardParseDate(rawCxEnd),
+      ofsDate: _dashboardParseDate(rawMirrorOfsDate || refData.canonicalOfsDate || refData.forecastedOFS || ""),
+      rawReferenceOfsDate: String(refData.canonicalOfsDate || refData.forecastedOFS || "").trim(),
+      portfolioEligibilityReason: portfolioMeta.reason,
+      searchOnlySuppressed: !visibleInPortfolio
+    });
+  });
+
+  return searchProjects;
+}
+
 function _buildPortfolioActionItems(options) {
   options = options || {};
   const headers = options.headers || [];
@@ -714,11 +808,14 @@ function _buildPortfolioActionItems(options) {
   const refDict = options.refDict || {};
   const fiberStats = options.fiberStats || {};
   const defaultDrgTrackerUrl = options.defaultDrgTrackerUrl || "";
+  const includeSuppressed = !!options.includeSuppressed;
+  const requestedFdh = String(options.fdhFilter || "").trim().toUpperCase();
   const fieldMap = _createDashboardPayloadFieldAccessors(headers);
   const overlayMap = _buildDashboardOverlayIndex(rows, fieldMap);
   const actionItems = [];
 
   Object.keys(refDict).forEach(function(fdhKey) {
+    if (requestedFdh && fdhKey !== requestedFdh) return;
     const refData = refDict[fdhKey] || {};
     const overlay = overlayMap[fdhKey] || null;
     const row = overlay ? overlay.row : [];
@@ -751,7 +848,8 @@ function _buildPortfolioActionItems(options) {
     });
     const milestonesRaw = String(getRowVal(fieldMap.benchIdx, "") || "");
     const hasHandoff = milestonesRaw.includes("HANDOFF");
-    if (!portfolioMeta.includeInPortfolio && !hasHandoff) return;
+    const visibleInPortfolio = portfolioMeta.includeInPortfolio || hasHandoff;
+    if (!visibleInPortfolio && !includeSuppressed) return;
 
     const rawMirrorOfsDate = _dashboardParseDate(getRowVal(fieldMap.ofsIdx, ""));
     const canonicalOfsDate = String(refData.canonicalOfsDate || refData.forecastedOFS || getRowVal(fieldMap.ofsIdx, "") || "").trim();
@@ -777,18 +875,30 @@ function _buildPortfolioActionItems(options) {
     let vendorComment = String(getRowVal(fieldMap.vcIdx, "") || "");
     let reportingStatus = _deriveReportingStatusFromFlags(currentFlags);
 
-    if (portfolioMeta.reason === 'approved-upcoming-60d') {
+    if (portfolioMeta.reason === 'approved-upcoming-60d' || portfolioMeta.reason === 'active-upcoming-start') {
       currentFlags = _stripReportingFlags(currentFlags, true);
       currentFlags = currentFlags ? ("UPCOMING START WINDOW\n" + currentFlags) : "UPCOMING START WINDOW";
       draft = "Action: Monitor schedule. Approved project is inside the rolling 60-day horizon and not expected to report yet.";
       fieldProduction = fieldProduction || "No reporting history yet. Upcoming within the 60-day planning window.";
       vendorComment = vendorComment || "Approved upcoming project inside the 60-day planning window.";
       reportingStatus = "upcoming";
+    } else if (portfolioMeta.reason === 'active-start-grace' || portfolioMeta.reason === 'reported-start-grace') {
+      currentFlags = _stripReportingFlags(currentFlags, false);
+      currentFlags = currentFlags ? ("REPORT PENDING\n" + currentFlags) : "REPORT PENDING";
+      draft = "Action: Monitor start. First daily report is expected on the next business day after CX Start.";
+      fieldProduction = fieldProduction || "Start-day grace window active. First daily report is not due until the next business day.";
+      vendorComment = vendorComment || "First daily report is due on the next business day after CX Start.";
+      reportingStatus = "pending";
     } else if (!portfolioMeta.expectDailyReport) {
       currentFlags = _stripReportingFlags(currentFlags, false);
       if (!overlay && portfolioMeta.isTerminalGraceOnly) {
-        fieldProduction = fieldProduction || "Terminal project remains visible during the portfolio grace window.";
-        vendorComment = vendorComment || "Visible in Active Portfolio through grace window.";
+        if (visibleInPortfolio) {
+          fieldProduction = fieldProduction || "Terminal project remains visible during the portfolio grace window.";
+          vendorComment = vendorComment || "Visible in Active Portfolio through grace window.";
+        } else {
+          fieldProduction = fieldProduction || "Terminal project is excluded from Active Portfolio but remains available through explicit search.";
+          vendorComment = vendorComment || "Search-only project outside the Active Portfolio grace window.";
+        }
       }
       reportingStatus = "current";
     } else if (!overlay) {
@@ -901,6 +1011,7 @@ function _buildPortfolioActionItems(options) {
       portfolioGraceUntil: portfolioMeta.graceUntil ? portfolioMeta.graceUntil.toISOString() : "",
       reportingStatus: reportingStatus,
       lastReportDate: lastReportDate,
+      searchOnlySuppressed: !visibleInPortfolio,
       qbRef: refData.qbRef || {},
       fiberTotalMiles: Number(Number((vStats.lifetime && vStats.lifetime.miles) || 0).toFixed(2)),
       vel: {
@@ -1025,6 +1136,11 @@ function getDashboardData() {
     fiberStats: fiberStats,
     defaultDrgTrackerUrl: defaultDrgTrackerUrl
   });
+  const searchProjects = _buildProjectSearchCatalog({
+    headers: headers,
+    rows: data.length > 1 ? data.slice(1) : [],
+    refDict: refDict
+  });
 
   let refDataDate = String(PropertiesService.getScriptProperties().getProperty('refDataImportDate') || "");
   let vendorCities = buildVendorCityCoordinateRecords(actionItems, cityCoordinates);
@@ -1040,11 +1156,53 @@ function getDashboardData() {
     refDataDate: refDataDate,
     lastIngestionTime: String(PropertiesService.getScriptProperties().getProperty('LAST_INGESTION_DATETIME') || ""),
     allFdhIds: Object.keys(refDict),
+    searchProjects: searchProjects,
     fiberStats: fiberStats
   };
   const serializedPayload = JSON.stringify(payload);
   try { putChunkedCache(cache, CACHE_KEY, serializedPayload, 1800); } catch(e) {}
   return JSON.parse(serializedPayload);
+}
+
+function _ensureDashboardSearchCatalog(payload) {
+  payload = payload || {};
+  if (Array.isArray(payload.searchProjects) && payload.searchProjects.length > 0) return payload;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
+  const data = (mirrorSheet && mirrorSheet.getLastRow() > 0) ? mirrorSheet.getDataRange().getValues() : [];
+  const headers = data.length > 0 ? data[0].map(String) : [];
+  payload.searchProjects = _buildProjectSearchCatalog({
+    headers: headers,
+    rows: data.length > 1 ? data.slice(1) : [],
+    refDict: getReferenceDictionary()
+  });
+  return payload;
+}
+
+function getProjectSearchHydration(fdh) {
+  const requestedFdh = String(fdh || "").trim().toUpperCase();
+  if (!requestedFdh) return null;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
+  const data = (mirrorSheet && mirrorSheet.getLastRow() > 0) ? mirrorSheet.getDataRange().getValues() : [];
+  const headers = data.length > 0 ? data[0].map(String) : [];
+  const refDict = getReferenceDictionary();
+  const fiberStats = getVendorHybridStats();
+  const defaultDrgTrackerUrl = VENDOR_TRACKER_ID ? `https://docs.google.com/spreadsheets/d/${VENDOR_TRACKER_ID}/edit` : "";
+
+  const items = _buildPortfolioActionItems({
+    headers: headers,
+    rows: data.length > 1 ? data.slice(1) : [],
+    refDict: refDict,
+    fiberStats: fiberStats,
+    defaultDrgTrackerUrl: defaultDrgTrackerUrl,
+    fdhFilter: requestedFdh,
+    includeSuppressed: true
+  });
+
+  return items.length ? items[0] : null;
 }
 
 // ─── Vendor Alias CRUD ────────────────────────────────────────────────────────
@@ -2650,7 +2808,7 @@ function getDashboardDataV2() {
   const cached = getChunkedCache(cache, CACHE_KEY);
   if (cached) {
     try {
-      return _decoratePayloadMeta(JSON.parse(cached), { source: 'cache' });
+      return _decoratePayloadMeta(_ensureDashboardSearchCatalog(JSON.parse(cached)), { source: 'cache' });
     } catch (e) {
       logMsg("⚠️ V2 Cache Parse Error: " + e.message);
     }
@@ -2672,7 +2830,7 @@ function getDashboardDataV2() {
     // Re-cache for future fast loads (30 mins)
     try { putChunkedCache(cache, CACHE_KEY, payloadStr, 1800); } catch(e) {}
     
-    return _decoratePayloadMeta(JSON.parse(payloadStr), {
+    return _decoratePayloadMeta(_ensureDashboardSearchCatalog(JSON.parse(payloadStr)), {
       source: 'drive',
       payloadFileId: file.getId(),
       payloadUpdatedAt: file.getLastUpdated().toISOString()
@@ -2735,6 +2893,11 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData, opt
       defaultDrgTrackerUrl: defaultDrgTrackerUrl
     });
     payloadTimings.actionItemsAssemblyMs = Date.now() - actionItemsStartMs;
+    const searchProjects = _buildProjectSearchCatalog({
+      headers: headers,
+      rows: reviewData,
+      refDict: refDict
+    });
 
     const vendorCityRecordsStartMs = Date.now();
     const vendorCityRecords = buildVendorCityCoordinateRecords(actionItems, cityCoordinates);
@@ -2748,6 +2911,7 @@ function buildAndSaveDashboardPayloadV2(reviewData, headers, highlightsData, opt
       headers: headers,
       refDataDate: String(PropertiesService.getScriptProperties().getProperty('refDataImportDate') || ""),
       allFdhIds: Object.keys(refDict),
+      searchProjects: searchProjects,
       fiberStats: fiberStats,
       generatedAt: new Date().toISOString()
     };

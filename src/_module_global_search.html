@@ -59,7 +59,10 @@
   }
 
   function _gsCollectProjectEntries() {
-    return (allActionItems || []).map(function(item) {
+    const sourceItems = (window._lastDashboardPayload && Array.isArray(window._lastDashboardPayload.searchProjects) && window._lastDashboardPayload.searchProjects.length)
+      ? window._lastDashboardPayload.searchProjects
+      : (allActionItems || []);
+    return sourceItems.map(function(item) {
       const fdh = String(item && item.fdh || '').trim();
       if (!fdh) return null;
       
@@ -91,7 +94,7 @@
           item.cdIntel, item.bsls, item.reportDate, item.targetDate, item.cxStart, item.cxEnd,
           item.ofsDate, item.canonicalOfsDate
         ].filter(Boolean).join(' \n '),
-        target: { kind: 'project', fdh: fdh },
+        target: { kind: 'project', fdh: fdh, searchOnlySuppressed: !!item.searchOnlySuppressed },
         highlightText: fdh
       };
     }).filter(Boolean);
@@ -525,16 +528,37 @@
 
   function _gsNavigateProject(target, query) {
     const fdh = String(target && target.fdh || '');
-    const item = (allActionItems || []).find(function(entry) { return String(entry && entry.fdh || '') === fdh; });
-    if (!item) return;
-    if (typeof switchWorkspaceView === 'function') switchWorkspaceView('detail');
-    setTimeout(function() {
-      if (typeof selectItemForNav === 'function') selectItemForNav(fdh);
-      else if (typeof openPane === 'function') openPane(item, null, true);
+    const openResolvedItem = function(item) {
+      if (!item) return;
+      if (typeof switchWorkspaceView === 'function') switchWorkspaceView('detail');
       setTimeout(function() {
-        _gsRevealElement(getEl('project-schedule-card') || getEl('main-qb-grid') || getEl('pane-content'), query || fdh);
-      }, 120);
-    }, 40);
+        if (typeof openPane === 'function') openPane(item, null, true);
+        setTimeout(function() {
+          _gsRevealElement(getEl('project-schedule-card') || getEl('main-qb-grid') || getEl('pane-content'), query || fdh);
+        }, 120);
+      }, 40);
+    };
+
+    const localItem = typeof findProjectItemByFdh === 'function'
+      ? findProjectItemByFdh(fdh)
+      : (allActionItems || []).find(function(entry) { return String(entry && entry.fdh || '') === fdh; });
+    if (localItem) {
+      openResolvedItem(localItem);
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(function(item) {
+        if (!item) {
+          if (typeof showToast === 'function') showToast('Project not available for detail hydration.', 'error');
+          return;
+        }
+        openResolvedItem(item);
+      })
+      .withFailureHandler(function(err) {
+        if (typeof showToast === 'function') showToast(`Search open failed: ${err.message}`, 'error');
+      })
+      .getProjectSearchHydration(fdh);
   }
 
   function _gsNavigateActivity(target, query) {

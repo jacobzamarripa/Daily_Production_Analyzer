@@ -342,7 +342,7 @@ function _performRenderGrid() {
 }
 
 function openPaneFromGrid(fdh) {
-    let item = filteredItems.find(i => i.fdh === fdh);
+    let item = filteredItems.find(i => i.fdh === fdh) || (typeof findProjectItemByFdh === 'function' ? findProjectItemByFdh(fdh) : null);
     if (!item) return;
 
     currentActiveItem = item;
