@@ -31,9 +31,11 @@
 }
 
 .upload-shell {
-  padding: 10px 28px 0;
+  padding: 18px 34px 0;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 96%, #ffffff);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 10%, transparent), transparent 32%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 94%, #ffffff) 0%, color-mix(in srgb, var(--bg) 98%, #ffffff) 100%);
 }
 
 .upload-intake-grid {
@@ -47,14 +49,26 @@
 .upload-stage-preview-shell,
 .upload-queue-shell,
 .upload-history-section {
-  background: color-mix(in srgb, var(--card-bg) 88%, white);
+  background: color-mix(in srgb, var(--card-bg) 90%, white);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
 }
 
 .upload-stage-card {
-  padding: 13px 14px;
+  position: relative;
+  min-height: 214px;
+  padding: 16px 16px 14px;
+  overflow: hidden;
+}
+
+.upload-stage-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: color-mix(in srgb, var(--border) 72%, transparent);
+  opacity: 0.9;
 }
 
 .upload-intake-grid-secondary {
@@ -67,23 +81,56 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
+}
+
+.upload-card-headcopy,
+.upload-queue-headcopy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.upload-card-stepmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: color-mix(in srgb, white 90%, var(--bg));
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
 }
 
 .upload-card-kicker {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .upload-card-title {
-  margin-top: 3px;
+  margin-top: 0;
   font-size: 15px;
-  line-height: 1.2;
+  line-height: 1.1;
   font-weight: 800;
   color: var(--text-main);
+}
+
+.upload-card-subtitle,
+.upload-queue-subtitle,
+.upload-overview-subtitle {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
 .upload-source-note,
@@ -98,31 +145,33 @@
 }
 
 .upload-pipeline-body {
-  margin-top: 12px;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
+  min-height: 64px;
 }
 
 .upload-pipeline-actions {
-  margin-top: 12px;
+  margin-top: auto;
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
+  padding-top: 12px;
 }
 
 .upload-pipeline-stat {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  padding: 9px 11px;
+  border-radius: 14px;
   border: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
-  background: color-mix(in srgb, white 82%, var(--bg));
+  background: color-mix(in srgb, white 88%, var(--bg));
 }
 
 .upload-pipeline-stat-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -131,7 +180,7 @@
 
 .upload-pipeline-stat-value,
 .upload-pipeline-meta {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-main);
 }
@@ -155,63 +204,76 @@
 .upload-pipeline-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  padding: 0 0 12px;
+  gap: 12px;
+  padding: 0 0 18px;
 }
 .upload-pipeline-row .upload-stage-card {
-  padding: 10px 12px;
-}
-.upload-pipeline-row .upload-card-kicker {
-  font-size: 9px;
-}
-.upload-pipeline-row .upload-card-title {
-  font-size: 13px;
-  margin-top: 2px;
+  padding: 16px 16px 14px;
 }
 .upload-pipeline-row .upload-pipeline-body {
-  margin-top: 8px;
-  gap: 5px;
-  min-height: 48px;
+  margin-top: 14px;
+  gap: 6px;
+  min-height: 74px;
 }
 .upload-pipeline-row .upload-pipeline-actions {
-  margin-top: 8px;
-  gap: 5px;
+  margin-top: auto;
+  gap: 8px;
+  padding-top: 12px;
 }
 
 .upload-stage-card.is-current {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.08);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: linear-gradient(180deg, color-mix(in srgb, white 92%, #eff6ff) 0%, color-mix(in srgb, var(--card-bg) 94%, white) 100%);
+  box-shadow: 0 18px 36px rgba(37, 99, 235, 0.1);
 }
 
 .upload-stage-card.is-complete {
   border-color: color-mix(in srgb, #16a34a 35%, var(--border));
-  background: color-mix(in srgb, var(--card-bg) 90%, #f0fdf4);
+  background: linear-gradient(180deg, color-mix(in srgb, white 92%, #f0fdf4) 0%, color-mix(in srgb, var(--card-bg) 94%, white) 100%);
 }
 
 .upload-stage-card.is-warning {
   border-color: color-mix(in srgb, #d97706 38%, var(--border));
-  background: color-mix(in srgb, var(--card-bg) 92%, #fffbeb);
+  background: linear-gradient(180deg, color-mix(in srgb, white 94%, #fffbeb) 0%, color-mix(in srgb, var(--card-bg) 95%, white) 100%);
 }
 
 .upload-stage-card.is-blocked:not(.upload-stage-card--locked) {
   border-color: color-mix(in srgb, var(--border) 88%, #cbd5e1);
+  background: linear-gradient(180deg, color-mix(in srgb, white 95%, #f8fafc) 0%, color-mix(in srgb, var(--card-bg) 96%, white) 100%);
+}
+
+.upload-stage-card.is-current::before {
+  background: color-mix(in srgb, var(--accent) 88%, white);
+}
+
+.upload-stage-card.is-complete::before {
+  background: #22c55e;
+}
+
+.upload-stage-card.is-warning::before {
+  background: #f59e0b;
+}
+
+.upload-stage-card.is-blocked::before {
+  background: #cbd5e1;
 }
 
 /* Step 4 locked state */
 .upload-stage-card--locked {
-  opacity: 0.45;
+  opacity: 0.72;
   pointer-events: none;
   user-select: none;
+  filter: saturate(0.88);
 }
 
 .upload-step-state-badge {
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  min-height: 22px;
+  min-height: 20px;
   padding: 0 8px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -273,9 +335,9 @@
 /* Step 2 loaded date chip */
 .du-loaded-chip {
   display: inline-block;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 99px;
   background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent);
@@ -294,7 +356,7 @@
   gap: 6px;
 }
 .du-vendor-summary-total {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-main);
 }
@@ -304,7 +366,7 @@
   gap: 4px;
 }
 .du-vendor-chip {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 99px;
@@ -459,8 +521,8 @@
 .upload-stage-preview-shell,
 .upload-queue-shell,
 .upload-history-section {
-  margin: 12px 28px 0;
-  padding: 14px;
+  margin: 16px 34px 0;
+  padding: 18px;
 }
 
 .upload-stage-view-switch {
@@ -632,42 +694,49 @@
 .upload-overview {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-bottom: 10px;
+  gap: 10px;
+  padding-bottom: 16px;
 }
 
 .upload-overview-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
 }
 
 .upload-overview-titleblock {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .upload-overview-kicker {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .upload-overview-title {
-  font-size: 17px;
-  line-height: 1.08;
+  font-size: 20px;
+  line-height: 1.02;
   font-weight: 800;
   color: var(--text-main);
   max-width: none;
 }
 
 .upload-overview-meta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, white 86%, var(--bg));
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   white-space: nowrap;
 }
@@ -675,22 +744,22 @@
 .upload-kpi-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .upload-kpi-chip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  min-height: 30px;
-  padding: 0 10px;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--card-bg) 90%, white);
+  background: color-mix(in srgb, var(--card-bg) 92%, white);
 }
 
 .upload-kpi-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -698,7 +767,7 @@
 }
 
 .upload-kpi-value {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 900;
   color: var(--text-main);
 }
@@ -840,8 +909,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 0;
+  gap: 12px;
+  padding: 12px 0 14px;
   flex-wrap: wrap;
 }
 
@@ -853,7 +922,7 @@
 .upload-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -865,11 +934,11 @@
 .upload-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .upload-field-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -883,15 +952,15 @@
 
 .upload-select,
 .upload-search {
-  height: 36px;
-  border-radius: 10px;
+  height: 34px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, white 92%, var(--bg));
   color: var(--text-main);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   font-family: inherit;
-  padding: 0 12px;
+  padding: 0 11px;
   outline: none;
 }
 
@@ -916,13 +985,13 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 10px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, white 82%, var(--card-bg));
   color: var(--text-main);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -964,7 +1033,7 @@
 }
 
 .upload-selection-info {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-muted);
 }
@@ -973,7 +1042,11 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  background: color-mix(in srgb, white 96%, var(--bg));
+  margin: 0 -2px -2px;
+  padding: 8px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, white 95%, var(--bg)) 0%, color-mix(in srgb, white 99%, var(--bg)) 100%);
 }
 
 .upload-table {
@@ -981,30 +1054,34 @@
   min-width: 1660px;
   border-collapse: collapse;
   table-layout: auto;
-  font-size: 13px;
+  font-size: 12px;
   background: white;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
 .upload-table thead th {
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 8px 12px;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-bottom: 2px solid #bdc1c6;
-  font-size: 12px;
-  font-weight: 700;
-  color: #3c4043;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ee;
+  border-bottom: 1px solid #cbd5e1;
+  font-size: 10px;
+  font-weight: 800;
+  color: #475569;
   text-align: left;
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  line-height: 1.4;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .upload-table thead th:hover {
-  background: #f1f3f4;
+  background: #f1f5f9;
 }
 
 .upload-table th .sort-arrow {
@@ -1022,19 +1099,21 @@
 }
 
 .upload-table tbody td {
-  padding: 4px 12px;
-  height: 38px;
-  border: 1px solid #dee2e6;
+  padding: 3px 10px;
+  height: 32px;
+  border: 1px solid #e2e8f0;
   background: #fff;
-  color: #202124;
+  color: #1e293b;
+  font-size: 11px;
   font-weight: 700;
   vertical-align: middle;
   overflow: visible;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .upload-table tbody tr:hover td {
-  background: #f8f9fa;
+  background: #f8fafc;
 }
 
 .upload-table tbody tr.row-dirty td {
@@ -1053,8 +1132,8 @@
 }
 
 .upload-table tbody tr.row-uploaded td {
-  color: #70757a;
-  background: #f1f3f4;
+  color: #64748b;
+  background: #f8fafc;
   font-weight: 400;
 }
 
@@ -1068,8 +1147,8 @@
   max-width: 48px;
   text-align: center;
   padding: 0;
-  background: #f8f9fa !important;
-  box-shadow: 2px 0 0 0 #dee2e6;
+  background: #f8fafc !important;
+  box-shadow: 1px 0 0 0 #dbe3ee;
 }
 
 .upload-table td.col-check {
@@ -1083,7 +1162,7 @@
   z-index: 90;
   width: 130px;
   min-width: 130px;
-  background: #f8f9fa !important;
+  background: #f8fafc !important;
 }
 
 .upload-table td:nth-child(2) {
@@ -1097,7 +1176,7 @@
   z-index: 90;
   width: 180px;
   min-width: 180px;
-  background: #f8f9fa !important;
+  background: #f8fafc !important;
 }
 
 .upload-table td:nth-child(3) {
@@ -1111,8 +1190,8 @@
   z-index: 90;
   width: 260px;
   min-width: 260px;
-  box-shadow: 2px 0 0 0 #bdc1c6;
-  background: #f8f9fa !important;
+  box-shadow: 1px 0 0 0 #cbd5e1;
+  background: #f8fafc !important;
 }
 
 .upload-table td:nth-child(4) {
@@ -1128,12 +1207,12 @@
 .upload-table td.col-comments,
 .upload-table th.col-comments {
   width: 99%;
-  min-width: 400px;
+  min-width: 340px;
   white-space: normal;
 }
 
 .upload-table td.col-comments {
-  line-height: 1.4;
+  line-height: 1.28;
 }
 
 .upload-table th.col-lime,
@@ -1154,7 +1233,7 @@
 
 .upload-table th.col-teal,
 .upload-table td.col-status {
-  min-width: 160px;
+  min-width: 144px;
 }
 
 .upload-table th.col-dark-navy:not(.col-fdh),
@@ -1163,15 +1242,15 @@
 }
 
 .upload-row-check {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   cursor: pointer;
 }
 
 .upload-cell-readonly {
   display: block;
-  padding: 6px 0;
-  line-height: 1.4;
+  padding: 4px 0;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1824,14 +1903,14 @@
 
 @media (max-width: 1024px) {
   .upload-shell {
-    padding: 10px 20px 0;
+    padding: 14px 22px 0;
   }
 
   .upload-stage-preview-shell,
   .upload-queue-shell,
   .upload-history-section {
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 22px;
+    margin-right: 22px;
   }
 
   .upload-overview-head {
@@ -1852,7 +1931,7 @@
 
 @media (max-width: 768px) {
   .upload-shell {
-    padding: 10px 14px 0;
+    padding: 12px 14px 0;
   }
 
   .upload-intake-grid,
@@ -1867,6 +1946,17 @@
   .upload-queue-head {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .upload-stage-card,
+  .upload-pipeline-row .upload-stage-card {
+    min-height: auto;
+  }
+
+  .upload-card-stepmark {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
   }
 
   .upload-toolbar {
@@ -1896,6 +1986,7 @@
   .upload-history-section {
     margin-left: 14px;
     margin-right: 14px;
+    padding: 14px;
   }
 
   .upload-modal-overlay {
@@ -2012,4 +2103,21 @@
   width: 100%;
   text-align: center;
 }
+.upload-rc-snapshot {
+  font-size: 11px;
+  color: #4b5563;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 14px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+}
+.upload-rc-snapshot a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.upload-rc-snapshot a:hover { text-decoration: underline; }
 </style>

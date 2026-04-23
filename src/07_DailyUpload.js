@@ -1630,7 +1630,12 @@ function uploadDailyRecordsToQB(rowIndices, options) {
     );
   }
 
-  return { batchId: batchId, success: success, failed: failed, skipped: skipped, duplicates: dupes, results: results };
+  var snapshotFile = null;
+  if (!dryRun) {
+    snapshotFile = _ensureDailyUploadSnapshot(options.targetDate || '', batchId, rowIndices);
+  }
+
+  return { batchId: batchId, success: success, failed: failed, skipped: skipped, duplicates: dupes, results: results, snapshotFile: snapshotFile };
 }
 
 /**
@@ -1921,6 +1926,65 @@ function uploadPendingRecordsAuto() {
                       .map(function(r) { return 'Row ' + r.rowIdx + ': ' + r.error; })
                       .join('\n')
     });
+  }
+}
+
+// --- SNAPSHOT ---
+
+/**
+ * Idempotent: ensures a batchId-keyed CSV snapshot exists in COMPILED_FOLDER_ID.
+ * If a file named Daily_Production_Report_{MM.dd.yy}_{batchId}.csv already exists,
+ * returns its metadata without creating a duplicate.  Fails silently (returns null).
+ * @param {string} dateStr - ISO date string for the upload date (e.g. '2026-04-21').
+ * @param {string} batchId - Unique batch identifier used as a file-name key.
+ * @param {Array<number>} rowIndices - 1-indexed row numbers to include in the snapshot.
+ * @returns {{ fileName: string, fileUrl: string }|null}
+ */
+function _ensureDailyUploadSnapshot(dateStr, batchId, rowIndices) {
+  try {
+    if (!batchId) return null;
+    var datePart = _formatDailyUploadDatePart(dateStr);
+    if (!datePart) return null;
+    var fileName = 'Daily_Production_Report_' + datePart + '_' + batchId + '.csv';
+    var folder = DriveApp.getFolderById(COMPILED_FOLDER_ID);
+    // Idempotent check — return early if this batch snapshot already exists
+    var existing = folder.getFilesByName(fileName);
+    if (existing.hasNext()) {
+      var f = existing.next();
+      return { fileName: f.getName(), fileUrl: f.getUrl() };
+    }
+    // Build CSV from the upload sheet
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(QB_UPLOAD_SHEET);
+    if (!sheet) return null;
+    var allData = sheet.getDataRange().getValues();
+    var headers = allData[0];
+    var rowSet = (rowIndices && rowIndices.length)
+      ? (function() {
+          var s = {};
+          rowIndices.forEach(function(r) { s[r - 1] = true; });
+          return s;
+        })()
+      : null;
+    var exportRows = [headers].concat(
+      allData.slice(1).filter(function(_, i) { return !rowSet || rowSet[i + 1]; })
+    );
+    function _esc(val) {
+      var s = (val instanceof Date)
+        ? Utilities.formatDate(val, Session.getScriptTimeZone(), 'MM/dd/yyyy')
+        : String(val === null || val === undefined ? '' : val);
+      if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+        s = '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }
+    var csv = exportRows.map(function(row) { return row.map(_esc).join(','); }).join('\r\n');
+    var created = folder.createFile(fileName, csv, MimeType.CSV);
+    logMsg('[DailyUpload] Snapshot created: ' + fileName + ' (' + (exportRows.length - 1) + ' rows)');
+    return { fileName: created.getName(), fileUrl: created.getUrl() };
+  } catch(e) {
+    logMsg('[DailyUpload] Snapshot failed (non-fatal): ' + _truncateDailyUploadLogValue(e.message, 180));
+    return null;
   }
 }
 

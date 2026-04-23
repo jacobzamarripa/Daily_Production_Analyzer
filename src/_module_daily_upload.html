@@ -332,7 +332,7 @@ function _duHasExportForLoadedDate() {
 }
 
 function _duCanRunFinalizeActions() {
-  return _duQueueApproved && _duHasExportForLoadedDate() && _duDirtyCount() === 0 && !_duIsSaving;
+  return _duQueueApproved && _duDirtyCount() === 0 && !_duIsSaving;
 }
 
 function _duBuildFinalizeHtml() {
@@ -349,8 +349,8 @@ function _duBuildFinalizeHtml() {
         ? '<div class="upload-pipeline-meta"><a href="' + _duEsc(_duExportStatus.fileUrl) + '" target="_blank" rel="noopener">Open export file</a></div>'
         : '');
   }
-  return '<div class="upload-step-state-badge is-current">Export Required</div>' +
-    '<div class="upload-pipeline-meta">No export found for ' + _duEsc(_duLoadedQueueDate || 'this queue') + '. Export a QB CSV first to create the record copy and unlock dry run / upload.</div>';
+  return '<div class="upload-step-state-badge is-warning">Export Recommended</div>' +
+    '<div class="upload-pipeline-meta">No manual export found for ' + _duEsc(_duLoadedQueueDate || 'this queue') + '. A snapshot will be created automatically on upload. You may also export now for an early backup.</div>';
 }
 
 function _duGetStepCardState(stepKey) {
@@ -1261,7 +1261,8 @@ function _duDoUpload(rowIndices, skipDuplicates, forceRows) {
     .uploadDailyRecordsToQB(rowIndices, {
       batchId: batchId,
       skipDuplicates: !!skipDuplicates,
-      forceRows: forceRows || []
+      forceRows: forceRows || [],
+      targetDate: _duLoadedQueueDate || ''
     });
 }
 
@@ -1806,6 +1807,10 @@ function _duRenderResultsCard(result) {
     ? '<div class="upload-rc-reconciled">' + reconciledRows.length + ' row' + (reconciledRows.length === 1 ? '' : 's') + ' reconciled from existing QB records</div>'
     : '';
 
+  var snapshotChip = (result.snapshotFile && result.snapshotFile.fileUrl)
+    ? '<div class="upload-rc-snapshot">Snapshot saved &rarr; <a href="' + _duEsc(result.snapshotFile.fileUrl) + '" target="_blank" rel="noopener">' + _duEsc(result.snapshotFile.fileName) + '</a></div>'
+    : '';
+
   var elapsedChip = elapsedSec
     ? '<div class="upload-rc-timing">' + elapsedSec + ' elapsed</div>'
     : '';
@@ -1839,6 +1844,7 @@ function _duRenderResultsCard(result) {
         '</div>' +
       '</div>' +
       reconciledNote +
+      snapshotChip +
       failList +
       '<div class="upload-rc-footer">' +
         retryBtn +
