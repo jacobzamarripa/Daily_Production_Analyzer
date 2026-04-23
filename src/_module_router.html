@@ -228,7 +228,7 @@ function syncGanttViewportLayout() {
         }
     }
     let pills = getEl('active-filter-pills');
-    if (pills && pills.childElementCount > 0 && getComputedStyle(pills).display !== 'none') {
+    if (pills && pills.childElementCount > 0 && getComputedStyle(pills).display !== 'none' && currentWorkspaceView !== 'gantt') {
         topOffset = Math.max(topOffset, Math.ceil(pills.getBoundingClientRect().bottom + 10));
     }
     // FULLSCREEN ORCHESTRATION: maintains the Gantt viewport's top offset as chrome enters or exits the frame
