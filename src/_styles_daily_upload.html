@@ -1539,7 +1539,7 @@ body.dark-mode .du-loaded-chip {
   position: sticky;
   top: 0;
   left: 0;
-  z-index: 110;
+  z-index: 200; /* must beat td.col-check (110) — tbody cells render above thead at same z-index */
 }
 
 .upload-table td.col-check {
