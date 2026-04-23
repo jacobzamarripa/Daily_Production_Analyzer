@@ -484,7 +484,7 @@ function renderList(items) {
         return sectionHtml;
     }
 
-    if (groupedSections.length > 0) {
+    if (groupedSections.length > 0 && currentViewMode !== 'grid') {
         html = groupedSections.map(renderSection).join('');
     } else {
         html = items.map(item => {
