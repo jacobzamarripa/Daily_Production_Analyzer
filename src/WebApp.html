@@ -995,18 +995,19 @@
       <div class="upload-shell">
         <div class="upload-overview">
           <div class="upload-overview-head">
-            <div class="upload-overview-titleblock">
+            <div class="upload-overview-titlebar">
+              <div class="upload-overview-titleblock">
               <div class="upload-overview-kicker">Upload Center</div>
-              <div class="upload-overview-title"><span>Daily</span> <span>Upload</span></div>
-              <div class="upload-overview-subtitle">Process the intake, lock the review date, approve the queue, then finalize the batch to QuickBase.</div>
+              <div class="upload-overview-title">DAILYUPLOAD</div>
+              </div>
+              <div class="upload-kpi-bar" id="upload-kpi-bar" aria-live="polite">
+                <div class="upload-kpi-chip kpi-pending"><span class="upload-kpi-label">Pending</span><span class="upload-kpi-value">—</span></div>
+                <div class="upload-kpi-chip kpi-uploaded"><span class="upload-kpi-label">Uploaded Today</span><span class="upload-kpi-value">—</span></div>
+                <div class="upload-kpi-chip kpi-uploaded"><span class="upload-kpi-label">Total Uploaded</span><span class="upload-kpi-value">—</span></div>
+                <div class="upload-kpi-chip kpi-failed"><span class="upload-kpi-label">Failed</span><span class="upload-kpi-value">—</span></div>
+              </div>
             </div>
             <div class="upload-overview-meta" id="upload-last-sync" aria-live="polite">Refreshing intake…</div>
-          </div>
-          <div class="upload-kpi-bar" id="upload-kpi-bar" aria-live="polite">
-            <div class="upload-kpi-chip kpi-pending"><span class="upload-kpi-label">Pending</span><span class="upload-kpi-value">—</span></div>
-            <div class="upload-kpi-chip kpi-uploaded"><span class="upload-kpi-label">Uploaded Today</span><span class="upload-kpi-value">—</span></div>
-            <div class="upload-kpi-chip kpi-uploaded"><span class="upload-kpi-label">Total Uploaded</span><span class="upload-kpi-value">—</span></div>
-            <div class="upload-kpi-chip kpi-failed"><span class="upload-kpi-label">Failed</span><span class="upload-kpi-value">—</span></div>
           </div>
         </div>
 
@@ -1019,7 +1020,6 @@
               <div class="upload-card-headcopy">
                 <div class="upload-card-kicker">Step 1</div>
                 <div class="upload-card-title">Process Incoming</div>
-                <div class="upload-card-subtitle">Ingest new vendor folders and refresh intake status.</div>
               </div>
             </div>
             <div class="upload-pipeline-body" id="upload-pipeline-incoming" aria-live="polite">
@@ -1038,7 +1038,6 @@
               <div class="upload-card-headcopy">
                 <div class="upload-card-kicker">Step 2</div>
                 <div class="upload-card-title">Load Date</div>
-                <div class="upload-card-subtitle">Load the recommended slice or pick a specific queue date.</div>
               </div>
             </div>
             <div class="upload-pipeline-body" id="upload-pipeline-target" aria-live="polite">
@@ -1061,7 +1060,6 @@
               <div class="upload-card-headcopy">
                 <div class="upload-card-kicker">Step 3</div>
                 <div class="upload-card-title">Review Queue</div>
-                <div class="upload-card-subtitle">Clear issues, confirm the ready rows, then lock the queue.</div>
               </div>
             </div>
             <div class="upload-pipeline-body" id="upload-queue-meta" aria-live="polite">Queue not loaded yet</div>
@@ -1077,7 +1075,6 @@
               <div class="upload-card-headcopy">
                 <div class="upload-card-kicker">Step 4</div>
                 <div class="upload-card-title">Finalize to QB</div>
-                <div class="upload-card-subtitle">Export the handoff, dry run the batch, then upload the approved rows.</div>
               </div>
             </div>
             <div class="upload-pipeline-body" id="upload-pipeline-final" aria-live="polite">
@@ -1104,12 +1101,9 @@
           <div class="upload-queue-headcopy">
             <div class="upload-card-kicker">Queue Review</div>
             <div class="upload-card-title">Review and finalize the current `1-QuickBase_Upload` contents.</div>
-            <div class="upload-queue-subtitle">Use the queue as the final compact check before export, dry run, and upload.</div>
           </div>
-        </div>
-
-        <div class="upload-toolbar">
-          <div class="upload-toolbar-left">
+          <div class="upload-toolbar upload-toolbar--queue-head">
+            <div class="upload-toolbar-left">
             <label class="upload-field">
               <span class="upload-field-label">Vendor</span>
               <select class="upload-select" id="upload-filter-vendor" aria-label="Filter upload rows by vendor" onchange="_duFilterVendor=this.value; _duApplyFilters()">
@@ -1124,15 +1118,16 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
               Edit Mode Off
             </button>
-          </div>
-          <div class="upload-toolbar-right">
-            <span class="upload-selection-info" id="upload-sel-info" aria-live="polite"></span>
-            <button class="upload-btn btn-ghost" id="upload-btn-save" type="button" disabled onclick="_duSaveDirtyRows()" title="Save pending inline edits to the staging sheet">Save</button>
-            <button class="upload-btn btn-ghost" id="upload-btn-revert" type="button" disabled onclick="_duRevertDirtyRows()" title="Discard all unsaved inline edits">Revert</button>
-            <button class="upload-btn btn-ghost" type="button" onclick="_duOpenMissingReportsModal()" title="Show vendors who have not submitted a report for this date">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Missing Reports
-            </button>
+            </div>
+            <div class="upload-toolbar-right">
+              <span class="upload-selection-info" id="upload-sel-info" aria-live="polite"></span>
+              <button class="upload-btn btn-ghost" id="upload-btn-save" type="button" disabled onclick="_duSaveDirtyRows()" title="Save pending inline edits to the staging sheet">Save</button>
+              <button class="upload-btn btn-ghost" id="upload-btn-revert" type="button" disabled onclick="_duRevertDirtyRows()" title="Discard all unsaved inline edits">Revert</button>
+              <button class="upload-btn btn-ghost" type="button" onclick="_duOpenMissingReportsModal()" title="Show vendors who have not submitted a report for this date">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Missing Reports
+              </button>
+            </div>
           </div>
         </div>
 

@@ -39,6 +39,8 @@ var _duIncomingFiles = [];
 var _duShowDatePicker = false;
 var _duExportStatus = null;
 var _duLastApprovalReason = '';
+var _duScrollBound = false;
+var _duStickyCompact = false;
 
 var _DU_COL_GROUP = {
   'Date':                       'col-dark-navy',
@@ -88,8 +90,30 @@ function initUploadWorkspace() {
     document.addEventListener('keydown', _duHandleModalKeydown);
     _duInitialized = true;
   }
+  _duBindScrollState();
   _duRefreshAll({ force: true });
+  _duSyncStickyState();
   setTimeout(_duInitColResizers, 50);
+}
+
+function _duBindScrollState() {
+  if (_duScrollBound) return;
+  var workspace = document.getElementById('upload-workspace');
+  if (!workspace) return;
+  workspace.addEventListener('scroll', _duSyncStickyState, { passive: true });
+  window.addEventListener('resize', _duSyncStickyState);
+  _duScrollBound = true;
+}
+
+function _duSyncStickyState() {
+  var workspace = document.getElementById('upload-workspace');
+  var pipelineRow = workspace ? workspace.querySelector('.upload-pipeline-row') : null;
+  if (!workspace || !pipelineRow) return;
+  var stickyThreshold = Math.max(0, pipelineRow.offsetTop - 8);
+  var isCompact = workspace.scrollTop >= stickyThreshold;
+  workspace.classList.toggle('upload-workspace--pipeline-stuck', isCompact);
+  if (_duStickyCompact === isCompact) return;
+  _duStickyCompact = isCompact;
 }
 
 function _duRefreshAll(options) {
@@ -284,6 +308,7 @@ function _duRenderPipeline() {
   _duRenderStepGates();
   _duApplyStepCardStates();
   _duRenderLastSync();
+  _duSyncStickyState();
 }
 
 function _duBuildVendorSummaryHtml() {
@@ -331,11 +356,11 @@ function _duGetQueueHealth() {
 function _duBuildQueueReviewHtml() {
   var health = _duGetQueueHealth();
   return _duBuildVendorSummaryHtml() +
-    '<div class="upload-pipeline-meta">' +
+    '<div class="du-step-inline-status"><span class="upload-step-state-badge ' + (health.flagged > 0 ? 'is-warning' : 'is-complete') + '">' +
       health.ready + ' ready' +
       ' · ' + health.flagged + ' flagged' +
       (health.blocking > 0 ? ' · ' + health.blocking + ' blocking' : '') +
-    '</div>';
+    '</span></div>';
 }
 
 function _duHasExportForLoadedDate() {
@@ -785,6 +810,7 @@ function _duRenderToolbar() {
   }
   _duUpdateFinalizeActionLabels(selectedPending.length);
   _duRenderLastSync();
+  _duSyncStickyState();
 }
 
 function _duRenderTable() {
@@ -845,6 +871,7 @@ function _duRenderTable() {
   tbody.innerHTML = html;
   _duApplyColWidths();
   _duSyncSortHeaders();
+  _duSyncStickyState();
 }
 
 function _duGetCellAnnotation(col, v) {
