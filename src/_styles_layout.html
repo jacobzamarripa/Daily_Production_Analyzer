@@ -544,6 +544,45 @@
           font-size: 12px;
           font-weight: 700;
         }
+        .outbox-pane .review-hub-empty {
+          min-height: 240px;
+          height: auto;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 8px;
+          margin: 18px 14px;
+          padding: 22px 18px !important;
+          border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
+          border-radius: 18px;
+          background: color-mix(in srgb, var(--bg) 88%, var(--card-bg));
+          box-shadow: none;
+        }
+        .outbox-pane .review-hub-empty--filtered {
+          min-height: 200px;
+        }
+        .outbox-pane .review-hub-empty-kicker {
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--accent);
+        }
+        .outbox-pane .review-hub-empty-title {
+          font-size: 18px;
+          line-height: 1.05;
+          font-weight: 900;
+          letter-spacing: -0.03em;
+          color: var(--text-main);
+        }
+        .outbox-pane .review-hub-empty-body {
+          max-width: 28ch;
+          font-size: 11px;
+          line-height: 1.5;
+          font-weight: 700;
+          color: var(--text-muted);
+        }
         /* WS20 Phase 5: Gantt panel — match workspace shell geometry when active */
         body.gantt-view-active #gantt-panel {
           left: var(--desktop-shell-inset, 16px) !important;

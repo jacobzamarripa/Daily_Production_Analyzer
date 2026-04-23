@@ -186,24 +186,80 @@
           gap: 12px;
           padding: 10px 14px;
           border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-          background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+          background: color-mix(in srgb, var(--vendor-accent-row, transparent) 100%, var(--card-bg));
           position: sticky;
           top: 0;
           z-index: 4;
           cursor: pointer;
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          box-shadow:
+              inset 4px 0 0 var(--vendor-accent, transparent),
+              inset 0 -1px 0 color-mix(in srgb, var(--border) 62%, transparent);
       }
       .queue-group-title {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
           min-width: 0;
           color: var(--text-main);
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 900;
           letter-spacing: 0.05em;
           text-transform: uppercase;
+          flex: 1 1 auto;
+      }
+      .queue-group-title-copy {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+      }
+      .queue-group-name {
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+      }
+      .queue-group-monogram {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 29px;
+          height: 29px;
+          border-radius: 999px;
+          background: color-mix(in srgb, var(--vendor-accent) 90%, white 10%);
+          border: 1px solid color-mix(in srgb, var(--vendor-accent-strong) 78%, #000 22%);
+          color: #ffffff;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          flex-shrink: 0;
+          box-shadow: none;
+      }
+      .queue-group-meta {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 5px;
+          min-width: 0;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: none;
+          color: color-mix(in srgb, var(--text-muted) 86%, var(--vendor-accent-text));
+      }
+      .queue-group-meta-sep {
+          color: var(--vendor-accent, var(--text-muted));
+      }
+      .queue-group-title--compact {
+          gap: 8px;
+      }
+      .queue-group-title--compact .queue-group-monogram {
+          width: 25px;
+          height: 25px;
+          font-size: 10px;
+      }
+      .queue-group-meta--compact {
+          font-size: 8px;
       }
       /* 🎬 Animation: Staggered Cascade Entrance */
       @keyframes portfolioGroupEnter {
@@ -248,14 +304,15 @@
           align-items: center;
           justify-content: center;
           min-width: 24px;
-          padding: 3px 8px;
+          padding: 4px 8px;
           border-radius: 999px;
-          border: 1px solid var(--border);
-          background: color-mix(in srgb, var(--bg) 72%, transparent);
-          color: var(--text-main);
+          border: 1px solid color-mix(in srgb, var(--vendor-accent) 34%, var(--border));
+          background: color-mix(in srgb, white 82%, var(--vendor-accent-row));
+          color: var(--vendor-accent-strong, var(--text-main));
           font-size: 10px;
           font-weight: 900;
           flex-shrink: 0;
+          box-shadow: none;
       }
       .queue-group-body {
           display: grid;
@@ -281,12 +338,8 @@
       }
       .queue-group.is-sub-group .queue-group-header {
           padding: 6px 14px;
-          background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+          background: color-mix(in srgb, var(--vendor-accent-row, transparent) 76%, var(--card-bg));
           border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
-      }
-      .queue-group.is-sub-group .queue-group-title {
-          font-size: 10px;
-          color: var(--text-muted);
       }
       .queue-group.is-sub-group .queue-group-count {
           min-width: 20px;
@@ -528,10 +581,10 @@
             flex-shrink: 1 !important;
             min-height: 0 !important;
 
-            background: var(--card-bg);
+            background: color-mix(in srgb, var(--card-bg) 96%, white);
             border-radius: 20px !important;
-            border: 1.5px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            border: 1.5px solid color-mix(in srgb, var(--border) 94%, rgba(148,163,184,0.22));
+            box-shadow: 0 10px 24px rgba(15,23,42,0.06), 0 2px 6px rgba(15,23,42,0.04);
             overflow: visible;
             transition: outline 0.2s, background 0.3s, border-color 0.3s, box-shadow 0.3s;
             align-self: center !important;
@@ -543,7 +596,7 @@
             gap: 0 !important;
             width: 100% !important;
             align-items: stretch !important;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 86%, rgba(148,163,184,0.16));
         }
       #project-schedule-card {
             flex: 40 1 260px !important;
@@ -556,8 +609,8 @@
             min-width: 300px !important;
         }
 
-      .qb-module { background: transparent; border-radius: 0 !important; border: none; padding: 16px 20px; display: flex; flex-direction: column; position: relative; }
-      .qb-module-header { font-size: 11px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;}
+      .qb-module { background: transparent; border-radius: 0 !important; border: none; padding: 18px 22px; display: flex; flex-direction: column; position: relative; }
+      .qb-module-header { font-size: 11px; font-weight: bold; color: color-mix(in srgb, var(--text-muted) 88%, var(--text-main)); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid color-mix(in srgb, var(--border) 84%, rgba(148,163,184,0.16)); padding-bottom: 8px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;}
       @media (max-width: 820px) {
           #project-schedule-card {
               border-right: none;

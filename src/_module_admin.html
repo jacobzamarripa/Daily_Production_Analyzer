@@ -259,7 +259,12 @@ function renderAdminPane(items) {
     if (!pane) return;
     if (!items || items.length === 0) {
         syncReviewHubHeaderCount();
-        pane.innerHTML = '<div class="empty-msg" style="padding:40px 20px;">No admin tasks.</div>';
+        pane.innerHTML = `
+            <div class="empty-msg review-hub-empty">
+                <div class="review-hub-empty-kicker">Action Center</div>
+                <div class="review-hub-empty-title">No admin tasks.</div>
+                <div class="review-hub-empty-body">Crossings, status mismatches, and BOM reviews are clear for the current portfolio slice.</div>
+            </div>`;
         return;
     }
 
@@ -323,7 +328,12 @@ function renderAdminPane(items) {
         }, 'status');
     }
 
-    if (html === '') html = '<div class="empty-msg" style="padding:40px 20px;">No items in this category.</div>';
+    if (html === '') html = `
+        <div class="empty-msg review-hub-empty review-hub-empty--filtered">
+            <div class="review-hub-empty-kicker">Filtered View</div>
+            <div class="review-hub-empty-title">No items in this category.</div>
+            <div class="review-hub-empty-body">The current filter is quiet. Switch categories or choose another task type to continue reviewing.</div>
+        </div>`;
 
     pane.innerHTML = html;
 

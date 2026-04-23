@@ -445,14 +445,20 @@ function renderList(items) {
         let animClass = shouldAnimateEntrance ? 'animate-enter' : '';
         let animStyle = shouldAnimateEntrance ? `style="animation-delay: ${delay}ms;"` : '';
 
+        const useVendorTaxonomy = currentGroupBy === 'vendor';
+        const headerStyle = useVendorTaxonomy ? ` style="${getVendorThemeStyle(section.label)}"` : '';
+        const headerTitle = useVendorTaxonomy
+            ? renderVendorGroupHeader(section.label, section.items, { compact: !!section.isSubGroup })
+            : `<div class="queue-group-title">
+                    <span class="queue-group-toggle"></span>
+                    <span>${esc(section.label)}</span>
+               </div>`;
+
         let sectionHtml = `
             <div class="queue-group ${animClass} ${section.isSubGroup ? 'is-sub-group' : ''} ${collapsed ? 'collapsed-state' : ''}" 
                  data-key="${section.key}" ${animStyle}>
-                <div class="queue-group-header" onclick="toggleQueueGroupSection('${section.key}')">
-                    <div class="queue-group-title">
-                        <span class="queue-group-toggle"></span>
-                        <span>${esc(section.label)}</span>
-                    </div>
+                <div class="queue-group-header"${headerStyle} onclick="toggleQueueGroupSection('${section.key}')">
+                    ${headerTitle}
                     <span class="queue-group-count">${section.items.length}</span>
                 </div>
                 <div class="queue-group-body ${collapsed ? 'collapsed' : ''}">

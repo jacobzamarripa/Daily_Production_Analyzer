@@ -12,6 +12,103 @@
           return style.display !== 'none' && style.visibility !== 'hidden' && !el.classList.contains('collapsed');
       }
 
+      function getVendorTheme(vendorName) {
+          const clean = String(vendorName || 'Unknown Vendor').trim() || 'Unknown Vendor';
+          let hash = 0;
+          for (let i = 0; i < clean.length; i++) {
+              hash = ((hash << 5) - hash) + clean.charCodeAt(i);
+              hash |= 0;
+          }
+          const themes = [
+              {
+                  accent: '#2563eb',
+                  accentStrong: '#1d4ed8',
+                  accentText: '#1e3a8a',
+                  accentSoft: 'rgba(37, 99, 235, 0.12)',
+                  accentRow: 'rgba(37, 99, 235, 0.10)',
+                  accentBorder: 'rgba(37, 99, 235, 0.28)'
+              },
+              {
+                  accent: '#64748b',
+                  accentStrong: '#475569',
+                  accentText: '#334155',
+                  accentSoft: 'rgba(100, 116, 139, 0.10)',
+                  accentRow: 'rgba(148, 163, 184, 0.12)',
+                  accentBorder: 'rgba(100, 116, 139, 0.24)'
+              },
+              {
+                  accent: '#cbd5e1',
+                  accentStrong: '#94a3b8',
+                  accentText: '#475569',
+                  accentSoft: 'rgba(255, 255, 255, 0.72)',
+                  accentRow: 'rgba(255, 255, 255, 0.78)',
+                  accentBorder: 'rgba(148, 163, 184, 0.22)'
+              }
+          ];
+          return themes[Math.abs(hash) % themes.length];
+      }
+
+      function getVendorMonogram(vendorName) {
+          const clean = String(vendorName || 'Unknown Vendor').replace(/[^A-Za-z0-9 ]+/g, ' ').trim();
+          if (!clean) return 'UN';
+          const parts = clean.split(/\s+/).filter(Boolean);
+          if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+          return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+
+      function getVendorDueSoonCount(items) {
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          const soonMs = 14 * 24 * 60 * 60 * 1000;
+          return (items || []).filter(item => {
+              if (!item || isCompleteOrOfs(item)) return false;
+              const candidate = item.targetDate || item.cxEnd || item.ofsDate || '';
+              const dt = candidate ? new Date(candidate) : null;
+              if (!dt || isNaN(dt)) return false;
+              dt.setHours(0, 0, 0, 0);
+              const delta = dt.getTime() - now.getTime();
+              return delta >= 0 && delta <= soonMs;
+          }).length;
+      }
+
+      function getVendorCriticalCount(items) {
+          return (items || []).filter(item => {
+              const flags = String(item && item.flags || '').split('\n').map(f => f.trim()).filter(Boolean);
+              return flags.some(flag => getDiagnosticTagClass(flag) === 'tag-red');
+          }).length;
+      }
+
+      function renderVendorGroupHeader(label, items, opts) {
+          const vendor = String(label || 'Unknown Vendor').trim() || 'Unknown Vendor';
+          const theme = getVendorTheme(vendor);
+          const monogram = getVendorMonogram(vendor);
+          const activeCount = (items || []).length;
+          const criticalCount = getVendorCriticalCount(items);
+          const dueSoonCount = getVendorDueSoonCount(items);
+          const meta = [
+              `${activeCount} active`,
+              `${criticalCount} critical`,
+              `${dueSoonCount} due soon`
+          ];
+          const titleClass = opts && opts.compact ? ' queue-group-title--compact' : '';
+          const metaClass = opts && opts.compact ? ' queue-group-meta--compact' : '';
+          return `
+              <div class="queue-group-title${titleClass}">
+                  <span class="queue-group-toggle"></span>
+                  <span class="queue-group-monogram" aria-hidden="true">${esc(monogram)}</span>
+                  <span class="queue-group-title-copy">
+                      <span class="queue-group-name">${esc(vendor)}</span>
+                      <span class="queue-group-meta${metaClass}">${meta.map(esc).join('<span class="queue-group-meta-sep">•</span>')}</span>
+                  </span>
+              </div>
+          `;
+      }
+
+      function getVendorThemeStyle(vendorName) {
+          const theme = getVendorTheme(vendorName);
+          return `--vendor-accent:${theme.accent}; --vendor-accent-strong:${theme.accentStrong}; --vendor-accent-text:${theme.accentText}; --vendor-accent-soft:${theme.accentSoft}; --vendor-accent-row:${theme.accentRow}; --vendor-accent-border:${theme.accentBorder};`;
+      }
+
       // TODO: DOM-COUPLED - extract after state layer is isolated
       function syncDockLayoutSpacing() {
           const dock = getEl('filter-strip');
@@ -1091,11 +1188,8 @@
               
               groupsHtml += `
                   <div class="queue-group collapsed-state" data-key="${groupKey}">
-                      <div class="queue-group-header" onclick="toggleAdminGroupSection(this)">
-                          <div class="queue-group-title">
-                              <span class="queue-group-toggle"></span>
-                              <span>${esc(vendor)}</span>
-                          </div>
+                      <div class="queue-group-header queue-group-header--admin" style="${getVendorThemeStyle(vendor)}" onclick="toggleAdminGroupSection(this)">
+                          ${renderVendorGroupHeader(vendor, vendorItems, { compact: true })}
                           <span class="queue-group-count">${vendorItems.length}</span>
                       </div>
                       <div class="queue-group-body collapsed">
