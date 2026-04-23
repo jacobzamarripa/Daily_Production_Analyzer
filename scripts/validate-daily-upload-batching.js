@@ -34,6 +34,8 @@ function assertEqual(actual, expected, label) {
 }
 
 const source = read('src/07_DailyUpload.js');
+assert(/if \(dryRun\) \{[\s\S]*_fetchDailyUploadDuplicateLookup\(uploadItems\)[\s\S]*isDuplicate: !!dupeCandidate[\s\S]*existingRecordId:/m.test(source), 'Dry-run path uses bulk duplicate preflight and exposes duplicate preview fields');
+assert(/const token\s*=\s*_getDailyUploadToken\(\);/.test(source), 'Live upload path initializes the QuickBase token before batch inserts');
 const context = {
   console,
   Session: {

@@ -1446,18 +1446,6 @@ function uploadDailyRecordsToQB(rowIndices, options) {
     const fdhVal   = rowObj['FDH Engineering ID'];
     const vendor   = rowObj['Contractor'];
 
-    if (dryRun) {
-      const record     = buildQBRecordPayload(rowObj, fidMap);
-      const unmapped   = QB_HEADERS.filter(function(h) { return !_resolveFieldFid(h, fidMap); });
-      results.push({
-        rowIdx: rowIdx, status: 'dry-run',
-        fdh: fdhVal, vendor: vendor,
-        mappedFields: Object.keys(record).length,
-        unmappedFields: unmapped,
-        isDuplicate: isDupe
-      });
-      continue;
-    }
     uploadItems.push({
       rowIdx: rowIdx,
       rowData: rowData,
@@ -1469,7 +1457,28 @@ function uploadDailyRecordsToQB(rowIndices, options) {
     });
   }
 
-  if (!dryRun && uploadItems.length) {
+  if (dryRun) {
+    var dryRunDuplicateLookup = _fetchDailyUploadDuplicateLookup(uploadItems);
+    uploadItems.forEach(function(item) {
+      var record = buildQBRecordPayload(item.rowObj, fidMap);
+      var unmapped = QB_HEADERS.filter(function(h) { return !_resolveFieldFid(h, fidMap); });
+      var keyInfo = item.duplicateKeyInfo || _buildDailyUploadDuplicateKey(item.dateVal, item.fdhVal, item.vendor);
+      var dupeCandidate = keyInfo.key ? dryRunDuplicateLookup[keyInfo.key] : null;
+      results.push({
+        rowIdx: item.rowIdx,
+        status: 'dry-run',
+        fdh: item.fdhVal,
+        vendor: item.vendor,
+        mappedFields: Object.keys(record).length,
+        unmappedFields: unmapped,
+        isDuplicate: !!dupeCandidate,
+        existingRecordId: dupeCandidate ? dupeCandidate.recordId : ''
+      });
+    });
+    return { batchId: batchId, success: 0, failed: 0, skipped: 0, duplicates: 0, results: results };
+  }
+
+  if (uploadItems.length) {
     var duplicateLookup = _fetchDailyUploadDuplicateLookup(uploadItems);
     var pendingUploads = [];
 
