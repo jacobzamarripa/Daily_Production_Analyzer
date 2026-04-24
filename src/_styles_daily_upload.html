@@ -93,9 +93,10 @@
   flex: 1 1 auto;
   padding-right: 64px;
   max-height: 80px;
+  max-width: 999px;
   opacity: 1;
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.22s ease, padding 0.22s ease;
+  transition: max-height 0.3s ease, max-width 0.3s ease, opacity 0.22s ease, padding 0.22s ease;
 }
 
 .upload-stage-card--incoming .upload-card-headcopy {
@@ -2837,7 +2838,7 @@ body.dark-mode .du-loaded-chip {
    The pipeline shrinks in-place at the top of the flex column. */
 
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row {
-  border-radius: 0 0 14px 14px;
+  border-radius: 16px;
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
 }
 
@@ -2846,31 +2847,46 @@ body.dark-mode .du-loaded-chip {
   display: none;
 }
 
+/* Card becomes a single horizontal row: [step icon] [buttons] */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-stage-card {
-  min-height: 56px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
   padding: 8px 10px;
 }
 
+/* Step icon: fixed size, doesn't grow */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-head {
+  flex-shrink: 0;
   align-items: center;
-  gap: 8px;
+  gap: 0;
 }
 
-/* Graceful collapse: use max-height/opacity instead of display:none for smooth animation */
+/* Headcopy collapses inside its parent (parent is now a flex row, so collapse height + width) */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-headcopy {
   max-height: 0;
+  max-width: 0;
   opacity: 0;
-  padding-right: 0;
+  overflow: hidden;
+  padding: 0;
 }
 
+/* Pipeline body: pinch out of the row entirely */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-body {
+  flex: 0 0 0;
+  width: 0;
   max-height: 0;
   opacity: 0;
-  margin-top: 0;
+  margin: 0;
+  padding: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
+/* Actions: fill remaining row space, single line */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-actions {
+  flex: 1;
   margin-top: 0;
   padding-top: 0;
   flex-wrap: nowrap;
@@ -2889,31 +2905,44 @@ body.dark-mode .du-loaded-chip {
 }
 
 @media (max-width: 768px) {
-  /* On mobile, never apply the compact pipeline state — keep pipeline fully visible */
+  /* On mobile, JS guard prevents stuck class — these are just CSS safety resets */
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row {
     border-radius: 16px;
     box-shadow: none;
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-stage-card {
+    flex-direction: column;
+    align-items: stretch;
     min-height: auto;
     padding: 12px 12px 10px;
+    gap: 0;
+  }
+
+  #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-head {
+    flex-shrink: 1;
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-headcopy {
     max-height: 80px;
+    max-width: none;
     opacity: 1;
+    overflow: visible;
     padding-right: 64px;
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-body {
+    flex: 1 1 auto;
+    width: auto;
     max-height: 250px;
     opacity: 1;
     margin-top: 10px;
     min-height: 34px;
+    overflow: visible;
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-actions {
+    flex: none;
     margin-top: auto;
     padding-top: 8px;
     flex-wrap: wrap;
