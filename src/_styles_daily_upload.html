@@ -59,7 +59,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: min-height 0.3s ease, padding 0.25s ease;
+  transition: min-height 0.25s ease-out, padding 0.25s ease-out;
+  will-change: min-height;
 }
 
 .upload-stage-card::before {
@@ -96,7 +97,8 @@
   max-width: 999px;
   opacity: 1;
   overflow: hidden;
-  transition: max-height 0.3s ease, max-width 0.3s ease, opacity 0.22s ease, padding 0.22s ease;
+  transition: max-height 0.25s ease-out, max-width 0.25s ease-out, opacity 0.2s ease-out, padding 0.2s ease-out;
+  will-change: max-height, opacity;
 }
 
 .upload-stage-card--incoming .upload-card-headcopy {
@@ -177,7 +179,8 @@
   max-height: 250px;
   opacity: 1;
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.22s ease, margin-top 0.22s ease, min-height 0.22s ease;
+  transition: max-height 0.25s ease-out, opacity 0.2s ease-out, margin-top 0.2s ease-out, min-height 0.2s ease-out;
+  will-change: max-height, opacity;
 }
 
 .upload-pipeline-actions {
@@ -2847,23 +2850,20 @@ body.dark-mode .du-loaded-chip {
   display: none;
 }
 
-/* Card becomes a single horizontal row: [step icon] [buttons] */
+/* Card: keep column layout — no flex-direction flip (avoids snap jitter).
+   Actions are absolutely positioned to appear beside the step icon. */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-stage-card {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
   min-height: 52px;
   padding: 8px 10px;
 }
 
-/* Step icon: fixed size, doesn't grow */
+/* Step icon row: normal flow */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-head {
-  flex-shrink: 0;
   align-items: center;
   gap: 0;
 }
 
-/* Headcopy collapses inside its parent (parent is now a flex row, so collapse height + width) */
+/* Headcopy: collapse height only (card stays column) */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-headcopy {
   max-height: 0;
   max-width: 0;
@@ -2872,10 +2872,8 @@ body.dark-mode .du-loaded-chip {
   padding: 0;
 }
 
-/* Pipeline body: pinch out of the row entirely */
+/* Pipeline body: collapse out of flow */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-body {
-  flex: 0 0 0;
-  width: 0;
   max-height: 0;
   opacity: 0;
   margin: 0;
@@ -2884,9 +2882,13 @@ body.dark-mode .du-loaded-chip {
   overflow: hidden;
 }
 
-/* Actions: fill remaining row space, single line */
+/* Actions: float to the right, vertically centered — no layout reflow on transition */
 #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-actions {
-  flex: 1;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: calc(100% - 56px); /* leave room for stepmark */
   margin-top: 0;
   padding-top: 0;
   flex-wrap: nowrap;
@@ -2912,15 +2914,8 @@ body.dark-mode .du-loaded-chip {
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-stage-card {
-    flex-direction: column;
-    align-items: stretch;
     min-height: auto;
     padding: 12px 12px 10px;
-    gap: 0;
-  }
-
-  #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-head {
-    flex-shrink: 1;
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-card-headcopy {
@@ -2932,8 +2927,6 @@ body.dark-mode .du-loaded-chip {
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-body {
-    flex: 1 1 auto;
-    width: auto;
     max-height: 250px;
     opacity: 1;
     margin-top: 10px;
@@ -2942,6 +2935,11 @@ body.dark-mode .du-loaded-chip {
   }
 
   #upload-workspace.upload-workspace--pipeline-stuck .upload-pipeline-row .upload-pipeline-actions {
+    position: static;
+    top: auto;
+    right: auto;
+    transform: none;
+    width: auto;
     flex: none;
     margin-top: auto;
     padding-top: 8px;
