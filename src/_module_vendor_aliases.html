@@ -173,6 +173,7 @@ function _renderAliasManager() {
         return;
     }
 
+    const list = _aliasTab === 'custom' ? _aliasData.custom : _aliasData.builtin;
     let html = list.map(a => {
         let del = _aliasTab === 'custom'
             ? `<button onclick="_deleteAlias('${a.raw.replace(/'/g,"\\'")}', this)" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:16px; padding:0 8px; line-height:1;" title="Remove">x</button>`
