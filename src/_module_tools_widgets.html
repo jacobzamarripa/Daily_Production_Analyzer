@@ -276,6 +276,13 @@
       document.querySelectorAll('.cal-view-btn').forEach(function(btn) {
           btn.classList.toggle('is-active', btn.getAttribute('data-view') === mode);
       });
+      var isHorizon = (mode === 'horizon');
+      var grid = document.getElementById('cal-grid');
+      var controls = document.querySelector('#cal-widget .cal-controls');
+      var horizonWrapper = document.getElementById('cal-horizon-wrapper');
+      if (grid) grid.style.display = isHorizon ? 'none' : '';
+      if (controls) controls.style.display = isHorizon ? 'none' : '';
+      if (horizonWrapper) horizonWrapper.style.display = isHorizon ? '' : 'none';
       renderCalendar();
   }
 
@@ -666,12 +673,244 @@
   }
 
   // ─────────────────────────────────────────────────
-  // MAIN RENDER ROUTER
+  // NAV BADGE — global overdue count across all items
   // ─────────────────────────────────────────────────
+
+  function computeGlobalOverdueCount() {
+      var items = getCalendarItems();
+      var count = 0;
+      var now = new Date();
+      now.setHours(0, 0, 0, 0);
+      (items || []).forEach(function(item) {
+          if (!item) return;
+          var dates = [
+              { raw: item.cxEnd, type: 'complete' },
+              { raw: getEffectiveOfsRaw(item), type: 'ofs' }
+          ];
+          dates.forEach(function(d) {
+              if (!d.raw) return;
+              var parsed = safeDate(d.raw);
+              if (!parsed || isNaN(parsed.getTime())) return;
+              var ms = new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+              ms.setHours(0, 0, 0, 0);
+              if (ms < now) count++;
+          });
+      });
+      return count;
+  }
+
+  function updateCalNavBadge(count) {
+      var badges = document.querySelectorAll('.cal-nav-badge');
+      badges.forEach(function(b) {
+          if (count > 0) {
+              b.style.display = '';
+              b.textContent = count > 99 ? '99+' : String(count);
+          } else {
+              b.style.display = 'none';
+              b.textContent = '';
+          }
+      });
+  }
+
+  // ─────────────────────────────────────────────────
+  // TODAY SPOTLIGHT BANNER
+  // ─────────────────────────────────────────────────
+
+  function updateCalSpotlight(items) {
+      var strip = document.getElementById('cal-spotlight');
+      if (!strip) return;
+      var now = new Date();
+      now.setHours(0, 0, 0, 0);
+      var in7 = new Date(now);
+      in7.setDate(in7.getDate() + 7);
+
+      var todayItems = [], overdueItems = [], nextUpItem = null, nextUpDays = Infinity;
+
+      (items || []).forEach(function(item) {
+          if (!item) return;
+          var checks = [
+              { raw: item.cxEnd, type: 'complete' },
+              { raw: getEffectiveOfsRaw(item), type: 'ofs' },
+              { raw: item.cxStart, type: 'start' }
+          ];
+          checks.forEach(function(c) {
+              if (!c.raw) return;
+              var parsed = safeDate(c.raw);
+              if (!parsed || isNaN(parsed.getTime())) return;
+              var ms = new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+              ms.setHours(0, 0, 0, 0);
+              if (ms.getTime() === now.getTime()) {
+                  todayItems.push({ fdh: item.fdh, type: c.type });
+              } else if ((c.type === 'complete' || c.type === 'ofs') && ms < now) {
+                  overdueItems.push({ fdh: item.fdh, type: c.type });
+              } else if (ms > now && ms <= in7) {
+                  var days = Math.round((ms - now) / 86400000);
+                  if (days < nextUpDays) {
+                      nextUpDays = days;
+                      nextUpItem = { fdh: item.fdh, type: c.type, days: days };
+                  }
+              }
+          });
+      });
+
+      var html = '';
+      if (todayItems.length) {
+          var chips = todayItems.slice(0, 4).map(function(t) {
+              return '<button class="cal-spotlight-chip" onclick="openCalendarProject(\'' + escapeCalendarJs(t.fdh) + '\')">' +
+                  escapeCalendarHtml(t.fdh) + ' <span class="cal-spotlight-chip-type">' + t.type.toUpperCase() + '</span></button>';
+          }).join('');
+          var more = todayItems.length > 4 ? '<span class="cal-spotlight-more">+' + (todayItems.length - 4) + '</span>' : '';
+          html = '<div class="cal-spotlight-row spotlight-today"><span class="cal-spotlight-label">TODAY</span>' + chips + more + '</div>';
+      } else if (overdueItems.length) {
+          var chips = overdueItems.slice(0, 3).map(function(t) {
+              return '<button class="cal-spotlight-chip overdue" onclick="openCalendarProject(\'' + escapeCalendarJs(t.fdh) + '\')">' +
+                  escapeCalendarHtml(t.fdh) + '</button>';
+          }).join('');
+          var more = overdueItems.length > 3 ? '<span class="cal-spotlight-more">+' + (overdueItems.length - 3) + ' more</span>' : '';
+          html = '<div class="cal-spotlight-row spotlight-overdue"><span class="cal-spotlight-label">' + overdueItems.length + ' OVERDUE</span>' + chips + more + '</div>';
+      } else if (nextUpItem) {
+          html = '<div class="cal-spotlight-row spotlight-next"><span class="cal-spotlight-label">NEXT UP</span>' +
+              '<button class="cal-spotlight-chip" onclick="openCalendarProject(\'' + escapeCalendarJs(nextUpItem.fdh) + '\')">' +
+              escapeCalendarHtml(nextUpItem.fdh) + '</button>' +
+              '<span class="cal-spotlight-days">in ' + nextUpItem.days + ' day' + (nextUpItem.days !== 1 ? 's' : '') + '</span>' +
+              '</div>';
+      }
+
+      if (html) {
+          strip.innerHTML = html;
+          strip.style.display = '';
+      } else {
+          strip.style.display = 'none';
+      }
+  }
+
+  // ─────────────────────────────────────────────────
+  // HORIZON VIEW — 30-day pipeline lookahead
+  // ─────────────────────────────────────────────────
+
+  function renderCalendarHorizon() {
+      var grid = document.getElementById('cal-grid');
+      if (grid) grid.style.display = 'none';
+      var wrapper = document.getElementById('cal-horizon-wrapper');
+      if (!wrapper) {
+          wrapper = document.createElement('div');
+          wrapper.id = 'cal-horizon-wrapper';
+          wrapper.className = 'cal-horizon-wrapper';
+          var calWidget = document.getElementById('cal-widget');
+          if (calWidget) {
+              var popover = document.getElementById('cal-hover-popover');
+              calWidget.insertBefore(wrapper, popover || null);
+          }
+      }
+      wrapper.style.display = '';
+
+      var items = getCalendarItems();
+      var now = new Date();
+      now.setHours(0, 0, 0, 0);
+      var horizon = new Date(now);
+      horizon.setDate(horizon.getDate() + 120);
+
+      var overdue = [], finalStretch = [], pipeline = [], beyond = [];
+
+      function addMilestone(item, rawDate, type, suffix, pillClass) {
+          var parsed = safeDate(rawDate);
+          if (!parsed || isNaN(parsed.getTime())) return;
+          var ms = new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+          ms.setHours(0, 0, 0, 0);
+          if (ms > horizon) return;
+          var entry = {
+              date: ms,
+              dateLabel: fmtDateShort(ms),
+              type: type,
+              suffix: suffix,
+              pillClass: pillClass,
+              fdh: item && item.fdh ? String(item.fdh) : 'UNKNOWN',
+              vendor: item ? (item.vendor || item.vendorName || '—') : '—',
+              stage: item ? (item.stage || item.status || '—') : '—',
+              item: item
+          };
+          if ((type === 'complete' || type === 'ofs') && ms < now) {
+              overdue.push(entry);
+          } else if (ms >= now) {
+              var daysOut = Math.round((ms - now) / 86400000);
+              if (daysOut <= 14) finalStretch.push(entry);
+              else if (daysOut <= 60) pipeline.push(entry);
+              else beyond.push(entry);
+          }
+      }
+
+      (items || []).forEach(function(item) {
+          if (!item) return;
+          addMilestone(item, item.cxStart, 'start', 'START', 'cal-event-pill-start');
+          addMilestone(item, item.cxEnd, 'complete', 'COMPLETE', 'cal-event-pill-complete');
+          addMilestone(item, getEffectiveOfsRaw(item), 'ofs', 'OFS', 'cal-event-pill-ofs');
+      });
+
+      function sortByDate(a, b) { return a.date - b.date; }
+      overdue.sort(function(a, b) { return b.date - a.date; }); // most recent overdue first
+      finalStretch.sort(sortByDate);
+      pipeline.sort(sortByDate);
+      beyond.sort(sortByDate);
+
+      function fmtDateShort(d) {
+          var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+          return months[d.getMonth()] + ' ' + d.getDate();
+      }
+
+      function buildRow(entry) {
+          var typeLabels = { start: 'START', complete: 'COMPLETE', ofs: 'OFS' };
+          var label = typeLabels[entry.type] || entry.suffix;
+          return '<div class="cal-horizon-row" onclick="openCalendarProject(\'' + escapeCalendarJs(entry.fdh) + '\')">' +
+              '<span class="cal-horizon-date">' + escapeCalendarHtml(entry.dateLabel) + '</span>' +
+              '<span class="cal-horizon-type ' + entry.pillClass + '">' + label + '</span>' +
+              '<span class="cal-horizon-fdh">' + escapeCalendarHtml(entry.fdh) + '</span>' +
+              '<span class="cal-horizon-vendor">' + escapeCalendarHtml(entry.vendor) + '</span>' +
+              '<span class="cal-horizon-open">Open →</span>' +
+              '</div>';
+      }
+
+      function buildSection(title, entries, tierClass) {
+          if (!entries.length) return '';
+          var rowsHtml = entries.map(buildRow).join('');
+          return '<div class="cal-horizon-section ' + tierClass + '">' +
+              '<div class="cal-horizon-section-title">' + escapeCalendarHtml(title) + '<span class="cal-horizon-section-count">' + entries.length + '</span></div>' +
+              rowsHtml +
+              '</div>';
+      }
+
+      var html = '';
+      html += buildSection('OVERDUE', overdue, 'tier-overdue');
+      html += buildSection('FINAL STRETCH · ≤14 DAYS', finalStretch, 'tier-final');
+      html += buildSection('PIPELINE · 15–60 DAYS', pipeline, 'tier-pipeline');
+      if (beyond.length) {
+          html += '<div class="cal-horizon-section tier-beyond">' +
+              '<details>' +
+              '<summary class="cal-horizon-section-title">BEYOND · 61–120 DAYS<span class="cal-horizon-section-count">' + beyond.length + '</span></summary>' +
+              beyond.map(buildRow).join('') +
+              '</details>' +
+              '</div>';
+      }
+      if (!html) {
+          html = '<div class="cal-horizon-empty">No milestones in the next 120 days.</div>';
+      }
+      wrapper.innerHTML = html;
+
+      var label = document.getElementById('cal-month-year');
+      if (label) {
+          var od = overdue.length;
+          label.textContent = 'HORIZON' + (od > 0 ? ' · ' + od + ' OVERDUE' : '');
+      }
+  }
 
   function renderCalendar() {
       hideCalEventPopover();
-      if (calViewMode === 'week') {
+      var items = getCalendarItems();
+      var overdueCount = computeGlobalOverdueCount();
+      updateCalNavBadge(overdueCount);
+      updateCalSpotlight(items);
+      if (calViewMode === 'horizon') {
+          renderCalendarHorizon();
+      } else if (calViewMode === 'week') {
           renderCalendarWeek();
       } else {
           renderCalendarMonth();
@@ -877,6 +1116,73 @@
   window.clearCalendarMilestoneFilters = clearCalendarMilestoneFilters;
   window.scheduleCalPopover = scheduleCalPopover;
   window.scheduleCalPopoverHide = scheduleCalPopoverHide;
+  window.focusQueueFromCalendar = focusQueueFromCalendar;
+  // ─────────────────────────────────────────────────
+  // QUEUE BRIDGE — Focus Queue from calendar period
+  // ─────────────────────────────────────────────────
+
+  function focusQueueFromCalendar() {
+      var items = getCalendarItems();
+      var fdhSet = new Set();
+      var label = '';
+
+      if (calViewMode === 'horizon') {
+          // Horizon: focus overdue + final-stretch (≤14 days)
+          var now = new Date();
+          now.setHours(0, 0, 0, 0);
+          var cutoff = new Date(now);
+          cutoff.setDate(cutoff.getDate() + 14);
+          (items || []).forEach(function(item) {
+              if (!item || !item.fdh) return;
+              var dates = [
+                  { raw: item.cxEnd, type: 'complete' },
+                  { raw: getEffectiveOfsRaw(item), type: 'ofs' }
+              ];
+              dates.forEach(function(d) {
+                  if (!d.raw) return;
+                  var parsed = safeDate(d.raw);
+                  if (!parsed || isNaN(parsed.getTime())) return;
+                  var ms = new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+                  ms.setHours(0, 0, 0, 0);
+                  if (ms <= cutoff) fdhSet.add(String(item.fdh));
+              });
+          });
+          label = 'Horizon Focus';
+      } else if (calViewMode === 'week') {
+          var ws = currentCalWeekStart || getWeekStart(new Date());
+          var we = new Date(ws);
+          we.setDate(we.getDate() + 6);
+          var grouped = getMilestonesForDateRange(items, ws, we);
+          Object.values(grouped).forEach(function(evts) {
+              (evts || []).forEach(function(evt) { if (evt.fdh) fdhSet.add(String(evt.fdh)); });
+          });
+          var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          label = monthNames[ws.getMonth()] + ' ' + ws.getDate() + '–' + we.getDate();
+      } else {
+          // Month view
+          var y = currentCalDate ? currentCalDate.getFullYear() : new Date().getFullYear();
+          var m = currentCalDate ? currentCalDate.getMonth() : new Date().getMonth();
+          var data = getCalendarMilestones(items, y, m);
+          Object.values((data && data.grouped) || {}).forEach(function(evts) {
+              (evts || []).forEach(function(evt) { if (evt.fdh) fdhSet.add(String(evt.fdh)); });
+          });
+          var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          label = monthNames[m] + ' ' + y;
+      }
+
+      if (!fdhSet.size) {
+          if (typeof showToast === 'function') showToast('No milestones in this period', 'info');
+          return;
+      }
+
+      if (typeof applyCalendarFocus === 'function') {
+          applyCalendarFocus(fdhSet, label);
+      }
+      // Close the calendar widget
+      var widget = document.getElementById('cal-widget');
+      if (widget) widget.classList.remove('open');
+  }
+
   window.renderCalendar = renderCalendar;
 
   applyCalcTheme();
