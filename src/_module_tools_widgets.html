@@ -44,6 +44,12 @@
   var CALC_DISPLAY_SMALL_THRESHOLD = 17;
   var CALC_DISPLAY_TINY_THRESHOLD = 22;
 
+  // STATE: calViewMode / currentCalWeekStart
+  // READS: calendar render routing
+  // WRITES: setCalViewMode, changeWeek, jumpToToday
+  var calViewMode = 'month'; // 'month' | 'week'
+  var currentCalWeekStart = null; // always a Monday-anchored Sunday Date
+
   // STATE: calcState
   // READS: calculator render/update
   // WRITES: calculator input/operators
@@ -51,6 +57,14 @@
   // WORKSTREAM 3 RISK: Low
   var calcState = '';
   var calcTheme = loadCalcTheme();
+
+  // Popover timers
+  var calPopoverShowTimer = null;
+  var calPopoverHideTimer = null;
+
+  // ─────────────────────────────────────────────────
+  // WIDGET DRAG + POSITION HELPERS
+  // ─────────────────────────────────────────────────
 
   function clampToolWidgetPosition(widget, left, top) {
       if (!widget) return { left: 0, top: 0 };
@@ -189,9 +203,10 @@
       window.addEventListener('resize', syncWidgetsToViewport);
   }
 
-  // MODULE CANDIDATE: _module_tools_widgets.html
-  // STATE DEPS: calcWidgetDragState, currentCalDate, calcState
-  // EXTRACT ORDER: 1
+  // ─────────────────────────────────────────────────
+  // TOGGLE + KEYBOARD
+  // ─────────────────────────────────────────────────
+
   function toggleWidget(id, event) {
       ['cal-widget', 'calc-widget'].forEach(function(w) {
           var el = document.getElementById(w);
@@ -214,8 +229,92 @@
           positionWidgetFromTrigger(widget, event.currentTarget);
       }
 
-      if (id === 'cal-widget' && isOpen) renderCalendar();
+      if (id === 'cal-widget') {
+          if (isOpen) {
+              renderCalendar();
+              initCalendarKeyboard();
+          } else {
+              hideCalEventPopover();
+              removeCalendarKeyboard();
+          }
+      }
   }
+
+  function initCalendarKeyboard() {
+      document.addEventListener('keydown', onCalKeydown);
+  }
+
+  function removeCalendarKeyboard() {
+      document.removeEventListener('keydown', onCalKeydown);
+  }
+
+  function onCalKeydown(e) {
+      var calWidget = document.getElementById('cal-widget');
+      if (!calWidget || !calWidget.classList.contains('open')) return;
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+
+      if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          calNavPrev();
+      } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          calNavNext();
+      } else if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          jumpToToday();
+      } else if (e.key === 'Escape') {
+          toggleWidget('cal-widget');
+      }
+  }
+
+  // ─────────────────────────────────────────────────
+  // VIEW MODE + NAVIGATION
+  // ─────────────────────────────────────────────────
+
+  function setCalViewMode(mode) {
+      calViewMode = mode;
+      document.querySelectorAll('.cal-view-btn').forEach(function(btn) {
+          btn.classList.toggle('is-active', btn.getAttribute('data-view') === mode);
+      });
+      renderCalendar();
+  }
+
+  function getWeekStart(date) {
+      var d = new Date(date);
+      var day = d.getDay(); // 0 = Sun
+      d.setDate(d.getDate() - day);
+      d.setHours(0, 0, 0, 0);
+      return d;
+  }
+
+  function jumpToToday() {
+      currentCalDate = new Date();
+      currentCalWeekStart = getWeekStart(currentCalDate);
+      renderCalendar();
+  }
+
+  function calNavPrev() {
+      if (calViewMode === 'week') { changeWeek(-1); } else { changeMonth(-1); }
+  }
+
+  function calNavNext() {
+      if (calViewMode === 'week') { changeWeek(1); } else { changeMonth(1); }
+  }
+
+  function changeMonth(dir) {
+      currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+      renderCalendar();
+  }
+
+  function changeWeek(dir) {
+      if (!currentCalWeekStart) currentCalWeekStart = getWeekStart(currentCalDate);
+      currentCalWeekStart.setDate(currentCalWeekStart.getDate() + dir * 7);
+      renderCalendar();
+  }
+
+  // ─────────────────────────────────────────────────
+  // CALENDAR DATA HELPERS
+  // ─────────────────────────────────────────────────
 
   function escapeCalendarHtml(value) {
       return String(value == null ? '' : value)
@@ -242,6 +341,9 @@
       return [];
   }
 
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   function getCalendarMilestones(items, year, month) {
       var typeOrder = { start: 0, complete: 1, ofs: 2 };
       var counters = { start: 0, complete: 0, ofs: 0 };
@@ -253,12 +355,17 @@
           if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month) return;
 
           var day = parsed.getUTCDate();
+          var milestoneDate = new Date(year, month, day);
+          milestoneDate.setHours(0, 0, 0, 0);
+          var isOverdue = (type === 'complete' || type === 'ofs') && milestoneDate < today;
+
           var milestone = {
               fdh: item && item.fdh ? String(item.fdh) : 'UNKNOWN',
               day: day,
               type: type,
               suffix: suffix,
               pillClass: pillClass,
+              isOverdue: isOverdue,
               item: item
           };
 
@@ -288,6 +395,51 @@
       };
   }
 
+  function getMilestonesForDateRange(items, startDate, endDate) {
+      var typeOrder = { start: 0, complete: 1, ofs: 2 };
+      var grouped = {};
+
+      function pushMilestone(item, rawDate, type, suffix, pillClass) {
+          var parsed = safeDate(rawDate);
+          if (!parsed || isNaN(parsed.getTime())) return;
+          var d = new Date(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate());
+          d.setHours(0, 0, 0, 0);
+          if (d < startDate || d > endDate) return;
+
+          var key = d.toISOString().slice(0, 10);
+          var milestoneDate = d;
+          var isOverdue = (type === 'complete' || type === 'ofs') && milestoneDate < today;
+
+          var milestone = {
+              fdh: item && item.fdh ? String(item.fdh) : 'UNKNOWN',
+              type: type,
+              suffix: suffix,
+              pillClass: pillClass,
+              isOverdue: isOverdue,
+              item: item
+          };
+
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(milestone);
+      }
+
+      (items || []).forEach(function(item) {
+          if (!item) return;
+          pushMilestone(item, item.cxStart, 'start', 'START', 'cal-event-pill-start');
+          pushMilestone(item, item.cxEnd, 'complete', 'COMPLETE', 'cal-event-pill-complete');
+          pushMilestone(item, getEffectiveOfsRaw(item), 'ofs', 'OFS', 'cal-event-pill-ofs');
+      });
+
+      Object.keys(grouped).forEach(function(key) {
+          grouped[key].sort(function(a, b) {
+              if (typeOrder[a.type] !== typeOrder[b.type]) return typeOrder[a.type] - typeOrder[b.type];
+              return a.fdh.localeCompare(b.fdh);
+          });
+      });
+
+      return grouped;
+  }
+
   function getFilteredCalendarMilestones(milestoneData) {
       var grouped = {};
       var counters = { start: 0, complete: 0, ofs: 0 };
@@ -308,6 +460,15 @@
           counts: counters,
           total: counters.start + counters.complete + counters.ofs
       };
+  }
+
+  function filterGroupedMilestones(grouped) {
+      var filtered = {};
+      Object.keys(grouped || {}).forEach(function(key) {
+          var evts = (grouped[key] || []).filter(function(evt) { return !!activeCalendarFilters[evt.type]; });
+          if (evts.length) filtered[key] = evts;
+      });
+      return filtered;
   }
 
   function updateCalendarSummary(summary) {
@@ -355,19 +516,42 @@
           || (allActionItems || []).find(function(item) { return String(item.fdh || '') === String(fdh || ''); });
       if (!target) return;
 
+      hideCalEventPopover();
       var widget = document.getElementById('cal-widget');
       if (widget) widget.classList.remove('open');
       if (typeof switchWorkspaceView === 'function') switchWorkspaceView('detail');
       openPane(target, document.getElementById('card-' + target.fdh) || null);
   }
 
-  function renderCalendar() {
+  // ─────────────────────────────────────────────────
+  // PILL HTML BUILDER
+  // ─────────────────────────────────────────────────
+
+  function buildEventPillHtml(evt) {
+      var chipLabel = escapeCalendarHtml(evt.fdh);
+      var fullLabel = escapeCalendarHtml(evt.fdh + ' · ' + evt.suffix);
+      var overdueCls = evt.isOverdue ? ' overdue' : '';
+      return '<button class="cal-event-pill ' + evt.pillClass + overdueCls + '" ' +
+          'onmouseenter="scheduleCalPopover(\'' + escapeCalendarJs(evt.fdh) + '\', this)" ' +
+          'onmouseleave="scheduleCalPopoverHide()" ' +
+          'title="' + fullLabel + '">' + chipLabel + '</button>';
+  }
+
+  // ─────────────────────────────────────────────────
+  // MONTH VIEW RENDER
+  // ─────────────────────────────────────────────────
+
+  function renderCalendarMonth() {
       var y = currentCalDate.getFullYear(), m = currentCalDate.getMonth();
-      document.getElementById('cal-month-year').innerText = new Date(y, m).toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+      var labelEl = document.getElementById('cal-month-year');
+      if (labelEl) labelEl.innerText = new Date(y, m).toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+
       var firstDay = new Date(y, m, 1).getDay();
       var daysInMonth = new Date(y, m + 1, 0).getDate();
       var grid = document.getElementById('cal-grid');
       if (!grid) return;
+
+      grid.className = 'cal-grid';
 
       var sourceItems = getCalendarItems();
       var milestoneData = getCalendarMilestones(sourceItems, y, m);
@@ -375,32 +559,224 @@
       syncCalendarFilterUi();
       updateCalendarSummary(filteredMilestoneData);
 
-      var html = '<div class="cal-day-header">Su</div><div class="cal-day-header">Mo</div><div class="cal-day-header">Tu</div><div class="cal-day-header">We</div><div class="cal-day-header">Th</div><div class="cal-day-header">Fr</div><div class="cal-day-header">Sa</div>';
+      var DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+      var html = '';
+      DAY_NAMES.forEach(function(d, i) {
+          var isWknd = (i === 0 || i === 6);
+          html += '<div class="cal-day-header' + (isWknd ? ' weekend' : '') + '">' + d + '</div>';
+      });
+
       for (var i = 0; i < firstDay; i++) html += '<div class="cal-cell empty"></div>';
-      var today = new Date();
+
+      var todayObj = new Date();
       for (var d = 1; d <= daysInMonth; d++) {
-          var isToday = (d === today.getDate() && m === today.getMonth() && y === today.getFullYear());
+          var dayOfWeek = new Date(y, m, d).getDay();
+          var isToday = (d === todayObj.getDate() && m === todayObj.getMonth() && y === todayObj.getFullYear());
+          var isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
           var dayEvents = filteredMilestoneData.grouped[d] || [];
           var visibleEvents = dayEvents.slice(0, CALENDAR_MAX_VISIBLE_EVENTS);
           var overflowEvents = dayEvents.slice(CALENDAR_MAX_VISIBLE_EVENTS);
-          var eventsHtml = visibleEvents.map(function(evt) {
-              var chipLabel = escapeCalendarHtml(evt.fdh);
-              var fullLabel = escapeCalendarHtml(evt.fdh + ' · ' + evt.suffix);
-              return '<button class="cal-event-pill ' + evt.pillClass + '" onclick="openCalendarProject(\'' + escapeCalendarJs(evt.fdh) + '\')" title="' + fullLabel + '">' + chipLabel + '</button>';
-          }).join('');
+          var density = Math.min(5, dayEvents.length);
+
+          var classes = 'cal-cell';
+          if (isToday) classes += ' today';
+          if (isWeekend) classes += ' weekend';
+
+          var eventsHtml = visibleEvents.map(buildEventPillHtml).join('');
           if (overflowEvents.length) {
               var overflowTitle = escapeCalendarHtml(overflowEvents.map(function(evt) { return evt.fdh + ' · ' + evt.suffix; }).join(', '));
               eventsHtml += '<div class="cal-more" title="' + overflowTitle + '">+' + overflowEvents.length + ' more</div>';
           }
-          html += '<div class="cal-cell ' + (isToday ? 'today' : '') + '"><div class="cal-cell-day"><span class="cal-cell-day-number">' + d + '</span></div><div class="cal-cell-events">' + eventsHtml + '</div></div>';
+
+          html += '<div class="' + classes + '" data-density="' + density + '">' +
+              '<div class="cal-cell-day"><span class="cal-cell-day-number">' + d + '</span></div>' +
+              '<div class="cal-cell-events">' + eventsHtml + '</div>' +
+              '</div>';
       }
       grid.innerHTML = html;
   }
 
-  function changeMonth(dir) {
-      currentCalDate.setMonth(currentCalDate.getMonth() + dir);
-      renderCalendar();
+  // ─────────────────────────────────────────────────
+  // WEEK VIEW RENDER
+  // ─────────────────────────────────────────────────
+
+  function renderCalendarWeek() {
+      if (!currentCalWeekStart) currentCalWeekStart = getWeekStart(currentCalDate);
+
+      var weekStart = new Date(currentCalWeekStart);
+      var weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      var labelEl = document.getElementById('cal-month-year');
+      if (labelEl) {
+          var startStr = weekStart.toLocaleString('default', { month: 'short', day: 'numeric' });
+          var endStr = weekEnd.toLocaleString('default', { month: 'short', day: 'numeric', year: 'numeric' });
+          labelEl.innerText = (startStr + ' – ' + endStr).toUpperCase();
+      }
+
+      var grid = document.getElementById('cal-grid');
+      if (!grid) return;
+
+      grid.className = 'cal-grid week-view';
+
+      var sourceItems = getCalendarItems();
+      var grouped = getMilestonesForDateRange(sourceItems, weekStart, weekEnd);
+      var filteredGrouped = filterGroupedMilestones(grouped);
+      syncCalendarFilterUi();
+
+      var todayObj = new Date();
+      todayObj.setHours(0, 0, 0, 0);
+
+      var html = '';
+      var DAY_NAMES_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      for (var i = 0; i < 7; i++) {
+          var colDate = new Date(weekStart);
+          colDate.setDate(colDate.getDate() + i);
+          colDate.setHours(0, 0, 0, 0);
+
+          var isToday = (colDate.getTime() === todayObj.getTime());
+          var isWeekend = (colDate.getDay() === 0 || colDate.getDay() === 6);
+          var dateKey = colDate.toISOString().slice(0, 10);
+          var dayEvents = filteredGrouped[dateKey] || [];
+
+          var colClasses = 'cal-week-col';
+          if (isToday) colClasses += ' today';
+          if (isWeekend) colClasses += ' weekend';
+
+          var eventsHtml = dayEvents.map(buildEventPillHtml).join('');
+
+          html += '<div class="' + colClasses + '">' +
+              '<div class="cal-week-day-header">' +
+                  '<span class="cal-week-day-name">' + DAY_NAMES_SHORT[colDate.getDay()] + '</span>' +
+                  '<span class="cal-week-day-num">' + colDate.getDate() + '</span>' +
+              '</div>' +
+              '<div class="cal-week-events">' + (eventsHtml || '') + '</div>' +
+              '</div>';
+      }
+
+      grid.innerHTML = html;
+
+      // Update summary for week
+      var counts = { start: 0, complete: 0, ofs: 0 };
+      Object.values(filteredGrouped).forEach(function(evts) {
+          evts.forEach(function(evt) { if (counts[evt.type] !== undefined) counts[evt.type]++; });
+      });
+      updateCalendarSummary({ counts: counts, total: counts.start + counts.complete + counts.ofs });
   }
+
+  // ─────────────────────────────────────────────────
+  // MAIN RENDER ROUTER
+  // ─────────────────────────────────────────────────
+
+  function renderCalendar() {
+      hideCalEventPopover();
+      if (calViewMode === 'week') {
+          renderCalendarWeek();
+      } else {
+          renderCalendarMonth();
+      }
+  }
+
+  // ─────────────────────────────────────────────────
+  // HOVER POPOVER
+  // ─────────────────────────────────────────────────
+
+  function scheduleCalPopover(fdh, anchorEl) {
+      clearTimeout(calPopoverHideTimer);
+      clearTimeout(calPopoverShowTimer);
+      calPopoverShowTimer = setTimeout(function() {
+          showCalEventPopover(fdh, anchorEl);
+      }, 200);
+  }
+
+  function scheduleCalPopoverHide() {
+      clearTimeout(calPopoverShowTimer);
+      calPopoverHideTimer = setTimeout(function() {
+          var popover = document.getElementById('cal-hover-popover');
+          if (popover && !popover.matches(':hover')) hideCalEventPopover();
+      }, 120);
+  }
+
+  function showCalEventPopover(fdh, anchorEl) {
+      var item = (filteredItems || []).find(function(i) { return String(i.fdh || '') === String(fdh || ''); })
+          || (allActionItems || []).find(function(i) { return String(i.fdh || '') === String(fdh || ''); });
+
+      var popover = document.getElementById('cal-hover-popover');
+      if (!popover) return;
+
+      var vendorName = item ? (item.vendor || item.vendorName || '—') : '—';
+      var statusLabel = item ? (item.stage || item.status || '—') : '—';
+      var cxStart = item ? (item.cxStart || null) : null;
+      var cxEnd = item ? (item.cxEnd || null) : null;
+      var ofsRaw = item ? getEffectiveOfsRaw(item) : null;
+
+      var startDate = safeDate(cxStart);
+      var endDate = safeDate(cxEnd);
+      var ofsDate = safeDate(ofsRaw);
+
+      var pct = 0;
+      if (startDate && endDate && endDate - startDate > 0) {
+          pct = Math.max(0, Math.min(100, Math.round(((new Date() - startDate) / (endDate - startDate)) * 100)));
+      }
+
+      function fmtD(raw) {
+          if (!raw) return 'TBD';
+          var d = safeDate(raw);
+          if (!d || isNaN(d.getTime())) return 'TBD';
+          return d.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+      }
+
+      var cxRange = cxStart || cxEnd
+          ? (fmtD(cxStart) + (cxEnd ? ' → ' + fmtD(cxEnd) : ''))
+          : 'TBD';
+
+      popover.innerHTML =
+          '<div class="cal-popover-fdh">' + escapeCalendarHtml(fdh) + '</div>' +
+          '<div class="cal-popover-vendor">' + escapeCalendarHtml(vendorName) + '</div>' +
+          '<div class="cal-popover-row"><span>STATUS</span><span class="cal-popover-status-pill">' + escapeCalendarHtml(statusLabel) + '</span></div>' +
+          '<div class="cal-popover-divider"></div>' +
+          '<div class="cal-popover-row"><span>CX WINDOW</span><span>' + escapeCalendarHtml(cxRange) + '</span></div>' +
+          (ofsDate ? '<div class="cal-popover-row"><span>OFS</span><span>' + escapeCalendarHtml(fmtD(ofsRaw)) + '</span></div>' : '') +
+          (pct > 0 ? '<div class="cal-popover-progress"><div class="cal-popover-progress-fill" style="width:' + pct + '%"></div></div>' : '') +
+          '<button class="cal-popover-open-btn" onclick="openCalendarProject(\'' + escapeCalendarJs(fdh) + '\')">Open Project →</button>';
+
+      popover.style.display = 'block';
+
+      popover.addEventListener('mouseenter', function() { clearTimeout(calPopoverHideTimer); });
+      popover.addEventListener('mouseleave', function() { scheduleCalPopoverHide(); });
+
+      positionCalPopover(popover, anchorEl);
+  }
+
+  function hideCalEventPopover() {
+      clearTimeout(calPopoverShowTimer);
+      clearTimeout(calPopoverHideTimer);
+      var popover = document.getElementById('cal-hover-popover');
+      if (popover) popover.style.display = 'none';
+  }
+
+  function positionCalPopover(popoverEl, anchorEl) {
+      if (!popoverEl || !anchorEl) return;
+      var rect = anchorEl.getBoundingClientRect();
+      var ph = popoverEl.offsetHeight || 180;
+      var pw = popoverEl.offsetWidth || 260;
+
+      var top = rect.top - ph - 10;
+      var left = rect.left + rect.width / 2 - pw / 2;
+
+      if (top < 8) top = rect.bottom + 10;
+      var maxLeft = window.innerWidth - pw - 12;
+      if (left < 8) left = 8;
+      if (left > maxLeft) left = maxLeft;
+
+      popoverEl.style.top = top + 'px';
+      popoverEl.style.left = left + 'px';
+  }
+
+  // ─────────────────────────────────────────────────
+  // CALCULATOR
+  // ─────────────────────────────────────────────────
 
   function calcNum(n) {
       if (calcState === 'Err') calcState = '';
@@ -481,8 +857,17 @@
       disp.scrollLeft = disp.scrollWidth;
   }
 
+  // ─────────────────────────────────────────────────
+  // PUBLIC SURFACE
+  // ─────────────────────────────────────────────────
+
   window.toggleWidget = toggleWidget;
   window.changeMonth = changeMonth;
+  window.changeWeek = changeWeek;
+  window.calNavPrev = calNavPrev;
+  window.calNavNext = calNavNext;
+  window.jumpToToday = jumpToToday;
+  window.setCalViewMode = setCalViewMode;
   window.calcNum = calcNum;
   window.calcOp = calcOp;
   window.calcBackspace = calcBackspace;
@@ -490,6 +875,9 @@
   window.openCalendarProject = openCalendarProject;
   window.toggleCalendarFilter = toggleCalendarFilter;
   window.clearCalendarMilestoneFilters = clearCalendarMilestoneFilters;
+  window.scheduleCalPopover = scheduleCalPopover;
+  window.scheduleCalPopoverHide = scheduleCalPopoverHide;
+  window.renderCalendar = renderCalendar;
 
   applyCalcTheme();
   initCalcWidgetDrag();

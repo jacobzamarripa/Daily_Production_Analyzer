@@ -448,36 +448,51 @@
     </div>
 
     <div id="cal-widget" class="tool-widget">
-        <div class="tool-header">Project Calendar<button class="tool-close" onclick="toggleWidget('cal-widget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+        <div class="tool-header">
+            <span class="cal-header-title">Project Calendar</span>
+            <div class="cal-view-toggle">
+                <button class="cal-view-btn is-active" data-view="month" onclick="setCalViewMode('month')">Month</button>
+                <button class="cal-view-btn" data-view="week" onclick="setCalViewMode('week')">Week</button>
+            </div>
+            <button class="tool-close" onclick="toggleWidget('cal-widget')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
         <div class="cal-summary" id="cal-summary">
             <div class="cal-summary-card">
-                <div class="cal-summary-label">Month Milestones</div>
+                <div class="cal-summary-label">Milestones</div>
                 <div class="cal-summary-value" id="cal-total-count">0</div>
             </div>
-            <div class="cal-summary-card">
+            <div class="cal-summary-card cal-summary-card-start">
                 <div class="cal-summary-label">CX Start</div>
                 <div class="cal-summary-value" id="cal-start-count">0</div>
             </div>
-            <div class="cal-summary-card">
+            <div class="cal-summary-card cal-summary-card-complete">
                 <div class="cal-summary-label">CX Complete</div>
                 <div class="cal-summary-value" id="cal-complete-count">0</div>
             </div>
-            <div class="cal-summary-card">
+            <div class="cal-summary-card cal-summary-card-ofs">
                 <div class="cal-summary-label">OFS</div>
                 <div class="cal-summary-value" id="cal-ofs-count">0</div>
             </div>
         </div>
-        <div class="cal-legend">
-            <button class="cal-legend-pill cal-legend-pill-start is-active" onclick="toggleCalendarFilter('start')">CX START</button>
-            <button class="cal-legend-pill cal-legend-pill-complete is-active" onclick="toggleCalendarFilter('complete')">CX COMPLETE</button>
-            <button class="cal-legend-pill cal-legend-pill-ofs is-active" onclick="toggleCalendarFilter('ofs')">OFS</button>
-        </div>
-        <div class="cal-nav">
-            <button onclick="changeMonth(-1)">&#8249;</button>
-            <span id="cal-month-year">Month</span>
-            <button onclick="changeMonth(1)">&#8250;</button>
+        <div class="cal-controls">
+            <div class="cal-legend">
+                <button class="cal-legend-pill cal-legend-pill-start is-active" onclick="toggleCalendarFilter('start')"><span class="cal-legend-dot"></span>CX START</button>
+                <button class="cal-legend-pill cal-legend-pill-complete is-active" onclick="toggleCalendarFilter('complete')"><span class="cal-legend-dot"></span>CX COMPLETE</button>
+                <button class="cal-legend-pill cal-legend-pill-ofs is-active" onclick="toggleCalendarFilter('ofs')"><span class="cal-legend-dot"></span>OFS</button>
+            </div>
+            <div class="cal-nav">
+                <button class="cal-nav-btn" onclick="calNavPrev()" aria-label="Previous">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button class="cal-nav-today" onclick="jumpToToday()">Today</button>
+                <span id="cal-month-year" class="cal-nav-label">Month</span>
+                <button class="cal-nav-btn" onclick="calNavNext()" aria-label="Next">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
         </div>
         <div class="cal-grid" id="cal-grid"></div>
+        <div id="cal-hover-popover" class="cal-popover" role="tooltip" style="display:none;"></div>
     </div>
 
     <div id="calc-widget" class="tool-widget">
