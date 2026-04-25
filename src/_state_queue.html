@@ -102,6 +102,12 @@ let queueGroupCollapseState = (function() {
 // WRITES: pie HUD interactions, applyFilters, clearAllFilters
 // EXTRACT WITH: currentFilterStats, activeFilters
 let activePieStageFilter = null;
+// STATE: calendarFocusFdhs / calendarFocusLabel
+// READS: queue filter pipeline
+// WRITES: applyCalendarFocus, clearCalendarFocus, clearAllFilters
+// EXTRACT WITH: filteredItems, activeFilters
+let calendarFocusFdhs = null;
+let calendarFocusLabel = '';
 // STATE: activeAdminFilter
 // READS: admin pane rendering and filter controls
 // WRITES: admin toggle helpers and applyFilters

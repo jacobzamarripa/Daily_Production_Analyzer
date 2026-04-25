@@ -1274,6 +1274,9 @@ function applyFilters() {
         let displayFiltered = activePieStageFilter
             ? filtered.filter(i => getProjectsPieSliceLabel(i) === activePieStageFilter)
             : filtered.slice();
+        if (calendarFocusFdhs) {
+            displayFiltered = displayFiltered.filter(i => calendarFocusFdhs.has(String(i.fdh || '')));
+        }
         currentFilterStats.totals.projects = displayFiltered.length;
         currentFilterStats.totals.bsls = activeBslsCount;
 
@@ -1324,7 +1327,7 @@ function applyFilters() {
             displayFiltered = flattenGroupedSections(getGroupedQueueSections(displayFiltered));
         }
 
-        let anyActive = activeFilters.sev.length > 0 || activeFilters.vendor.length > 0 || activeFilters.city.length > 0 || activeFilters.ofs.length > 0 || activeFilters.status.length > 0 || activeAdminFilter !== null || activePieStageFilter !== null;
+        let anyActive = activeFilters.sev.length > 0 || activeFilters.vendor.length > 0 || activeFilters.city.length > 0 || activeFilters.ofs.length > 0 || activeFilters.status.length > 0 || activeAdminFilter !== null || activePieStageFilter !== null || calendarFocusFdhs !== null;
         let clearBtn = getEl('btn-clear-filters');
         let clearZone = getEl('dock-clear-zone');
         if (clearBtn) clearBtn.classList.toggle('collapsed', !anyActive);
@@ -1356,10 +1359,24 @@ function applyFilters() {
     });
 }
 
+function applyCalendarFocus(fdhSet, label) {
+    calendarFocusFdhs = fdhSet instanceof Set ? fdhSet : new Set(Array.from(fdhSet || []));
+    calendarFocusLabel = label || 'Focus';
+    applyFilters();
+}
+
+function clearCalendarFocus() {
+    calendarFocusFdhs = null;
+    calendarFocusLabel = '';
+    applyFilters();
+}
+
 function clearAllFilters() {
     activeFilters = { sev: [], vendor: [], city: [], ofs: [], status: [] };
     activeAdminFilter = null;
     activePieStageFilter = null;
+    calendarFocusFdhs = null;
+    calendarFocusLabel = '';
     if (openDropdownId) {
         let el = getEl(openDropdownId);
         if (el) el.classList.remove('open');
@@ -1536,6 +1553,17 @@ function renderActiveFilterPills() {
             <span style="color:var(--text-muted); opacity: 0.7; font-size: 7px;">Group by</span>
             <span style="font-weight: 900;">${esc(getGroupByLabel(currentGroupBy))}</span>
             <div class="remove-btn" onclick="setGroupBy('none')">${icon('close', 11)}</div>
+        `;
+        container.appendChild(pill);
+    }
+    if (calendarFocusFdhs) {
+        const pill = document.createElement('div');
+        pill.className = 'filter-pill';
+        pill.style.borderLeft = '3px solid var(--accent)';
+        pill.innerHTML = `
+            <span style="color:var(--text-muted); opacity: 0.7; font-size: 7px;">Calendar</span>
+            <span style="font-weight: 900;">${esc(calendarFocusLabel || 'Focus')}</span>
+            <div class="remove-btn" onclick="clearCalendarFocus()">${icon('close', 11)}</div>
         `;
         container.appendChild(pill);
     }
