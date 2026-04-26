@@ -687,6 +687,239 @@ body.action-view-active #action-workspace {
   min-height: 0;
 }
 
+/* ── Tab bar spacer + Bulk Status utility button ─────────── */
+.ac-tab-spacer {
+  flex: 1;
+}
+.ac-header-util-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  align-self: center;
+  margin-left: 8px;
+}
+.ac-header-util-btn:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* ── Crossings tab ───────────────────────────────────────── */
+.ac-table-crossings .ac-td-xing-sel  { width: 100px; }
+.ac-table-crossings .ac-td-xing-det  { min-width: 280px; }
+.ac-table-crossings .ac-th-xing-sel  { width: 100px; }
+.ac-table-crossings .ac-th-xing-det  { min-width: 280px; }
+
+.ac-xing-sel {
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ac-xing-det-ta {
+  width: 100%;
+  min-height: 34px;
+  max-height: 160px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 96%, var(--card-bg));
+  color: var(--text-main);
+  font-size: 11px;
+  font-family: inherit;
+  resize: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: border-color 0.15s, min-height 0.1s;
+}
+.ac-xing-det-ta:focus {
+  border-color: var(--accent);
+  outline: none;
+  min-height: 72px;
+  overflow: auto;
+}
+
+/* Crossing status pills */
+.ac-xpill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.ac-xpill-yes  { background: rgba(34,197,94,0.15); color: #16a34a; }
+.ac-xpill-no   { background: rgba(239,68,68,0.12); color: #dc2626; }
+.ac-xpill-none { background: color-mix(in srgb, var(--border) 60%, transparent); color: var(--text-muted); }
+
+/* Dirty row indicator */
+.ac-row.is-dirty { background: color-mix(in srgb, #f59e0b 5%, transparent) !important; }
+
+/* Import button */
+.ac-import-btn {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Import diff modal summary */
+.ac-import-summary {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.ac-import-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ac-import-num { font-size: 22px; font-weight: 900; line-height: 1; }
+.ac-import-stat-good .ac-import-num { color: #22c55e; }
+.ac-import-stat-warn .ac-import-num { color: #f59e0b; }
+.ac-import-stat-bad  .ac-import-num { color: #ef4444; }
+
+/* ── BOMs tab ────────────────────────────────────────────── */
+.ac-bom-load-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+  text-align: center;
+}
+.ac-bom-load-icon { opacity: 0.25; margin-bottom: 6px; }
+.ac-bom-load-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-main);
+  letter-spacing: -0.4px;
+}
+.ac-bom-load-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+.ac-table-bom th { white-space: nowrap; }
+.ac-bom-pair-hd { text-align: center; }
+.ac-bom-sub-hd th { font-size: 9px; font-weight: 700; color: var(--text-muted); padding: 4px 10px; }
+.ac-bom-val {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+  padding: 10px 8px;
+}
+.ac-bom-vendor {
+  color: var(--text-muted);
+  border-right: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+.ac-bom-diff {
+  background: rgba(239,68,68,0.08) !important;
+  color: #ef4444 !important;
+  font-weight: 900;
+}
+.ac-bom-diff-row > td:first-child { border-left: 3px solid #ef4444; }
+
+/* ── Comments tab ────────────────────────────────────────── */
+.ac-table-comments .ac-th-comment  { min-width: 300px; }
+.ac-table-comments .ac-td-comment  { min-width: 300px; padding: 6px 10px; }
+.ac-table-comments .ac-td-current-note {
+  max-width: 200px;
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ac-comment-ta {
+  width: 100%;
+  min-height: 34px;
+  max-height: 180px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 96%, var(--card-bg));
+  color: var(--text-main);
+  font-size: 11px;
+  font-family: inherit;
+  resize: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: border-color 0.15s, min-height 0.1s;
+}
+.ac-comment-ta:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+  outline: none;
+  min-height: 80px;
+  overflow: auto;
+}
+
+/* ── Shared: ellipsis cell ───────────────────────────────── */
+.ac-td-ellipsis {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Quick Peek Change Log section ──────────────────────── */
+.qp-log-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.qp-log-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+.qp-log-row:last-child { border-bottom: none; }
+.qp-log-type {
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qp-log-val {
+  flex: 1;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qp-log-time {
+  font-size: 9px;
+  color: var(--text-tertiary, var(--text-muted));
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* ── Dark mode ───────────────────────────────────────────── */
 body.dark-mode .ac-kpi-rail,
 body.dark-mode .ac-tab-bar,

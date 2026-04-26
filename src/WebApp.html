@@ -1205,31 +1205,31 @@
       <div class="ac-kpi-rail" id="ac-kpi-rail"></div>
       <!-- Tab Bar -->
       <div class="ac-tab-bar">
-        <button class="ac-tab-btn active" id="ac-tab-btn-queue" onclick="_acSwitchTab('queue')">
-          Tasks <span class="ac-tab-badge" id="ac-badge-queue" style="display:none"></span>
+        <button class="ac-tab-btn active" id="ac-tab-btn-crossings" onclick="_acSwitchTab('crossings')">
+          Crossings
         </button>
-        <button class="ac-tab-btn" id="ac-tab-btn-outbox" onclick="_acSwitchTab('outbox')">
-          Outbox <span class="ac-tab-badge ac-tab-badge-green" id="ac-badge-outbox" style="display:none"></span>
+        <button class="ac-tab-btn" id="ac-tab-btn-boms" onclick="_acSwitchTab('boms')">
+          BOMs
         </button>
-        <button class="ac-tab-btn" id="ac-tab-btn-changelog" onclick="_acSwitchTab('changelog')">
-          Changelog
+        <button class="ac-tab-btn" id="ac-tab-btn-comments" onclick="_acSwitchTab('comments')">
+          Comments
         </button>
         <button class="ac-tab-btn" id="ac-tab-btn-offenders" onclick="_acSwitchTab('offenders')">
           Top Offenders
         </button>
-        <button class="ac-tab-btn" id="ac-tab-btn-reports" onclick="_acSwitchTab('reports')">
-          Reports
+        <div class="ac-tab-spacer"></div>
+        <button class="ac-header-util-btn" onclick="_acOpenBulkStatusModal()" title="Bulk status change with milestone suggestions">
+          Bulk Status
         </button>
       </div>
       <!-- Tab Content Areas -->
       <div class="ac-tab-content">
-        <div id="ac-tab-queue"     class="ac-tab-panel"></div>
-        <div id="ac-tab-outbox"    class="ac-tab-panel" style="display:none"></div>
-        <div id="ac-tab-changelog" class="ac-tab-panel" style="display:none"></div>
-        <div id="ac-tab-offenders" class="ac-tab-panel" style="display:none">
+        <div id="ac-tab-crossings"  class="ac-tab-panel"></div>
+        <div id="ac-tab-boms"       class="ac-tab-panel" style="display:none"></div>
+        <div id="ac-tab-comments"   class="ac-tab-panel" style="display:none"></div>
+        <div id="ac-tab-offenders"  class="ac-tab-panel" style="display:none">
           <div id="action-offenders-panel" class="ac-offenders-wrap"></div>
         </div>
-        <div id="ac-tab-reports"   class="ac-tab-panel" style="display:none"></div>
       </div>
     </div>
 
