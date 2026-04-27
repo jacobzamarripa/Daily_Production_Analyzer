@@ -23,16 +23,16 @@ function miniSldSafeText(value) {
 }
 
 function getMiniSldNodeTheme(node) {
-    if (!node) return { border: '1px dashed var(--border)', text: 'var(--text-muted)', bg: 'rgba(148,163,184,0.08)', dot: '#94a3b8' };
+    if (!node) return { border: '1px dashed var(--border)', text: 'var(--text-muted)', bg: 'color-mix(in srgb, var(--text-muted) 10%, var(--card-bg))', dot: '#94a3b8' };
     let stage = String(node.stage || '').toLowerCase();
     let status = String(node.status || '').toLowerCase();
     let isLit = !!node.isLight || stage.includes('ofs') || status.includes('complete');
-    if (isLit) return { border: '1px solid #22c55e', text: '#166534', bg: 'rgba(240,253,244,0.9)', dot: '#22c55e' };
-    return { border: '1px solid #f59e0b', text: '#b45309', bg: 'rgba(255,247,237,0.95)', dot: '#f59e0b' };
+    if (isLit) return { border: '1px solid #22c55e', text: '#166534', bg: 'color-mix(in srgb, #22c55e 12%, var(--card-bg))', dot: '#22c55e' };
+    return { border: '1px solid #f59e0b', text: '#b45309', bg: 'color-mix(in srgb, #f59e0b 12%, var(--card-bg))', dot: '#f59e0b' };
 }
 
 function miniSldNodeHtml(label, node, navFdh, isCurrent) {
-    let theme = isCurrent ? { border: '1px solid #111827', text: '#ffffff', bg: '#111827', dot: '#22c55e' } : getMiniSldNodeTheme(node);
+    let theme = isCurrent ? { border: '1px solid var(--text-main)', text: 'var(--card-bg)', bg: 'var(--text-main)', dot: '#22c55e' } : getMiniSldNodeTheme(node);
     let clickable = !!navFdh && !isCurrent;
     let navArg = JSON.stringify(String(navFdh || ''));
     let attrs = clickable ? ` class="hover-trigger" onclick='selectItemForNav(${navArg})'` : '';
@@ -113,7 +113,7 @@ function renderMiniSld(item) {
         return layerFdhs.map(fdh => {
             if (fdh.includes('UNKNOWN') || fdh.includes('READY')) {
                 let isReady = fdh.includes('READY');
-                return `<div style="display:flex; align-items:center; gap:7px; min-width:0; max-width:220px; padding:8px 12px; border-radius:10px; border:1px solid ${isReady ? '#2563eb' : 'var(--border)'}; background:${isReady ? 'rgba(239,246,255,0.95)' : 'rgba(148,163,184,0.08)'}; color:${isReady ? '#1d4ed8' : 'var(--text-muted)'}; flex:0 0 auto; min-width:max-content;">
+                return `<div style="display:flex; align-items:center; gap:7px; min-width:0; max-width:220px; padding:8px 12px; border-radius:10px; border:1px solid ${isReady ? '#2563eb' : 'var(--border)'}; background:${isReady ? 'color-mix(in srgb, #2563eb 12%, var(--card-bg))' : 'color-mix(in srgb, var(--text-muted) 10%, var(--card-bg))'}; color:${isReady ? '#1d4ed8' : 'var(--text-muted)'}; flex:0 0 auto; min-width:max-content;">
                     <span style="width:8px; height:8px; border-radius:999px; background:${isReady ? '#2563eb' : '#94a3b8'}; flex:0 0 auto;"></span>
                     <span style="font-size:10px; font-weight:900; letter-spacing:0.04em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${fdh}</span>
                 </div>`;
