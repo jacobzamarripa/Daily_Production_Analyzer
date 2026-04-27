@@ -1600,7 +1600,7 @@ function handleCdDragLeave(e, el) {
     el.classList.remove('drag-over');
 }
 
-function triggerCdSelect(fdhId) {
+function triggerCdSelect(fdhId, dropzoneId) {
     let input = getEl('cd-file-input');
     if (!input) {
         input = document.createElement('input');
@@ -1612,7 +1612,7 @@ function triggerCdSelect(fdhId) {
     }
     input.onchange = function() {
         if (this.files && this.files.length > 0) {
-            handleCdUpload(this.files[0], getEl(`cd-dropzone-${fdhId}`), fdhId);
+            handleCdUpload(this.files[0], getEl(dropzoneId || `cd-dropzone-${fdhId}`), fdhId);
         }
         this.value = '';
     };

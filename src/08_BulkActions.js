@@ -278,13 +278,17 @@ function stageParsedCrossings(validRows) {
 // ════════════════════════════════════════════════════════════
 // CROSSINGS CSV EXPORT
 // ════════════════════════════════════════════════════════════
-/**
- * Exports all crossings data (6-Committed_Reviews + QB reference) to Drive CSV.
- * @returns {string} URL of the created file
- */
-function exportCrossingsCSV() {
+function _baBuildCrossingsCsv_(fdhList) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const refDict = getReferenceDictionary();
+  var filterSet = null;
+  if (fdhList && fdhList.length) {
+    filterSet = {};
+    fdhList.forEach(function(fdh) {
+      var key = String(fdh || '').trim().toUpperCase();
+      if (key) filterSet[key] = true;
+    });
+  }
 
   // Build rows: all FDHs in reference + their committed review status
   var commitSheet = ss.getSheetByName(REVIEW_LOG_SHEET);
@@ -314,6 +318,7 @@ function exportCrossingsCSV() {
   var csvRows = [cols.map(_baCsvEsc).join(',')];
 
   Object.keys(refDict).sort().forEach(function(fdhKey) {
+    if (filterSet && !filterSet[fdhKey]) return;
     var ref = refDict[fdhKey];
     var qbX = (ref.qbRef && ref.qbRef.xingExist) ? ref.qbRef.xingExist : '';
     var c   = committedMap[fdhKey] || {};
@@ -328,11 +333,34 @@ function exportCrossingsCSV() {
     ].map(_baCsvEsc).join(','));
   });
 
-  var csv      = csvRows.join('\r\n');
+  return csvRows.join('\r\n');
+}
+
+/**
+ * Exports all crossings data (6-Committed_Reviews + QB reference) to Drive CSV.
+ * @returns {string} URL of the created file
+ */
+function exportCrossingsCSV() {
+  var csv      = _baBuildCrossingsCsv_();
   var filename = 'Crossings_Export_' + _baNow() + '.csv';
   var folder   = _baReportFolder(CROSSINGS_REPORTS_FOLDER_ID);
   var file     = folder.createFile(filename, csv, MimeType.CSV);
   logMsg('exportCrossingsCSV: created ' + filename);
+  return file.getUrl();
+}
+
+/**
+ * Exports selected/scoped crossings rows by FDH.
+ * @param {string[]} fdhList
+ * @returns {string} URL of the created file
+ */
+function exportCrossingsCSVForFdhs(fdhList) {
+  if (!fdhList || !fdhList.length) return exportCrossingsCSV();
+  var csv      = _baBuildCrossingsCsv_(fdhList);
+  var filename = 'Crossings_Export_Scoped_' + _baNow() + '.csv';
+  var folder   = _baReportFolder(CROSSINGS_REPORTS_FOLDER_ID);
+  var file     = folder.createFile(filename, csv, MimeType.CSV);
+  logMsg('exportCrossingsCSVForFdhs: created ' + filename + ' rows=' + fdhList.length);
   return file.getUrl();
 }
 

@@ -1,5 +1,13 @@
 # Agent Log — Omni PMO App
 
+> [!info] 2026-04-26: Turn-25 pivot — Action Center bulk workspace refinement in progress
+- **Current branch:** `feat/action-center-bulk-surface`.
+- **Completed in this session:** Action Center tabs gained icon/label/badge structure and all-caps labels; shared crossing resolution now feeds KPI counts, filters, table values, Reports preview, and commit fallback; Reports BOM preview now uses the array BOM payload; row detail buttons are text `Details`; Action Center side panel auto-opens for Crossings/BOMs/Comments and Top Offenders `Open Detail` opens the side panel only inside Action Center.
+- **Latest partial slice:** Crossings tab has in-progress search/filter state, vendor/city grouped rendering, header select-all based on the current filtered row set, scoped export client flow, and `exportCrossingsCSVForFdhs()` backend support. Static parse and `git diff --check` passed before the latest screenshot review.
+- **User correction still open:** The x-ing visual should match the dark Schedule `Special X-ings` popover shown in `screenshots/Screenshot 2026-04-26 at 9.45.15 PM.png`: black/dark panel treatment, yellow hazard stripe frame, yellow `SPECIAL X-INGS` label, compact `X-ING?` selector, and dark amber bordered details box. Current table/side-panel styling is still too light/yellow-card oriented.
+- **Remaining implementation:** Search/filter must be visible and applied consistently; vendor/city grouping must default collapsed and apply to Crossings, BOMs, and Comments, not just Crossings; the previous Crossings-only grouping/search work should be generalized or shared carefully.
+- **Next recommended first step:** Re-read `src/_module_action_center.html`, `src/_styles_action_center.html`, `src/_styles_panels.html`, and the screenshot. Then replace the current Crossings-only grouping helpers with shared Action Center grouping/search helpers used by Crossings/BOMs/Comments, with default-collapsed state.
+
 > [!success] 2026-04-23: Active Portfolio rule tuning + search-only archive access
 - **Missing-report threshold shifted:** Updated `src/02_Utilities.js` and `src/01_Engine_Archive.js` so projects do not become `MISSING DAILY REPORT` until one business day after `CX Start`; same-day starts now sit in a start-grace `REPORT PENDING` state instead of being chased immediately.
 - **CX date diagnostics tightened:** Replaced the old broad future-date logic in `src/01_Engine_Archive.js` with chronology-first validation (`CX Start > CX Complete`), retained pre-2020 invalid-date checks, and lowered future-date noise suppression to a `>60 days` threshold for CX dates.

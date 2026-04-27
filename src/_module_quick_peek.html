@@ -185,7 +185,7 @@ function renderQuickPeek(item) {
                 </div>
             </div>
 
-            <div class="qb-module">
+            <div class="qb-module qp-xing-module">
                 <div class="schedule-xing-popout-meta" style="margin-bottom:12px;">
                     <div class="xing-indicator-pill">SPECIAL X-INGS</div>
                     <div class="xing-field">
@@ -199,7 +199,7 @@ function renderQuickPeek(item) {
                      ondragover="handleCdDragOver(event, this)"
                      ondragleave="handleCdDragLeave(event, this)"
                      ondrop="handleCdDrop(event, this, '${item.fdh}')">
-                    <div class="cd-overlay-trigger" onclick="triggerCdSelect('${item.fdh}')" title="Analyze CD PDF">${icon('upload', 14)}</div>
+                    <div class="cd-overlay-trigger" onclick="triggerCdSelect('${item.fdh}', 'qp-cd-dropzone-${item.fdh}')" title="Analyze CD PDF">${icon('upload', 14)}</div>
                     <div class="cd-drop-hint">DROP CD PDF TO ANALYZE</div>
                     <textarea class="xing-details-textarea" id="qp-xing-details-${item.fdh}"
                               oninput="this.style.height=''; this.style.height=this.scrollHeight+'px'"
