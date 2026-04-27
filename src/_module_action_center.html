@@ -182,6 +182,10 @@
   // ── Tab switching ─────────────────────────────────────────
   function _acSwitchTab(tab) {
     _acActiveTab = tab;
+    if (tab !== 'crossings') {
+      var ws = document.getElementById('action-workspace');
+      if (ws) ws.classList.remove('ac-xing-scrolled');
+    }
     ['crossings','boms','comments','offenders','reports'].forEach(function(t) {
       var btn   = document.getElementById('ac-tab-btn-' + t);
       var panel = document.getElementById('ac-tab-' + t);
@@ -284,7 +288,7 @@
 
     var qSafe = _e(_acUniversalSearchQuery);
 
-    // For crossings: prepend KPI mini chips before the search input
+    // For crossings: prepend KPI mini chips — hidden by CSS until ac-xing-scrolled
     var kpiPrefix = '';
     if (tab === 'crossings') {
       var ufbItems = _acGetFilteredCrossingItems();
@@ -294,7 +298,7 @@
       kpiPrefix = '<span class="ac-tki-chip ac-tki-pend">' + ufbPend + ' Pend</span>'
         + '<span class="ac-tki-chip ac-tki-yes">'  + ufbYes + ' YES</span>'
         + '<span class="ac-tki-chip ac-tki-no">'   + ufbNo  + ' NO</span>'
-        + '<div class="ac-ufb-sep"></div>';
+        + '<div class="ac-ufb-sep ac-ufb-kpi-sep"></div>';
     }
 
     var html = kpiPrefix + '<input type="text" class="ac-ufb-search" id="ac-ufb-search" value="' + qSafe + '" ' +
@@ -312,20 +316,9 @@
         html += '<button class="ac-filter-pill' + (active ? ' active' : '') +
           '" onclick="_acSetUniversalFilter(\'crossings\',\'' + val + '\')">' + label + '</button>';
       });
-      // Vendor filter chips inline after status pills
-      var ufbVendorSet = {}, ufbVendorList = [];
-      ufbItems.forEach(function(i) {
-        var v = i.vendor || 'Unassigned';
-        if (!ufbVendorSet[v]) { ufbVendorSet[v] = true; ufbVendorList.push(v); }
-      });
-      ufbVendorList.sort();
-      if (ufbVendorList.length > 1) {
-        html += '<div class="ac-ufb-sep"></div>';
-        html += '<button class="ac-filter-pill' + (!_acXingVendorFilter ? ' active' : '') + '" onclick="_acSetXingVendorFilter(null)">All</button>';
-        ufbVendorList.forEach(function(v) {
-          html += '<button class="ac-filter-pill' + (_acXingVendorFilter === v ? ' active' : '') + '" onclick="_acSetXingVendorFilter(\'' + _acJs(v) + '\')">' + _e(v) + '</button>';
-        });
-      }
+      html += '<div class="ac-ufb-sep"></div>';
+      html += '<button class="ac-ufb-action-btn" onclick="_acExportCrossingsCSV()">Export CSV</button>';
+      html += '<button class="ac-ufb-action-btn" onclick="_acTriggerCsvImport()">Import CSV</button>';
     } else if (tab === 'boms' && _acBomData) {
       html += '<div class="ac-ufb-sep"></div>';
       ['all','diffs'].forEach(function(val) {
@@ -459,6 +452,20 @@
     _acRenderCrossingsTab();
   }
 
+  function _acOnXingScroll() {
+    var ws = document.getElementById('action-workspace');
+    if (!ws) return;
+    var wrap = ws.querySelector('#ac-tab-crossings .ac-xing-card-wrap');
+    ws.classList.toggle('ac-xing-scrolled', !!(wrap && wrap.scrollTop > 0));
+  }
+
+  function _acBindXingScroll() {
+    var wrap = document.querySelector('#ac-tab-crossings .ac-xing-card-wrap');
+    if (!wrap || wrap._xingScrollBound) return;
+    wrap._xingScrollBound = true;
+    wrap.addEventListener('scroll', _acOnXingScroll, { passive: true });
+  }
+
   function _acBuildXingGroups(items) {
     var groups = {};
     items.forEach(function(item) {
@@ -556,20 +563,31 @@
     });
     vendorList.sort();
 
-    var html =
-      '<input type="file" id="ac-csv-import-input" accept=".csv,.xlsx" style="display:none" onchange="_acOnCsvFileSelected(this)">'
-      + '<div class="ac-toolbar">'
-      +   '<div class="ac-toolbar-left">'
-      +     (selCount > 0
-              ? '<span class="ac-bulk-count">' + selCount + ' selected</span>'
-                + '<button class="ac-bulk-action-btn" onclick="_acCommitSelectedCrossings()">Commit Selected</button>'
-              : '')
-      +   '</div>'
-      +   '<div class="ac-toolbar-right">'
-      +     '<button class="ac-bulk-action-btn ac-bulk-export" onclick="_acExportCrossingsCSV()">Export CSV</button>'
-      +     '<button class="ac-bulk-action-btn ac-import-btn" onclick="_acTriggerCsvImport()">Import CSV</button>'
-      +   '</div>'
-      + '</div>';
+    var html = '<input type="file" id="ac-csv-import-input" accept=".csv,.xlsx" style="display:none" onchange="_acOnCsvFileSelected(this)">';
+
+    // Vendor filter chips — gray rectangle buttons, second row below search bar
+    if (vendorList.length > 1) {
+      html += '<div class="ac-xing-vendor-chips">';
+      html += '<button class="ac-xing-chip-btn' + (!_acXingVendorFilter ? ' active' : '') + '" onclick="_acSetXingVendorFilter(null)">All</button>';
+      vendorList.forEach(function(v) {
+        var vCount = allItems.filter(function(i) { return (i.vendor || '') === v; }).length;
+        html += '<button class="ac-xing-chip-btn' + (_acXingVendorFilter === v ? ' active' : '') + '" onclick="_acSetXingVendorFilter(\'' + _acJs(v) + '\')">' + _e(v) + ' ×' + vCount + '</button>';
+      });
+      html += '</div>';
+    }
+
+    // Full KPI rail — collapses into search bar chips on scroll
+    html += _acRenderTabKpi('crossings');
+
+    // Toolbar: only render when rows are selected
+    if (selCount > 0) {
+      html += '<div class="ac-toolbar">'
+        + '<div class="ac-toolbar-left">'
+        +   '<span class="ac-bulk-count">' + selCount + ' selected</span>'
+        +   '<button class="ac-bulk-action-btn" onclick="_acCommitSelectedCrossings()">Commit Selected</button>'
+        + '</div>'
+        + '</div>';
+    }
 
     if (items.length === 0) {
       html += '<div class="ac-xing-card-wrap"><div class="ac-empty">'
@@ -619,12 +637,12 @@
           + '<div class="off-vendor-footer">'
           +   '<div class="off-vendor-flags">';
 
-        // City chips as interactive filter buttons
+        // City chips — gray rectangle buttons, clickable to filter
         group.cityNames.slice(0, 5).forEach(function(city) {
           var isCityActive = _acXingCityFilter === city;
-          html += '<button class="ac-filter-pill' + (isCityActive ? ' active' : '') + '" '
+          html += '<button class="ac-xing-chip-btn' + (isCityActive ? ' active' : '') + '" '
             + 'onclick="event.stopPropagation();_acSetXingCityFilter(\'' + _acJs(city) + '\')">'
-            + _e(city) + ' &times;' + group.cities[city].length
+            + _e(city) + ' ×' + group.cities[city].length
             + '</button>';
         });
         if (group.cityNames.length > 5) {
@@ -661,6 +679,7 @@
     container.innerHTML = html;
     _acSyncTabBadges();
     _acRenderUniversalFilterBar('crossings');
+    _acBindXingScroll();
   }
 
   // Shims for backward compatibility (inline handlers in Quick Peek may call these)

@@ -783,7 +783,76 @@ body.action-view-active #admin-fab {
   min-height: 0;
 }
 
-/* ── KPI mini chips in universal filter bar ──────────────── */
+/* ── Vendor filter chips row (gray rectangles, above KPI rail) */
+.ac-xing-vendor-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 20px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 50%, var(--bg));
+}
+.ac-xing-vendor-chips::-webkit-scrollbar { display: none; }
+
+/* Gray rectangle chip button — vendor filter + city chips in footer */
+.ac-xing-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--border) 45%, var(--card-bg));
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.ac-xing-chip-btn:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--card-bg));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+.ac-xing-chip-btn.active {
+  background: color-mix(in srgb, var(--accent) 14%, var(--card-bg));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  font-weight: 900;
+}
+
+/* ── KPI rail: smooth collapse into search bar on scroll ─── */
+.ac-tab-kpi-rail {
+  transition: max-height 0.22s ease, opacity 0.18s ease,
+              padding-top 0.22s ease, padding-bottom 0.22s ease;
+  max-height: 180px;
+  overflow: hidden;
+}
+#action-workspace.ac-xing-scrolled #ac-tab-crossings .ac-tab-kpi-rail {
+  max-height: 0 !important;
+  opacity: 0;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom-color: transparent !important;
+}
+
+/* ── KPI mini chips: hidden until scrolled ───────────────── */
+#ac-universal-filter-bar .ac-tki-chip,
+#ac-universal-filter-bar .ac-ufb-kpi-sep {
+  display: none;
+}
+#action-workspace.ac-xing-scrolled #ac-universal-filter-bar .ac-tki-chip {
+  display: inline-flex;
+  align-items: center;
+}
+#action-workspace.ac-xing-scrolled #ac-universal-filter-bar .ac-ufb-kpi-sep {
+  display: block;
+}
 .ac-tki-chip {
   font-size: 10px;
   font-weight: 800;
@@ -799,6 +868,25 @@ body.action-view-active #admin-fab {
 .ac-tki-pend { border-color: color-mix(in srgb, #ef4444 22%, var(--border)); color: #ef4444; background: color-mix(in srgb, #ef4444 5%, var(--card-bg)); }
 .ac-tki-yes  { border-color: color-mix(in srgb, #22c55e 22%, var(--border)); color: #16a34a; background: color-mix(in srgb, #22c55e 5%, var(--card-bg)); }
 .ac-tki-no   { border-color: color-mix(in srgb, #ef4444 22%, var(--border)); color: #b91c1c; background: color-mix(in srgb, #ef4444 5%, var(--card-bg)); }
+
+/* ── Export/Import buttons in filter bar ────────────────── */
+.ac-ufb-action-btn {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+.ac-ufb-action-btn:hover {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
 
 /* ── Tab bar spacer + Bulk Status utility button ─────────── */
 .ac-tab-spacer {
