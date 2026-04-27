@@ -213,10 +213,10 @@
 .off-vendor-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 .off-vendor-card {
-  padding: 0 16px 14px;
+  padding: 0 16px 10px;
   border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
   border-radius: 18px;
   background: var(--card-bg);
@@ -320,8 +320,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 6px;
-  padding-top: 8px;
+  margin-top: 4px;
+  padding-top: 6px;
 }
 .off-vendor-flags {
   display: flex;
@@ -349,12 +349,12 @@
   transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease;
 }
 .off-project-list.open { grid-template-rows: 1fr; opacity: 1; pointer-events: auto; }
-.off-project-list-inner { min-height: 0; overflow: hidden; padding: 12px 0 0; border-top: 1px solid color-mix(in srgb, var(--border) 65%, transparent); }
+.off-project-list-inner { min-height: 0; overflow: hidden; padding: 8px 0 8px; border-top: 1px solid color-mix(in srgb, var(--border) 65%, transparent); }
 .off-project-row {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 0;
+  gap: 6px;
+  padding: 8px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
   transition: background 0.1s;
 }
@@ -666,16 +666,14 @@
           + ' onclick="event.stopPropagation();_offendersToggleExpand(\'' + vendorJs + '\')">'
           + (isExpanded ? 'Hide Projects' : 'Review ' + vd.projects.length + ' Project' + (vd.projects.length !== 1 ? 's' : ''))
           + '</button>'
-          + '</div>'
           + '</div>';
 
-        // Collapsible project rows
+        // Collapsible project rows — inside the card so sticky header constrains correctly
         html += '<div class="off-project-list' + (isExpanded ? ' open' : '') + '" id="off-pl-' + vKey + '">'
           + '<div class="off-project-list-inner">';
         vd.projects.forEach(function(p) {
           var stageStatus = [p.city, p.stage, p.status].filter(Boolean).join(' · ');
           var fdhJs = (typeof escJs === 'function') ? escJs(p.fdh || '') : String(p.fdh || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-          // Top row: FDH + meta + Open button
           var openAction = targetId === 'action-offenders-panel'
             ? '_acOpenPeek(\'' + fdhJs + '\')'
             : '_signalNavigateToItem(\'' + fdhJs + '\')';
@@ -686,7 +684,6 @@
             + '<button class="signal-qb-open-btn" style="font-size:9px;padding:4px 8px;flex-shrink:0"'
             + ' onclick="event.stopPropagation();' + openAction + '">Open Detail</button>'
             + '</div>';
-          // Flag chips row — each project's specific offences
           if (p.flags && p.flags.length) {
             rowHtml += '<div class="off-project-flags">';
             p.flags.forEach(function(flag) {
@@ -699,7 +696,8 @@
           rowHtml += '</div>';
           html += rowHtml;
         });
-        html += '</div></div>';
+        html += '</div></div>'  // closes off-project-list-inner + off-project-list
+          + '</div>';           // closes off-vendor-card
       });
       html += '</div>';
     }
