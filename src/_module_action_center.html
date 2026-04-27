@@ -283,7 +283,21 @@
     el.setAttribute('data-tab', tab);
 
     var qSafe = _e(_acUniversalSearchQuery);
-    var html = '<input type="text" class="ac-ufb-search" id="ac-ufb-search" value="' + qSafe + '" ' +
+
+    // For crossings: prepend KPI mini chips before the search input
+    var kpiPrefix = '';
+    if (tab === 'crossings') {
+      var ufbItems = _acGetFilteredCrossingItems();
+      var ufbPend = ufbItems.filter(function(i){ return _acResolveCrossing(i).pending; }).length;
+      var ufbYes  = ufbItems.filter(function(i){ return (_acResolveCrossing(i).xing || '').toUpperCase() === 'YES'; }).length;
+      var ufbNo   = ufbItems.filter(function(i){ return (_acResolveCrossing(i).xing || '').toUpperCase() === 'NO';  }).length;
+      kpiPrefix = '<span class="ac-tki-chip ac-tki-pend">' + ufbPend + ' Pend</span>'
+        + '<span class="ac-tki-chip ac-tki-yes">'  + ufbYes + ' YES</span>'
+        + '<span class="ac-tki-chip ac-tki-no">'   + ufbNo  + ' NO</span>'
+        + '<div class="ac-ufb-sep"></div>';
+    }
+
+    var html = kpiPrefix + '<input type="text" class="ac-ufb-search" id="ac-ufb-search" value="' + qSafe + '" ' +
       'placeholder="Search ' + (tab === 'crossings' ? 'FDH, vendor, city, details' :
                                 tab === 'boms'      ? 'FDH, vendor' :
                                 tab === 'comments'  ? 'FDH, vendor, city' :
@@ -298,6 +312,20 @@
         html += '<button class="ac-filter-pill' + (active ? ' active' : '') +
           '" onclick="_acSetUniversalFilter(\'crossings\',\'' + val + '\')">' + label + '</button>';
       });
+      // Vendor filter chips inline after status pills
+      var ufbVendorSet = {}, ufbVendorList = [];
+      ufbItems.forEach(function(i) {
+        var v = i.vendor || 'Unassigned';
+        if (!ufbVendorSet[v]) { ufbVendorSet[v] = true; ufbVendorList.push(v); }
+      });
+      ufbVendorList.sort();
+      if (ufbVendorList.length > 1) {
+        html += '<div class="ac-ufb-sep"></div>';
+        html += '<button class="ac-filter-pill' + (!_acXingVendorFilter ? ' active' : '') + '" onclick="_acSetXingVendorFilter(null)">All</button>';
+        ufbVendorList.forEach(function(v) {
+          html += '<button class="ac-filter-pill' + (_acXingVendorFilter === v ? ' active' : '') + '" onclick="_acSetXingVendorFilter(\'' + _acJs(v) + '\')">' + _e(v) + '</button>';
+        });
+      }
     } else if (tab === 'boms' && _acBomData) {
       html += '<div class="ac-ufb-sep"></div>';
       ['all','diffs'].forEach(function(val) {
@@ -431,20 +459,6 @@
     _acRenderCrossingsTab();
   }
 
-  function _acOnXingScroll() {
-    var tab = document.getElementById('ac-tab-crossings');
-    if (!tab) return;
-    var wrap = tab.querySelector('.ac-xing-card-wrap');
-    tab.classList.toggle('ac-kpi-stuck', !!(wrap && wrap.scrollTop > 0));
-  }
-
-  function _acBindXingScroll() {
-    var wrap = document.querySelector('#ac-tab-crossings .ac-xing-card-wrap');
-    if (!wrap || wrap._xingScrollBound) return;
-    wrap._xingScrollBound = true;
-    wrap.addEventListener('scroll', _acOnXingScroll, { passive: true });
-  }
-
   function _acBuildXingGroups(items) {
     var groups = {};
     items.forEach(function(item) {
@@ -526,14 +540,6 @@
 
     var allItems = _acGetFilteredCrossingItems();
 
-    // Build vendor list for filter chips (from unfiltered set)
-    var vendorSet = {}, vendorList = [];
-    allItems.forEach(function(i) {
-      var v = i.vendor || 'Unassigned';
-      if (!vendorSet[v]) { vendorSet[v] = true; vendorList.push(v); }
-    });
-    vendorList.sort();
-
     // Apply vendor + city filters
     var items = allItems;
     if (_acXingVendorFilter) items = items.filter(function(i) { return (i.vendor || '') === _acXingVendorFilter; });
@@ -542,21 +548,18 @@
     _acVisibleXingFdhs = items.map(function(i){ return i.fdh; });
     var selCount = _acXingsSelected.size;
 
-    // KPI values for inline-compact chips (based on full allItems, not filtered)
-    var kpiPend = allItems.filter(function(i){ return _acResolveCrossing(i).pending; }).length;
-    var kpiYes  = allItems.filter(function(i){ return (_acResolveCrossing(i).xing || '').toUpperCase() === 'YES'; }).length;
-    var kpiNo   = allItems.filter(function(i){ return (_acResolveCrossing(i).xing || '').toUpperCase() === 'NO';  }).length;
+    // Build sorted vendor list for theme index consistency
+    var vendorSet = {}, vendorList = [];
+    allItems.forEach(function(i) {
+      var v = i.vendor || 'Unassigned';
+      if (!vendorSet[v]) { vendorSet[v] = true; vendorList.push(v); }
+    });
+    vendorList.sort();
 
     var html =
       '<input type="file" id="ac-csv-import-input" accept=".csv,.xlsx" style="display:none" onchange="_acOnCsvFileSelected(this)">'
-      + _acRenderTabKpi('crossings')
       + '<div class="ac-toolbar">'
       +   '<div class="ac-toolbar-left">'
-      +     '<div class="ac-toolbar-kpi-inline">'
-      +       '<span class="ac-tki-chip ac-tki-pend">' + kpiPend + ' Pending</span>'
-      +       '<span class="ac-tki-chip ac-tki-yes">'  + kpiYes  + ' YES</span>'
-      +       '<span class="ac-tki-chip ac-tki-no">'   + kpiNo   + ' NO</span>'
-      +     '</div>'
       +     (selCount > 0
               ? '<span class="ac-bulk-count">' + selCount + ' selected</span>'
                 + '<button class="ac-bulk-action-btn" onclick="_acCommitSelectedCrossings()">Commit Selected</button>'
@@ -567,16 +570,6 @@
       +     '<button class="ac-bulk-action-btn ac-import-btn" onclick="_acTriggerCsvImport()">Import CSV</button>'
       +   '</div>'
       + '</div>';
-
-    // Vendor filter chips (only when multiple vendors present)
-    if (vendorList.length > 1) {
-      html += '<div class="ac-xing-vendor-chips">'
-        + '<button class="ac-filter-pill' + (!_acXingVendorFilter ? ' active' : '') + '" onclick="_acSetXingVendorFilter(null)">All</button>';
-      vendorList.forEach(function(v) {
-        html += '<button class="ac-filter-pill' + (_acXingVendorFilter === v ? ' active' : '') + '" onclick="_acSetXingVendorFilter(\'' + _acJs(v) + '\')">' + _e(v) + '</button>';
-      });
-      html += '</div>';
-    }
 
     if (items.length === 0) {
       html += '<div class="ac-xing-card-wrap"><div class="ac-empty">'
@@ -591,7 +584,9 @@
         var vendorKey = _acXingGroupKey(group.vendor, '');
         var vendorCollapsed = _acXingGroupCollapsed[vendorKey] !== false;  // default: collapsed
         var vKey = group.vendor.replace(/[^a-z0-9]/gi, '_');
-        var monogram = (group.vendor || '?').charAt(0).toUpperCase();
+        var monogram = (typeof getVendorMonogram === 'function') ? getVendorMonogram(group.vendor) : group.vendor.slice(0, 2).toUpperCase();
+        var themeIdx = vendorList.indexOf(group.vendor);
+        var themeStyle = (typeof getVendorThemeStyle === 'function') ? getVendorThemeStyle(group.vendor, themeIdx) : '';
 
         // Count YES / NO / Pending across all FDH items in this vendor
         var yesCount = 0, noCount = 0;
@@ -607,7 +602,7 @@
         html += '<div class="off-vendor-card">'
           + '<div class="off-vendor-header" onclick="_acToggleXingGroup(\'' + _acJs(vendorKey) + '\')">'
           +   '<div class="off-vendor-title-wrap">'
-          +     '<span class="ac-xing-group-avatar">' + _e(monogram) + '</span>'
+          +     '<div class="queue-group-monogram" style="' + themeStyle + '">' + _e(monogram) + '</div>'
           +     '<div class="off-vendor-title-block">'
           +       '<div class="off-vendor-title-line">'
           +         '<div class="off-vendor-name">' + _e(group.vendor) + '</div>'
@@ -665,7 +660,7 @@
 
     container.innerHTML = html;
     _acSyncTabBadges();
-    _acBindXingScroll();
+    _acRenderUniversalFilterBar('crossings');
   }
 
   // Shims for backward compatibility (inline handlers in Quick Peek may call these)
