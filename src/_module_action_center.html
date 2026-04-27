@@ -435,9 +435,13 @@
 
   function _acRenderXingGroupHeader(label, count, key, depth) {
     var collapsed = !!_acXingGroupCollapsed[key];
+    var avatar = depth === 0
+      ? '<span class="ac-xing-group-avatar">' + _e((label || '?').charAt(0).toUpperCase()) + '</span>'
+      : '';
     return '<div class="ac-xing-group-header ac-xing-group-header-depth-' + depth + (collapsed ? ' is-collapsed' : '') + '" ' +
       'onclick="_acToggleXingGroup(\'' + _acJs(key) + '\')">' +
         '<span class="ac-xing-group-toggle"></span>' +
+        avatar +
         '<span class="ac-xing-group-label">' + _e(label) + '</span>' +
         '<span class="ac-xing-group-count">' + count + '</span>' +
       '</div>';
@@ -456,38 +460,35 @@
     var xSelCls = 'xing-select' + (curX === 'YES' ? ' val-yes' : curX === 'NO' ? ' val-no' : '');
     var isPeekOpen = _acOpenPeekFdh === item.fdh;
 
-    return '<tr class="ac-row ac-xing-row' + (isSel ? ' is-selected' : '') + (isDirty ? ' is-dirty' : '') + '">' +
-      '<td class="ac-td-check" onclick="event.stopPropagation();_acToggleXingRow(\'' + fdhJs + '\')">' +
-        '<input type="checkbox" ' + (isSel ? 'checked' : '') + ' onclick="event.stopPropagation()" onchange="_acToggleXingRow(\'' + fdhJs + '\')">' +
-      '</td>' +
-      '<td class="ac-td-fdh" onclick="event.stopPropagation()">' +
-        '<button class="ac-detail-btn' + (isPeekOpen ? ' is-active' : '') + '" data-fdh="' + fdhSafe + '" onclick="_acTogglePeek(\'' + fdhJs + '\')" title="Open detail panel">Details</button>' +
-        '<span class="ac-fdh">' + fdhSafe + '</span>' +
-      '</td>' +
-      '<td class="ac-td-vendor">' + _e(item.vendor || '—') + '</td>' +
-      '<td class="ac-td-qb-status"><span class="ac-xpill ' + xPillCls + '">' + _e(curX || '—') + '</span></td>' +
-      '<td class="ac-td-xing-sel" onclick="event.stopPropagation()">' +
-        '<select class="' + xSelCls + '" onchange="_acOnXingChange(\'' + fdhJs + '\',this.value)">' +
-          '<option value=""' + (!curX ? ' selected' : '') + '>—</option>' +
-          '<option value="YES"' + (curX === 'YES' ? ' selected' : '') + '>YES</option>' +
-          '<option value="NO"'  + (curX === 'NO'  ? ' selected' : '') + '>NO</option>' +
-          '<option value="N/A"' + (curX === 'N/A' ? ' selected' : '') + '>N/A</option>' +
-        '</select>' +
-      '</td>' +
-      '<td class="ac-td-xing-det" onclick="event.stopPropagation()">' +
-        '<div class="ac-xing-stripe-shell cd-dropzone" id="ac-cd-dropzone-' + fdhSafe + '" ' +
-          'ondragover="handleCdDragOver(event,this)" ondragleave="handleCdDragLeave(event,this)" ondrop="handleCdDrop(event,this,\'' + fdhJs + '\')">' +
-          '<div class="xing-bubble ac-xing-entry">' +
-            '<div class="cd-overlay-trigger" onclick="event.stopPropagation();triggerCdSelect(\'' + fdhJs + '\',\'ac-cd-dropzone-' + fdhJs + '\')" title="Analyze CD PDF">' + icon('upload', 14) + '</div>' +
-            '<div class="cd-drop-hint">DROP CD PDF TO ANALYZE</div>' +
-            '<textarea class="xing-details-textarea" ' +
-              'oninput="_acOnXingDetailChange(\'' + fdhJs + '\',this.value);this.style.height=\'\';this.style.height=this.scrollHeight+\'px\'" ' +
-              'onfocus="this.style.height=\'\';this.style.height=this.scrollHeight+\'px\'" ' +
-              'placeholder="Sheet names, crossing types…">' + _e(curDet) + '</textarea>' +
-          '</div>' +
-        '</div>' +
-      '</td>' +
-    '</tr>';
+    return '<div class="ac-xing-proj-row' + (isSel ? ' is-selected' : '') + (isDirty ? ' is-dirty' : '') + '">'
+      + '<div class="ac-xpr-check" onclick="event.stopPropagation();_acToggleXingRow(\'' + fdhJs + '\')">'
+      +   '<input type="checkbox"' + (isSel ? ' checked' : '') + ' onclick="event.stopPropagation()" onchange="_acToggleXingRow(\'' + fdhJs + '\')">'
+      + '</div>'
+      + '<div class="ac-xpr-meta" onclick="event.stopPropagation()">'
+      +   '<span class="ac-xpr-fdh">' + fdhSafe + '</span>'
+      +   '<button class="ac-xpr-detail-btn' + (isPeekOpen ? ' is-active' : '') + '" data-fdh="' + fdhSafe + '" onclick="_acTogglePeek(\'' + fdhJs + '\')" title="Open detail panel">Details</button>'
+      + '</div>'
+      + '<div class="ac-xpr-controls" onclick="event.stopPropagation()">'
+      +   '<span class="ac-xpill ' + xPillCls + '">' + _e(curX || '—') + '</span>'
+      +   '<select class="' + xSelCls + '" onchange="_acOnXingChange(\'' + fdhJs + '\',this.value)">'
+      +     '<option value=""' + (!curX ? ' selected' : '') + '>—</option>'
+      +     '<option value="YES"' + (curX === 'YES' ? ' selected' : '') + '>YES</option>'
+      +     '<option value="NO"'  + (curX === 'NO'  ? ' selected' : '') + '>NO</option>'
+      +     '<option value="N/A"' + (curX === 'N/A' ? ' selected' : '') + '>N/A</option>'
+      +   '</select>'
+      + '</div>'
+      + '<div class="ac-xpr-bubble" onclick="event.stopPropagation()">'
+      +   '<div class="xing-bubble ac-xing-entry cd-dropzone" id="ac-cd-dropzone-' + fdhSafe + '" '
+      +     'ondragover="handleCdDragOver(event,this)" ondragleave="handleCdDragLeave(event,this)" ondrop="handleCdDrop(event,this,\'' + fdhJs + '\')">'
+      +     '<div class="cd-overlay-trigger" onclick="event.stopPropagation();triggerCdSelect(\'' + fdhJs + '\',\'ac-cd-dropzone-' + fdhJs + '\')" title="Analyze CD PDF">' + icon('upload', 14) + '</div>'
+      +     '<div class="cd-drop-hint">DROP CD PDF TO ANALYZE</div>'
+      +     '<textarea class="xing-details-textarea" '
+      +       'oninput="_acOnXingDetailChange(\'' + fdhJs + '\',this.value);this.style.height=\'\';this.style.height=this.scrollHeight+\'px\'" '
+      +       'onfocus="this.style.height=\'\';this.style.height=this.scrollHeight+\'px\'" '
+      +       'placeholder="Sheet names, crossing types…">' + _e(curDet) + '</textarea>'
+      +   '</div>'
+      + '</div>'
+    + '</div>';
   }
 
   function _acRenderCrossingsTab() {
@@ -528,39 +529,77 @@
       '</div>';
     } else {
       var groups = _acBuildXingGroups(items);
-      html += '<div class="ac-table-wrap ac-xing-grouped-wrap"><table class="ac-table ac-table-crossings ac-table-workspace">' +
-        '<thead><tr>' +
-          '<th class="ac-th-check"><input type="checkbox" ' + (allChecked ? 'checked' : '') +
-            ' onchange="_acToggleVisibleXings(this.checked)"></th>' +
-          '<th>FDH</th>' +
-          '<th>Vendor</th>' +
-          '<th>QB Status</th>' +
-          '<th class="ac-th-xing-sel">Crossing?</th>' +
-          '<th class="ac-th-xing-det">Details / Sheet Names</th>' +
-        '</tr></thead><tbody>';
+      html += '<div class="ac-xing-card-wrap"><div class="off-vendor-stack">';
 
       groups.forEach(function(group) {
         var vendorKey = _acXingGroupKey(group.vendor, '');
         var vendorCollapsed = !!_acXingGroupCollapsed[vendorKey];
-        html += '<tr class="ac-xing-group-row"><td colspan="6">' +
-          _acRenderXingGroupHeader(group.vendor, group.count, vendorKey, 0) +
-        '</td></tr>';
-        if (vendorCollapsed) return;
+        var vKey = group.vendor.replace(/[^a-z0-9]/gi, '_');
+        var monogram = (group.vendor || '?').charAt(0).toUpperCase();
+
+        // Count YES / NO / Pending across all FDH items in this vendor
+        var yesCount = 0, noCount = 0;
+        group.cityNames.forEach(function(c) {
+          group.cities[c].forEach(function(item) {
+            var x = (_acResolveCrossing(item) || {}).xing;
+            if (x === 'YES') yesCount++;
+            else if (x === 'NO') noCount++;
+          });
+        });
+        var pendCount = group.count - yesCount - noCount;
+
+        html += '<div class="off-vendor-card">'
+          + '<div class="off-vendor-header" onclick="_acToggleXingGroup(\'' + _acJs(vendorKey) + '\')">'
+          +   '<div class="off-vendor-title-wrap">'
+          +     '<span class="ac-xing-group-avatar">' + _e(monogram) + '</span>'
+          +     '<div class="off-vendor-title-block">'
+          +       '<div class="off-vendor-title-line">'
+          +         '<div class="off-vendor-name">' + _e(group.vendor) + '</div>'
+          +         '<span class="off-expand-arrow' + (vendorCollapsed ? '' : ' open') + '">&#9658;</span>'
+          +       '</div>'
+          +     '</div>'
+          +   '</div>'
+          +   '<div class="off-vendor-stats">'
+          +     '<div class="off-vendor-stat"><span class="off-vendor-stat-value">' + pendCount + '</span><span class="off-vendor-stat-label">Pending</span></div>'
+          +     '<div class="off-vendor-stat"><span class="off-vendor-stat-value">' + yesCount + '</span><span class="off-vendor-stat-label">YES</span></div>'
+          +     '<div class="off-vendor-stat"><span class="off-vendor-stat-value">' + noCount + '</span><span class="off-vendor-stat-label">NO</span></div>'
+          +   '</div>'
+          + '</div>'
+          + '<div class="off-vendor-footer">'
+          +   '<div class="off-vendor-flags">';
+
+        group.cityNames.slice(0, 5).forEach(function(city) {
+          html += '<span class="tag chip-muted">' + _e(city) + ' &times;' + group.cities[city].length + '</span>';
+        });
+        if (group.cityNames.length > 5) {
+          html += '<span class="tag chip-muted">+' + (group.cityNames.length - 5) + ' more</span>';
+        }
+
+        html += '</div>'   // off-vendor-flags
+          + '</div>';      // off-vendor-footer
+
+        // Collapsible project list (inside card so sticky header constrains correctly)
+        html += '<div class="off-project-list' + (vendorCollapsed ? '' : ' open') + '" id="ac-xpl-' + vKey + '">'
+          + '<div class="off-project-list-inner">';
+
+        var showCityHeaders = group.cityNames.length > 1;
         group.cityNames.forEach(function(city) {
           var cityItems = group.cities[city];
-          var cityKey = _acXingGroupKey(group.vendor, city);
-          var cityCollapsed = !!_acXingGroupCollapsed[cityKey];
-          html += '<tr class="ac-xing-group-row ac-xing-city-row"><td colspan="6">' +
-            _acRenderXingGroupHeader(city, cityItems.length, cityKey, 1) +
-          '</td></tr>';
-          if (cityCollapsed) return;
+          if (showCityHeaders) {
+            html += '<div class="ac-xing-city-hd">' + _e(city)
+              + '<span style="font-weight:600;margin-left:4px">(' + cityItems.length + ')</span>'
+              + '</div>';
+          }
           cityItems.forEach(function(item) {
             html += _acRenderXingRow(item);
           });
         });
+
+        html += '</div></div>'  // off-project-list-inner + off-project-list
+          + '</div>';           // off-vendor-card
       });
 
-      html += '</tbody></table></div>';
+      html += '</div></div>';  // off-vendor-stack + ac-xing-card-wrap
     }
 
     container.innerHTML = html;
