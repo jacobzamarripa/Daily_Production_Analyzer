@@ -192,12 +192,16 @@ function _duSyncStickyState() {
 }
 
 function _duSyncSwimlaneTop() {
-  var thead = document.querySelector('#upload-table thead');
-  if (!thead) return;
-  var h = Math.ceil(thead.getBoundingClientRect().height);
-  if (!h) return;
-  var rows = document.querySelectorAll('.upload-swimlane-row');
-  rows.forEach(function(row) { row.style.top = h + 'px'; });
+  setTimeout(function() {
+    var thead = document.querySelector('#upload-table thead');
+    if (!thead) return;
+    var h = Math.ceil(thead.getBoundingClientRect().height);
+    if (!h) return;
+    var rows = document.querySelectorAll('.upload-swimlane-row, .upload-swimlane-empty-row');
+    var cells = document.querySelectorAll('.upload-swimlane-cell, .upload-swimlane-check-cell, .upload-swimlane-empty-cell');
+    rows.forEach(function(row) { row.style.top = h + 'px'; });
+    cells.forEach(function(cell) { cell.style.top = h + 'px'; });
+  }, 60);
 }
 
 function _duRefreshAll(options) {
@@ -1021,8 +1025,7 @@ function _duRenderTable() {
       html += '<tr class="upload-swimlane-empty-row"><td colspan="' + colSpan + '" class="upload-swimlane-empty-cell upload-swimlane-ok">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;margin-right:4px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
         'All clear — no validation issues detected.</td></tr>';
-    }
-  }
+    }  }
 
   html += _duBuildSwimlaneDivider('ready', ready.length, colSpan, readySelected, readySelectable);
   if (_duSwimlaneOpen.ready) {
@@ -1030,8 +1033,7 @@ function _duRenderTable() {
       html += ready.map(function(r, i) { return _duBuildRowHtml(r, i); }).join('');
     } else {
       html += '<tr class="upload-swimlane-empty-row"><td colspan="' + colSpan + '" class="upload-swimlane-empty-cell">No rows ready — fix issues above or adjust filters.</td></tr>';
-    }
-  }
+    }  }
 
   html += _duBuildSwimlaneDivider('uploaded', uploaded.length, colSpan, 0, 0);
   if (_duSwimlaneOpen.uploaded && uploaded.length > 0) {

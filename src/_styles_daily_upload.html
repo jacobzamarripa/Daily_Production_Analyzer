@@ -1013,12 +1013,19 @@ body.dark-mode .upload-table th.col-teal {
   background: transparent;
   color: var(--text-muted);
 }
-body.dark-mode .upload-table tbody tr.row-even td:not(.col-check) {
-  background: rgba(255,255,255,0.025);
+body.dark-mode .upload-table tbody tr.row-even td {
+  background: rgba(255,255,255,0.045) !important;
 }
+
 body.dark-mode .upload-table th:nth-child(4),
 body.dark-mode .upload-table td:nth-child(4) {
-  border-right-color: rgba(255,255,255,0.22);
+  border-right-color: rgba(255,255,255,0.25);
+}
+
+/* Dark mode shadow adjustment */
+body.dark-mode .upload-table td:nth-child(4)::after,
+body.dark-mode .upload-table th:nth-child(4)::after {
+  background: linear-gradient(to right, rgba(0,0,0,0.2), transparent);
 }
 
 body.dark-mode .upload-shell {
@@ -1591,15 +1598,14 @@ body.dark-mode .du-loaded-chip {
 .upload-table thead th {
   position: sticky;
   top: 0;
-  z-index: 100;
-  padding: 3px 7px;
-  background: var(--bg);
-  border-top: 1px solid var(--du-grid-line);
+  z-index: 50; /* Tier 3: Sticky Headers */
+  padding: 6px 7px;
+  background: color-mix(in srgb, var(--bg) 96%, var(--border));
   border-right: 1px solid var(--du-grid-line);
   border-bottom: 2px solid var(--border);
   font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 700;
+  color: var(--text-main);
   text-align: left;
   cursor: pointer;
   user-select: none;
@@ -1608,6 +1614,14 @@ body.dark-mode .du-loaded-chip {
   letter-spacing: 0.02em;
   text-transform: uppercase;
   vertical-align: middle;
+}
+
+/* Intersection Corners: Stay above both horizontal and vertical scroll */
+.upload-table thead th.col-check,
+.upload-table thead th:nth-child(2),
+.upload-table thead th:nth-child(3),
+.upload-table thead th:nth-child(4) {
+  z-index: 60; /* Tier 4: Corners */
 }
 
 /* Left edge of table */
@@ -1663,9 +1677,9 @@ body.dark-mode .du-loaded-chip {
   background: color-mix(in srgb, var(--bg) 60%, var(--card-bg)) !important;
 }
 
-/* Zebra striping — even rows get subtle tint; resets per swimlane section */
-.upload-table tbody tr.row-even td:not(.col-check) {
-  background: color-mix(in srgb, var(--bg) 38%, var(--card-bg));
+/* Zebra striping — even rows get subtle tint; sync across frozen boundary */
+.upload-table tbody tr.row-even td {
+  background: color-mix(in srgb, var(--bg) 45%, var(--card-bg)) !important;
 }
 
 .upload-table tbody tr.row-dirty td {
@@ -1689,17 +1703,16 @@ body.dark-mode .du-loaded-chip {
   font-weight: 400;
 }
 
+/* Sticky Checkbox Column */
 .upload-table th.col-check {
-  position: sticky;
-  top: 0;
   left: 0;
-  z-index: 200; /* must beat td.col-check (110) — tbody cells render above thead at same z-index */
 }
 
 .upload-table td.col-check {
   position: sticky;
   left: 0;
-  z-index: 110;
+  z-index: 10; /* Tier 2: Frozen Columns */
+  border-left: 1px solid var(--du-grid-line);
 }
 
 .upload-table th.col-check,
@@ -1709,36 +1722,26 @@ body.dark-mode .du-loaded-chip {
   max-width: 48px;
   text-align: center;
   padding: 0;
-  background: var(--bg) !important;
 }
 
-.upload-table td.col-check {
-  background: var(--card-bg) !important;
-}
-
+/* Column 2: Date */
 .upload-table th:nth-child(2),
 .upload-table td:nth-child(2) {
   position: sticky;
   left: 48px;
-  z-index: 90;
+  z-index: 10;
   width: 80px;
   min-width: 80px;
-  background: var(--bg) !important;
 }
 
-.upload-table td:nth-child(2) {
-  background: var(--card-bg) !important;
-}
-
-/* Contractor column — header single line, data cells wrap */
+/* Column 3: Contractor */
 .upload-table th:nth-child(3),
 .upload-table td:nth-child(3) {
   position: sticky;
   left: 128px;
-  z-index: 90;
+  z-index: 10;
   width: 80px;
   min-width: 80px;
-  background: var(--bg) !important;
 }
 
 .upload-table thead th:nth-child(3) {
@@ -1749,32 +1752,33 @@ body.dark-mode .du-loaded-chip {
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
-  background: var(--card-bg) !important;
 }
 
+/* Column 4: FDH (Last Frozen Column) */
 .upload-table th:nth-child(4),
 .upload-table td:nth-child(4) {
   position: sticky;
   left: 208px;
-  z-index: 90;
+  z-index: 10;
   width: 120px;
   min-width: 120px;
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
-  border-right: 2px solid #9fadc0;
-  box-shadow: none;
-  background: var(--bg) !important;
+  border-right: 2px solid color-mix(in srgb, var(--border) 60%, #9fadc0);
 }
 
-.upload-table td:nth-child(4) {
-  background: var(--card-bg) !important;
-}
-
-.upload-table thead th:nth-child(2),
-.upload-table thead th:nth-child(3),
-.upload-table thead th:nth-child(4) {
-  z-index: 105;
+/* Visual Boundary Shadow for the frozen pane */
+.upload-table td:nth-child(4)::after,
+.upload-table th:nth-child(4)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -6px;
+  bottom: 0;
+  width: 6px;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
 }
 
 .upload-table td.col-comments,
@@ -2258,14 +2262,15 @@ body.dark-mode .du-loaded-chip {
 /* ── Swimlane divider rows ────────────────────────────────── */
 .upload-swimlane-row {
   position: sticky;
-  top: 34px; /* stick just below the thead — 10px font + 3px pad top/bottom, 2 lines max for wrapped cols ≈ 34px */
-  z-index: 98;
+  top: 34px; /* Dynamically set by _duSyncSwimlaneTop() in JS */
+  z-index: 45; /* Tier 2.5: Above data rows, but below sticky headers (50) */
   cursor: pointer;
   user-select: none;
 }
 .upload-swimlane-cell {
   position: sticky;
-  left: 0;
+  left: 48px; /* Match Date column start */
+  z-index: 45;
   padding: 0 !important;
   height: auto !important;
   border-top: 1px solid var(--border) !important;
@@ -2333,17 +2338,20 @@ body.dark-mode .du-loaded-chip {
 .swimlane-issues .upload-swimlane-label { color: #dc2626; }
 .swimlane-issues .upload-swimlane-count { background: #fee2e2; color: #dc2626; }
 .swimlane-issues .upload-swimlane-cell { background: #fff5f5 !important; }
-.swimlane-issues .upload-swimlane-check-cell { background: #fff5f5 !important; }
+.swimlane-issues .upload-swimlane-check-cell { background: #fff5f5 !important; z-index: 45; border-top: 1px solid var(--border) !important; border-bottom: 1px solid var(--border) !important; }
 .swimlane-ready .upload-swimlane-label { color: #16a34a; }
 .swimlane-ready .upload-swimlane-count { background: #dcfce7; color: #15803d; }
 .swimlane-ready .upload-swimlane-cell { background: #f0fdf4 !important; }
-.swimlane-ready .upload-swimlane-check-cell { background: #f0fdf4 !important; }
+.swimlane-ready .upload-swimlane-check-cell { background: #f0fdf4 !important; z-index: 45; border-top: 1px solid var(--border) !important; border-bottom: 1px solid var(--border) !important; }
 .swimlane-uploaded .upload-swimlane-cell { background: #f8fafc !important; }
-.swimlane-uploaded .upload-swimlane-check-cell { background: #f8fafc !important; }
+.swimlane-uploaded .upload-swimlane-check-cell { background: #f8fafc !important; z-index: 45; border-top: 1px solid var(--border) !important; border-bottom: 1px solid var(--border) !important; }
 
 /* Swimlane empty states */
 .upload-swimlane-empty-row td { border: none !important; }
 .upload-swimlane-empty-cell {
+  position: sticky;
+  left: 48px;
+  z-index: 45;
   padding: 10px 20px !important;
   font-size: 11px;
   font-weight: 600;
