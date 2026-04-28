@@ -219,8 +219,15 @@ function processIncomingForQuickBase(isSilent = false, isContinuation = false) {
   if (!isContinuation) {
     // 🛡️ Lock to prevent overlapping manual runs
     if (props.getProperty("INGESTION_IN_PROGRESS") === "true") {
-      if (!isSilent) SpreadsheetApp.getUi().alert("Ingestion is already running in the background. Please wait.");
-      return;
+      const lastStarted = parseInt(props.getProperty("INGESTION_LAST_STARTED_AT") || "0");
+      const lockAgeMinutes = (Date.now() - lastStarted) / 60000;
+      if (lockAgeMinutes > 10) {
+        // GAS hard limit is 6 min — any lock >10 min is from a crashed run, not a live one.
+        logMsg(`⚠️ Stale ingestion lock detected (age: ${lockAgeMinutes.toFixed(1)} min). Auto-clearing and proceeding.`);
+      } else {
+        if (!isSilent) SpreadsheetApp.getUi().alert("Ingestion is already running in the background. Please wait.");
+        return;
+      }
     }
     props.setProperty("INGESTION_IN_PROGRESS", "true");
     props.setProperties({
@@ -236,10 +243,18 @@ function processIncomingForQuickBase(isSilent = false, isContinuation = false) {
     });
   }
 
-  const keys = getExistingKeys(); 
-  const totals = getExistingTotals();
-  const refDict = getReferenceDictionary(); 
-  let newRowsAppended = []; 
+  let keys, totals, refDict;
+  try {
+    keys    = getExistingKeys();
+    totals  = getExistingTotals();
+    refDict = getReferenceDictionary();
+  } catch (e) {
+    props.setProperties({ "INGESTION_IN_PROGRESS": "false", "INGESTION_STATUS": "idle" });
+    logMsg(`❌ INGESTION ABORTED: Pre-scan setup failed — ${e.message}`);
+    if (!isSilent) SpreadsheetApp.getUi().alert(`Ingestion aborted due to setup error:\n\n${e.message}`);
+    return;
+  }
+  let newRowsAppended = [];
   let allProcessedDates = [];
   let allParsedRowsForQB = [];
 
@@ -781,7 +796,7 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
       logMsg(`📊 File Report: "${file.getName()}" | Added: ${dataToAppend.length} | Skipped: ${skippedCount} | Sample Dates: ${uniqueDates.slice(0, 5).join(', ')}`);
     }
 
-    return { rows: dataToAppend, maxDate: maxDateFound || targetDate };
+    return { rows: dataToAppend, maxDate: maxDateFound || folderDate };
   } catch (e) {
     logMsg(`❌ parseFileToRows error: ${e.message}`);
     return { rows: [], maxDate: "" };
