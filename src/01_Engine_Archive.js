@@ -1144,6 +1144,15 @@ function populateQuickBaseTabCore(targetDates, vendorFilter = "ALL") {
   if (filteredRows.length > 0) {
     const prevTotals = _buildPrevTotalsLookup(histSheet, dateArr);
     const qbData = _mapHistoryRowsWithCorrections(filteredRows, prevTotals);
+    const _archAliasMap = (typeof _getDailyUploadVendorAliasMap === 'function') ? _getDailyUploadVendorAliasMap() : {};
+    const _archContractorIdx = QB_HEADERS.indexOf('Contractor');
+    if (_archContractorIdx > -1 && Object.keys(_archAliasMap).length > 0) {
+      qbData.forEach(row => {
+        const raw = String(row[_archContractorIdx] || '').trim();
+        const canonical = _archAliasMap[raw.toLowerCase()];
+        if (canonical) row[_archContractorIdx] = canonical;
+      });
+    }
     ensureCapacity(qbSheet, qbData.length + 1, QB_HEADERS.length);
     qbSheet.getRange(2, 1, qbData.length, QB_HEADERS.length).setValues(qbData);
   } else {
@@ -1185,15 +1194,18 @@ function exportQuickBaseCSVCore(isSilent = false, contextType = "ROUTINE") {
     datePart = (fallbackRaw instanceof Date) ? Utilities.formatDate(fallbackRaw, "GMT-5", "MM.dd.yy") : String(fallbackRaw).split("T")[0].replace(/-/g, ".");
   }
 
-  const vendorSuffix = vendors.length > 0 ? ` (${vendors.join(", ")})` : "";
+  // Single vendor: name embedded inline (no parens). Multiple vendors: suffix with parens.
+  const _safeVendorName = v => v.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  const vendorInline = vendors.length === 1 ? '_' + _safeVendorName(vendors[0]) : '';
+  const vendorSuffix = vendors.length > 1   ? `_(${vendors.join(', ')})` : '';
   let fileName = "";
-  
+
   // 🔍 INTELLIGENT TAGGING: Check for existing reports to determine LATE vs CORRECTION
   // Use datePart as the anchor for identifying report runs for this specific slice
   const existingFiles = [];
   const existingQuery = `title contains 'Daily_Production_Report_' and title contains '${datePart}' and mimeType = 'text/csv' and trashed = false`;
   const filesIter = DriveApp.getFolderById(COMPILED_FOLDER_ID).searchFiles(existingQuery);
-  
+
   while (filesIter.hasNext()) {
     const f = filesIter.next();
     existingFiles.push({
@@ -1202,7 +1214,7 @@ function exportQuickBaseCSVCore(isSilent = false, contextType = "ROUTINE") {
       file: f
     });
   }
-  
+
   // Sort descending by creation date
   existingFiles.sort((a, b) => b.created - a.created);
   const reportExists = existingFiles.length > 0;
@@ -1211,40 +1223,54 @@ function exportQuickBaseCSVCore(isSilent = false, contextType = "ROUTINE") {
   if (reportExists) {
     let isLate = false;
     let isCorrection = false;
-    
-    // Scan up to 3 most recent files to see which vendors have already been reported
+
+    // Build per-vendor row sets from existing baseline CSVs (up to 3 most recent)
     const scanLimit = Math.min(3, existingFiles.length);
-    let combinedBaselineText = "";
+    const baselineVendorRows = {};
     for (let i = 0; i < scanLimit; i++) {
       try {
-        combinedBaselineText += " " + existingFiles[i].file.getBlob().getDataAsString();
+        existingFiles[i].file.getBlob().getDataAsString()
+          .split('\n').slice(1)
+          .forEach(line => {
+            if (!line.trim()) return;
+            const cols = line.split(',');
+            const lineVendor = (cols[1] || '').replace(/^"|"$/g, '').trim();
+            if (lineVendor) {
+              if (!baselineVendorRows[lineVendor]) baselineVendorRows[lineVendor] = [];
+              baselineVendorRows[lineVendor].push(line.trim());
+            }
+          });
       } catch (e) {
         logMsg("⚠️ Error reading existing file for scan: " + existingFiles[i].name);
       }
     }
-    
+
     vendors.forEach(v => {
-      if (combinedBaselineText.includes(v)) isCorrection = true;
-      else isLate = true;
+      if (baselineVendorRows[v]) {
+        isCorrection = true; // Vendor already reported this period — any re-submission is a correction
+      } else {
+        isLate = true; // New vendor submitting after the first report for this date
+      }
     });
-    
+
     if (isCorrection && isLate) tag = "(LATE & CORRECTION)";
     else if (isCorrection) tag = "(CORRECTION)";
     else if (isLate) tag = "(LATE)";
   }
 
   // 🏷️ COMPUTE BASE FILENAME
+  // Format: Daily_Production_Report_{datePart}[_{tag}][_{vendor}|_{(Vendor1, Vendor2)}].csv
   if (contextType === "EMERGENCY") {
     tag = tag || "(CORRECTION)"; // Default tag for emergency if not already tagged
-    fileName = `Daily_Production_Report_${tag}_${datePart}${vendorSuffix}.csv`;
+    fileName = `Daily_Production_Report_${datePart}_${tag}${vendorInline}${vendorSuffix}.csv`;
   } else if (contextType === "SPECIFIC") {
-    fileName = `Daily_Production_Report_${datePart}${vendorSuffix}.csv`;
+    fileName = `Daily_Production_Report_${datePart}${vendorInline}${vendorSuffix}.csv`;
   } else {
     // ROUTINE or MANUAL
     if (tag) {
-      fileName = `Daily_Production_Report_${tag}_${datePart}${vendorSuffix}.csv`;
+      fileName = `Daily_Production_Report_${datePart}_${tag}${vendorInline}${vendorSuffix}.csv`;
     } else {
-      fileName = `Daily_Production_Report_${datePart}.csv`;
+      fileName = `Daily_Production_Report_${datePart}${vendorInline}${vendorSuffix}.csv`;
     }
   }
 

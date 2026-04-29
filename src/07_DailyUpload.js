@@ -2197,6 +2197,24 @@ function getMissingReportVendors(dateStr) {
     }
   }
 
+  // Also count FDH coverage from the QB_Upload queue — rows processed but not yet archived.
+  const _uploadSheet = ss.getSheetByName(QB_UPLOAD_SHEET);
+  if (_uploadSheet && _uploadSheet.getLastRow() > 1) {
+    const _uploadData = _uploadSheet.getRange(1, 1, _uploadSheet.getLastRow(), QB_HEADERS.length).getValues();
+    for (let _ui = 1; _ui < _uploadData.length; _ui++) {
+      const _uRow = _uploadData[_ui];
+      const _uFdh = _normalizeMissingReportFdh(_uRow[2]);
+      const _uIso = (typeof normalizeDateString === 'function')
+        ? normalizeDateString(_uRow[0])
+        : _normalizeDailyUploadTargetDate(_uRow[0]);
+      const _uVendorKey = _normalizeMissingReportVendor(_uRow[1], aliasMap);
+      if (!_uFdh || !_uIso || !_uVendorKey) continue;
+      if (_uIso < bucket.startIso || _uIso > bucket.endIso) continue;
+      if (!coverageByVendor[_uVendorKey]) coverageByVendor[_uVendorKey] = new Set();
+      coverageByVendor[_uVendorKey].add(_uFdh);
+    }
+  }
+
   const refDict = typeof getReferenceDictionary === 'function' ? getReferenceDictionary() : {};
   const activeByVendor = {};
 
