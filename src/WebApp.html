@@ -1051,7 +1051,7 @@
               </div>
             </div>
             <div class="upload-pipeline-body" id="upload-pipeline-incoming" aria-live="polite">
-              <div class="du-incoming-badge du-incoming-badge--clear">Checking…</div>
+              <span class="upload-step-state-badge is-blocked">Checking…</span>
             </div>
             <div class="upload-pipeline-actions">
               <button class="upload-btn btn-primary" type="button" onclick="_duRunIncomingPipeline()" title="Run archive ingestion against incoming report folders">Process Incoming</button>
@@ -1069,7 +1069,7 @@
               </div>
             </div>
             <div class="upload-pipeline-body" id="upload-pipeline-target" aria-live="polite">
-              <span class="du-loaded-chip du-loaded-chip--empty">Not loaded</span>
+              <div class="du-step-inline-status"><span class="upload-step-state-badge is-blocked">Not Loaded</span></div>
               <div id="du-date-picker-wrap" style="display:none;align-items:center;gap:6px;margin-top:6px;padding:0 2px;">
                 <input type="date" class="upload-search" id="upload-target-date" onchange="_duHandleTargetDateInput(this.value)" style="flex:1;min-width:0;">
                 <button class="upload-btn btn-ghost" type="button" onclick="_duLoadQueueForDate(document.getElementById('upload-target-date').value)" title="Load queue for the selected date">Load</button>
@@ -1090,7 +1090,10 @@
                 <div class="upload-card-title">Review Queue</div>
               </div>
             </div>
-            <div class="upload-pipeline-body" id="upload-queue-meta" aria-live="polite">Queue not loaded yet</div>
+            <div class="upload-pipeline-body" id="upload-queue-meta" aria-live="polite">
+              <div class="du-step-inline-status"><span class="upload-step-state-badge is-blocked">Not Loaded</span></div>
+              <div class="upload-pipeline-meta">Load a date in Step 2 to review the queue.</div>
+            </div>
             <div class="upload-pipeline-actions">
               <button class="upload-btn btn-primary" id="du-btn-approve-queue" type="button" disabled onclick="_duApproveQueue()" title="Load a date in Step 2 first">Approve Queue</button>
             </div>
@@ -1106,17 +1109,18 @@
               </div>
             </div>
             <div class="upload-pipeline-body" id="upload-pipeline-final" aria-live="polite">
-              <div class="upload-pipeline-meta">Approve Step 3 to unlock.</div>
+              <div class="upload-step-state-badge is-blocked">Blocked</div>
+              <div class="upload-pipeline-meta">Approve the reviewed queue in Step 3 before exporting or uploading.</div>
             </div>
             <div class="upload-pipeline-actions">
-              <button class="upload-btn btn-primary" id="du-btn-export-step4" type="button" disabled onclick="_duPreflightExport()" title="Export current queue to 01_Pending_Upload as a QB CSV">Export QB CSV</button>
+              <button class="upload-btn btn-primary" id="du-btn-export-step4" type="button" disabled onclick="_duPreflightExport()" title="Export current queue to 01_Pending_Upload as a QB CSV">Export CSV</button>
               <button class="upload-btn" id="upload-btn-dryrun" type="button" disabled onclick="_duRunDryRun()" title="Simulate QB upload without writing any records — shows what would succeed or fail">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Dry Run 0 Selected
+                Dry Run (0)
               </button>
               <button class="upload-btn btn-primary" id="upload-btn-upload" type="button" disabled onclick="_duOpenPreview()" title="Upload selected records directly to QuickBase via API">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload 0 Selected
+                Upload (0)
               </button>
             </div>
           </section>

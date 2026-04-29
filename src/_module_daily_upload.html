@@ -47,6 +47,7 @@ var _duLastApprovalReason = '';
 var _duScrollBound = false;
 var _duStickyCompact = false;
 var _duStickyRaf = 0;
+var _duVendorChipsExpanded = false;
 var _duQueueLoadSeq = 0;
 var _duResultsCardHtml = '';
 var _duIsCheckingExportStatus = false;
@@ -274,6 +275,7 @@ function _duLoadQueue() {
   google.script.run
     .withSuccessHandler(function(items) {
       _duQueue = items || [];
+      _duVendorChipsExpanded = false;
       _duSelected.forEach(function(rowIdx) {
         if (!_duQueue.some(function(r) { return r.rowIdx === rowIdx; })) _duSelected.delete(rowIdx);
       });
@@ -340,21 +342,15 @@ function _duRenderPipeline() {
 
   // Step 1 body
   if (incomingEl) {
-    var incomingBadge = _duIncomingCount > 0
-      ? '<div class="du-incoming-badge du-incoming-badge--alert">' +
-          '<span class="du-incoming-pulse"></span>' +
-          _duIncomingCount + ' file' + (_duIncomingCount === 1 ? '' : 's') + ' pending' +
-        '</div>'
-      : '<div class="du-incoming-badge du-incoming-badge--clear">Incoming folder is clear</div>';
+    var badgeClass = _duIncomingCount > 0 ? 'is-warning' : 'is-complete';
+    var badgeInner = _duIncomingCount > 0
+      ? '<span class="du-incoming-pulse"></span>' + _duIncomingCount + ' File' + (_duIncomingCount === 1 ? '' : 's') + ' Pending'
+      : 'Incoming Clear';
     incomingEl.innerHTML =
-      '<div class="du-step-summary-stack">' +
-        '<div class="du-step-corner-stack">' +
-          incomingBadge +
-          '<div class="du-step-corner-meta">' +
-            '<span class="du-step-meta-label">Latest Update</span>' +
-            '<span class="du-step-meta-value">' + _duEsc(_duPipeline.latestArchiveDate || '—') + '</span>' +
-          '</div>' +
-        '</div>' +
+      '<span class="upload-step-state-badge ' + badgeClass + '">' + badgeInner + '</span>' +
+      '<div class="du-step-meta-row du-step-meta-row--compact">' +
+        '<span class="du-step-meta-label">Latest Archive</span>' +
+        '<span class="du-step-meta-value">' + _duEsc(_duPipeline.latestArchiveDate || '—') + '</span>' +
       '</div>';
   }
 
@@ -363,7 +359,7 @@ function _duRenderPipeline() {
     var loadedLabel = _duLoadedDateLabel();
     if (loadedLabel) {
       targetEl.innerHTML =
-        '<div class="du-step-inline-status"><span class="du-loaded-chip">Loaded ' + _duEsc(loadedLabel) + '</span></div>' +
+        '<span class="upload-step-state-badge is-complete">Loaded ' + _duEsc(loadedLabel) + '</span>' +
         '<div class="du-step-meta-row du-step-meta-row--compact">' +
           '<span class="du-step-meta-label">Queue Rows</span>' +
           '<span class="du-step-meta-value">' + _duQueue.length + '</span>' +
@@ -417,21 +413,35 @@ function _duRenderPipeline() {
   _duSyncStickyState();
 }
 
-function _duBuildVendorSummaryHtml() {
-  var vendorMap = {};
-  _duQueue.forEach(function(r) {
-    var v = r['Contractor'] || 'Unknown';
-    if (!vendorMap[v]) vendorMap[v] = 0;
-    vendorMap[v]++;
-  });
-  var vendors = Object.keys(vendorMap).sort();
-  var rows = vendors.map(function(v) {
-    return '<span class="du-vendor-chip">' + _duEsc(v) + ' <em>' + vendorMap[v] + ' FDH' + (vendorMap[v] === 1 ? '' : 's') + '</em></span>';
+var _DU_CHIP_LIMIT = 3;
+
+function _duBuildMissingVendorChipsHtml() {
+  var missing = _duMissing || [];
+  if (missing.length === 0) {
+    return '<span class="du-vendor-all-clear">All Vendors In</span>';
+  }
+  var vendors = missing.map(function(m) { return m.vendor; });
+  var overflow = vendors.length - _DU_CHIP_LIMIT;
+  var visible = _duVendorChipsExpanded ? vendors : vendors.slice(0, _DU_CHIP_LIMIT);
+  var chips = visible.map(function(v) {
+    return '<span class="du-vendor-chip">' + _duEsc(v) + '</span>';
   }).join('');
-  return '<div class="du-vendor-summary">' +
-    '<div class="du-vendor-summary-total">' + vendors.length + ' vendor' + (vendors.length === 1 ? '' : 's') + ' · ' + _duQueue.length + ' total rows</div>' +
-    '<div class="du-vendor-chips">' + rows + '</div>' +
-  '</div>';
+  var toggle = '';
+  if (!_duVendorChipsExpanded && overflow > 0) {
+    toggle = '<button class="du-vendor-more-chip" type="button" onclick="_duToggleMissingChips()">+' + overflow + ' more</button>';
+  } else if (_duVendorChipsExpanded && vendors.length > _DU_CHIP_LIMIT) {
+    toggle = '<button class="du-vendor-more-chip" type="button" onclick="_duToggleMissingChips()">show less</button>';
+  }
+  var wrapClass = 'du-vendor-chips' + (_duVendorChipsExpanded ? ' is-expanded' : '');
+  return '<div class="' + wrapClass + '">' + chips + toggle + '</div>';
+}
+
+function _duToggleMissingChips() {
+  _duVendorChipsExpanded = !_duVendorChipsExpanded;
+  var el = document.getElementById('upload-queue-meta');
+  if (el && _duQueue.length > 0) {
+    el.innerHTML = _duBuildQueueReviewHtml();
+  }
 }
 
 function _duGetQueueHealth() {
@@ -461,7 +471,7 @@ function _duGetQueueHealth() {
 
 function _duBuildQueueReviewHtml() {
   var health = _duGetQueueHealth();
-  return _duBuildVendorSummaryHtml() +
+  return _duBuildMissingVendorChipsHtml() +
     '<div class="du-step-inline-status"><span class="upload-step-state-badge ' + (health.flagged > 0 ? 'is-warning' : 'is-complete') + '">' +
       health.ready + ' ready' +
       ' · ' + health.flagged + ' flagged' +
@@ -597,7 +607,7 @@ function _duRenderStepGates() {
     var hasExport = _duHasExportForLoadedDate();
     var partialExport = _duExportStatus && _duExportStatus.coverageStatus === 'partial';
     btnExport4.disabled = _duIsCheckingExportStatus || hasExport || !_duQueueApproved || !hasQueue || _duDirtyCount() > 0 || _duIsSaving;
-    btnExport4.textContent = _duIsCheckingExportStatus ? 'Checking CSV' : (hasExport ? 'CSV Verified' : (partialExport ? 'Export Missing Rows' : 'Export QB CSV'));
+    btnExport4.textContent = _duIsCheckingExportStatus ? 'Checking…' : (hasExport ? 'CSV Verified' : (partialExport ? 'Export Missing' : 'Export CSV'));
     btnExport4.classList.toggle('btn-ghost', hasExport);
     btnExport4.classList.toggle('btn-primary', !hasExport);
     btnExport4.title = !_duQueueApproved
@@ -2031,13 +2041,13 @@ function _duUpdateFinalizeActionLabels(selectedCount) {
   if (btnUpload) {
     var uploadSvg = btnUpload.querySelector('svg');
     var uploadSvgHtml = uploadSvg ? uploadSvg.outerHTML : '';
-    btnUpload.innerHTML = uploadSvgHtml + ' Upload ' + selectedCount + ' Selected';
+    btnUpload.innerHTML = uploadSvgHtml + ' Upload (' + selectedCount + ')';
   }
   var btnDry = document.getElementById('upload-btn-dryrun');
   if (btnDry) {
     var drySvg = btnDry.querySelector('svg');
     var drySvgHtml = drySvg ? drySvg.outerHTML : '';
-    btnDry.innerHTML = drySvgHtml + ' Dry Run ' + selectedCount + ' Selected';
+    btnDry.innerHTML = drySvgHtml + ' Dry Run (' + selectedCount + ')';
   }
 }
 
