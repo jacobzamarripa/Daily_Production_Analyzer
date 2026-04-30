@@ -780,8 +780,9 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
       let vendorDateRaw = dateIdx === -1 ? "" : row[dateIdx];
       let normalizedVendorDate = normalizeDateString(vendorDateRaw);
       
-      // 🧠 DATE PRECEDENCE: File Name -> Typed in Row -> Folder Name -> Fallback
-      let rowTargetDate = filenameDate || normalizedVendorDate || folderDateNorm || fallbackDate;
+      // 🧠 DATE PRECEDENCE: Typed in Row -> File Name -> Folder Name -> Fallback
+      // Row date wins when present — running reports have per-row dates that must be respected.
+      let rowTargetDate = normalizedVendorDate || filenameDate || folderDateNorm || fallbackDate;
 
       // Track the latest date found in the file for smarter archiving
       if (rowTargetDate && rowTargetDate > maxDateFound) {
@@ -807,6 +808,11 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
           let prevEntry = rowTotals[type] || { val: 0, date: "" };
           let prevVal = prevEntry.val || 0;
           let prevDate = prevEntry.date || "";
+
+          if (prevVal === 0 && dailyVal > 0 && totalVal > dailyVal) {
+              let priorWork = totalVal - dailyVal;
+              calculatedNotes.push(`Opening Balance: Total (${totalVal}') implies ${priorWork}' of prior unreported work before first submission — QB running total will be understated by this amount`);
+          }
 
           if (dailyVal === 0 && totalVal > prevVal && prevVal > 0) {
               let diff = totalVal - prevVal;

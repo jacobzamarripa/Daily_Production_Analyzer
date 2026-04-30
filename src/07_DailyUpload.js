@@ -739,6 +739,10 @@ function _buildStagedUploadRecord(rowValues, rowNumber, mapping, sourceHeaders, 
   if (record['Date'] && record['FDH Engineering ID']) {
     key = record['Date'] + '::' + String(record['FDH Engineering ID']).trim().toUpperCase();
     if (duplicateLookup[key]) warnings.push('Already present in the upload queue');
+    var _todayStr = _formatUploadDate(new Date());
+    if (_todayStr && record['Date'] && record['Date'] < _todayStr) {
+      warnings.push('Past-date row (' + record['Date'] + ') — this may be a running report entry; skip if already imported');
+    }
     var qbDupe = checkDuplicateDailyRecord(record['Date'], record['FDH Engineering ID'], record['Contractor']);
     if (qbDupe && qbDupe.isDuplicate) warnings.push('Existing QuickBase record ID ' + (qbDupe.existingRecordId || 'found'));
   }

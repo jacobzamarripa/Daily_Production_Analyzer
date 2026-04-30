@@ -14,11 +14,16 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  background: var(--bg);
+  background: var(--card-bg);
   overflow: hidden;
+
 }
 #action-workspace.ws-active { display: flex; }
 
+body.action-view-active {
+  --ac-peek-width: 390px;
+  background: var(--card-bg) !important;
+}
 body.action-view-active .workspace           { display: none !important; }
 body.action-view-active .filter-strip        { display: none !important; }
 body.action-view-active #active-filter-pills { display: none !important; }
@@ -31,19 +36,32 @@ body.action-view-active #action-workspace {
   box-sizing: border-box !important;
   display: flex !important;
   overflow: hidden !important;
-  transition: padding-right 0.35s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--card-bg) !important;
+  transition: none !important; /* Neutralize transition gaps */
 }
 
 /* Panel compress — push content left when peek panel is open */
-#action-workspace.ac-peek-open {
-  padding-right: calc(var(--ac-peek-width) + 2px);
+body.action-view-active #action-workspace.ac-peek-open {
+  width: calc(100% - var(--ac-peek-width)) !important;
+  max-width: calc(100% - var(--ac-peek-width)) !important;
+  padding-right: 0 !important;
+  transition: none !important;
 }
 
 /* Peek panel starts below the desktop header when in Action Center */
 body.action-view-active .gantt-quick-peek {
   top: var(--desktop-header-height, 56px) !important;
+  width: var(--ac-peek-width) !important;
+  background: var(--card-bg) !important;
+  border-left: 1px solid var(--border);
+  box-shadow: none !important;
+  transition: none !important;
 }
 
+/* Ensure internal containers in peek share the white background to prevent gray bars */
+body.action-view-active .gantt-quick-peek > div {
+  background: var(--card-bg) !important;
+}
 /* Hide admin dock & FAB while Action Center is open */
 body.action-view-active .admin-dock,
 body.action-view-active #admin-fab {
@@ -57,8 +75,9 @@ body.action-view-active #admin-fab {
   gap: 12px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--card-bg);
   padding: 14px 20px;
+
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -129,8 +148,9 @@ body.action-view-active #admin-fab {
   flex-shrink: 0;
   padding: 10px 20px;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 97%, var(--card-bg));
+  background: var(--card-bg);
   overflow-x: auto;
+
   scrollbar-width: none;
 }
 .ac-tab-bar::-webkit-scrollbar { display: none; }
@@ -239,6 +259,12 @@ body.action-view-active #admin-fab {
   height: 100%;
   min-width: 0;
   overflow: hidden;
+}
+
+#ac-tab-crossings {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--card-bg);
 }
 
 /* ── Toolbar ─────────────────────────────────────────────── */
@@ -361,7 +387,7 @@ body.action-view-active #admin-fab {
 }
 
 .ac-modal {
-  background: var(--bg);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: 0 24px 60px rgba(0,0,0,0.2);
@@ -612,7 +638,7 @@ body.action-view-active #admin-fab {
   padding: 5px 10px;
   border-radius: 6px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--card-bg);
   color: var(--text-muted);
   font-size: 10px;
   font-weight: 700;
@@ -624,17 +650,17 @@ body.action-view-active #admin-fab {
 .ac-row-action-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 7%, var(--bg));
+  background: color-mix(in srgb, var(--accent) 7%, var(--card-bg));
 }
 .ac-btn-xings:hover {
   border-color: #16a34a;
   color: #16a34a;
-  background: color-mix(in srgb, #22c55e 7%, var(--bg));
+  background: color-mix(in srgb, #22c55e 7%, var(--card-bg));
 }
 .ac-btn-stage:hover {
   border-color: #2563eb;
   color: #2563eb;
-  background: color-mix(in srgb, #3b82f6 7%, var(--bg));
+  background: color-mix(in srgb, #3b82f6 7%, var(--card-bg));
 }
 
 /* ── Empty / loading states ──────────────────────────────── */
@@ -745,7 +771,7 @@ body.action-view-active #admin-fab {
   align-items: center;
   gap: 8px;
   flex: 1;
-  background: var(--bg);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 6px 10px;
@@ -801,7 +827,7 @@ body.action-view-active #admin-fab {
   overflow-x: auto;
   scrollbar-width: none;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-  background: color-mix(in srgb, var(--card-bg) 50%, var(--bg));
+  background: color-mix(in srgb, var(--card-bg) 50%, var(--card-bg));
 }
 .ac-xing-vendor-chips::-webkit-scrollbar { display: none; }
 
@@ -953,7 +979,7 @@ body.action-view-active #admin-fab {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--card-bg) 88%, var(--bg));
+  background: color-mix(in srgb, var(--card-bg) 88%, var(--card-bg));
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -994,7 +1020,7 @@ body.action-view-active #admin-fab {
   min-height: 108px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: color-mix(in srgb, var(--bg) 94%, var(--card-bg));
+  background: color-mix(in srgb, var(--card-bg) 94%, var(--card-bg));
   color: var(--text-main);
   padding: 10px 12px;
   box-sizing: border-box;
@@ -1004,7 +1030,7 @@ body.action-view-active #admin-fab {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--card-bg) 86%, var(--bg));
+  background: color-mix(in srgb, var(--card-bg) 86%, var(--card-bg));
 }
 .ac-import-section-title {
   margin-bottom: 7px;
@@ -1037,7 +1063,7 @@ body.action-view-active #admin-fab {
 .ac-import-chip-list code {
   padding: 3px 6px;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 78%, transparent);
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   font-size: 10px;
 }
@@ -1073,7 +1099,7 @@ body.action-view-active #admin-fab {
   padding: 0 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 94%, var(--card-bg));
+  background: color-mix(in srgb, var(--card-bg) 94%, var(--card-bg));
   color: var(--text-main);
   font-size: 12px;
   font-weight: 700;
@@ -1083,7 +1109,7 @@ body.action-view-active #admin-fab {
 .ac-search-input:focus {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
-  background: var(--bg);
+  background: var(--card-bg);
 }
 
 .ac-table-crossings {
@@ -1105,6 +1131,213 @@ body.action-view-active #admin-fab {
 }
 .ac-table-crossings .ac-th-xing-sel  { width: 1%; }
 
+/* ── Crossings flat grid (compact bulk view) ─────────────── */
+.ac-xing-grid-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 24px;
+  background: var(--card-bg);
+}
+.ac-table-crossings-grid {
+  width: 100%;
+  min-width: 900px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  background: var(--card-bg);
+}
+.ac-table-crossings-grid .ac-col-check { width: 40px; }
+.ac-table-crossings-grid .ac-col-fdh { width: 160px; }
+.ac-table-crossings-grid .ac-col-vendor { width: 130px; }
+.ac-table-crossings-grid .ac-col-source { width: 70px; }
+.ac-table-crossings-grid .ac-col-crossing { width: 150px; }
+.ac-table-crossings-grid .ac-col-details { width: auto; }
+.ac-table-crossings-grid .ac-col-peek { width: 44px; }
+.ac-table-crossings-grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--card-bg);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  box-shadow: 0 1px 0 var(--border);
+}
+.ac-table-crossings-grid td {
+  padding: 0 10px;
+  height: 36px;
+  vertical-align: middle;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  font-size: 12px;
+  color: var(--text-main);
+}
+.ac-table-crossings-grid .ac-th-check,
+.ac-table-crossings-grid .ac-td-check { width: 1%; padding-left: 14px; padding-right: 6px; }
+.ac-table-crossings-grid .ac-td-vendor,
+.ac-table-crossings-grid .ac-td-city,
+.ac-table-crossings-grid .ac-td-fdh,
+.ac-table-crossings-grid .ac-td-qb-status,
+.ac-table-crossings-grid .ac-td-xing-sel { width: 1%; white-space: nowrap; }
+.ac-table-crossings-grid .ac-td-xing-det,
+.ac-table-crossings-grid .ac-th-xing-det { width: auto; min-width: 0; }
+.ac-table-crossings-grid .ac-th-peek,
+.ac-table-crossings-grid .ac-td-peek { width: 1%; white-space: nowrap; padding-left: 4px; padding-right: 10px; }
+.ac-table-crossings-grid .ac-td-vendor,
+.ac-table-crossings-grid .ac-td-city { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.ac-table-crossings-grid .ac-xing-grid-row > td { background: var(--card-bg); }
+.ac-table-crossings-grid .ac-xing-grid-row:hover > td { background: color-mix(in srgb, var(--accent) 4%, var(--card-bg)); }
+.ac-table-crossings-grid .ac-xing-grid-row.is-selected > td { background: color-mix(in srgb, var(--accent) 8%, var(--card-bg)) !important; }
+.ac-table-crossings-grid .ac-xing-grid-row.is-dirty > td { background: color-mix(in srgb, #f59e0b 6%, var(--card-bg)) !important; }
+.ac-table-crossings-grid .ac-xing-grid-row.is-dirty > td:first-child { border-left: 3px solid #f59e0b; }
+.ac-table-crossings-grid .ac-xing-grid-row.is-active-row > td { background: color-mix(in srgb, var(--accent) 6%, var(--card-bg)) !important; }
+
+/* Striped left-edge indicator: selected, active peek, or typing */
+.ac-table-crossings-grid .ac-xing-grid-row.is-selected > td:first-child,
+.ac-table-crossings-grid .ac-xing-grid-row.is-active-row > td:first-child,
+.ac-table-crossings-grid .ac-xing-grid-row:focus-within > td:first-child { position: relative; }
+.ac-table-crossings-grid .ac-xing-grid-row.is-selected > td:first-child::before,
+.ac-table-crossings-grid .ac-xing-grid-row.is-active-row > td:first-child::before,
+.ac-table-crossings-grid .ac-xing-grid-row:focus-within > td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: repeating-linear-gradient(135deg, #171717 0, #171717 9px, #facc15 9px, #facc15 18px);
+}
+
+/* Vendor separator row */
+.ac-xing-sep-row > td { padding: 0; border-bottom: none !important; }
+.ac-xing-sep-vendor > td {
+  position: sticky;
+  top: 35px;
+  z-index: 3;
+  background: var(--card-bg);
+  border-top: 2px solid var(--border);
+
+  border-bottom: 1px solid var(--border) !important;
+}
+.ac-xing-sep-vendor-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  height: 40px;
+}
+.ac-xing-sep-vendor-name {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--text-main);
+  flex: 1;
+}
+.ac-xing-sep-count {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+.ac-xing-sep-pend { color: var(--text-muted); background: color-mix(in srgb, var(--border) 40%, transparent); border: 1px solid var(--border); }
+.ac-xing-sep-yes  { color: #16a34a; background: rgba(34,197,94,0.10); border: 1px solid rgba(34,197,94,0.25); }
+.ac-xing-sep-no   { color: #dc2626; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.20); }
+
+/* City separator row */
+.ac-xing-sep-city > td {
+  position: sticky;
+  top: 75px;
+  z-index: 2;
+  background: var(--card-bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent) !important;
+
+}
+.ac-xing-sep-city-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 0 50px;
+  height: 30px;
+}
+.ac-xing-sep-city-name {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.ac-xing-sep-city-count { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+/* Collapse toggle arrow */
+.ac-xing-sep-toggle {
+  font-size: 8px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  display: inline-block;
+  margin-right: 4px;
+  transition: transform 0.15s;
+}
+.ac-xing-sep-toggle.open { transform: rotate(90deg); }
+.ac-xing-sep-vendor-inner { cursor: pointer; }
+.ac-xing-sep-city-inner   { cursor: pointer; }
+.ac-xing-sep-vendor > td:hover { background: color-mix(in srgb, var(--accent) 4%, var(--card-bg)) !important; }
+.ac-xing-sep-city   > td:hover { background: color-mix(in srgb, var(--accent) 3%, var(--card-bg)) !important; }
+
+/* Source pill (QB / Ref / Edit / CD) */
+.ac-xsrc-pill {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.src-qb   { background: color-mix(in srgb, #3b82f6 12%, transparent); color: #2563eb; border: 1px solid rgba(59,130,246,0.25); }
+.src-ref  { background: color-mix(in srgb, #8b5cf6 10%, transparent); color: #7c3aed; border: 1px solid rgba(139,92,246,0.22); }
+.src-edit { background: color-mix(in srgb, #f59e0b 12%, transparent); color: #b45309; border: 1px solid rgba(245,158,11,0.25); }
+.src-cd   { background: color-mix(in srgb, #22c55e 10%, transparent); color: #16a34a; border: 1px solid rgba(34,197,94,0.22); }
+.src-item { background: color-mix(in srgb, var(--border) 30%, transparent); color: var(--text-muted); border: 1px solid var(--border); }
+.src-none { background: transparent; color: var(--text-muted); border: 1px solid transparent; }
+
+/* Inline details input */
+.ac-xing-det-input {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 30px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 2px solid transparent !important;
+  background: #fff !important;
+  color: var(--text-main);
+  font-size: 11px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: background 0.12s, border-color 0.12s;
+  outline: none !important;
+  box-shadow: none !important;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.ac-xing-det-input:hover {
+  border-color: color-mix(in srgb, var(--border) 80%, transparent) !important;
+  background: #fffdf2 !important;
+}
+.ac-xing-det-input:focus {
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(#fff8d6, #fff8d6) padding-box,
+    repeating-linear-gradient(135deg, #171717 0, #171717 9px, #facc15 9px, #facc15 18px) border-box !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .ac-xing-group-row > td {
   padding: 0 !important;
   border-bottom: none !important;
@@ -1116,8 +1349,9 @@ body.action-view-active #admin-fab {
   min-height: 44px;
   padding: 10px 16px;
   cursor: pointer;
-  background: color-mix(in srgb, var(--card-bg) 92%, var(--bg));
+  background: var(--card-bg);
   border-top: 1px solid var(--border);
+
   border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
   color: var(--text-main);
   font-size: 11px;
@@ -1127,19 +1361,20 @@ body.action-view-active #admin-fab {
   transition: background 0.12s;
 }
 .ac-xing-group-header:hover {
-  background: color-mix(in srgb, #f59e0b 5%, var(--bg));
+  background: color-mix(in srgb, #f59e0b 5%, var(--card-bg));
 }
 .ac-xing-group-header-depth-1 {
   min-height: 36px;
   padding-left: 50px;
-  background: color-mix(in srgb, var(--card-bg) 72%, var(--bg));
+  background: var(--card-bg);
   font-size: 10px;
+
   font-weight: 700;
   text-transform: none;
   letter-spacing: 0;
 }
 .ac-xing-group-header-depth-1:hover {
-  background: color-mix(in srgb, #f59e0b 4%, var(--bg));
+  background: color-mix(in srgb, #f59e0b 4%, var(--card-bg));
 }
 .ac-xing-group-avatar {
   width: 28px;
@@ -1149,7 +1384,7 @@ body.action-view-active #admin-fab {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, #f59e0b 14%, var(--bg));
+  background: color-mix(in srgb, #f59e0b 14%, var(--card-bg));
   border: 1px solid color-mix(in srgb, #f59e0b 35%, var(--border));
   color: #b45309;
   font-size: 11px;
@@ -1183,7 +1418,7 @@ body.action-view-active #admin-fab {
   padding: 3px 10px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, #f59e0b 40%, var(--border));
-  background: color-mix(in srgb, #f59e0b 14%, var(--bg));
+  background: color-mix(in srgb, #f59e0b 14%, var(--card-bg));
   color: #b45309;
   text-align: center;
   font-size: 10px;
@@ -1195,8 +1430,9 @@ body.action-view-active #admin-fab {
   padding: 5px 8px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--card-bg);
   color: var(--text-main);
+
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -1208,8 +1444,9 @@ body.action-view-active #admin-fab {
   padding: 6px 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 96%, var(--card-bg));
+  background: var(--card-bg);
   color: var(--text-main);
+
   font-size: 11px;
   font-family: inherit;
   resize: none;
@@ -1332,8 +1569,9 @@ body.action-view-active #admin-fab {
   padding: 7px 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 96%, var(--card-bg));
+  background: var(--card-bg);
   color: var(--text-main);
+
   font-size: 11px;
   font-family: inherit;
   resize: none;
@@ -1395,24 +1633,29 @@ body.action-view-active #admin-fab {
 }
 
 /* ── Detail toggle button (per FDH row) ─────────────────── */
+/* ── Peek panel trigger (›) — last column in all tabs ───── */
+.ac-th-peek, .ac-td-peek {
+  width: 28px;
+  min-width: 28px;
+  max-width: 28px;
+  padding: 0 4px !important;
+  text-align: center;
+}
 .ac-detail-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 58px;
-  height: 24px;
-  padding: 0 9px;
-  border-radius: 7px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 16px;
+  line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
-  margin-right: 8px;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
-  vertical-align: middle;
 }
 .ac-detail-btn:hover {
   border-color: var(--accent);
@@ -1610,7 +1853,7 @@ body.action-view-active .gantt-quick-peek .qp-xing-module .schedule-xing-popout-
 
 #action-workspace.ac-peek-open .ac-table-crossings .ac-td-xing-det,
 #action-workspace.ac-peek-open .ac-table-crossings .ac-th-xing-det {
-  min-width: 360px;
+  min-width: 0;
 }
 
 /* ── Reports staging tab ─────────────────────────────────── */
@@ -1719,14 +1962,17 @@ body.dark-mode .ac-tab-bar,
 body.dark-mode .ac-toolbar,
 body.dark-mode .ac-section-hd,
 body.dark-mode .ac-cl-toolbar {
-  background: color-mix(in srgb, var(--bg) 92%, #0f172a);
+  background: color-mix(in srgb, var(--card-bg) 92%, #0f172a);
 }
-body.dark-mode .ac-table thead { background: color-mix(in srgb, var(--bg) 90%, #0f172a); }
+body.dark-mode .ac-table thead { background: color-mix(in srgb, var(--card-bg) 90%, #0f172a); }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
   #action-workspace.ac-peek-open {
     padding-right: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
   }
   .ac-toolbar { flex-direction: column; align-items: flex-start; }
   .ac-toolbar-left,
@@ -1745,6 +1991,7 @@ body.dark-mode .ac-table thead { background: color-mix(in srgb, var(--bg) 90%, #
 }
 
 @media (min-width: 769px) and (max-width: 1180px) {
+  body.action-view-active,
   #action-workspace.ac-peek-open {
     --ac-peek-width: 360px;
   }
@@ -1761,10 +2008,11 @@ body.dark-mode .ac-table thead { background: color-mix(in srgb, var(--bg) 90%, #
   flex-shrink: 0;
   padding: 8px 20px;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--card-bg) 70%, var(--bg));
+  background: var(--card-bg);
   overflow-x: auto;
   scrollbar-width: none;
 }
+
 .ac-universal-filter-bar::-webkit-scrollbar { display: none; }
 
 .ac-ufb-search {
@@ -1775,7 +2023,7 @@ body.dark-mode .ac-table thead { background: color-mix(in srgb, var(--bg) 90%, #
   padding: 0 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 94%, var(--card-bg));
+  background: color-mix(in srgb, var(--card-bg) 94%, var(--card-bg));
   color: var(--text-main);
   font-size: 12px;
   font-weight: 700;
