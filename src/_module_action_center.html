@@ -10,7 +10,7 @@
 (function() {
 
   // ── Module state ──────────────────────────────────────────
-  var _acActiveTab       = 'crossings';
+  var _acActiveTab       = 'worklog';
   var _acXingsFilter     = 'all';     // 'all' | 'pending' | 'YES' | 'NO'
   var _acXingsSearchQuery= '';
   var _acXingsSelected   = new Set();
@@ -1453,9 +1453,9 @@
     var monogram = (typeof getVendorMonogram === 'function') ? getVendorMonogram(name) : name.slice(0, 2).toUpperCase();
     var themeStyle = (typeof getVendorThemeStyle === 'function') ? getVendorThemeStyle(name, idx || 0) : '';
 
-    var html = '<tr class="ac-xing-sep-row ac-xing-sep-vendor" onclick="_acToggleBomGroup(\'' + _acJs(key) + '\')">' +
+    var html = '<tr class="ac-xing-sep-row ac-xing-sep-vendor">' +
       '<td colspan="11">' +
-        '<div class="ac-xing-sep-vendor-inner">' +
+        '<div class="ac-xing-sep-vendor-inner" onclick="_acToggleBomGroup(\'' + _acJs(key) + '\')">' +
           '<div class="queue-group-monogram" style="' + themeStyle + '">' + _e(monogram) + '</div>' +
           '<span class="ac-xing-sep-vendor-name">' + _e(name) + '</span>' +
           _acRenderBomTotalsInline(data._totals) +
@@ -1479,7 +1479,6 @@
     var html = '<tr class="ac-xing-sep-row ac-xing-sep-city" onclick="_acToggleBomGroup(\'' + _acJs(key) + '\')">' +
       '<td colspan="11">' +
         '<div class="ac-xing-sep-city-inner" style="padding-left:40px;">' +
-          '<span class="ac-xing-sep-toggle' + (!isCollapsed ? ' open' : '') + '"></span>' +
           '<span class="ac-xing-sep-city-name">' + _e(name) + '</span>' +
           _acRenderBomTotalsInline(data._totals) +
         '</div>' +
@@ -1492,7 +1491,7 @@
         var fdhSafe = _e(fId);
         var isPeekOpen = _acOpenPeekFdh === fId;
 
-        html += '<tr class="ac-row' + (isSel ? ' is-selected' : '') + (r.hasDiff ? ' ac-bom-diff-row' : '') + '" onclick="_acToggleBomRow(\'' + _acJs(fId) + '\')">' +
+        html += '<tr class="ac-row' + (isSel ? ' is-selected' : '') + (r.hasDiff ? ' ac-bom-diff-row' : '') + '" onclick="_acToggleBomRow(\'' + _acJs(fId) + '\');_acOpenPeek(\'' + _acJs(fId) + '\')">' +
           '<td class="ac-td-check" onclick="event.stopPropagation();_acToggleBomRow(\'' + _acJs(fId) + '\')">' +
             '<input type="checkbox"' + (isSel ? ' checked' : '') + ' onchange="_acToggleBomRow(\'' + _acJs(fId) + '\')" onclick="event.stopPropagation()">' +
           '</td>' +
@@ -1628,9 +1627,9 @@
         var monogram = (typeof getVendorMonogram === 'function') ? getVendorMonogram(vName) : vName.slice(0, 2).toUpperCase();
         var themeStyle = (typeof getVendorThemeStyle === 'function') ? getVendorThemeStyle(vName, vIdx) : '';
 
-        html += '<tr class="ac-xing-sep-row ac-xing-sep-vendor" onclick="_acToggleCommentsGroup(\'' + _acJs(vKey) + '\')">' +
+        html += '<tr class="ac-xing-sep-row ac-xing-sep-vendor">' +
           '<td colspan="5">' +
-            '<div class="ac-xing-sep-vendor-inner">' +
+            '<div class="ac-xing-sep-vendor-inner" onclick="_acToggleCommentsGroup(\'' + _acJs(vKey) + '\')">' +
               '<div class="queue-group-monogram" style="' + themeStyle + '">' + _e(monogram) + '</div>' +
               '<span class="ac-xing-sep-vendor-name">' + _e(vName) + '</span>' +
               '<span class="ac-xing-sep-count ac-xing-sep-pend">' + vItems.length + ' project' + (vItems.length !== 1 ? 's' : '') + '</span>' +
@@ -1648,7 +1647,7 @@
             var isPeekOpen = _acOpenPeekFdh === item.fdh;
 
             html +=
-              '<tr class="ac-row' + (isSel ? ' is-selected' : '') + (isDirty ? ' is-dirty' : '') + '">' +
+              '<tr class="ac-row' + (isSel ? ' is-selected' : '') + (isDirty ? ' is-dirty' : '') + '" onclick="_acOpenPeek(\'' + _acJs(item.fdh) + '\')">' +
               '<td class="ac-td-check" onclick="event.stopPropagation();_acToggleCommentRow(\'' + fdhSafe + '\')">' +
                 '<input type="checkbox" ' + (isSel ? 'checked' : '') + ' onclick="event.stopPropagation()" onchange="_acToggleCommentRow(\'' + fdhSafe + '\')">' +
               '</td>' +
@@ -2152,9 +2151,9 @@
     var monogram = (typeof getVendorMonogram === 'function') ? getVendorMonogram(name) : name.slice(0, 2).toUpperCase();
     var themeStyle = (typeof getVendorThemeStyle === 'function') ? getVendorThemeStyle(name, idx || 0) : '';
 
-    var html = '<tr class="ac-xing-sep-row ac-xing-sep-vendor" onclick="_acToggleWorkLogGroup(\'' + _acJs(key) + '\')">' +
+    var html = '<tr class="ac-xing-sep-row ac-xing-sep-vendor">' +
       '<td colspan="12">' +
-        '<div class="ac-xing-sep-vendor-inner">' +
+        '<div class="ac-xing-sep-vendor-inner" onclick="_acToggleWorkLogGroup(\'' + _acJs(key) + '\')">' +
           '<div class="queue-group-monogram" style="' + themeStyle + '">' + _e(monogram) + '</div>' +
           '<span class="ac-xing-sep-vendor-name">' + _e(name) + '</span>' +
           _acRenderAuditTotalsInline(data._totals) +
@@ -2215,7 +2214,7 @@
         if (wlFilter === 'discrepancies' && !hasDiff) return;
         if (wlFilter === 'selected' && !isSel) return;
 
-        html += '<tr class="ac-row' + (isSel ? ' is-selected' : '') + (hasDiff ? ' ac-bom-diff-row' : '') + '" onclick="_acToggleWorkLogRow(\'' + _acJs(rowKey) + '\')">' +
+        html += '<tr class="ac-row' + (isSel ? ' is-selected' : '') + (hasDiff ? ' ac-bom-diff-row' : '') + '" onclick="_acToggleWorkLogRow(\'' + _acJs(rowKey) + '\');_acOpenPeek(\'' + _acJs(id) + '\')">' +
           '<td class="ac-td-check" onclick="event.stopPropagation();_acToggleWorkLogRow(\'' + _acJs(rowKey) + '\')">' +
             '<input type="checkbox"' + (isSel ? ' checked' : '') + ' onchange="_acToggleWorkLogRow(\'' + _acJs(rowKey) + '\')" onclick="event.stopPropagation()">' +
           '</td>' +

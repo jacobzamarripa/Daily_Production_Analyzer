@@ -413,6 +413,12 @@
     return inConstruction || hasRecentReport;
   }
 
+  // Normalizes flag keys for grouping/filtering — collapses HANDOFF (MM/DD) variants to "HANDOFF"
+  function _offendersFlagGroupKey(flag) {
+    if (/^HANDOFF\s*\(/.test(flag)) return 'HANDOFF';
+    return flag;
+  }
+
   function _buildOffendersData() {
     var src = (typeof allActionItems !== 'undefined') ? allActionItems : [];
     var q = (typeof _signalSearchQuery !== 'undefined') ? _signalSearchQuery.trim().toLowerCase() : '';
@@ -426,7 +432,8 @@
       var flags = item.flags.split('\n').map(function(f) { return f.trim(); }).filter(Boolean);
       if (!flags.length) return;
 
-      if (_offendersActiveFlagFilter && flags.indexOf(_offendersActiveFlagFilter) === -1) return;
+      // Filter: match if any flag's group key equals the active filter
+      if (_offendersActiveFlagFilter && !flags.some(function(f) { return _offendersFlagGroupKey(f) === _offendersActiveFlagFilter; })) return;
 
       if (q) {
         var matchable = [item.vendor, item.fdh, item.city, item.stage, item.status].concat(flags).join(' ').toLowerCase();
@@ -434,11 +441,13 @@
       }
 
       if (!vendorMap[item.vendor]) vendorMap[item.vendor] = { projects: [], flagCounts: {}, totalFlags: 0 };
+      // Keep original flags on project rows (for display with dates)
       vendorMap[item.vendor].projects.push({ fdh: item.fdh, city: item.city, stage: item.stage, status: item.status, flags: flags });
       flags.forEach(function(f) {
-        vendorMap[item.vendor].flagCounts[f] = (vendorMap[item.vendor].flagCounts[f] || 0) + 1;
+        var gk = _offendersFlagGroupKey(f);
+        vendorMap[item.vendor].flagCounts[gk] = (vendorMap[item.vendor].flagCounts[gk] || 0) + 1;
         vendorMap[item.vendor].totalFlags++;
-        globalFlagCounts[f] = (globalFlagCounts[f] || 0) + 1;
+        globalFlagCounts[gk] = (globalFlagCounts[gk] || 0) + 1;
       });
     });
 
@@ -636,7 +645,7 @@
                   }
                 }
 
-                html += '<tr class="ac-row' + (isSel ? ' is-selected' : '') + '">' +
+                html += '<tr class="ac-row' + (isSel ? ' is-selected' : '') + '" onclick="_acOpenPeek(\'' + fdhJs + '\')">' +
                   '<td class="ac-td-check" onclick="event.stopPropagation();_offendersToggleFlatRow(\'' + fdhJs + '\')">' +
                     '<input type="checkbox"' + (isSel ? ' checked' : '') + ' onchange="_offendersToggleFlatRow(\'' + fdhJs + '\')" onclick="event.stopPropagation()">' +
                   '</td>' +
