@@ -506,29 +506,28 @@
 
     var html = '';
 
-    // KPI Rail
+    // 1. Vendor Filter Chips (Top-most)
+    var allVendorsRaw = Object.keys(allActionItems.reduce(function(acc, i){ if (i.vendor) acc[i.vendor]=true; return acc; }, {})).sort();
+    html += (typeof _acRenderVendorFilterChips === 'function') 
+      ? _acRenderVendorFilterChips('offenders', allVendorsRaw, _offendersVendorFilter, '_offendersSetVendorFilter') 
+      : '';
+
+    // 2. KPI Rail (Standardized helper)
     html += '<div class="ac-kpi-rail ac-tab-kpi-rail">';
-    html += '<div class="ac-kpi-chip">' +
-      '<div class="ac-kpi-val">' + vendors.length + '</div>' +
-      '<div class="ac-kpi-label">Active Vendors</div>' +
-      '</div>';
-    html += '<div class="ac-kpi-chip' + (totalFlags > 0 ? ' ac-chip-crit' : '') + '">' +
-      '<div class="ac-kpi-val">' + totalFlags + '</div>' +
-      '<div class="ac-kpi-label">Total Flags</div>' +
-      '</div>';
-    sortedFlags.slice(0, 3).forEach(function(flag) {
-      var isActive = _offendersActiveFlagFilter === flag;
-      var cls = (typeof getDiagnosticTagClass === 'function') ? getDiagnosticTagClass(flag) : 'chip-warn';
-      var label = (typeof cleanDiagnosticFlagText === 'function') ? cleanDiagnosticFlagText(flag) : flag;
-      var flagJs = (typeof escJs === 'function') ? escJs(flag) : String(flag || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      html += '<div class="ac-kpi-chip' + (isActive ? ' ac-chip-active' : '') + '" onclick="_offendersSetFlagFilter(\'' + flagJs + '\')">' +
-        '<div class="ac-kpi-val">' + globalFlagCounts[flag] + '</div>' +
-        '<div class="ac-kpi-label">' + _esc(label) + '</div>' +
-        '</div>';
-    });
+    if (typeof _acKpiChip === 'function') {
+      html += _acKpiChip(vendors.length, 'Active Vendors', 'ac-chip-queue');
+      html += _acKpiChip(totalFlags, 'Total Flags', totalFlags > 0 ? 'ac-chip-crit' : 'ac-chip-queue');
+      sortedFlags.slice(0, 3).forEach(function(flag) {
+        var isActive = _offendersActiveFlagFilter === flag;
+        var label = (typeof cleanDiagnosticFlagText === 'function') ? cleanDiagnosticFlagText(flag) : flag;
+        var flagJs = (typeof escJs === 'function') ? escJs(flag) : String(flag || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        html += _acKpiChip(globalFlagCounts[flag], _esc(label), isActive ? 'ac-chip-active' : 'ac-chip-queue', '_offendersSetFlagFilter(\'' + flagJs + '\')');
+      });
+    }
     html += '</div>';
 
-    html += '<div class="ac-toolbar ac-toolbar-offenders">' +
+    // 3. Toolbar (Standard style)
+    html += '<div class="ac-toolbar">' +
       '<div class="ac-toolbar-left">' +
         '<span class="ac-result-count">' + vendors.length + ' vendors · ' + totalProjects + ' projects · ' + totalFlags + ' flags' +
           (selectedVendors > 0 ? ' · <span style="color:var(--accent)">' + selectedVendors + ' vendors selected</span>' : '') +
@@ -539,17 +538,13 @@
         '</div>' +
       '</div>' +
       '<div class="ac-toolbar-right">' +
-        '<button class="ac-bulk-action-btn ac-bulk-export off-export-btn" id="off-btn-export-all" onclick="_offendersExportAll()">Export All</button>' +
-        '<button class="ac-bulk-action-btn ac-bulk-export off-export-btn" id="off-btn-export-sel" onclick="_offendersExportSelected()">Export Selected</button>' +
+        '<button class="ac-bulk-action-btn ac-bulk-export" id="off-btn-export-all" onclick="_offendersExportAll()">Export All</button>' +
+        '<button class="ac-bulk-action-btn ac-bulk-export" id="off-btn-export-sel" onclick="_offendersExportSelected()">Export Selected</button>' +
       '</div>' +
       '</div>';
 
-    // Flag filter chips
+    // 4. Flag Filter Chips
     if (sortedFlags.length > 0 || _offendersActiveFlagFilter) {
-      var allVendorsRaw = Object.keys(allActionItems.reduce(function(acc, i){ if (i.vendor) acc[i.vendor]=true; return acc; }, {})).sort();
-      html += (typeof _acRenderVendorFilterChips === 'function') 
-        ? _acRenderVendorFilterChips('offenders', allVendorsRaw, _offendersVendorFilter, '_offendersSetVendorFilter') 
-        : '';
       html += '<div class="off-filter-bar">';
       var allActive = !_offendersActiveFlagFilter;
       html += '<span class="off-filter-chip glass-pill chip-muted' + (allActive ? ' active' : '') + '" onclick="_offendersSetFlagFilter(null)">All (' + totalFlags + ')</span>';

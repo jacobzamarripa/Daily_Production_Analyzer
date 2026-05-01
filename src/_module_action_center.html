@@ -1082,7 +1082,8 @@
     var html = '<input type="file" id="ac-csv-import-input" accept=".xlsx,.csv" style="display:none" onchange="_acOnCsvFileSelected(this)">';
     html += _acRenderVendorFilterChips('crossings', vendorList, _acXingVendorFilter, '_acSetXingVendorFilter');
 
-    // Full KPI rail — collapses into search bar chips on scroll    html += _acRenderTabKpi('crossings');
+    // Full KPI rail — collapses into search bar chips on scroll
+    html += _acRenderTabKpi('crossings');
 
     var selectedSummary = _acGetSelectedCrossingSummary();
     html += '<div class="ac-toolbar">'
@@ -2554,6 +2555,7 @@
   window._acSwitchTab                  = _acSwitchTab;
   window._acOpenPeek                   = _acOpenPeek;
   window._acOpenPeekAtXings            = _acOpenPeekAtXings;
+  window._acKpiChip                    = _acKpiChip;
   window._acRenderVendorFilterChips   = _acRenderVendorFilterChips;
   window._acRenderUniversalFilterBar   = _acRenderUniversalFilterBar;
   window._acOnUniversalSearch          = _acOnUniversalSearch;
