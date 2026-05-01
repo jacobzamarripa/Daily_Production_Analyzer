@@ -33,6 +33,7 @@
   var _acWorkLogSelected  = new Set(); // { vendor::city::fdh::date }
   var _acBomSelected      = new Set(); // { fdh }
   var _acBomVendorFilter  = 'ALL';
+  var _acBomCityFilter    = 'ALL';
   var _acBomCollapsed     = {};
 
   // ── Universal filter bar state ────────────────────────────
@@ -332,7 +333,7 @@
 
     var html = kpiPrefix + '<input type="text" class="ac-ufb-search" id="ac-ufb-search" value="' + qSafe + '" ' +
       'placeholder="Search ' + (tab === 'crossings' ? 'FDH, vendor, city, details' :
-                                tab === 'boms'      ? 'FDH, vendor' :
+                                tab === 'boms'      ? 'FDH, vendor, city' :
                                 tab === 'comments'  ? 'FDH, vendor, city' :
                                 tab === 'offenders' ? 'vendor, FDH, flag' : '') + '…" ' +
       'oninput="_acOnUniversalSearch(this.value)">';
@@ -358,11 +359,20 @@
       });
 
       html += '<div class="ac-ufb-sep"></div>';
-      var bomVendors = _acGetWorkLogVendors(); // Use existing vendor helper
+      var bomVendors = _acGetWorkLogVendors(); 
       html += '<select class="ac-ufb-select" onchange="_acSetBomVendor(this.value)">';
       html += '<option value="ALL"' + (_acBomVendorFilter === 'ALL' ? ' selected' : '') + '>All Vendors</option>';
       bomVendors.forEach(function(v) {
         html += '<option value="' + _e(v) + '"' + (_acBomVendorFilter === v ? ' selected' : '') + '>' + _e(v) + '</option>';
+      });
+      html += '</select>';
+
+      html += '<div class="ac-ufb-sep"></div>';
+      var bomCities = _acGetWorkLogCities(); // Helper to get unique cities
+      html += '<select class="ac-ufb-select" onchange="_acSetBomCity(this.value)">';
+      html += '<option value="ALL"' + (_acBomCityFilter === 'ALL' ? ' selected' : '') + '>All Cities</option>';
+      bomCities.forEach(function(c) {
+        html += '<option value="' + _e(c) + '"' + (_acBomCityFilter === c ? ' selected' : '') + '>' + _e(c) + '</option>';
       });
       html += '</select>';
 
@@ -456,10 +466,34 @@
     _acRenderBOMsTab();
   }
 
+  function _acSetBomCity(val) {
+    _acBomCityFilter = val;
+    _acBomSelected.clear();
+    _acRenderUniversalFilterBar('boms');
+    _acRenderBOMsTab();
+  }
+
+  function _acGetWorkLogCities() {
+    var cities = new Set();
+    (typeof allActionItems !== 'undefined' ? allActionItems : []).forEach(function(i) {
+      if (i.city) cities.add(i.city);
+    });
+    return Array.from(cities).sort();
+  }
+
   function _acGetFilteredBomItems() {
     var rows = _acGetBomRows();
     if (_acUniversalFilters.boms === 'diffs') rows = rows.filter(function(r){ return r.hasDiff; });
     if (_acBomVendorFilter !== 'ALL') rows = rows.filter(function(r){ return r.vendor === _acBomVendorFilter; });
+    
+    if (_acBomCityFilter !== 'ALL') {
+        var allItems = typeof allActionItems !== 'undefined' ? allActionItems : [];
+        rows = rows.filter(function(r) {
+            var item = allItems.find(function(i){ return i.fdh === r.fdh; });
+            return item && item.city === _acBomCityFilter;
+        });
+    }
+
     var q = _acUniversalSearchQuery.trim().toLowerCase();
     if (q) rows = rows.filter(function(r){
       return [r.fdh, r.vendor || ''].join(' ').toLowerCase().indexOf(q) !== -1;
@@ -2108,6 +2142,7 @@
 
     if (!isCollapsed) {
       dates.forEach(function(date) {
+        if (date === 'RECONCILE') return; // Skip in main loop, render last
         var pair = data._dates[date];
         var rowKey = vName + '::' + cName + '::' + id + '::' + date;
         var isSel = _acWorkLogSelected.has(rowKey);
@@ -2130,6 +2165,10 @@
           '</td>' +
         '</tr>';
       });
+
+      if (data._dates['RECONCILE']) {
+          html += _acRenderWorkLogReconcileRow(data._dates['RECONCILE'], vName, cName, id);
+      }
     }
     return html;
   }
@@ -2355,6 +2394,7 @@
   window._acSetWorkLogVendor         = _acSetWorkLogVendor;
   window._acSetWorkLogDate           = _acSetWorkLogDate;
   window._acSetBomVendor             = _acSetBomVendor;
+  window._acSetBomCity               = _acSetBomCity;
   window._acToggleBomGroup           = _acToggleBomGroup;
   window._acToggleBomRow             = _acToggleBomRow;
   window._acToggleAllBomRows         = _acToggleAllBomRows;

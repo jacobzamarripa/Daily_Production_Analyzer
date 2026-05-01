@@ -3322,7 +3322,7 @@ function getWorkLogAuditData(startDate, endDate, vendorFilter) {
     const archiveRecords = _fetchArchiveWorkLogRange(startDate, endDate, vendorFilter);
     const refDict = getReferenceDictionary(); // For City info
     
-    return _reconcileWorkLogAudit(qbRecords, archiveRecords, refDict);
+    return _reconcileWorkLogAudit(qbRecords, archiveRecords, refDict, startDate, endDate);
   } catch (e) {
     logMsg("ERROR", "getWorkLogAuditData", e.message);
     throw e;
@@ -3426,8 +3426,60 @@ function _getDatesInRange(startStr, endStr) {
 /**
  * Reconciles Archive vs QB and groups into hierarchy: Vendor > City > FDH > Date.
  */
-function _reconcileWorkLogAudit(qbRecords, archiveRecords, refDict) {
+function _reconcileWorkLogAudit(qbRecords, archiveRecords, refDict, startDate, endDate) {
   const auditMap = {}; 
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // 1. Get Lifetime Archive Totals (from the entire Master Archive)
+  const histSheet = ss.getSheetByName(HISTORY_SHEET);
+  const histData = histSheet ? histSheet.getDataRange().getValues() : [];
+  const histHeaders = histData.length > 0 ? histData[0].map(h => String(h).trim()) : [];
+  const fdhIdxH = histHeaders.indexOf("FDH Engineering ID");
+  const totUgIdxH = histHeaders.indexOf("Total UG Footage Completed");
+  const totAeIdxH = histHeaders.indexOf("Total Strand Footage Completed"); // Note: Verify exact header in src
+  const totFbIdxH = histHeaders.indexOf("Total Fiber Footage Completed");
+  const totNpIdxH = histHeaders.indexOf("Total NAPs Completed");
+
+  const latestArchiveTotals = {};
+  if (fdhIdxH > -1) {
+    // Master Archive is oldest-to-newest, so later rows overwrite earlier ones
+    for (let i = 1; i < histData.length; i++) {
+        const row = histData[i];
+        const fdh = String(row[fdhIdxH] || "").trim().toUpperCase();
+        if (!fdh) continue;
+        latestArchiveTotals[fdh] = {
+            ug: totUgIdxH > -1 ? (Number(row[totUgIdxH]) || 0) : 0,
+            ae: totAeIdxH > -1 ? (Number(row[totAeIdxH]) || 0) : 0,
+            fib: totFbIdxH > -1 ? (Number(row[totFbIdxH]) || 0) : 0,
+            nap: totNpIdxH > -1 ? (Number(row[totNpIdxH]) || 0) : 0
+        };
+    }
+  }
+
+  // 2. Get Lifetime QB Totals (from Reference Data)
+  const refSheet = ss.getSheetByName(REF_SHEET);
+  const refDataRows = refSheet ? refSheet.getDataRange().getValues() : [];
+  const refHeaders = refDataRows.length > 0 ? refDataRows[0].map(h => String(h).trim()) : [];
+  const fdhIdxR = refHeaders.indexOf("FDH Engineering ID");
+  const totUgIdxR = refHeaders.indexOf("Total UG Completed");
+  const totAeIdxR = refHeaders.indexOf("Total Strand Completed");
+  const totFbIdxR = refHeaders.indexOf("Total Fiber Completed");
+  const totNpIdxR = refHeaders.indexOf("Total NAPs Completed");
+
+  const qbReferenceTotals = {};
+  if (fdhIdxR > -1) {
+    for (let i = 1; i < refDataRows.length; i++) {
+        const row = refDataRows[i];
+        const fdh = String(row[fdhIdxR] || "").trim().toUpperCase();
+        if (!fdh) continue;
+        qbReferenceTotals[fdh] = {
+            ug: totUgIdxR > -1 ? (Number(row[totUgIdxR]) || 0) : 0,
+            ae: totAeIdxR > -1 ? (Number(row[totAeIdxR]) || 0) : 0,
+            fib: totFbIdxR > -1 ? (Number(row[totFbIdxR]) || 0) : 0,
+            nap: totNpIdxR > -1 ? (Number(row[totNpIdxR]) || 0) : 0
+        };
+    }
+  }
 
   const getTargetBucket = (rec) => {
     const fdh = String(rec["FDH Engineering ID"] || "").trim().toUpperCase();
@@ -3455,40 +3507,51 @@ function _reconcileWorkLogAudit(qbRecords, archiveRecords, refDict) {
   archiveRecords.forEach(rec => processRecord(rec, 'archive'));
   qbRecords.forEach(rec => processRecord(rec, 'qb'));
 
+  const shortStart = startDate.substring(5).replace("-", "/"); 
+  const shortEnd = endDate.substring(5).replace("-", "/");
+
   // Final pass to calculate totals and identify discrepancies
   Object.keys(auditMap).forEach(v => {
     const vendor = auditMap[v];
     Object.keys(vendor._cities).forEach(c => {
       const city = vendor._cities[c];
       Object.keys(city._fdhs).forEach(f => {
+        const fdhKey = f;
         const fdh = city._fdhs[f];
         Object.keys(fdh._dates).forEach(d => {
           const pair = fdh._dates[d];
           const diff = _calculateWorkLogDiff(pair.archive, pair.qb);
           pair.diff = diff;
           
-          // Accumulate totals
           _accumulateAuditTotals(fdh._totals, diff);
           _accumulateAuditTotals(city._totals, diff);
           _accumulateAuditTotals(vendor._totals, diff);
         });
 
-        // Inject RECONCILE row if net discrepancies exist
-        const t = fdh._totals;
-        if (t.ugDiff !== 0 || t.aeDiff !== 0 || t.fibDiff !== 0 || t.napDiff !== 0) {
+        // 3. Inject RECONCILE row based on LIFETIME Database vs QB Alignment
+        const archTotal = latestArchiveTotals[fdhKey] || { ug: 0, ae: 0, fib: 0, nap: 0 };
+        const qbTotal   = qbReferenceTotals[fdhKey]   || { ug: 0, ae: 0, fib: 0, nap: 0 };
+
+        // Adjustment needed: Archive - QB
+        const adjustUG = archTotal.ug - qbTotal.ug;
+        const adjustAE = archTotal.ae - qbTotal.ae;
+        const adjustFB = archTotal.fib - qbTotal.fib;
+        const adjustNP = archTotal.nap - qbTotal.nap;
+
+        if (adjustUG !== 0 || adjustAE !== 0 || adjustFB !== 0 || adjustNP !== 0) {
             fdh._dates['RECONCILE'] = {
                 archive: {
-                    "Daily UG Footage": -t.ugDiff, // Archive minus QB, but since diff is QB - Archive, we negate it
-                    "Daily Strand Footage": -t.aeDiff,
-                    "Daily Fiber Footage": -t.fibDiff,
-                    "Daily NAPs/Encl. Completed": -t.napDiff,
-                    "Construction Comments": "[Suggested Reconciliation] Net adjustment needed to align QuickBase with Master Archive for this period."
+                    "Daily UG Footage": adjustUG,
+                    "Daily Strand Footage": adjustAE,
+                    "Daily Fiber Footage": adjustFB,
+                    "Daily NAPs/Encl. Completed": adjustNP,
+                    "Construction Comments": `[LIFETIME RECONCILE] Master adjustment to align QuickBase Rollups (${qbTotal.ug}ft) with Archive Running Totals (${archTotal.ug}ft).`
                 },
                 qb: {},
                 diff: {
-                    archive: { ug: -t.ugDiff, ae: -t.aeDiff, fib: -t.fibDiff, nap: -t.napDiff },
+                    archive: { ug: adjustUG, ae: adjustAE, fib: adjustFB, nap: adjustNP },
                     qb: { ug: 0, ae: 0, fib: 0, nap: 0 },
-                    delta: { ug: t.ugDiff, ae: t.aeDiff, fib: t.fibDiff, nap: t.napDiff },
+                    delta: { ug: -adjustUG, ae: -adjustAE, fib: -adjustFB, nap: -adjustNP }, // diff is QB-Archive
                     hasDiscrepancy: true
                 }
             };
@@ -3497,9 +3560,10 @@ function _reconcileWorkLogAudit(qbRecords, archiveRecords, refDict) {
     });
   });
 
-  // Ensure JSON serializability by removing any complex objects if they crept in
   return JSON.parse(JSON.stringify(auditMap));
 }
+
+
 
 function _emptyAuditTotals() {
   return { ug: 0, ae: 0, fib: 0, nap: 0, ugDiff: 0, aeDiff: 0, fibDiff: 0, napDiff: 0 };
