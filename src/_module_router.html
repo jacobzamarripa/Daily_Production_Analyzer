@@ -121,7 +121,7 @@ function syncWorkspaceModeState() {
 
 function syncWorkspaceChrome() {
     if (currentWorkspaceView === 'dashboard') return;
-    ['detail', 'grid', 'gantt', 'action'].forEach(v => {
+    ['detail', 'grid', 'gantt', 'upload', 'action'].forEach(v => {
         const btn = getEl(`view-btn-${v}`);
         if (btn) btn.classList.toggle('active', v === currentWorkspaceView);
     });
@@ -183,6 +183,54 @@ function syncWorkspaceChrome() {
     syncDockClearanceState();
     syncDockContextChoreography();
     syncUnifiedFabState();
+    updateViewPill();
+}
+
+function updateViewPill() {
+    const picker = document.querySelector('.view-segment-group.view-picker');
+    const pill   = picker && picker.querySelector('.view-pill-indicator');
+    const active = picker && picker.querySelector('.view-segment-btn.active');
+    if (!pill || !active) return;
+
+    const snap = !pill.dataset.initialized;
+    if (snap) {
+        pill.style.transition = 'none';
+        pill.dataset.initialized = '1';
+        // Force-measure each label's natural text width before any transition fires.
+        // overflow:hidden + max-width:0 makes scrollWidth return 0, so temporarily remove
+        // those constraints, read offsetWidth, then restore synchronously (no paint in between).
+        picker.querySelectorAll('.view-segment-btn').forEach(btn => {
+            const lbl = btn.querySelector('.view-label');
+            if (!lbl) return;
+            lbl.style.transition = 'none';
+            lbl.style.maxWidth   = 'none';
+            lbl.style.overflow   = 'visible';
+            lbl.style.marginLeft = '5px';
+            btn.dataset.labelW   = lbl.offsetWidth;
+            lbl.style.maxWidth   = '';
+            lbl.style.overflow   = '';
+            lbl.style.marginLeft = '';
+            // transition:none stays inline until rAF so restoring max-width doesn't trigger animation
+        });
+        requestAnimationFrame(() => {
+            pill.style.transition = '';
+            picker.querySelectorAll('.view-segment-btn .view-label').forEach(l => { l.style.transition = ''; });
+        });
+    }
+
+    // Compute final left from layout constants — immune to t=0 stale layout measurements.
+    // PAD/INACTIVE_W/DIVIDER_W mirror CSS: padding:3px, min-width:34px, divider 1px+2px margins.
+    const PAD = 3, INACTIVE_W = 34, DIVIDER_W = 5;
+    let left = PAD;
+    for (const child of picker.children) {
+        if (child === active) break;
+        if (child === pill) continue;
+        left += child.classList.contains('view-picker-divider') ? DIVIDER_W : INACTIVE_W;
+    }
+
+    const labelW = parseFloat(active.dataset.labelW) || 0;
+    pill.style.left  = left + 'px';
+    pill.style.width = (labelW > 0 ? Math.max(39 + labelW, INACTIVE_W) : INACTIVE_W) + 'px';
 }
 
 function syncUnifiedFabState() {
