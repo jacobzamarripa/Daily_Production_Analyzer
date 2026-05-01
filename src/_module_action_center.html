@@ -31,6 +31,9 @@
   var _acWorkLogVendorFilter = 'ALL';
   var _acWorkLogCollapsed = {}; // { groupKey: boolean }
   var _acWorkLogSelected  = new Set(); // { vendor::city::fdh::date }
+  var _acBomSelected      = new Set(); // { fdh }
+  var _acBomVendorFilter  = 'ALL';
+  var _acBomCollapsed     = {};
 
   // ── Universal filter bar state ────────────────────────────
   var _acUniversalSearchQuery = '';
@@ -353,6 +356,18 @@
         html += '<button class="ac-filter-pill' + (active ? ' active' : '') +
           '" onclick="_acSetUniversalFilter(\'boms\',\'' + val + '\')">' + label + '</button>';
       });
+
+      html += '<div class="ac-ufb-sep"></div>';
+      var bomVendors = _acGetWorkLogVendors(); // Use existing vendor helper
+      html += '<select class="ac-ufb-select" onchange="_acSetBomVendor(this.value)">';
+      html += '<option value="ALL"' + (_acBomVendorFilter === 'ALL' ? ' selected' : '') + '>All Vendors</option>';
+      bomVendors.forEach(function(v) {
+        html += '<option value="' + _e(v) + '"' + (_acBomVendorFilter === v ? ' selected' : '') + '>' + _e(v) + '</option>';
+      });
+      html += '</select>';
+
+      html += '<div class="ac-ufb-sep"></div>';
+      html += '<button class="ac-ufb-action-btn" onclick="_acLoadBomData()" ' + (_acBomLoading ? 'disabled' : '') + ' style="background:var(--accent);color:white;border-color:var(--accent)">' + (_acBomLoading ? 'Refreshing...' : 'Refresh BOMs') + '</button>';
     } else if (tab === 'comments') {
       html += '<div class="ac-ufb-sep"></div>';
       ['all','edited'].forEach(function(val) {
@@ -427,20 +442,81 @@
 
   function _acSetUniversalFilter(tab, val) {
     _acUniversalFilters[tab] = val;
+    if (tab === 'boms') _acBomSelected.clear(); // Clear selection on filter change
     _acRenderUniversalFilterBar(tab);
     _acRenderActiveTab();
     _acSyncTabBadges();
     _acEnsurePermanentPeek();
   }
 
+  function _acSetBomVendor(val) {
+    _acBomVendorFilter = val;
+    _acBomSelected.clear();
+    _acRenderUniversalFilterBar('boms');
+    _acRenderBOMsTab();
+  }
+
   function _acGetFilteredBomItems() {
     var rows = _acGetBomRows();
     if (_acUniversalFilters.boms === 'diffs') rows = rows.filter(function(r){ return r.hasDiff; });
+    if (_acBomVendorFilter !== 'ALL') rows = rows.filter(function(r){ return r.vendor === _acBomVendorFilter; });
     var q = _acUniversalSearchQuery.trim().toLowerCase();
     if (q) rows = rows.filter(function(r){
       return [r.fdh, r.vendor || ''].join(' ').toLowerCase().indexOf(q) !== -1;
     });
     return rows;
+  }
+
+  function _acGetGroupedBomData() {
+    var rows = _acGetFilteredBomItems();
+    var grouped = {};
+    var allItems = typeof allActionItems !== 'undefined' ? allActionItems : [];
+
+    rows.forEach(function(r) {
+      var v = r.vendor || 'Unknown Vendor';
+      var activeItem = allItems.find(function(i){ return i.fdh === r.fdh; });
+      var c = activeItem ? (activeItem.city || 'Unknown City') : 'Unknown City';
+
+      if (!grouped[v]) grouped[v] = { _cities: {}, _totals: { qb: _acEmptyAuditTotals(), vendor: _acEmptyAuditTotals() } };
+      if (!grouped[v]._cities[c]) grouped[v]._cities[c] = { _fdhs: {}, _totals: { qb: _acEmptyAuditTotals(), vendor: _acEmptyAuditTotals() } };
+
+      grouped[v]._cities[c]._fdhs[r.fdh] = r;
+
+      var vT = grouped[v]._totals;
+      var cT = grouped[v]._cities[c]._totals;
+      [vT, cT].forEach(function(t) {
+        t.qb.ug += (r.qbUG || 0); t.vendor.ug += (r.vendorUG || 0);
+        t.qb.ae += (r.qbAE || 0); t.vendor.ae += (r.vendorAE || 0);
+        t.qb.fib += (r.qbFib || 0); t.vendor.fib += (r.vendorFib || 0);
+        t.qb.nap += (r.qbNAP || 0); t.vendor.nap += (r.vendorNAP || 0);
+      });
+    });
+    return grouped;
+  }
+
+  function _acToggleBomRow(fdh) {
+    if (_acBomSelected.has(fdh)) _acBomSelected.delete(fdh);
+    else _acBomSelected.add(fdh);
+    _acRenderBOMsTab();
+  }
+
+  function _acToggleAllBomRows(checked) {
+    _acBomSelected.clear();
+    if (checked) {
+        _acGetFilteredBomItems().forEach(function(r){ _acBomSelected.add(r.fdh); });
+    }
+    _acRenderBOMsTab();
+  }
+
+  function _acGetSelectedBomRows() {
+    var rows = _acGetBomRows();
+    if (_acBomSelected.size === 0) return rows; // export all if none checked
+    return rows.filter(function(r){ return _acBomSelected.has(r.fdh); });
+  }
+
+  function _acToggleBomGroup(key) {
+    _acBomCollapsed[key] = !_acBomCollapsed[key];
+    _acRenderBOMsTab();
   }
 
   function _acGetFilteredCommentItems() {
@@ -1240,15 +1316,12 @@
     if (!container) return;
 
     if (!_acBomData && !_acBomLoading) {
-      // Show load trigger
+      _acLoadBomData(); // Auto-load
       container.innerHTML =
         '<div class="ac-bom-load-shell">' +
-          '<div class="ac-bom-load-icon">' +
-            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' +
-          '</div>' +
-          '<div class="ac-bom-load-title">BOM Comparison</div>' +
-          '<div class="ac-bom-load-sub">Compare QuickBase BOM quantities against vendor-reported archive values. Differences are flagged for correction.</div>' +
-          '<button class="btn btn-primary" style="margin-top:18px;padding:12px 28px;font-size:11px;" onclick="_acLoadBomData()">Load BOM Data</button>' +
+          '<div class="ac-loader" style="width:32px; height:32px; border-width:3px;"></div>' +
+          '<div class="ac-bom-load-title">Loading BOM data…</div>' +
+          '<div class="ac-bom-load-sub">Comparing QuickBase vs archive quantities.</div>' +
         '</div>';
       _acSyncTabBadges();
       return;
@@ -1264,8 +1337,11 @@
       return;
     }
 
+    var grouped = _acGetGroupedBomData();
+    var vendors = Object.keys(grouped).sort();
     var rows = _acGetFilteredBomItems();
     var diffCount = rows.filter(function(r) { return r.hasDiff; }).length;
+    var allChecked = rows.length > 0 && _acBomSelected.size >= rows.length;
 
     var html =
       _acRenderTabKpi('boms') +
@@ -1273,40 +1349,92 @@
         '<div class="ac-toolbar-left">' +
           '<span class="ac-result-count">' + rows.length + ' projects' +
             (diffCount > 0 ? ' · <span style="color:#ef4444">' + diffCount + ' with diffs</span>' : '') +
+            (_acBomSelected.size > 0 ? ' · <span style="color:var(--accent)">' + _acBomSelected.size + ' selected</span>' : '') +
           '</span>' +
         '</div>' +
         '<div class="ac-toolbar-right">' +
-          '<button class="ac-bulk-action-btn ac-bulk-export" onclick="_acExportBOMCSV()">Export Comparison</button>' +
+          '<button class="ac-bulk-action-btn ac-bulk-export" onclick="_acExportBOMCSV()">' + (_acBomSelected.size > 0 ? 'Export Selected' : 'Export All') + '</button>' +
           '<button class="ac-bulk-action-btn" onclick="_acLoadBomData()" style="opacity:0.6;">Refresh</button>' +
         '</div>' +
       '</div>' +
-      '<div class="ac-table-wrap"><table class="ac-table ac-table-bom ac-table-workspace">' +
+      '<div class="ac-table-wrap"><table class="ac-table ac-table-worklog ac-table-workspace">' +
       '<thead><tr>' +
-        '<th>FDH</th><th>Vendor</th>' +
+        '<th rowspan="2" class="ac-th-check"><input type="checkbox" ' + (allChecked ? 'checked' : '') + ' onchange="_acToggleAllBomRows(this.checked)"></th>' +
+        '<th rowspan="2">FDH</th>' +
         '<th class="ac-bom-pair-hd" colspan="2">UG (ft)</th>' +
         '<th class="ac-bom-pair-hd" colspan="2">AE (ft)</th>' +
         '<th class="ac-bom-pair-hd" colspan="2">Fiber (ft)</th>' +
         '<th class="ac-bom-pair-hd" colspan="2">NAPs</th>' +
-        '<th class="ac-th-peek"></th>' +
+        '<th rowspan="2" class="ac-th-peek"></th>' +
       '</tr>' +
       '<tr class="ac-bom-sub-hd">' +
-        '<th></th><th></th>' +
         '<th>QB</th><th>Vendor</th>' +
         '<th>QB</th><th>Vendor</th>' +
         '<th>QB</th><th>Vendor</th>' +
         '<th>QB</th><th>Vendor</th>' +
-        '<th></th>' +
       '</tr></thead><tbody>';
 
-    if (rows.length === 0) {
+    if (vendors.length === 0) {
       html += '<tr><td colspan="11" class="ac-empty-cell">No BOM data available.</td></tr>';
     } else {
-      rows.forEach(function(r) {
-        var fdhSafe = _e(r.fdh);
-        var isPeekOpen = _acOpenPeekFdh === r.fdh;
-        html += '<tr class="ac-row' + (r.hasDiff ? ' ac-bom-diff-row' : '') + '">' +
-          '<td class="ac-td-fdh"><span class="ac-fdh">' + fdhSafe + '</span></td>' +
-          '<td>' + _e(r.vendor || '—') + '</td>' +
+      vendors.forEach(function(vName) {
+        html += _acRenderBomVendor(vName, grouped[vName]);
+      });
+    }
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+    _acSyncTabBadges();
+  }
+
+  function _acRenderBomVendor(name, data) {
+    var key = 'bom_v::' + name;
+    var isCollapsed = _acBomCollapsed[key] === true;
+    var cities = Object.keys(data._cities).sort();
+    
+    var html = '<tr class="ac-xing-sep-row ac-xing-sep-vendor" onclick="_acToggleBomGroup(\'' + _acJs(key) + '\')">' +
+      '<td colspan="11">' +
+        '<div class="ac-xing-sep-vendor-inner">' +
+          '<span class="ac-xing-sep-toggle' + (!isCollapsed ? ' open' : '') + '"></span>' +
+          '<span class="ac-xing-sep-vendor-name">' + _e(name) + '</span>' +
+          _acRenderBomTotalsInline(data._totals) +
+        '</div>' +
+      '</td></tr>';
+
+    if (!isCollapsed) {
+      cities.forEach(function(cName) {
+        html += _acRenderBomCity(cName, data._cities[cName], name);
+      });
+    }
+    return html;
+  }
+
+  function _acRenderBomCity(name, data, vName) {
+    var key = 'bom_c::' + vName + '::' + name;
+    var isCollapsed = _acBomCollapsed[key] === true;
+    var fdhs = Object.keys(data._fdhs).sort();
+
+    var html = '<tr class="ac-xing-sep-row ac-xing-sep-city" onclick="_acToggleBomGroup(\'' + _acJs(key) + '\')">' +
+      '<td colspan="11">' +
+        '<div class="ac-xing-sep-city-inner" style="padding-left:40px;">' +
+          '<span class="ac-xing-sep-toggle' + (!isCollapsed ? ' open' : '') + '"></span>' +
+          '<span class="ac-xing-sep-city-name">' + _e(name) + '</span>' +
+          _acRenderBomTotalsInline(data._totals) +
+        '</div>' +
+      '</td></tr>';
+
+    if (!isCollapsed) {
+      fdhs.forEach(function(fId) {
+        var r = data._fdhs[fId];
+        var isSel = _acBomSelected.has(fId);
+        var fdhSafe = _e(fId);
+        var isPeekOpen = _acOpenPeekFdh === fId;
+
+        html += '<tr class="ac-row' + (isSel ? ' is-selected' : '') + (r.hasDiff ? ' ac-bom-diff-row' : '') + '" onclick="_acToggleBomRow(\'' + _acJs(fId) + '\')">' +
+          '<td class="ac-td-check" onclick="event.stopPropagation();_acToggleBomRow(\'' + _acJs(fId) + '\')">' +
+            '<input type="checkbox"' + (isSel ? ' checked' : '') + ' onchange="_acToggleBomRow(\'' + _acJs(fId) + '\')" onclick="event.stopPropagation()">' +
+          '</td>' +
+          '<td class="ac-td-fdh" style="padding-left:60px !important;"><span class="ac-fdh">' + fdhSafe + '</span></td>' +
           _acBomCell(r.qbUG,  r.vendorUG)  +
           _acBomCell(r.qbAE,  r.vendorAE)  +
           _acBomCell(r.qbFib, r.vendorFib) +
@@ -1317,10 +1445,16 @@
         '</tr>';
       });
     }
+    return html;
+  }
 
-    html += '</tbody></table></div>';
-    container.innerHTML = html;
-    _acSyncTabBadges();
+  function _acRenderBomTotalsInline(totals) {
+    return '<div class="ac-audit-totals-strip" style="justify-content:flex-start; margin-left:20px; opacity:0.7;">' +
+      '<span class="ac-total-item" style="font-size:10px;">UG: ' + totals.qb.ug.toLocaleString() + ' / ' + totals.vendor.ug.toLocaleString() + '</span>' +
+      '<span class="ac-total-item" style="font-size:10px;">ST: ' + totals.qb.ae.toLocaleString() + ' / ' + totals.vendor.ae.toLocaleString() + '</span>' +
+      '<span class="ac-total-item" style="font-size:10px;">FB: ' + totals.qb.fib.toLocaleString() + ' / ' + totals.vendor.fib.toLocaleString() + '</span>' +
+      '<span class="ac-total-item" style="font-size:10px;">NP: ' + totals.qb.nap.toLocaleString() + ' / ' + totals.vendor.nap.toLocaleString() + '</span>' +
+      '</div>';
   }
 
   function _acBomCell(qbVal, vendorVal) {
@@ -2215,9 +2349,15 @@
   window._acCloseModal            = _acCloseModal;
   window._acExportWorkLog            = _acExportWorkLog;
   window._acToggleWorkLogGroup       = _acToggleWorkLogGroup;
+  window._acToggleWorkLogRow         = _acToggleWorkLogRow;
+  window._acToggleAllWorkLogRows     = _acToggleAllWorkLogRows;
   window._acLoadWorkLogData          = _acLoadWorkLogData;
   window._acSetWorkLogVendor         = _acSetWorkLogVendor;
   window._acSetWorkLogDate           = _acSetWorkLogDate;
+  window._acSetBomVendor             = _acSetBomVendor;
+  window._acToggleBomGroup           = _acToggleBomGroup;
+  window._acToggleBomRow             = _acToggleBomRow;
+  window._acToggleAllBomRows         = _acToggleAllBomRows;
 
   window._acModalConfirm          = _acModalConfirm;
   window._acTogglePeek            = _acTogglePeek;

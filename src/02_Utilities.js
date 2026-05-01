@@ -3472,6 +3472,27 @@ function _reconcileWorkLogAudit(qbRecords, archiveRecords, refDict) {
           _accumulateAuditTotals(city._totals, diff);
           _accumulateAuditTotals(vendor._totals, diff);
         });
+
+        // Inject RECONCILE row if net discrepancies exist
+        const t = fdh._totals;
+        if (t.ugDiff !== 0 || t.aeDiff !== 0 || t.fibDiff !== 0 || t.napDiff !== 0) {
+            fdh._dates['RECONCILE'] = {
+                archive: {
+                    "Daily UG Footage": -t.ugDiff, // Archive minus QB, but since diff is QB - Archive, we negate it
+                    "Daily Strand Footage": -t.aeDiff,
+                    "Daily Fiber Footage": -t.fibDiff,
+                    "Daily NAPs/Encl. Completed": -t.napDiff,
+                    "Construction Comments": "[Suggested Reconciliation] Net adjustment needed to align QuickBase with Master Archive for this period."
+                },
+                qb: {},
+                diff: {
+                    archive: { ug: -t.ugDiff, ae: -t.aeDiff, fib: -t.fibDiff, nap: -t.napDiff },
+                    qb: { ug: 0, ae: 0, fib: 0, nap: 0 },
+                    delta: { ug: t.ugDiff, ae: t.aeDiff, fib: t.fibDiff, nap: t.napDiff },
+                    hasDiscrepancy: true
+                }
+            };
+        }
       });
     });
   });
@@ -3523,6 +3544,24 @@ function _calculateWorkLogDiff(archive, qb) {
     },
     hasDiscrepancy: (qVals.ug !== aVals.ug || qVals.ae !== aVals.ae || qVals.fib !== aVals.fib || qVals.nap !== aVals.nap)
   };
+}
+
+function exportBOMCSVForRows(rows) {
+  if (!rows || rows.length === 0) return '';
+  const headers = ["FDH", "Vendor", "QB UG", "Archive UG", "QB ST", "Archive ST", "QB FB", "Archive FB", "QB NP", "Archive NP", "Has Diff"];
+  let csv = headers.join(",") + "\n";
+  rows.forEach(r => {
+    csv += [
+      r.fdh,
+      `"${(r.vendor || '').replace(/\"/g, '\"\"')}"`,
+      r.qbUG, r.vendorUG,
+      r.qbAE, r.vendorAE,
+      r.qbFib, r.vendorFib,
+      r.qbNAP, r.vendorNAP,
+      r.hasDiff
+    ].join(",") + "\n";
+  });
+  return csv;
 }
 
 /**
