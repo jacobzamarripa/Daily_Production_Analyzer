@@ -502,7 +502,7 @@ body.action-view-active #admin-fab {
 #ac-tab-boms > .ac-table-wrap,
 #ac-tab-comments > .ac-table-wrap,
 #ac-tab-worklog > .ac-table-wrap {
-  padding: 12px 20px 24px;
+  padding: 0 0 24px;
   box-sizing: border-box;
 }
 
@@ -929,24 +929,34 @@ body.action-view-active #admin-fab {
 #ac-universal-filter-bar .ac-ufb-kpi-sep {
   display: none;
 }
-#action-workspace.ac-tab-scrolled #ac-universal-filter-bar .ac-tki-chip {
+.ac-tki-chip {
   display: inline-flex;
   align-items: center;
-}
-#action-workspace.ac-tab-scrolled #ac-universal-filter-bar .ac-ufb-kpi-sep {
-  display: block;
-}
-.ac-tki-chip {
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.03em;
-  padding: 3px 8px;
-  border-radius: 20px;
   white-space: nowrap;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(-10px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid var(--border);
   background: var(--card-bg);
   color: var(--text-muted);
-  flex-shrink: 0;
+}
+#action-workspace.ac-tab-scrolled #ac-universal-filter-bar .ac-tki-chip {
+  max-width: 100px;
+  opacity: 1;
+  transform: translateX(0);
+}
+#action-workspace.ac-tab-scrolled #ac-universal-filter-bar .ac-ufb-kpi-sep {
+  width: 1px;
+  opacity: 0.4;
+  margin: 0 10px;
+  display: block;
 }
 .ac-tki-pend { border-color: color-mix(in srgb, #ef4444 22%, var(--border)); color: #ef4444; background: color-mix(in srgb, #ef4444 5%, var(--card-bg)); }
 .ac-tki-yes  { border-color: color-mix(in srgb, #22c55e 22%, var(--border)); color: #16a34a; background: color-mix(in srgb, #22c55e 5%, var(--card-bg)); }
@@ -1143,12 +1153,12 @@ body.action-view-active #admin-fab {
 .ac-table-crossings .ac-th-xing-sel  { width: 1%; }
 
 /* ── Crossings flat grid (compact bulk view) ─────────────── */
-.ac-xing-grid-wrap {
+.ac-table-wrap, .ac-xing-grid-wrap {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 20px 24px;
+  padding: 0 0 24px;
   box-sizing: border-box;
   background: var(--card-bg);
 }
@@ -2106,6 +2116,17 @@ body.dark-mode .ac-table thead { background: color-mix(in srgb, var(--card-bg) 9
   padding: 8px 20px 10px;
   margin: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+}
+.ac-xing-vendor-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 20px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 50%, var(--card-bg));
 }
 
 #action-offenders-panel .ac-table-wrap {

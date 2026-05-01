@@ -466,6 +466,14 @@
     if      (tab === 'crossings') count = _acGetFilteredCrossingItems().length + ' projects';
     else if (tab === 'boms')      count = _acBomData ? (_acGetFilteredBomItems().length + ' projects') : '—';
     else if (tab === 'comments')  count = _acGetFilteredCommentItems().length + ' projects';
+    else if (tab === 'offenders') {
+      var offData = (typeof _buildOffendersData === 'function') ? _buildOffendersData() : null;
+      var offProjs = 0;
+      if (offData && offData.vendorMap) {
+        Object.keys(offData.vendorMap).forEach(function(v){ offProjs += offData.vendorMap[v].projects.length; });
+      }
+      count = offProjs + ' projects';
+    }
     else if (tab === 'worklog')   count = _acWorkLogData ? (Object.keys(_acWorkLogData).length + ' vendors') : '—';
 
     if (count) html += '<span class="ac-ufb-count">' + count + '</span>';
