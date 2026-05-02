@@ -181,30 +181,23 @@ function getReferenceDictionary() {
     let refHeaders = refSheet.getRange(1, 1, 1, refSheet.getLastColumn()).getValues()[0].map(h => String(h || "").trim());
     
     // 🧠 Bulletproof indexing helper
-    let getIdx = (name) => refHeaders.findIndex(h => h != null && h.trim().toUpperCase() === name.toUpperCase());
-    
-    let getIdxByAliases = (aliases) => {
-        for (let a of aliases) {
-            let idx = getIdx(a);
-            if (idx > -1) return idx;
-        }
-        return -1;
-    };
+    const adapter = createSchemaAdapter(refHeaders);
+    const getIdx = (name, opts) => adapter.getIdx(name, opts);
 
     // 🧠 CORE FIX: Use flexible aliasing for absolute mapping
-    let fdhIdx    = getIdxByAliases(["FDH Engineering ID", "FDH ID", "Project ID", "FDH"]);
-    let cityIdx   = getIdxByAliases(["City", "Market"]);
-    let stageIdx  = getIdxByAliases(["Stage", "Phase"]);
+    let fdhIdx    = getIdx("FDH");
+    let cityIdx   = getIdx("CITY");
+    let stageIdx  = getIdx("STAGE");
     let statusIdx = getIdx("Status");
-    let bslIdx    = getIdxByAliases(["BSLs", "HHPs", "BSL"]);
-    let ofsIdx    = getIdxByAliases(["OFS DATE", "Budget OFS", "Target OFS"]);
+    let bslIdx    = getIdx("BSL");
+    let ofsIdx    = getIdx("OFS");
     let cxStartIdx = getIdx("CX Start");
-    let cxEndIdx   = getIdxByAliases(["CX Complete", "CX End"]);
+    let cxEndIdx   = getIdx("CX_COMPLETE");
 
-    let bomUGIdx  = getIdxByAliases(["UG BOM Qty.", "UG BOM Quantity", "UG Footage", "UG BOM", "Est. UG Footage"]);
-    let bomAEIdx  = getIdxByAliases(["AE BOM Qty.", "Strand BOM Quantity", "AE BOM Quantity", "AE Footage", "AE BOM", "Strand BOM", "Est. AE Footage"]);
-    let bomFIBIdx = getIdxByAliases(["Fiber BOM Qty.", "Fiber BOM Quantity", "Fiber Footage", "Fiber BOM", "Est. Fiber Footage"]);
-    let bomNAPIdx = getIdxByAliases(["NAPs BOM Qty.", "NAP/Encl. BOM Qty.", "NAP BOM Quantity", "Total Naps", "NAP BOM", "NAP Qty.", "Est. Total Naps"]);
+    let bomUGIdx  = getIdx("BOM_UG");
+    let bomAEIdx  = getIdx("BOM_AE");
+    let bomFIBIdx = getIdx("BOM_FIB");
+    let bomNAPIdx = getIdx("BOM_NAP");
     
     // 🔍 AUDIT: Ensure we found the critical columns
     if (fdhIdx === -1 || cityIdx === -1) {
@@ -213,17 +206,17 @@ function getReferenceDictionary() {
         logMsg("BENNY ENGINE [BOM Detection]: SUCCESS. Indices found: FDH=" + fdhIdx + ", UG=" + bomUGIdx + ", AE=" + bomAEIdx + ", FIB=" + bomFIBIdx + ", NAP=" + bomNAPIdx);
     }
 
-    let ridIdx = getIdx("Record ID#"), bomDelIdx = getIdxByAliases(["BOM in Deliverables", "BOM Deliverable"]);
-    let spliceDelIdx = getIdxByAliases(["Splice Sheet in Deliverables", "Splice Deliverable"]);
-    let standDelIdx = getIdxByAliases(["Stand Map in Deliverables", "Strand Deliverable"]);
-    let cdDelIdx = getIdxByAliases(["CD in Deliverables", "CD Deliverable"]);
-    let spliceDistIdx = getIdxByAliases(["Splice Docs Distributed", "Splice Docs Dist"]);
-    let strandDistIdx = getIdxByAliases(["Strand Maps", "Strand Maps Dist"]);
-    let cdDistIdx = getIdxByAliases(["CD Distributed", "CD Dist"]);
-    let bomPoIdx = getIdxByAliases(["BOM & PO sent", "BOM Sent", "PO Sent"]);
-    let sowIdx = getIdxByAliases(["SOW sent", "SOW Signed"]);
-    let cdIdx = cdDistIdx, specXIdx = getIdxByAliases(["Special Crossings?", "Xing?"]);
-    let specXDetailsIdx = getIdxByAliases(["Special Crossing Details", "Xing Details"]);
+    let ridIdx = getIdx("Record ID#"), bomDelIdx = getIdx("BOM in Deliverables", { aliases: ["BOM Deliverable"] });
+    let spliceDelIdx = getIdx("Splice Sheet in Deliverables", { aliases: ["Splice Deliverable"] });
+    let standDelIdx = getIdx("Stand Map in Deliverables", { aliases: ["Strand Deliverable"] });
+    let cdDelIdx = getIdx("CD in Deliverables", { aliases: ["CD Deliverable"] });
+    let spliceDistIdx = getIdx("Splice Docs Distributed", { aliases: ["Splice Docs Dist"] });
+    let strandDistIdx = getIdx("Strand Maps", { aliases: ["Strand Maps Dist"] });
+    let cdDistIdx = getIdx("CD Distributed", { aliases: ["CD Dist"] });
+    let bomPoIdx = getIdx("BOM & PO sent", { aliases: ["BOM Sent", "PO Sent"] });
+    let sowIdx = getIdx("SOW sent", { aliases: ["SOW Signed"] });
+    let cdIdx = cdDistIdx, specXIdx = getIdx("Special Crossings?", { aliases: ["Xing?"] });
+    let specXDetailsIdx = getIdx("Special Crossing Details", { aliases: ["Xing Details"] });
 
     // 🧠 Robust numeric parser for BOM qtys (strips commas and non-numeric junk)
     const parseBOM = (val) => {
@@ -258,15 +251,9 @@ function getReferenceDictionary() {
     let qbLinkIdsIdx    = getIdx("QB_Link_IDs");
     let qbPredecessorsIdx = getIdx("QB_Predecessors");
     let qbSuccessorsIdx = getIdx("QB_Successors");
-    let drgIdx          = ["DRG", "Direct Vendor", "Direct Vendor Tracking", "DRG Tracker", "Direct Vendor Tracker"]
-      .map(getIdx)
-      .find(function(idx) { return idx > -1; });
-    let drgUrlIdx       = ["DRG Tracker URL", "Direct Vendor Tracker URL", "DRG URL", "Direct Vendor URL", "Tracker URL"]
-      .map(getIdx)
-      .find(function(idx) { return idx > -1; });
-    let vendorIdx = getIdxByAliases(["CX Vendor", "Contractor", "Vendor"]);
-    if (vendorIdx === -1) vendorIdx = getIdx("Contractor");
-    if (vendorIdx === -1) vendorIdx = getIdx("Vendor");
+    let drgIdx          = getIdx("DRG");
+    let drgUrlIdx       = getIdx("DRG_URL");
+    let vendorIdx       = getIdx("CONTRACTOR", { aliases: ["CX Vendor"] });
 
     const isChecked = (val) => val != null && ["true", "1", "yes", "checked"].includes(String(val).toLowerCase().trim());
     const safeDate = (val) => {

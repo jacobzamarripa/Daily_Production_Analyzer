@@ -694,33 +694,26 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
   }
 
   const idxCache = {};
+  const adapter = createSchemaAdapter(fileHeaders);
   const getIdx = (name) => {
     let n = name.toLowerCase().trim();
     if (idxCache[n] !== undefined) return idxCache[n];
 
-    let exact = fileHeaders.indexOf(n);
-    if (exact !== -1) { idxCache[n] = exact; return exact; }
+    let opts = {};
+    if (n.includes("footage") || n.includes("completed")) opts.isFootage = true;
 
-    // 🕵️ Robust Column Hunt
-    const isFootageSearch = n.includes("footage") || n.includes("completed");
+    // Specific overrides for Archive logic
+    if (n === "contractor") n = "CONTRACTOR";
+    if (n.includes("ug complete")) opts.aliases = [["ug", "complete"]];
+    else if (n.includes("strand complete")) opts.aliases = [["strand", "complete"]];
+    else if (n.includes("fiber complete")) opts.aliases = [["fiber", "complete"]];
+    else if (n === "vendor comment") n = "COMMENT";
 
-    const searchHeaders = (variants) => {
-      return fileHeaders.findIndex(h => {
-        let match = variants.every(v => h.includes(v));
-        if (match && isFootageSearch) {
-          // 🛡️ Guard: Reject footage candidates that are actually dates or BOMs
-          if (h.includes("date") || h.includes("target") || h.includes("bom") || h.includes("ofs") || h.includes("quantity")) return false;
-        }
-        return match;
-      });
-    };
+    let found = adapter.getIdx(n, opts);
+    if (found !== -1) { idxCache[n] = found; return found; }
 
-    if (n === "date") {
-      let variants = ["date", "report", "daily", "work", "production", "activity", "service", "log", "timestamp"];
-      let found = fileHeaders.findIndex(h => variants.some(v => h.includes(v)) && !h.includes("target") && !h.includes("ofs"));
-      if (found !== -1) { idxCache[n] = found; return found; }
-
-      // 🧠 Value-Based Fallback: If header fails, check columns for date-like values
+    // 🧠 Value-Based Fallback: If header fails, check columns for date-like values
+    if (n === "date" || n === "DATE") {
       for (let col = 0; col < fileHeaders.length; col++) {
         let sample = fullData.slice(headerRowIndex + 1, headerRowIndex + 11).map(r => r[col]);
         if (sample.some(v => v instanceof Date)) { idxCache[n] = col; return col; }
@@ -728,19 +721,8 @@ function parseFileToRows(file, existingKeys, refDict, folderDate, newRowsAppende
       }
     }
 
-    if (n === "contractor") {
-      let found = searchHeaders(["contractor"]) || searchHeaders(["vendor"]) || searchHeaders(["partner"]) || searchHeaders(["company"]);
-      if (found !== -1) { idxCache[n] = found; return found; }
-    }
-
-    let result = -1;
-    if (n.includes("ug complete")) result = searchHeaders(["ug", "complete"]);
-    else if (n.includes("strand complete")) result = searchHeaders(["strand", "complete"]);
-    else if (n.includes("fiber complete")) result = searchHeaders(["fiber", "complete"]);
-    else if (n === "vendor comment") result = fileHeaders.findIndex(fh => fh.includes("comment") || fh.includes("note"));
-    
-    idxCache[n] = result;
-    return result;
+    idxCache[n] = -1;
+    return -1;
   };
 
   try {

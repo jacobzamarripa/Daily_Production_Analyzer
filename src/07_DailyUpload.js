@@ -248,19 +248,11 @@ function _createDailyUploadCsvFileSafely(folder, fileName, csvContent) {
   return _dailyUploadDriveRetry('create pending upload CSV ' + fileName, function() {
     return folder.createFile(fileName, csvContent, MimeType.CSV);
   }, 3, 900);
-}
+// --- UTILITIES ---
 
-function _dailyUploadHeaderIndexMap(headers) {
-  var map = {};
-  (headers || []).forEach(function(header, idx) {
-    map[_normalizeUploadHeaderKey(header)] = idx;
-  });
-  return map;
-}
-
-function _dailyUploadGetCsvCell(row, indexMap, header) {
-  var idx = indexMap[_normalizeUploadHeaderKey(header)];
-  return idx === undefined ? '' : row[idx];
+function _dailyUploadGetCsvCell(row, adapter, header) {
+  var idx = adapter.getIdx(header, { aliases: DAILY_UPLOAD_HEADER_ALIASES[header] });
+  return idx === -1 ? '' : row[idx];
 }
 
 function _buildDailyUploadCsvCoverageKey(dateVal, fdhVal, vendorVal) {
@@ -350,13 +342,13 @@ function _scanDailyUploadExportCoverage(targetDates) {
       var parsed = Utilities.parseCsv(_readDailyUploadCsvSafely(file));
       if (!parsed || parsed.length < 2) return;
       base.matchedFileCount++;
-      var indexMap = _dailyUploadHeaderIndexMap(parsed[0]);
+      var adapter = createSchemaAdapter(parsed[0]);
       for (var i = 1; i < parsed.length; i++) {
         var row = parsed[i] || [];
         var key = _buildDailyUploadCsvCoverageKey(
-          _dailyUploadGetCsvCell(row, indexMap, 'Date'),
-          _dailyUploadGetCsvCell(row, indexMap, 'FDH Engineering ID'),
-          _dailyUploadGetCsvCell(row, indexMap, 'Contractor')
+          _dailyUploadGetCsvCell(row, adapter, 'Date'),
+          _dailyUploadGetCsvCell(row, adapter, 'FDH Engineering ID'),
+          _dailyUploadGetCsvCell(row, adapter, 'Contractor')
         );
         if (!key) continue;
         exportedKeys[key] = true;
@@ -557,10 +549,6 @@ function _ensureUploadTrackingHeaders() {
   });
 }
 
-function _normalizeUploadHeaderKey(value) {
-  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-}
-
 function _formatUploadDate(value) {
   if (value instanceof Date && !isNaN(value.getTime())) {
     return Utilities.formatDate(value, Session.getScriptTimeZone(), 'MM/dd/yyyy');
@@ -590,18 +578,7 @@ function _parseUploadNumeric(value) {
   return isNaN(num) ? null : num;
 }
 
-function _getUploadHeaderAliasMap() {
-  var map = {};
-  Object.keys(DAILY_UPLOAD_HEADER_ALIASES).forEach(function(target) {
-    DAILY_UPLOAD_HEADER_ALIASES[target].concat([target]).forEach(function(alias) {
-      map[_normalizeUploadHeaderKey(alias)] = target;
-    });
-  });
-  return map;
-}
-
 function _detectUploadSourceSheet(spreadsheet) {
-  var aliasMap = _getUploadHeaderAliasMap();
   var best = null;
   spreadsheet.getSheets().forEach(function(sheet) {
     var maxRows = Math.min(sheet.getLastRow(), 10);
@@ -609,9 +586,10 @@ function _detectUploadSourceSheet(spreadsheet) {
     if (maxRows < 1 || maxCols < 1) return;
     var values = sheet.getRange(1, 1, maxRows, maxCols).getDisplayValues();
     values.forEach(function(row, idx) {
+      var adapter = createSchemaAdapter(row);
       var matched = 0;
-      row.forEach(function(cell) {
-        if (aliasMap[_normalizeUploadHeaderKey(cell)]) matched++;
+      Object.keys(DAILY_UPLOAD_HEADER_ALIASES).forEach(function(target) {
+        if (adapter.getIdx(target, { aliases: DAILY_UPLOAD_HEADER_ALIASES[target] }) !== -1) matched++;
       });
       if (!best || matched > best.score) {
         best = { sheet: sheet, headerRow: idx + 1, score: matched };
@@ -623,17 +601,24 @@ function _detectUploadSourceSheet(spreadsheet) {
 }
 
 function _buildUploadColumnMapping(headerRow) {
-  var aliasMap = _getUploadHeaderAliasMap();
-  var targetToCol = {};
-  var unknownHeaders = [];
-  headerRow.forEach(function(cell, idx) {
-    var normalized = _normalizeUploadHeaderKey(cell);
-    if (!normalized) return;
-    var target = aliasMap[normalized];
-    if (target && targetToCol[target] === undefined) targetToCol[target] = idx;
-    else if (!target) unknownHeaders.push(String(cell).trim());
+  const adapter = createSchemaAdapter(headerRow);
+  const targetToCol = {};
+  const unknownHeaders = [];
+  
+  Object.keys(DAILY_UPLOAD_HEADER_ALIASES).forEach(function(target) {
+    const idx = adapter.getIdx(target, { aliases: DAILY_UPLOAD_HEADER_ALIASES[target] });
+    if (idx !== -1) targetToCol[target] = idx;
   });
-  return { targetToCol: targetToCol, unknownHeaders: unknownHeaders };
+
+  headerRow.forEach(function(cell, idx) {
+    const isMapped = Object.keys(targetToCol).some(function(k) { return targetToCol[k] === idx; });
+    if (!isMapped) {
+      const trimmed = String(cell || "").trim();
+      if (trimmed) unknownHeaders.push(trimmed);
+    }
+  });
+
+  return { targetToCol: targetToCol, unknownHeaders: unknownHeaders, adapter: adapter };
 }
 
 function _getUploadStageSheet(createIfMissing) {
@@ -2170,9 +2155,10 @@ function getMissingReportVendors(dateStr) {
   if (histSheet && histSheet.getLastRow() > 1) {
     const data = histSheet.getDataRange().getValues();
     const headers = data[0] || HISTORY_HEADERS;
-    const dateColIdx = headers.indexOf('Date');
-    const vendorColIdx = headers.indexOf('Contractor');
-    const fdhColIdx = headers.indexOf('FDH Engineering ID');
+    const adapter = createSchemaAdapter(headers);
+    const dateColIdx = adapter.getIdx("DATE");
+    const vendorColIdx = adapter.getIdx("CONTRACTOR");
+    const fdhColIdx = adapter.getIdx("FDH");
     const lastRow = typeof getTrueLastDataRow === 'function' ? getTrueLastDataRow(histSheet) : histSheet.getLastRow();
 
     for (let i = 1; i < lastRow; i++) {
@@ -2205,13 +2191,18 @@ function getMissingReportVendors(dateStr) {
   const _uploadSheet = ss.getSheetByName(QB_UPLOAD_SHEET);
   if (_uploadSheet && _uploadSheet.getLastRow() > 1) {
     const _uploadData = _uploadSheet.getRange(1, 1, _uploadSheet.getLastRow(), QB_HEADERS.length).getValues();
+    const _uAdapter = createSchemaAdapter(QB_HEADERS);
+    const _uDateIdx = _uAdapter.getIdx("DATE");
+    const _uVendorIdx = _uAdapter.getIdx("CONTRACTOR");
+    const _uFdhIdx = _uAdapter.getIdx("FDH");
+
     for (let _ui = 1; _ui < _uploadData.length; _ui++) {
       const _uRow = _uploadData[_ui];
-      const _uFdh = _normalizeMissingReportFdh(_uRow[2]);
+      const _uFdh = _normalizeMissingReportFdh(_uRow[_uFdhIdx]);
       const _uIso = (typeof normalizeDateString === 'function')
-        ? normalizeDateString(_uRow[0])
-        : _normalizeDailyUploadTargetDate(_uRow[0]);
-      const _uVendorKey = _normalizeMissingReportVendor(_uRow[1], aliasMap);
+        ? normalizeDateString(_uRow[_uDateIdx])
+        : _normalizeDailyUploadTargetDate(_uRow[_uDateIdx]);
+      const _uVendorKey = _normalizeMissingReportVendor(_uRow[_uVendorIdx], aliasMap);
       if (!_uFdh || !_uIso || !_uVendorKey) continue;
       if (_uIso < bucket.startIso || _uIso > bucket.endIso) continue;
       if (!coverageByVendor[_uVendorKey]) coverageByVendor[_uVendorKey] = new Set();
