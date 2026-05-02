@@ -32,7 +32,15 @@ const _SCHEMA_ALIASES = {
   "CONTRACTOR": ["Contractor", "Vendor", "Partner", "Company"],
   "COMMENT": ["Comment", "Note", "Vendor Comment", "Vendor Note"],
   "DRG": ["DRG", "Direct Vendor", "Direct Vendor Tracking", "DRG Tracker", "Direct Vendor Tracker"],
-  "DRG_URL": ["DRG Tracker URL", "Direct Vendor Tracker URL", "DRG URL", "Direct Vendor URL", "Tracker URL"]
+  "DRG_URL": ["DRG Tracker URL", "Direct Vendor Tracker URL", "DRG URL", "Direct Vendor URL", "Tracker URL"],
+  "DAILY_UG": ["Daily UG Footage"],
+  "TOTAL_UG": ["Total UG Footage Completed"],
+  "DAILY_AE": ["Daily Strand Footage"],
+  "TOTAL_AE": ["Total Strand Footage Complete?"],
+  "DAILY_FIB": ["Daily Fiber Footage"],
+  "TOTAL_FIB": ["Total Fiber Footage Complete"],
+  "DAILY_NAP": ["Daily NAPs/Encl. Completed"],
+  "TOTAL_NAP": ["Total NAPs Completed"]
 };
 
 /**

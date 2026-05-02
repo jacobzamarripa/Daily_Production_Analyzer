@@ -1413,11 +1413,12 @@ function getRecentInferenceSignals(fdhId, rowDate, inferenceHistoryContext, look
   return result;
 }
 
-function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict) {
+function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict, adapter) {
+  if (!adapter) adapter = createSchemaAdapter(HISTORY_HEADERS);
   let flags = [], drafts = [], summary = [], qbGaps = [], hCols = { warn: [], mismatch: [], ug: [], ae: [], fib: [], nap: [] }, flagColors = [], healedId = null;
   let inferredStage = "", inferredStatus = "";
-  let fdhId = row[HISTORY_HEADERS.indexOf("FDH Engineering ID")] ? _normalizeFdhId(row[HISTORY_HEADERS.indexOf("FDH Engineering ID")]) : "";
-  let vendorComment = row[HISTORY_HEADERS.indexOf("Vendor Comment")] ? row[HISTORY_HEADERS.indexOf("Vendor Comment")].toString().trim() : "";
+  let fdhId = row[adapter.getIdx("FDH")] ? _normalizeFdhId(row[adapter.getIdx("FDH")]) : "";
+  let vendorComment = row[adapter.getIdx("COMMENT")] ? row[adapter.getIdx("COMMENT")].toString().trim() : "";
   
   // 🧠 HEURISTIC: ID Correction & Reference Data Hydration (Moved early for BOM prioritization)
   healedId = null;
@@ -1451,16 +1452,16 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
         qbGaps.push((refData.hasCD ? "CD" : "CD"));
 
         // 🧠 Smart BOM Gap: Data-driven trigger
-        const dailyUG = Number(row[HISTORY_HEADERS.indexOf("Daily UG Footage")]) || 0;
-        const dailyAE = Number(row[HISTORY_HEADERS.indexOf("Daily Strand Footage")]) || 0;
-        const dailyFIB = Number(row[HISTORY_HEADERS.indexOf("Daily Fiber Footage")]) || 0;
-        const dailyNAP = Number(row[HISTORY_HEADERS.indexOf("Daily NAPs/Encl. Completed")]) || 0;
+        const dUG = Number(row[adapter.getIdx("DAILY_UG")]) || 0;
+        const dAE = Number(row[adapter.getIdx("DAILY_AE")]) || 0;
+        const dFIB = Number(row[adapter.getIdx("DAILY_FIB")]) || 0;
+        const dNAP = Number(row[adapter.getIdx("DAILY_NAP")]) || 0;
 
         let bomMissingData = false;
-        if (dailyUG > 0 && (refData.ugBOM || 0) === 0) bomMissingData = true;
-        if (dailyAE > 0 && (refData.aeBOM || 0) === 0) bomMissingData = true;
-        if (dailyFIB > 0 && (refData.fibBOM || 0) === 0) bomMissingData = true;
-        if (dailyNAP > 0 && (refData.napBOM || 0) === 0) bomMissingData = true;
+        if (dUG > 0 && (refData.ugBOM || 0) === 0) bomMissingData = true;
+        if (dAE > 0 && (refData.aeBOM || 0) === 0) bomMissingData = true;
+        if (dFIB > 0 && (refData.fibBOM || 0) === 0) bomMissingData = true;
+        if (dNAP > 0 && (refData.napBOM || 0) === 0) bomMissingData = true;
 
         if (bomMissingData) {
             qbGaps.push("BOM");
@@ -1492,28 +1493,13 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
     }
   }
 
-  let dailyUG = Number(row[HISTORY_HEADERS.indexOf("Daily UG Footage")]) || 0;
-  let totalUG = Number(row[HISTORY_HEADERS.indexOf("Total UG Footage Completed")]) || 0;
-  let vendorBOMUG = (refData && refData.ugBOM > 0) ? refData.ugBOM : (Number(row[HISTORY_HEADERS.indexOf("UG BOM Quantity")]) || 0);
-  let drills = Number(row[HISTORY_HEADERS.indexOf("Drills")]) || 0;
-  
-  let dailyAE = Number(row[HISTORY_HEADERS.indexOf("Daily Strand Footage")]) || 0;
-  let totalAE = Number(row[HISTORY_HEADERS.indexOf("Total Strand Footage Complete?")]) || 0;
-  let vendorBOMAE = (refData && refData.aeBOM > 0) ? refData.aeBOM : (Number(row[HISTORY_HEADERS.indexOf("Strand BOM Quantity")]) || 0);
-  let crewsAE = Number(row[HISTORY_HEADERS.indexOf("AE Crews")]) || 0;
-  
-  let dailyFIB = Number(row[HISTORY_HEADERS.indexOf("Daily Fiber Footage")]) || 0;
-  let totalFIB = Number(row[HISTORY_HEADERS.indexOf("Total Fiber Footage Complete")]) || 0;
-  let vendorBOMFIB = (refData && refData.fibBOM > 0) ? refData.fibBOM : (Number(row[HISTORY_HEADERS.indexOf("Fiber BOM Quantity")]) || 0);
-  let crewsFIB = Number(row[HISTORY_HEADERS.indexOf("Fiber Pulling Crews")]) || 0;
-  
-  let dailyNAP = Number(row[HISTORY_HEADERS.indexOf("Daily NAPs/Encl. Completed")]) || 0;
-  let totalNAP = Number(row[HISTORY_HEADERS.indexOf("Total NAPs Completed")]) || 0;
-  let vendorBOMNAP = (refData && refData.napBOM > 0) ? refData.napBOM : (Number(row[HISTORY_HEADERS.indexOf("NAP/Encl. BOM Qty.")]) || 0);
-  let crewsNAP = Number(row[HISTORY_HEADERS.indexOf("Splicing Crews")]) || 0;
-  
-  let actualActivity = dailyUG > 0 || dailyAE > 0 || dailyFIB > 0 || dailyNAP > 0;
-  let lightToCab = row[HISTORY_HEADERS.indexOf("Light to Cabinets")] === true;
+  // 🧠 PRODUCTION SUMMARY & METRICS (Centralized)
+  const prod = ProductionSummarizer.generateSummary(row, adapter, refData, vTracker);
+  summary = prod.visualLines;
+  const m = prod.metrics;
+
+  let actualActivity = m.dailyUG > 0 || m.dailyAE > 0 || m.dailyFIB > 0 || m.dailyNAP > 0;
+  let lightToCab = row[adapter.getIdx("Light to Cabinets")] === true;
 
   if (refData && actualActivity) {
       const stageStr = (refData.stage || "").toUpperCase().trim();
@@ -1554,9 +1540,9 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
       }
   }
 
-  let rowDateRaw = row[HISTORY_HEADERS.indexOf("Date")];
+  let rowDateRaw = row[adapter.getIdx("DATE")];
   let rowDate = rowDateRaw instanceof Date ? rowDateRaw : new Date(rowDateRaw);
-  let targetDateRaw = row[HISTORY_HEADERS.indexOf("Target Completion Date")];
+  let targetDateRaw = row[adapter.getIdx("Target Completion Date")];
   let targetDate = (targetDateRaw instanceof Date) ? targetDateRaw : new Date(targetDateRaw);
 
   // DATE VALIDATION (Gantt Freeze Protection & Bad Data Filtering)
@@ -1576,8 +1562,8 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
     }
   };
   checkBounds(targetDate, "Target Date");
-  let cxSIdx = HISTORY_HEADERS.indexOf("CX Start");
-  let cxEIdx = HISTORY_HEADERS.indexOf("CX Complete");
+  let cxSIdx = adapter.getIdx("CX_START");
+  let cxEIdx = adapter.getIdx("CX_COMPLETE");
   let cxStartObj = null, cxCompleteObj = null;
   if (cxSIdx > -1) {
     let d = row[cxSIdx];
@@ -1605,48 +1591,15 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
       let refStage = String(entry.stage || "").toLowerCase();
       return refStatus.includes("complete") || refStage.includes("ofs");
   };
-  
-  const addPhaseSummary = (phaseName, daily, total, bom, trkPct) => {
-      let hasDaily = daily > 0;
-      let hasTracker = trkPct && trkPct > 0;
-      if (hasDaily) {
-          let pct = bom > 0 ? (total/bom) : 0;
-          let star = pct >= 1 ? " ★" : "";
-          summary.push(`${phaseName}: ${daily}' ${drawProgressBar(Math.min(1, pct))} ${Math.round(pct*100)}%${star}`);
-      }
-      if (hasTracker) {
-          let star = trkPct >= 1 ? " ★" : "";
-          summary.push(`[Tracker] ${phaseName}: ${drawProgressBar(Math.min(1, trkPct))} ${Math.round(trkPct*100)}%${star}`);
-      }
-  };
-  
-  const addNapSummary = (phaseName, daily, total, bom, trkPct) => {
-      let hasDaily = daily > 0;
-      let hasTracker = trkPct && trkPct > 0;
-      if (hasDaily) {
-          let pct = bom > 0 ? (total/bom) : 0;
-          let star = pct >= 1 ? " ★" : "";
-          summary.push(`${phaseName}: ${daily} ${drawProgressBar(Math.min(1, pct))} ${Math.round(pct*100)}%${star}`);
-      }
-      if (hasTracker) {
-          let star = trkPct >= 1 ? " ★" : "";
-          summary.push(`[Tracker] ${phaseName}: ${drawProgressBar(Math.min(1, trkPct))} ${Math.round(trkPct*100)}%${star}`);
-      }
-  };
 
-  if (vTracker) {
-     addPhaseSummary("UG", dailyUG, totalUG, vendorBOMUG, vTracker.ugPct);
-     addPhaseSummary("AE", dailyAE, totalAE, vendorBOMAE, vTracker.aePct);
-     addPhaseSummary("FIB", dailyFIB, totalFIB, vendorBOMFIB, vTracker.fibPct);
-     addNapSummary("NAP", dailyNAP, totalNAP, vendorBOMNAP, vTracker.napPct);
-  } else {
-     addPhaseSummary("UG", dailyUG, totalUG, vendorBOMUG, 0);
-     addPhaseSummary("AE", dailyAE, totalAE, vendorBOMAE, 0);
-     addPhaseSummary("FIB", dailyFIB, totalFIB, vendorBOMFIB, 0);
-     addNapSummary("NAP", dailyNAP, totalNAP, vendorBOMNAP, 0);
-  }
-  
+  // Supporting metrics for diagnostics
+  const drills = Number(row[adapter.getIdx("Drills")]) || 0;
+  const crewsAE = Number(row[adapter.getIdx("AE Crews")]) || 0;
+  const crewsFIB = Number(row[adapter.getIdx("Fiber Pulling Crews")]) || 0;
+  const crewsNAP = Number(row[adapter.getIdx("Splicing Crews")]) || 0;
+
   let isFormatValid = /^[A-Z]{3}\d{2,3}[a-z]?-F\d{2,4}$/i.test(fdhId);
+
   if (fdhId !== "" && !isFormatValid) {
       flags.push(`FORMAT ERROR`);
       flagColors.push(TEXT_COLORS.WARN);
@@ -1658,18 +1611,18 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
           fdhId: fdhId,
           rowDate: rowDate,
           vendorComment: vendorComment,
-          dailyUG: dailyUG,
-          dailyAE: dailyAE,
-          dailyFIB: dailyFIB,
-          dailyNAP: dailyNAP,
-          totalUG: totalUG,
-          totalAE: totalAE,
-          totalFIB: totalFIB,
-          totalNAP: totalNAP,
-          vendorBOMUG: vendorBOMUG,
-          vendorBOMAE: vendorBOMAE,
-          vendorBOMFIB: vendorBOMFIB,
-          vendorBOMNAP: vendorBOMNAP,
+          dailyUG: m.dailyUG,
+          dailyAE: m.dailyAE,
+          dailyFIB: m.dailyFIB,
+          dailyNAP: m.dailyNAP,
+          totalUG: m.totalUG,
+          totalAE: m.totalAE,
+          totalFIB: m.totalFIB,
+          totalNAP: m.totalNAP,
+          vendorBOMUG: m.bomUG,
+          vendorBOMAE: m.bomAE,
+          vendorBOMFIB: m.bomFIB,
+          vendorBOMNAP: m.bomNAP,
           splicingCrews: crewsNAP,
           lightToCab: lightToCab,
           vTracker: vTracker,
@@ -1721,16 +1674,16 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
       }
   }
   
-  if (dailyUG > 0 && drills === 0) { flags.push("GHOST UG"); flagColors.push(TEXT_COLORS.UG); hCols.ug.push("Daily UG Footage", "Drills"); adaePaletteIdx = "UG"; }
-  if (drills > 0 && (dailyUG / drills) > 800) { flags.push(`UG PACE ANOMALY`); flagColors.push(TEXT_COLORS.UG); drafts.push(`UG Pace is ${Math.round(dailyUG/drills)}ft/drill.`); hCols.ug.push("Daily UG Footage", "Drills"); adaePaletteIdx = "UG"; }
-  if (dailyAE > 0 && crewsAE === 0) { flags.push("GHOST AE"); flagColors.push(TEXT_COLORS.AE); hCols.ae.push("Daily Strand Footage", "AE Crews"); adaePaletteIdx = "AE"; }
-  if (crewsAE > 0 && (dailyAE / crewsAE) > 5000) { flags.push(`AE PACE ANOMALY`); flagColors.push(TEXT_COLORS.AE); drafts.push(`AE Pace is ${Math.round(dailyAE/crewsAE)}ft/crew.`); hCols.ae.push("Daily Strand Footage", "AE Crews"); adaePaletteIdx = "AE"; }
-  if (dailyFIB > 0 && crewsFIB === 0) { flags.push("GHOST FIBER"); flagColors.push(TEXT_COLORS.FIB); hCols.fib.push("Daily Fiber Footage", "Fiber Pulling Crews"); adaePaletteIdx = "FIB"; }
-  if (crewsFIB > 0 && (dailyFIB / crewsFIB) > 10000) { flags.push(`FIBER PACE ANOMALY`); flagColors.push(TEXT_COLORS.FIB); drafts.push(`Fiber Pace is ${Math.round(dailyFIB/crewsFIB)}ft/crew.`); hCols.fib.push("Daily Fiber Footage", "Fiber Pulling Crews"); adaePaletteIdx = "FIB"; }
-  if (dailyNAP > 0 && crewsNAP === 0) { flags.push("GHOST SPLICING"); flagColors.push(TEXT_COLORS.NAP); hCols.nap.push("Daily NAPs/Encl. Completed", "Splicing Crews"); adaePaletteIdx = "NAP"; }
-  if (crewsNAP > 0 && (dailyNAP / crewsNAP) > 6) { flags.push(`SPLICE PACE ANOMALY`); flagColors.push(TEXT_COLORS.NAP); drafts.push(`Splicing Pace is ${Math.round(dailyNAP/crewsNAP)} NAPs/crew.`); hCols.nap.push("Daily NAPs/Encl. Completed", "Splicing Crews"); adaePaletteIdx = "NAP"; }
+  if (m.dailyUG > 0 && drills === 0) { flags.push("GHOST UG"); flagColors.push(TEXT_COLORS.UG); hCols.ug.push("Daily UG Footage", "Drills"); adaePaletteIdx = "UG"; }
+  if (drills > 0 && (m.dailyUG / drills) > 800) { flags.push(`UG PACE ANOMALY`); flagColors.push(TEXT_COLORS.UG); drafts.push(`UG Pace is ${Math.round(m.dailyUG/drills)}ft/drill.`); hCols.ug.push("Daily UG Footage", "Drills"); adaePaletteIdx = "UG"; }
+  if (m.dailyAE > 0 && crewsAE === 0) { flags.push("GHOST AE"); flagColors.push(TEXT_COLORS.AE); hCols.ae.push("Daily Strand Footage", "AE Crews"); adaePaletteIdx = "AE"; }
+  if (crewsAE > 0 && (m.dailyAE / crewsAE) > 5000) { flags.push(`AE PACE ANOMALY`); flagColors.push(TEXT_COLORS.AE); drafts.push(`AE Pace is ${Math.round(m.dailyAE/crewsAE)}ft/crew.`); hCols.ae.push("Daily Strand Footage", "AE Crews"); adaePaletteIdx = "AE"; }
+  if (m.dailyFIB > 0 && crewsFIB === 0) { flags.push("GHOST FIBER"); flagColors.push(TEXT_COLORS.FIB); hCols.fib.push("Daily Fiber Footage", "Fiber Pulling Crews"); adaePaletteIdx = "FIB"; }
+  if (crewsFIB > 0 && (m.dailyFIB / crewsFIB) > 10000) { flags.push(`FIBER PACE ANOMALY`); flagColors.push(TEXT_COLORS.FIB); drafts.push(`Fiber Pace is ${Math.round(m.dailyFIB/crewsFIB)}ft/crew.`); hCols.fib.push("Daily Fiber Footage", "Fiber Pulling Crews"); adaePaletteIdx = "FIB"; }
+  if (m.dailyNAP > 0 && crewsNAP === 0) { flags.push("GHOST SPLICING"); flagColors.push(TEXT_COLORS.NAP); hCols.nap.push("Daily NAPs/Encl. Completed", "Splicing Crews"); adaePaletteIdx = "NAP"; }
+  if (crewsNAP > 0 && (m.dailyNAP / crewsNAP) > 6) { flags.push(`SPLICE PACE ANOMALY`); flagColors.push(TEXT_COLORS.NAP); drafts.push(`Splicing Pace is ${Math.round(m.dailyNAP/crewsNAP)} NAPs/crew.`); hCols.nap.push("Daily NAPs/Encl. Completed", "Splicing Crews"); adaePaletteIdx = "NAP"; }
 
-  const _ingestComment = (row[HISTORY_HEADERS.indexOf("Vendor Comment")] || "").toString();
+  const _ingestComment = (row[adapter.getIdx("COMMENT")] || "").toString();
   if (_ingestComment.includes("from Total Jump")) {
       flags.push("DAILY INFERRED");
       flagColors.push(TEXT_COLORS.MAGIC);
@@ -1774,24 +1727,24 @@ function runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, 
      };
      
      // QB Reference is source of truth; vendor history row is fallback if QB is 0
-     const _ugBom  = refData.ugBOM  > 0 ? refData.ugBOM  : (vendorBOMUG  > 0 ? vendorBOMUG  : 0);
-     const _aeBom  = refData.aeBOM  > 0 ? refData.aeBOM  : (vendorBOMAE  > 0 ? vendorBOMAE  : 0);
-     const _fibBom = refData.fibBOM > 0 ? refData.fibBOM : (vendorBOMFIB > 0 ? vendorBOMFIB : 0);
-     const _napBom = refData.napBOM > 0 ? refData.napBOM : (vendorBOMNAP > 0 ? vendorBOMNAP : 0);
+     const _ugBom  = refData.ugBOM  > 0 ? refData.ugBOM  : (m.bomUG  > 0 ? m.bomUG  : 0);
+     const _aeBom  = refData.aeBOM  > 0 ? refData.aeBOM  : (m.bomAE  > 0 ? m.bomAE  : 0);
+     const _fibBom = refData.fibBOM > 0 ? refData.fibBOM : (m.bomFIB > 0 ? m.bomFIB : 0);
+     const _napBom = refData.napBOM > 0 ? refData.napBOM : (m.bomNAP > 0 ? m.bomNAP : 0);
 
      const allBomZero = _ugBom === 0 && _aeBom === 0 && _fibBom === 0 && _napBom === 0;
 
      if (allBomZero) {
-         if (dailyUG > 0 || dailyAE > 0 || dailyFIB > 0 || dailyNAP > 0) {
+         if (m.dailyUG > 0 || m.dailyAE > 0 || m.dailyFIB > 0 || m.dailyNAP > 0) {
              flags.push("MISSING BOM");
              flagColors.push(TEXT_COLORS.WARN);
              drafts.push("Active progress reported but all BOM quantities are 0. Please verify BOM data in QuickBase.");
          }
      } else {
-         checkPhase("Underground", vendorBOMUG,  _ugBom,  dailyUG,  totalUG,  "UG BOM Quantity",     "Total UG Footage Completed");
-         checkPhase("Strand",      vendorBOMAE,  _aeBom,  dailyAE,  totalAE,  "Strand BOM Quantity", "Total Strand Footage Complete?");
-         checkPhase("Fiber",       vendorBOMFIB, _fibBom, dailyFIB, totalFIB, "Fiber BOM Quantity",  "Total Fiber Footage Complete");
-         checkPhase("NAP",         vendorBOMNAP, _napBom, dailyNAP, totalNAP, "NAP/Encl. BOM Qty.", "Total NAPs Completed");
+         checkPhase("Underground", m.bomUG,  _ugBom,  m.dailyUG,  m.totalUG,  "UG BOM Quantity",     "Total UG Footage Completed");
+         checkPhase("Strand",      m.bomAE,  _aeBom,  m.dailyAE,  m.totalAE,  "Strand BOM Quantity", "Total Strand Footage Complete?");
+         checkPhase("Fiber",       m.bomFIB, _fibBom, m.dailyFIB, m.totalFIB, "Fiber BOM Quantity",  "Total Fiber Footage Complete");
+         checkPhase("NAP",         m.bomNAP, _napBom, m.dailyNAP, m.totalNAP, "NAP/Encl. BOM Qty.", "Total NAPs Completed");
      }
   }
   
@@ -2260,6 +2213,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   const mirrorSheet = ss.getSheetByName(MIRROR_SHEET);
   const styleSheet = ss.getSheetByName(STYLE_MASTER);
   let targetDates = Array.isArray(targetDateStr) ? targetDateStr : [targetDateStr];
+  const historyAdapter = createSchemaAdapter(HISTORY_HEADERS);
 
   /**
    * 🧠 AGGRESSIVE NORMALIZER: Always returns YYYY-MM-DD
@@ -2484,7 +2438,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     let row = mergeData.row;
     let idx = mergeData.archiveIdx;
     let fdhId = _normalizeFdhId(row[fdhIdIdx]);
-    let diag = runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict);
+    let diag = runBennyDiagnostics(row, refDict, vendorDict, inferenceHistoryContext, lkvDict, historyAdapter);
     
     if (mergeData.vendors.size > 1 || (benchmarkDict[fdhId] && benchmarkDict[fdhId].includes("HANDOFF"))) {
         let handoffMatch = benchmarkDict[fdhId] ? benchmarkDict[fdhId].match(/(\d{2}\/\d{2}\/\d{2}): HANDOFF: (.*)/) : null;
@@ -2710,12 +2664,11 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       dailyCols.forEach(col => {
           let idx = HISTORY_HEADERS.indexOf(col);
           if (idx > -1) ghostDiagnosticRow[idx] = (col === "Locates Called In") ? false : 0;
-      });
-      
-      let diag = runBennyDiagnostics(ghostDiagnosticRow, refDict, vendorDict, inferenceHistoryContext, lkvDict);
+          });
 
-      HISTORY_HEADERS.forEach((h, i) => {
-        ghostRowObj[h] = lRow[i];
+          let diag = runBennyDiagnostics(ghostDiagnosticRow, refDict, vendorDict, inferenceHistoryContext, lkvDict, historyAdapter);
+
+          HISTORY_HEADERS.forEach((h, i) => {        ghostRowObj[h] = lRow[i];
       });
       
       let reportDate = parseDateToMidnight(lRow[0]);

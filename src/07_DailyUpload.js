@@ -248,6 +248,7 @@ function _createDailyUploadCsvFileSafely(folder, fileName, csvContent) {
   return _dailyUploadDriveRetry('create pending upload CSV ' + fileName, function() {
     return folder.createFile(fileName, csvContent, MimeType.CSV);
   }, 3, 900);
+}
 // --- UTILITIES ---
 
 function _dailyUploadGetCsvCell(row, adapter, header) {
