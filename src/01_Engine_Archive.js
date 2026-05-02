@@ -1629,7 +1629,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
   let benchmarkDict = buildBenchmarkDictionary(histData, HISTORY_HEADERS, refDict);
   markTiming("benchmarkDictionaryMs", timerStartMs);
   timerStartMs = Date.now();
-  let lkvDict = buildCxLkvDictionary(mirrorSheet);
+  let lkvDict = ReconciliationEngine.buildCxLkvDictionary(mirrorSheet);
   markTiming("cxLkvDictionaryMs", timerStartMs);
   timerStartMs = Date.now();
   let inferenceHistoryContext = buildInferenceHistoryContext(histData, HISTORY_HEADERS);
@@ -1877,7 +1877,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
       ? (refData.canonicalOfsDate || refData.forecastedOFS) 
       : (rowObj["Budget OFS"] || "-");
 
-    let cxResolved = resolveCxDates(fdhId, refData, lkvDict, histData, HISTORY_HEADERS);
+    let cxResolved = ReconciliationEngine.resolveCxDates(fdhId, refData, lkvDict, histData, HISTORY_HEADERS);
     rowObj["CX Start"]    = cxResolved.cxStart;
     rowObj["CX Complete"] = cxResolved.cxComplete;
     rowObj["CX Inferred"] = cxResolved.inferredLabel;
@@ -1966,7 +1966,7 @@ function generateDailyReviewCore(targetDateStr, optionalRefDict = null, isSilent
     const hasHistory = latestReportMap.get(ghostFdhId);
     const hasHandoff = benchmarkDict[ghostFdhId] && benchmarkDict[ghostFdhId].includes("HANDOFF");
 
-    let cxDates = resolveCxDates(ghostFdhId, ref, lkvDict, histData, HISTORY_HEADERS);
+    let cxDates = ReconciliationEngine.resolveCxDates(ghostFdhId, ref, lkvDict, histData, HISTORY_HEADERS);
     const portfolioMeta = _getPortfolioVisibilityMeta({
       stage: ref.stage,
       status: ref.status,
