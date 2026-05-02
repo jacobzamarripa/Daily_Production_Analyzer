@@ -596,56 +596,50 @@ function _buildReferenceConfidenceMeta(input) {
 }
 
 function _createDashboardPayloadFieldAccessors(headers) {
-  headers = Array.isArray(headers) ? headers.map(function(h) { return String(h || ""); }) : [];
-  const getIdx = function(name) { return headers.indexOf(name); };
-  const getIdxByAliases = function(aliases) {
-    return headers.findIndex(function(h) {
-      return aliases.indexOf(String(h || '').trim().toUpperCase()) > -1;
-    });
-  };
+  const adapter = createSchemaAdapter(headers);
+  const getIdx = (name, opts) => adapter.getIdx(name, opts);
 
   return {
     headers: headers,
     getIdx: getIdx,
-    getIdxByAliases: getIdxByAliases,
-    fdhIdx: getIdx("FDH Engineering ID"),
+    fdhIdx: getIdx("FDH"),
     flagsIdx: getIdx("Health Flags"),
     draftIdx: getIdx("Action Required"),
-    vendorIdx: getIdx("Contractor"),
+    vendorIdx: getIdx("CONTRACTOR"),
     statusIdx: getIdx("Status"),
-    cityIdx: getIdx("City"),
-    stageIdx: getIdx("Stage"),
-    ofsIdx: getIdxByAliases(["OFS DATE", "BUDGET OFS"]),
+    cityIdx: getIdx("CITY"),
+    stageIdx: getIdx("STAGE"),
+    ofsIdx: getIdx("OFS"),
     benchIdx: getIdx("Historical Milestones"),
-    dateIdx: getIdx("Date"),
+    dateIdx: getIdx("DATE"),
     targetIdx: getIdx("Target Completion Date"),
     cxStartIdx: getIdx("CX Start"),
-    cxEndIdx: getIdx("CX Complete"),
+    cxEndIdx: getIdx("CX_COMPLETE"),
     cxInferredIdx: getIdx("CX Inferred"),
     summaryIdx: getIdx("Field Production"),
     gapsIdx: getIdx("QB Context & Gaps"),
-    bslsIdx: getIdx("BSLs"),
+    bslsIdx: getIdx("BSL"),
     lightIdx: getIdx("Light to Cabinets"),
     cdIntelIdx: getIdx("CD Intelligence"),
     geminiInsightIdx: getIdx("Gemini Insight"),
     geminiDateIdx: getIdx("Gemini Insight Date"),
-    specXIdx: getIdx("Special Crossings?"),
-    specXDetIdx: headers.indexOf("Special Crossing Details") > -1 ? headers.indexOf("Special Crossing Details") : headers.indexOf("Sepcial Crossings Details"),
-    vcIdx: getIdx("Vendor Comment") > -1 ? getIdx("Vendor Comment") : getIdx("Construction Comments"),
-    drgIdx: getIdxByAliases(["DRG", "DIRECT VENDOR", "DIRECT VENDOR TRACKING", "DRG TRACKER", "DIRECT VENDOR TRACKER"]),
-    drgUrlIdx: getIdxByAliases(["DRG TRACKER URL", "DIRECT VENDOR TRACKER URL", "DRG URL", "DIRECT VENDOR URL", "TRACKER URL"]),
+    specXIdx: getIdx("Special Crossings?", { aliases: ["Xing?"] }),
+    specXDetIdx: getIdx("Special Crossing Details", { aliases: ["Sepcial Crossings Details", "Xing Details"] }),
+    vcIdx: getIdx("COMMENT"),
+    drgIdx: getIdx("DRG"),
+    drgUrlIdx: getIdx("DRG_URL"),
     allVendorsIdx: getIdx("AllVendors"),
     ugTotIdx: getIdx("Total UG Footage Completed"),
-    ugBomIdx: getIdx("UG BOM Quantity"),
+    ugBomIdx: getIdx("BOM_UG"),
     ugDailyIdx: getIdx("Daily UG Footage"),
     aeTotIdx: getIdx("Total Strand Footage Complete?"),
-    aeBomIdx: getIdx("Strand BOM Quantity"),
+    aeBomIdx: getIdx("BOM_AE"),
     aeDailyIdx: getIdx("Daily Strand Footage"),
     fibTotIdx: getIdx("Total Fiber Footage Complete"),
-    fibBomIdx: getIdx("Fiber BOM Quantity"),
+    fibBomIdx: getIdx("BOM_FIB"),
     fibDailyIdx: getIdx("Daily Fiber Footage"),
     napTotIdx: getIdx("Total NAPs Completed"),
-    napBomIdx: getIdx("NAP/Encl. BOM Qty."),
+    napBomIdx: getIdx("BOM_NAP"),
     napDailyIdx: getIdx("Daily NAPs/Encl. Completed")
   };
 }

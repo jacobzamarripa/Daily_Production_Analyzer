@@ -30,6 +30,7 @@
 6. **Mobile GAS Viewport:** Set viewport via `addMetaTag()` in `doGet()`. Use `width=device-width, initial-scale=1, viewport-fit=cover`.
 7. **No Massive Inline CSS:** Never put more than 500 lines of CSS inline in an HTML shell file. GAS `HtmlService` often sanitizes or completely ignores large inline `<style>` blocks. Move core shell styles to a partial like `_styles_glassflow_core.html` and use `<?!= include() ?>`.
 8. **Drive Intake Strategy:** Keep Power Automate -> Google Drive -> timed GAS discovery as the production ingestion path. Do not add webhook complexity just to gain a few seconds of transfer time. If near-real-time detection is ever required, the preferred upgrade path is a small Cloud Run receiver using Google Drive `changes.watch`, filtering by target folder IDs, then triggering the existing GAS import flow.
+9. **Centralized Header Mapping:** Always use `src/01_Engine_SchemaMapper.js` (`createSchemaAdapter`) for any column hunting or aliasing logic. Do not implement local `getIdx` or hardcoded `indexOf` lookups on raw headers. This ensures the app remains resilient to header shifts in external data sources (Sheets, CSVs).
 
 ## Autonomous Web Automation (Agent Loop Pattern)
 To perform multi-step, loop-until-completion web tasks (especially testing the GAS UI or scraping the deployed app):
@@ -43,13 +44,14 @@ To perform multi-step, loop-until-completion web tasks (especially testing the G
 4. **Mobile Emulation:** The template natively emulates an iPhone 13 and pierces the inner `script.googleusercontent.com` iframe required for GAS Web Apps.
 
 ## File Map (Lean Version 2026)
-> Last updated: March 26, 2026
+> Last updated: May 2, 2026
 
 ### Core Backend
 | File | Role |
 |---|---|
 | `00_Config.js` | Global constants, sheet names, shared backend primitives. |
 | `01_Engine.js` | Daily review engine, archive parsing, source of truth for flags. |
+| `01_Engine_SchemaMapper.js` | Centralized header mapping, aliasing, and column hunting logic. |
 | `02_Utilities.js` | GAS entrypoints, `doGet()` routing, web-app bridges. |
 | `03_Analytics.js` | Historical benchmark and milestone timeline generation. |
 | `05_CDAnalyzer.js` | Gemini/CD analysis workflows. |
