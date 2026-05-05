@@ -2271,4 +2271,119 @@ function _duBuildVendorOptions() {
     return '<option value="' + _duEsc(v) + '"' + (_duFilterVendor === v ? ' selected' : '') + '>' + _duEsc(v) + '</option>';
   })).join('');
 }
+
+// --- AUDIT LOG TAB ---
+
+var _duActiveTab = 'pipeline';
+
+function _duSwitchTab(tab) {
+  _duActiveTab = tab;
+  var pipelinePanel = document.getElementById('du-panel-pipeline');
+  var auditPanel    = document.getElementById('du-panel-audit');
+  var pipelineBtn   = document.getElementById('upload-tab-pipeline');
+  var auditBtn      = document.getElementById('upload-tab-audit');
+  var queueShell    = document.querySelector('.upload-queue-shell');
+
+  if (tab === 'audit') {
+    if (pipelinePanel) pipelinePanel.style.display = 'none';
+    if (auditPanel)    auditPanel.style.display = '';
+    if (queueShell)    queueShell.style.display = 'none';
+    if (pipelineBtn)   pipelineBtn.classList.remove('active');
+    if (auditBtn)      auditBtn.classList.add('active');
+    _duLoadAuditLog();
+  } else {
+    if (pipelinePanel) pipelinePanel.style.display = '';
+    if (auditPanel)    auditPanel.style.display = 'none';
+    if (queueShell)    queueShell.style.display = '';
+    if (pipelineBtn)   pipelineBtn.classList.add('active');
+    if (auditBtn)      auditBtn.classList.remove('active');
+  }
+}
+
+function _duLoadAuditLog() {
+  var tbody = document.getElementById('du-audit-tbody');
+  var meta  = document.getElementById('du-audit-meta');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="du-audit-empty">Loading…</td></tr>';
+  if (meta)  meta.textContent = 'Loading…';
+
+  google.script.run
+    .withSuccessHandler(function(rows) {
+      _duRenderAuditLog(rows);
+    })
+    .withFailureHandler(function(err) {
+      var tbody2 = document.getElementById('du-audit-tbody');
+      if (tbody2) tbody2.innerHTML = '<tr><td colspan="10" class="du-audit-empty du-audit-error">Failed to load: ' + _duEsc(err.message || String(err)) + '</td></tr>';
+      var meta2 = document.getElementById('du-audit-meta');
+      if (meta2) meta2.textContent = 'Error loading audit log.';
+    })
+    .getUploadAuditLog();
+}
+
+function _duRenderAuditLog(rows) {
+  var tbody = document.getElementById('du-audit-tbody');
+  var meta  = document.getElementById('du-audit-meta');
+  var badge = document.getElementById('upload-audit-badge');
+
+  if (!tbody) return;
+
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" class="du-audit-empty">No unreviewed runs in the last 7 days.</td></tr>';
+    if (meta)  meta.textContent = '0 runs';
+    if (badge) { badge.textContent = '0'; badge.hidden = true; }
+    return;
+  }
+
+  var failCount = rows.filter(function(r) { return r['Status'] === 'Fail' && !r['Reviewed']; }).length;
+  if (badge) { badge.textContent = failCount; badge.hidden = failCount === 0; }
+  if (meta)  meta.textContent = rows.length + ' run' + (rows.length === 1 ? '' : 's') + (failCount ? ' — ' + failCount + ' failed' : '');
+
+  var html = rows.map(function(r) {
+    var isFail = r['Status'] === 'Fail';
+    var ts = r['Timestamp'] ? new Date(r['Timestamp']).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '—';
+    var sourceLbl = { webhook: 'Webhook', scheduled: 'Scheduled', manual: 'Manual' }[r['Source']] || r['Source'] || '—';
+    return '<tr>' +
+      '<td>' + _duEsc(ts) + '</td>' +
+      '<td><span class="du-audit-source du-audit-source--' + _duEsc(r['Source'] || '') + '">' + _duEsc(sourceLbl) + '</span></td>' +
+      '<td><span class="du-audit-chip ' + (isFail ? 'du-audit-chip--fail' : 'du-audit-chip--pass') + '">' + _duEsc(r['Status'] || '—') + '</span></td>' +
+      '<td>' + _duEsc(String(r['Uploaded'] || 0)) + '</td>' +
+      '<td>' + _duEsc(String(r['Duplicates'] || 0)) + '</td>' +
+      '<td>' + _duEsc(String(r['Failed'] || 0)) + '</td>' +
+      '<td class="du-audit-vendors">' + _duEsc(r['Vendor(s)'] || '—') + '</td>' +
+      '<td>' + _duEsc(r['Date(s)'] || '—') + '</td>' +
+      '<td class="du-audit-batch">' + _duEsc(r['Batch ID'] || '—') + '</td>' +
+      '<td>' + (r['Reviewed'] === 'Y' ? '<span class="du-audit-reviewed">Reviewed</span>' :
+        '<button class="upload-btn btn-ghost du-audit-review-btn" onclick="_duMarkAuditReviewed(' + JSON.stringify(r['Run ID']) + ', this)">Mark Reviewed</button>') + '</td>' +
+      '</tr>';
+  }).join('');
+
+  tbody.innerHTML = html;
+}
+
+function _duMarkAuditReviewed(runId, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res && res.ok) {
+        var row = btn && btn.closest('tr');
+        if (row) row.remove();
+        // Re-count fails for badge
+        var remaining = document.querySelectorAll('#du-audit-tbody .du-audit-chip--fail');
+        var badge = document.getElementById('upload-audit-badge');
+        if (badge) { badge.textContent = remaining.length; badge.hidden = remaining.length === 0; }
+        var meta = document.getElementById('du-audit-meta');
+        if (meta) {
+          var totalRows = document.querySelectorAll('#du-audit-tbody tr:not(.upload-table-message-row)').length;
+          meta.textContent = totalRows + ' run' + (totalRows === 1 ? '' : 's') + (remaining.length ? ' — ' + remaining.length + ' failed' : '');
+        }
+      } else {
+        if (btn) { btn.disabled = false; btn.textContent = 'Mark Reviewed'; }
+        showToast('Could not mark as reviewed: ' + ((res && res.error) || 'unknown'), 'error');
+      }
+    })
+    .withFailureHandler(function(err) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Mark Reviewed'; }
+      showToast('Error: ' + (err.message || err), 'error');
+    })
+    .markAuditRowReviewed(runId);
+}
 </script>

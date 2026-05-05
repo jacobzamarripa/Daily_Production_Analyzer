@@ -1043,6 +1043,20 @@
           </div>
         </div>
 
+        <!-- Upload Tab Bar -->
+        <div class="upload-tab-bar">
+          <div class="upload-tab-trough">
+            <button class="upload-tab-btn active" id="upload-tab-pipeline" onclick="_duSwitchTab('pipeline')">PIPELINE</button>
+            <button class="upload-tab-btn" id="upload-tab-audit" onclick="_duSwitchTab('audit')">
+              AUDIT LOG
+              <span class="upload-tab-badge" id="upload-audit-badge" hidden>0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pipeline Panel -->
+        <div id="du-panel-pipeline">
+
         <div class="upload-pipeline-row">
 
           <!-- Step 1 -->
@@ -1129,8 +1143,39 @@
             </div>
           </section>
 
-        </div>
-      </div>
+        </div><!-- /.upload-pipeline-row -->
+        </div><!-- /#du-panel-pipeline -->
+
+        <!-- Audit Log Panel -->
+        <div id="du-panel-audit" style="display:none;">
+          <div class="du-audit-toolbar">
+            <span class="du-audit-meta" id="du-audit-meta">Loading…</span>
+            <button class="upload-btn btn-ghost" type="button" onclick="_duLoadAuditLog()" title="Refresh audit log">Refresh</button>
+          </div>
+          <div class="du-audit-table-wrap">
+            <table class="du-audit-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                  <th>Uploaded</th>
+                  <th>Dupes</th>
+                  <th>Failed</th>
+                  <th>Vendor(s)</th>
+                  <th>Date(s)</th>
+                  <th>Batch ID</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="du-audit-tbody">
+                <tr><td colspan="10" class="du-audit-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div><!-- /#du-panel-audit -->
+
+      </div><!-- /.upload-shell -->
 
       <section class="upload-queue-shell">
         <div class="upload-queue-head">

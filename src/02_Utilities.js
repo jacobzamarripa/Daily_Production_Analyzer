@@ -268,6 +268,23 @@ function onOpen() {
 }
 
 function doGet(e) {
+  // Intake trigger path: Power Automate "Upload file from URL" (Standard connector) hits this
+  // with ?action=intake&secret=<WEBHOOK_SECRET>. Return plain text so PA can save the tiny
+  // response as /temp/intake_trigger.txt without breaking anything.
+  if (e && e.parameter && e.parameter.action === 'intake') {
+    const expected = PropertiesService.getScriptProperties().getProperty('WEBHOOK_SECRET') || '';
+    if (!expected || e.parameter.secret !== expected) {
+      logMsg('[Webhook] Unauthorized GET intake attempt — secret mismatch.');
+      return ContentService.createTextOutput('unauthorized');
+    }
+    _listProjectTriggersByHandler_('runWebhookIntakePipeline').forEach(function(t) {
+      ScriptApp.deleteTrigger(t);
+    });
+    ScriptApp.newTrigger('runWebhookIntakePipeline').timeBased().after(1000).create();
+    logMsg('[Webhook] GET intake received — runWebhookIntakePipeline scheduled.');
+    return ContentService.createTextOutput('ok');
+  }
+
   // Mobile shell routing:
   // `WebApp` remains the shared desktop shell.
   // `GlassFlow` is the active mobile shell and is addressable via `?v=GlassFlow`.
@@ -286,6 +303,59 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
 }
 
+
+/**
+ * Webhook endpoint for Power Automate. PA calls this immediately after depositing a
+ * production CSV into Google Drive. Validates a shared secret stored in Script Properties
+ * (key: WEBHOOK_SECRET), then schedules runWebhookIntakePipeline() 1 second later.
+ *
+ * Power Automate action: HTTP POST, body = { "secret": "<value>", "event": "file_deposited" }
+ */
+function doPost(e) {
+  const out = ContentService.createTextOutput;
+  const json = function(obj) {
+    return out(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+  };
+
+  try {
+    const payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    const expected = PropertiesService.getScriptProperties().getProperty('WEBHOOK_SECRET') || '';
+
+    if (!expected || payload.secret !== expected) {
+      logMsg('[Webhook] Unauthorized POST attempt — secret mismatch.');
+      return json({ ok: false, error: 'unauthorized' });
+    }
+
+    // Remove any stale pending-intake triggers to prevent pile-up
+    _listProjectTriggersByHandler_('runWebhookIntakePipeline').forEach(function(t) {
+      ScriptApp.deleteTrigger(t);
+    });
+
+    ScriptApp.newTrigger('runWebhookIntakePipeline')
+      .timeBased().after(1000).create();
+
+    logMsg('[Webhook] file_deposited received — runWebhookIntakePipeline scheduled.');
+    return json({ ok: true, triggered: true });
+  } catch (err) {
+    logMsg('[Webhook] doPost error: ' + err.message);
+    return json({ ok: false, error: err.message });
+  }
+}
+
+/**
+ * Runs immediately after a PA webhook fires. Ingests any new CSVs from Drive,
+ * then auto-uploads pending records to QB.
+ */
+function runWebhookIntakePipeline() {
+  logMsg('[Webhook] runWebhookIntakePipeline started.');
+  try {
+    processIncomingForQuickBase(true);
+    uploadPendingRecordsAuto('webhook');
+    logMsg('[Webhook] runWebhookIntakePipeline complete.');
+  } catch (err) {
+    logMsg('[Webhook] runWebhookIntakePipeline error: ' + err.message);
+  }
+}
 
 function logFrontendError(errorMsg) {
   logMsg("💻 WEB APP CRASH: " + errorMsg);
@@ -1542,6 +1612,11 @@ function executeDailyAutomationPipeline() {
   
   // 🔍 Run Gap Scan to backfill any missing reports for the last 7 days
   backfillMissingReports(true);
+
+  // 📤 Auto-upload any pending QB records (safety-net path for scheduled runs)
+  if (ENABLE_AUTO_DAILY_UPLOAD) {
+    uploadPendingRecordsAuto('scheduled');
+  }
 
   const resumeTriggerCount = _listProjectTriggersByHandler_('processIncomingResume').length;
   return {

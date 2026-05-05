@@ -89,10 +89,12 @@ const DEFAULT_CITY_COORDS = {
 // --- DAILY UPLOAD ---
 const QB_DAILY_LOG_TABLE_ID    = "bvay4aqkz";   // Daily Work Log table in QB
 const UPLOAD_LOG_SHEET         = "11-Upload_Log";
-const ENABLE_AUTO_DAILY_UPLOAD = false;          // Automation gate — off until explicitly flipped
+const ENABLE_AUTO_DAILY_UPLOAD      = true;           // Auto-upload enabled — webhook + scheduled fallback
 const DAILY_UPLOAD_SOURCE_FOLDER_ID = COMPILED_FOLDER_ID;
 const DAILY_UPLOAD_STAGE_SHEET      = "12-Upload_Staging";
 const ALIAS_SHEET                   = "13-Vendor_Aliases";
+const UPLOAD_AUDIT_SHEET            = "14-Upload_Audit"; // Auto-upload run audit log (7-day rolling)
+// WEBHOOK_SECRET — stored in Script Properties only, never hardcoded
 
 // Hardcoded FID map for bvay4aqkz — keyed by QB_HEADERS column name.
 // "FDH Engineering ID" → FID 22 ("FDH Project Engineering ID" in QB)

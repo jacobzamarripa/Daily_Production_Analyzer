@@ -2324,21 +2324,28 @@ function draftMissingReportEmail(vendor, dateStr, activeFdhs) {
   return { subject: subject, body: body };
 }
 
-// --- AUTOMATION STUB (NOT ACTIVE) ---
+// --- AUTO-UPLOAD ---
 
 /**
- * Automation entry point — called by time-trigger when ENABLE_AUTO_DAILY_UPLOAD = true.
- * Currently a no-op stub. Flip the constant and wire a trigger to activate.
+ * Auto-upload entry point. Called by webhook trigger or daily scheduled pipeline.
+ * @param {string} [source] - 'webhook' | 'scheduled' | 'manual'
  */
-function uploadPendingRecordsAuto() {
+function uploadPendingRecordsAuto(source) {
+  source = source || 'scheduled';
+
   if (!ENABLE_AUTO_DAILY_UPLOAD) {
-    logMsg('[DailyUpload] Auto-upload is disabled. Set ENABLE_AUTO_DAILY_UPLOAD = true to activate.');
+    logMsg('[DailyUpload] Auto-upload is disabled (ENABLE_AUTO_DAILY_UPLOAD=false).');
     return;
   }
 
   const queue = getDailyUploadQueue();
   const pending = queue.filter(function(r) { return r.uploadStatus === UPLOAD_STATUS.PENDING; });
-  if (pending.length === 0) { logMsg('[DailyUpload] Auto-upload: no pending rows.'); return; }
+
+  if (pending.length === 0) {
+    logMsg('[DailyUpload] Auto-upload (' + source + '): no pending rows.');
+    _writeUploadAuditRow({ batchId: null, success: 0, failed: 0, duplicates: 0, results: [] }, source, pending);
+    return;
+  }
 
   const rowIndices = pending.map(function(r) { return r.rowIdx; });
   const result = uploadDailyRecordsToQB(rowIndices, {
@@ -2346,19 +2353,171 @@ function uploadPendingRecordsAuto() {
     skipDuplicates: true
   });
 
-  const summary = '[DailyUpload] Auto-upload complete — Success: ' + result.success +
+  const summary = '[DailyUpload] Auto-upload (' + source + ') — Uploaded: ' + result.success +
     ' | Failed: ' + result.failed + ' | Dupes: ' + result.duplicates;
   logMsg(summary);
 
-  if (result.failed > 0) {
-    MailApp.sendEmail({
-      to: 'jacobzamarripa@gmail.com',
-      subject: '[OMNISIGHT] Auto-Upload Failures — ' + result.failed + ' row(s)',
-      body: summary + '\n\nFailed rows:\n' +
-        result.results.filter(function(r) { return r.status === 'failed'; })
-                      .map(function(r) { return 'Row ' + r.rowIdx + ': ' + r.error; })
-                      .join('\n')
-    });
+  _writeUploadAuditRow(result, source, pending);
+  _sendAutoUploadAuditEmail(result, source, pending);
+}
+
+function _sendAutoUploadAuditEmail(result, source, pending) {
+  const dateLabel = Utilities.formatDate(new Date(), 'GMT-5', 'yyyy-MM-dd');
+  const status = result.failed > 0 ? 'FAIL' : 'PASS';
+  const vendors = _unique_(pending.map(function(r) { return r['Contractor'] || r.contractor || ''; })
+                                  .filter(Boolean)).join(', ') || '—';
+  const dates   = _unique_(pending.map(function(r) {
+    const d = r['Date'] || r.date || '';
+    if (!d) return '';
+    try { return Utilities.formatDate(new Date(d), 'GMT-5', 'MM/dd'); } catch(e) { return String(d); }
+  }).filter(Boolean)).join(', ') || '—';
+
+  const subject = '[OmniSight] Auto-Upload [' + status + '] — ' +
+    result.success + ' uploaded, ' + result.duplicates + ' dupes, ' + result.failed + ' failed' +
+    ' (' + dateLabel + ') [' + source + ']';
+
+  const failedLines = result.failed > 0
+    ? '\nFailed rows:\n' + result.results.filter(function(r) { return r.status === 'failed'; })
+        .map(function(r) { return '  Row ' + r.rowIdx + ': ' + (r.error || r.reason || 'unknown error'); })
+        .join('\n')
+    : '';
+
+  const body = [
+    'Auto-Upload Run Summary',
+    '======================',
+    'Date: ' + dateLabel,
+    'Source: ' + source,
+    'Vendor(s): ' + vendors,
+    'Report date(s): ' + dates,
+    'Batch ID: ' + (result.batchId || '—'),
+    '',
+    'Status:     ' + status,
+    'Uploaded:   ' + result.success,
+    'Duplicates: ' + result.duplicates,
+    'Failed:     ' + result.failed,
+    failedLines
+  ].join('\n');
+
+  MailApp.sendEmail({ to: 'jacobzamarripa@gmail.com', subject: subject, body: body });
+}
+
+// Deduplicate an array of primitives.
+function _unique_(arr) {
+  var seen = {};
+  return arr.filter(function(v) { return v && !seen[v] && (seen[v] = true); });
+}
+
+/**
+ * Appends one row to 14-Upload_Audit after every auto-upload run.
+ * Auto-creates the sheet with a frozen header row on first write.
+ */
+function _writeUploadAuditRow(result, source, pending) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(UPLOAD_AUDIT_SHEET);
+    if (!sheet) {
+      sheet = ss.insertSheet(UPLOAD_AUDIT_SHEET);
+      sheet.appendRow(['Run ID', 'Timestamp', 'Source', 'Status',
+                       'Uploaded', 'Duplicates', 'Failed',
+                       'Vendor(s)', 'Date(s)', 'Batch ID', 'Reviewed']);
+      sheet.setFrozenRows(1);
+      sheet.getRange('1:1').setBackground('#0f172a').setFontColor('white').setFontWeight('bold');
+    }
+
+    const runId   = 'AUD-' + new Date().getTime();
+    const ts      = new Date().toISOString();
+    const status  = (result.failed || 0) > 0 ? 'Fail' : 'Pass';
+    const vendors = pending && pending.length
+      ? _unique_(pending.map(function(r) { return r['Contractor'] || r.contractor || ''; }).filter(Boolean)).join(', ')
+      : '—';
+    const dates   = pending && pending.length
+      ? _unique_(pending.map(function(r) {
+          const d = r['Date'] || r.date || '';
+          if (!d) return '';
+          try { return Utilities.formatDate(new Date(d), 'GMT-5', 'yyyy-MM-dd'); } catch(e) { return String(d); }
+        }).filter(Boolean)).join(', ')
+      : '—';
+
+    sheet.appendRow([
+      runId, ts, source, status,
+      result.success   || 0,
+      result.duplicates|| 0,
+      result.failed    || 0,
+      vendors, dates,
+      result.batchId   || '',
+      ''  // Reviewed — blank until user marks it
+    ]);
+  } catch (e) {
+    logMsg('[DailyUpload] _writeUploadAuditRow error: ' + e.message);
+  }
+}
+
+/**
+ * Frontend bridge: returns audit rows for the last 7 days.
+ * Prunes rows that are both > 7 days old AND Reviewed = "Y".
+ * Hard cap: keeps at most 500 rows total.
+ */
+function getUploadAuditLog() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(UPLOAD_AUDIT_SHEET);
+    if (!sheet) return [];
+
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return [];
+
+    const headers = data[0];
+    const now = new Date();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const rowsToPrune = [];
+    const rows = [];
+
+    for (var i = 1; i < data.length; i++) {
+      const row = data[i];
+      const ts  = row[1] ? new Date(row[1]) : null;
+      const reviewed = (row[10] || '').toString().trim().toUpperCase();
+      const isOld = ts && (now - ts) > sevenDaysMs;
+
+      if (isOld && reviewed === 'Y') {
+        rowsToPrune.push(i + 1); // 1-indexed sheet row
+        continue;
+      }
+      const obj = {};
+      headers.forEach(function(h, j) { obj[h] = row[j]; });
+      rows.push(obj);
+    }
+
+    // Prune from bottom to top to keep indices stable
+    for (var p = rowsToPrune.length - 1; p >= 0; p--) {
+      sheet.deleteRow(rowsToPrune[p]);
+    }
+
+    return rows.slice(-500); // safety cap
+  } catch (e) {
+    logMsg('[DailyUpload] getUploadAuditLog error: ' + e.message);
+    return [];
+  }
+}
+
+/**
+ * Frontend bridge: marks a single audit row as reviewed by Run ID.
+ */
+function markAuditRowReviewed(runId) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(UPLOAD_AUDIT_SHEET);
+    if (!sheet) return { ok: false, error: 'Audit sheet not found' };
+
+    const data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === String(runId)) {
+        sheet.getRange(i + 1, 11).setValue('Y'); // col 11 = Reviewed
+        return { ok: true };
+      }
+    }
+    return { ok: false, error: 'Run ID not found: ' + runId };
+  } catch (e) {
+    return { ok: false, error: e.message };
   }
 }
 
