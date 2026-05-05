@@ -1039,22 +1039,11 @@
                 <div class="upload-kpi-chip kpi-failed"><span class="upload-kpi-label">Failed</span><span class="upload-kpi-value">—</span></div>
               </div>
             </div>
+            <div class="upload-view-toggle">
+              <button class="upload-view-btn active" id="upload-tab-pipeline" onclick="_duSwitchTab('pipeline')">PIPELINE</button>
+              <button class="upload-view-btn" id="upload-tab-audit" onclick="_duSwitchTab('audit')">HISTORY <span class="upload-tab-badge" id="upload-audit-badge" hidden>0</span></button>
+            </div>
             <div class="upload-overview-meta" id="upload-last-sync" aria-live="polite">Refreshing intake…</div>
-          </div>
-        </div>
-
-        <!-- Upload Tab Bar -->
-        <div class="upload-tab-bar">
-          <div class="upload-tab-trough">
-            <button class="upload-tab-btn active" id="upload-tab-pipeline" onclick="_duSwitchTab('pipeline')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
-              PIPELINE
-            </button>
-            <button class="upload-tab-btn" id="upload-tab-audit" onclick="_duSwitchTab('audit')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              BATCH HISTORY
-              <span class="upload-tab-badge" id="upload-audit-badge" hidden>0</span>
-            </button>
           </div>
         </div>
 
@@ -1178,12 +1167,24 @@
             </table>
           </div>
 
-          <!-- Batch History section -->
-          <div class="du-batchhist-heading">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            <span>BATCH UPLOAD LOG</span>
+          <!-- Batch Upload Log section -->
+          <div class="du-batchhist-heading">BATCH UPLOAD LOG</div>
+          <div class="du-audit-table-wrap">
+            <table class="du-audit-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Batch ID</th>
+                  <th>Type</th>
+                  <th>Rows</th>
+                  <th>Uploaded</th>
+                  <th>Failed</th>
+                  <th>Skipped</th>
+                </tr>
+              </thead>
+              <tbody id="upload-history-list"></tbody>
+            </table>
           </div>
-          <div class="upload-history-list" id="upload-history-list"></div>
 
         </div><!-- /#du-panel-audit -->
 

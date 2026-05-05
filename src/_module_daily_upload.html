@@ -1715,7 +1715,7 @@ function _duRenderHistory() {
   var el = document.getElementById('upload-history-list');
   if (!el) return;
   if (_duHistory.length === 0) {
-    el.innerHTML = '<div class="upload-history-empty">No upload history yet.</div>';
+    el.innerHTML = '<tr><td colspan="7" class="du-audit-empty">No upload history yet.</td></tr>';
     return;
   }
 
@@ -1724,20 +1724,19 @@ function _duRenderHistory() {
     var batchId = row['Batch ID'] || '';
     var isDry = row['Dry Run?'] === 'YES';
     var success = row['Success'] || 0;
-    var failed = row['Failed'] || 0;
-    var skipped = row['Skipped'] || 0;
+    var failed = Number(row['Failed'] || 0);
+    var skipped = Number(row['Skipped'] || 0);
     var rowCount = row['Row Count'] || 0;
-    return '<div class="upload-history-row">' +
-      '<span class="upload-history-ts">' + _duEsc(ts.toString().substring(0, 16)) + '</span>' +
-      (isDry ? '<span class="upload-history-dry-badge">Dry Run</span>' : '') +
-      '<div class="upload-history-counts">' +
-        '<span class="upload-history-count">' + _duEsc(rowCount) + ' rows</span>' +
-        '<span class="upload-history-count success">' + _duEsc(success) + ' uploaded</span>' +
-        (failed > 0 ? '<span class="upload-history-count failed">' + _duEsc(failed) + ' failed</span>' : '') +
-        (skipped > 0 ? '<span class="upload-history-count skipped">' + _duEsc(skipped) + ' skipped</span>' : '') +
-      '</div>' +
-      '<span class="upload-history-batch">' + _duEsc(batchId) + '</span>' +
-    '</div>';
+    var tsFormatted = ts ? new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }) : '—';
+    return '<tr>' +
+      '<td>' + _duEsc(tsFormatted) + '</td>' +
+      '<td class="du-audit-batch">' + _duEsc(batchId) + '</td>' +
+      '<td>' + (isDry ? '<span class="upload-history-dry-badge">Dry Run</span>' : '<span class="du-audit-source du-audit-source--scheduled">Live</span>') + '</td>' +
+      '<td>' + _duEsc(String(rowCount)) + '</td>' +
+      '<td style="color:#16a34a;font-weight:700;">' + _duEsc(String(success)) + '</td>' +
+      '<td>' + (failed > 0 ? '<span style="color:#dc2626;font-weight:700;">' + _duEsc(String(failed)) + '</span>' : '<span style="color:var(--text-muted)">0</span>') + '</td>' +
+      '<td>' + (skipped > 0 ? '<span style="color:#d97706;font-weight:700;">' + _duEsc(String(skipped)) + '</span>' : '<span style="color:var(--text-muted)">0</span>') + '</td>' +
+    '</tr>';
   }).join('');
 }
 
