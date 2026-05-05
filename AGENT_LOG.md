@@ -1,5 +1,16 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-05-05: Daily Upload intake poller added
+- **Branch:** `fix/daily-upload-poller`.
+- **Goal:** Reduce Daily Upload intake latency without relying on Power Automate premium HTTP webhooks.
+- **Changes:**
+  - Added a lightweight `runIntakePoller()` trigger path that checks `Production_Incoming` every 5 minutes from 7AM-4PM script time.
+  - Updated full app automation sync windows to 8AM, 11AM, 2PM, and 4PM.
+  - Kept the heavy app sync path in `runMiddayAutomation()` while limiting the poller to changed-folder ingestion plus Daily Upload auto-upload.
+  - Extended automation health summaries with intake poller trigger/status fields.
+  - Updated `scripts/validate-sync-hotpaths.js` for the new trigger schedule and corrected the stale SIGNAL Drive cooldown assertion to the current Drive v2 key.
+- **Verification:** `node scripts/validate-sync-hotpaths.js`, `node scripts/validate-daily-upload-stability.js`, backend parse check for `src/00_Config.js`, `src/02_Utilities.js`, `src/07_DailyUpload.js`.
+
 > [!success] 2026-05-01: Production Auditor Shadow Mode Integrated (WS28)
 - **Goal:** Safely integrate the new `ProductionAuditor` module for live validation.
 - **Changes:**

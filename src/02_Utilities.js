@@ -1500,6 +1500,7 @@ function _readJsonScriptProperty_(props, key) {
 
 function _buildAutomationHealthSummary_(health) {
   const daily = health && health.dailyAutomation ? health.dailyAutomation : {};
+  const poller = health && health.intakePoller ? health.intakePoller : {};
   const qb = health && health.qbSync ? health.qbSync : {};
   const archive = health && health.archiveIngestion ? health.archiveIngestion : {};
   const cd = health && health.cdIngestion ? health.cdIngestion : {};
@@ -1508,6 +1509,8 @@ function _buildAutomationHealthSummary_(health) {
   return [
     'daily=' + (daily.lastStatus || 'unknown'),
     'dailyTriggers=' + String(daily.triggerCount == null ? '?' : daily.triggerCount) + '/' + String(daily.expectedTriggerCount == null ? '?' : daily.expectedTriggerCount),
+    'intake=' + (poller.lastStatus || 'unknown'),
+    'intakeTriggers=' + String(poller.triggerCount == null ? '?' : poller.triggerCount) + '/' + String(poller.expectedTriggerCount == null ? '?' : poller.expectedTriggerCount),
     'qbActive=' + (qb.activeStatus || 'idle'),
     'qbLast=' + (qb.lastStatus || 'none'),
     'resume=' + String(archive.resumeTriggerCount == null ? '?' : archive.resumeTriggerCount),
@@ -1528,22 +1531,133 @@ function logAutomationHealthSummary(contextLabel) {
 function setupDailyTrigger() {
   const props = PropertiesService.getScriptProperties();
   const deletedTriggerCount = _deleteProjectTriggersByHandler_('runMiddayAutomation');
-  const scheduleHours = [7, 12, 16];
+  const deletedPollerTriggerCount = _deleteProjectTriggersByHandler_('runIntakePoller');
+  const scheduleHours = [8, 11, 14, 16];
 
-  // 3 Data Sync Windows (7am, 12pm, 4pm)
+  // Full app sync windows (8am, 11am, 2pm, 4pm)
   scheduleHours.forEach(hour => {
     ScriptApp.newTrigger('runMiddayAutomation').timeBased().atHour(hour).everyDays(1).create();
   });
 
+  ScriptApp.newTrigger('runIntakePoller')
+    .timeBased()
+    .everyMinutes(INTAKE_POLLER_INTERVAL_MINUTES)
+    .create();
+
   const createdTriggerCount = _listProjectTriggersByHandler_('runMiddayAutomation').length;
+  const createdPollerTriggerCount = _listProjectTriggersByHandler_('runIntakePoller').length;
   props.setProperties({
     'DAILY_AUTOMATION_TRIGGER_INSTALLED_AT': String(Date.now()),
     'DAILY_AUTOMATION_TRIGGER_HOURS': scheduleHours.join(','),
-    'DAILY_AUTOMATION_TRIGGER_COUNT': String(createdTriggerCount)
+    'DAILY_AUTOMATION_TRIGGER_COUNT': String(createdTriggerCount),
+    'INTAKE_POLLER_TRIGGER_INSTALLED_AT': String(Date.now()),
+    'INTAKE_POLLER_INTERVAL_MINUTES': String(INTAKE_POLLER_INTERVAL_MINUTES),
+    'INTAKE_POLLER_TRIGGER_COUNT': String(createdPollerTriggerCount)
   });
 
-  logMsg("✅ SIGNAL: Automatic sync triggers programmed for 7am, 12pm, 4pm. deleted=" + deletedTriggerCount + ", active=" + createdTriggerCount);
-  SpreadsheetApp.getUi().alert("✅ Daily Automations Updated: Syncs at 7AM, 12PM, 4PM.");
+  logMsg("✅ SIGNAL: Automatic sync triggers programmed for 8am, 11am, 2pm, 4pm. dailyDeleted=" + deletedTriggerCount + ", dailyActive=" + createdTriggerCount + ", pollerDeleted=" + deletedPollerTriggerCount + ", pollerActive=" + createdPollerTriggerCount);
+  SpreadsheetApp.getUi().alert("✅ Daily Automations Updated: Full syncs at 8AM, 11AM, 2PM, 4PM. Intake polling every " + INTAKE_POLLER_INTERVAL_MINUTES + " minutes from 7AM-4PM.");
+}
+
+function _isIntakePollerActiveWindow_(now) {
+  const current = now || new Date();
+  const tz = Session.getScriptTimeZone();
+  const hour = parseInt(Utilities.formatDate(current, tz, 'H'), 10);
+  return hour >= INTAKE_POLLER_ACTIVE_START_HOUR && hour <= INTAKE_POLLER_ACTIVE_END_HOUR;
+}
+
+function _buildIntakeFolderFingerprint_() {
+  const folder = DriveApp.getFolderById(REFERENCE_FOLDER_ID);
+  const files = folder.getFiles();
+  const parts = [];
+  let count = 0;
+
+  while (files.hasNext()) {
+    const file = files.next();
+    count++;
+    parts.push([
+      file.getId(),
+      file.getName(),
+      file.getLastUpdated().getTime()
+    ].join('|'));
+  }
+
+  parts.sort();
+  return {
+    count: count,
+    fingerprint: parts.join('\n')
+  };
+}
+
+function runIntakePoller() {
+  const props = PropertiesService.getScriptProperties();
+  const startedAt = Date.now();
+  props.setProperties({
+    'INTAKE_POLLER_LAST_STARTED_AT': String(startedAt),
+    'INTAKE_POLLER_LAST_ERROR': ''
+  });
+
+  try {
+    if (!_isIntakePollerActiveWindow_(new Date(startedAt))) {
+      props.setProperty('INTAKE_POLLER_LAST_STATUS', 'outside_window');
+      logMsg('[IntakePoller] skipped outside active window.');
+      return { status: 'outside_window' };
+    }
+
+    if (props.getProperty('INGESTION_IN_PROGRESS') === 'true') {
+      props.setProperty('INTAKE_POLLER_LAST_STATUS', 'ingestion_busy');
+      logMsg('[IntakePoller] skipped because ingestion is already running.');
+      return { status: 'ingestion_busy' };
+    }
+
+    const scan = _buildIntakeFolderFingerprint_();
+    const previousFingerprint = props.getProperty('INTAKE_POLLER_LAST_FINGERPRINT') || '';
+
+    if (scan.count === 0) {
+      props.setProperties({
+        'INTAKE_POLLER_LAST_STATUS': 'empty',
+        'INTAKE_POLLER_LAST_FINGERPRINT': scan.fingerprint,
+        'INTAKE_POLLER_LAST_COMPLETED_AT': String(Date.now())
+      });
+      logMsg('[IntakePoller] no files in Production_Incoming.');
+      return { status: 'empty', fileCount: 0 };
+    }
+
+    if (scan.fingerprint === previousFingerprint) {
+      props.setProperties({
+        'INTAKE_POLLER_LAST_STATUS': 'unchanged',
+        'INTAKE_POLLER_LAST_COMPLETED_AT': String(Date.now())
+      });
+      logMsg('[IntakePoller] no intake changes. fileCount=' + scan.count);
+      return { status: 'unchanged', fileCount: scan.count };
+    }
+
+    props.setProperty('INTAKE_POLLER_LAST_STATUS', 'processing');
+    logMsg('[IntakePoller] intake change detected. fileCount=' + scan.count + '. Running ingestion + Daily Upload.');
+    processIncomingForQuickBase(true, false);
+
+    if (ENABLE_AUTO_DAILY_UPLOAD) {
+      uploadPendingRecordsAuto('poller');
+    }
+
+    props.setProperties({
+      'INTAKE_POLLER_LAST_STATUS': 'processed',
+      'INTAKE_POLLER_LAST_PROCESSED_AT': String(Date.now()),
+      'INTAKE_POLLER_LAST_COMPLETED_AT': String(Date.now()),
+      'INTAKE_POLLER_LAST_FILE_COUNT': String(scan.count),
+      'INTAKE_POLLER_LAST_FINGERPRINT': scan.fingerprint
+    });
+    logMsg('[IntakePoller] complete. fileCount=' + scan.count);
+    return { status: 'processed', fileCount: scan.count };
+  } catch (err) {
+    props.setProperties({
+      'INTAKE_POLLER_LAST_STATUS': 'error',
+      'INTAKE_POLLER_LAST_COMPLETED_AT': String(Date.now()),
+      'INTAKE_POLLER_LAST_ERROR': err.message || String(err)
+    });
+    logMsg('[IntakePoller] error: ' + (err.message || err));
+    throw err;
+  }
 }
 
 function runMiddayAutomation() {
@@ -1638,14 +1752,28 @@ function getAutomationHealth() {
     generatedAt: new Date().toISOString(),
     dailyAutomation: {
       triggerCount: _listProjectTriggersByHandler_('runMiddayAutomation').length,
-      expectedTriggerCount: 3,
+      expectedTriggerCount: 4,
       installedAt: props.getProperty('DAILY_AUTOMATION_TRIGGER_INSTALLED_AT') || '',
-      scheduleHours: props.getProperty('DAILY_AUTOMATION_TRIGGER_HOURS') || '7,12,16',
+      scheduleHours: props.getProperty('DAILY_AUTOMATION_TRIGGER_HOURS') || '8,11,14,16',
       lastStartedAt: props.getProperty('DAILY_AUTOMATION_LAST_STARTED_AT') || '',
       lastCompletedAt: props.getProperty('DAILY_AUTOMATION_LAST_COMPLETED_AT') || '',
       lastStatus: props.getProperty('DAILY_AUTOMATION_LAST_STATUS') || 'unknown',
       lastError: props.getProperty('DAILY_AUTOMATION_LAST_ERROR') || '',
       lastSummary: dailyLastSummary
+    },
+    intakePoller: {
+      triggerCount: _listProjectTriggersByHandler_('runIntakePoller').length,
+      expectedTriggerCount: 1,
+      installedAt: props.getProperty('INTAKE_POLLER_TRIGGER_INSTALLED_AT') || '',
+      intervalMinutes: props.getProperty('INTAKE_POLLER_INTERVAL_MINUTES') || String(INTAKE_POLLER_INTERVAL_MINUTES),
+      activeStartHour: INTAKE_POLLER_ACTIVE_START_HOUR,
+      activeEndHour: INTAKE_POLLER_ACTIVE_END_HOUR,
+      lastStartedAt: props.getProperty('INTAKE_POLLER_LAST_STARTED_AT') || '',
+      lastCompletedAt: props.getProperty('INTAKE_POLLER_LAST_COMPLETED_AT') || '',
+      lastProcessedAt: props.getProperty('INTAKE_POLLER_LAST_PROCESSED_AT') || '',
+      lastStatus: props.getProperty('INTAKE_POLLER_LAST_STATUS') || 'unknown',
+      lastError: props.getProperty('INTAKE_POLLER_LAST_ERROR') || '',
+      lastFileCount: props.getProperty('INTAKE_POLLER_LAST_FILE_COUNT') || ''
     },
     qbSync: {
       activeStatus: props.getProperty('QB_SYNC_STATUS') || 'idle',
@@ -3596,4 +3724,3 @@ function exportWorkLogAuditToSheet(auditData, startDate, endDate) {
     throw e;
   }
 }
-

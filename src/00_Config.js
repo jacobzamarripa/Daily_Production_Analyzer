@@ -94,6 +94,9 @@ const DAILY_UPLOAD_SOURCE_FOLDER_ID = COMPILED_FOLDER_ID;
 const DAILY_UPLOAD_STAGE_SHEET      = "12-Upload_Staging";
 const ALIAS_SHEET                   = "13-Vendor_Aliases";
 const UPLOAD_AUDIT_SHEET            = "14-Upload_Audit"; // Auto-upload run audit log (7-day rolling)
+const INTAKE_POLLER_INTERVAL_MINUTES = 5;
+const INTAKE_POLLER_ACTIVE_START_HOUR = 7;
+const INTAKE_POLLER_ACTIVE_END_HOUR = 16;
 // WEBHOOK_SECRET — stored in Script Properties only, never hardcoded
 
 // Hardcoded FID map for bvay4aqkz — keyed by QB_HEADERS column name.
