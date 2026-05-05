@@ -1046,9 +1046,13 @@
         <!-- Upload Tab Bar -->
         <div class="upload-tab-bar">
           <div class="upload-tab-trough">
-            <button class="upload-tab-btn active" id="upload-tab-pipeline" onclick="_duSwitchTab('pipeline')">PIPELINE</button>
+            <button class="upload-tab-btn active" id="upload-tab-pipeline" onclick="_duSwitchTab('pipeline')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
+              PIPELINE
+            </button>
             <button class="upload-tab-btn" id="upload-tab-audit" onclick="_duSwitchTab('audit')">
-              AUDIT LOG
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              BATCH HISTORY
               <span class="upload-tab-badge" id="upload-audit-badge" hidden>0</span>
             </button>
           </div>
@@ -1146,11 +1150,11 @@
         </div><!-- /.upload-pipeline-row -->
         </div><!-- /#du-panel-pipeline -->
 
-        <!-- Audit Log Panel -->
+        <!-- Batch History Panel (Audit Log + Batch History) -->
         <div id="du-panel-audit" style="display:none;">
           <div class="du-audit-toolbar">
             <span class="du-audit-meta" id="du-audit-meta">Loading…</span>
-            <button class="upload-btn btn-ghost" type="button" onclick="_duLoadAuditLog()" title="Refresh audit log">Refresh</button>
+            <button class="upload-btn btn-ghost" type="button" onclick="_duLoadAuditLog(); _duLoadHistory();" title="Refresh audit log and batch history">Refresh</button>
           </div>
           <div class="du-audit-table-wrap">
             <table class="du-audit-table">
@@ -1173,6 +1177,14 @@
               </tbody>
             </table>
           </div>
+
+          <!-- Batch History section -->
+          <div class="du-batchhist-heading">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>BATCH UPLOAD LOG</span>
+          </div>
+          <div class="upload-history-list" id="upload-history-list"></div>
+
         </div><!-- /#du-panel-audit -->
 
       </div><!-- /.upload-shell -->
@@ -1239,14 +1251,6 @@
           </table>
         </div>
 
-        <!-- Batch History (scrolls with the grid) -->
-        <div class="upload-history-section">
-          <div class="upload-history-toggle" id="upload-history-toggle" onclick="_duToggleHistory()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            Batch History
-          </div>
-          <div class="upload-history-list" id="upload-history-list"></div>
-        </div>
 
       </div><!-- /.upload-scroll-region -->
       </section><!-- /.upload-queue-shell -->

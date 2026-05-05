@@ -2291,6 +2291,7 @@ function _duSwitchTab(tab) {
     if (pipelineBtn)   pipelineBtn.classList.remove('active');
     if (auditBtn)      auditBtn.classList.add('active');
     _duLoadAuditLog();
+    _duLoadHistory();
   } else {
     if (pipelinePanel) pipelinePanel.style.display = '';
     if (auditPanel)    auditPanel.style.display = 'none';
