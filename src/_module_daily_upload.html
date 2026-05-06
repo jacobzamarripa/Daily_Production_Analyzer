@@ -533,15 +533,15 @@ function _duBuildFinalizeHtml() {
   if (_duExportStatus && _duExportStatus.coverageStatus === 'partial') {
     return '<div class="upload-step-state-badge is-current">CSV Partial</div>' +
       '<div class="upload-pipeline-stat"><span class="upload-pipeline-stat-label">Existing CSV</span><span class="upload-pipeline-stat-value">' + _duEsc(_duExportStatus.fileName || '—') + '</span></div>' +
-      '<div class="upload-pipeline-meta">CSV PARTIAL · ' + _duEsc(_duExportStatus.matchedRowCount || 0) + '/' + _duEsc(_duExportStatus.rowCount || _duQueue.length) + ' rows covered. Export writes ' + _duEsc(_duExportStatus.missingRowCount || 0) + ' missing row(s).</div>';
+      '<div class="upload-pipeline-meta">CSV PARTIAL · ' + _duEsc(_duExportStatus.matchedRowCount || 0) + '/' + _duEsc(_duExportStatus.rowCount || _duQueue.length) + ' rows covered. Export updates the canonical CSV with ' + _duEsc(_duExportStatus.missingRowCount || 0) + ' new row(s).</div>';
   }
   if (_duExportStatus && _duExportStatus.coverageStatus === 'missing' && _duExportStatus.exists) {
     return '<div class="upload-step-state-badge is-current">CSV Mismatch</div>' +
       '<div class="upload-pipeline-stat"><span class="upload-pipeline-stat-label">Existing CSV</span><span class="upload-pipeline-stat-value">' + _duEsc(_duExportStatus.fileName || '—') + '</span></div>' +
-      '<div class="upload-pipeline-meta">CSV MISSING · Existing dated file does not cover the loaded rows. Export writes the current queue.</div>';
+      '<div class="upload-pipeline-meta">CSV MISSING · Existing dated file does not cover the loaded rows. Export updates the canonical CSV with the current queue.</div>';
   }
   return '<div class="upload-step-state-badge is-current">CSV Needed</div>' +
-    '<div class="upload-pipeline-meta">No manual export found for ' + _duEsc(_duLoadedDateLabel() || 'this queue') + '. Dry run is available after approval; live upload requires an explicit CSV export first.</div>';
+    '<div class="upload-pipeline-meta">No canonical export found for ' + _duEsc(_duLoadedDateLabel() || 'this queue') + '. Dry run is available after approval; live upload requires an explicit CSV export first.</div>';
 }
 
 function _duGetStepCardState(stepKey) {
@@ -626,7 +626,7 @@ function _duRenderStepGates() {
     var hasExport = _duHasExportForLoadedDate();
     var partialExport = _duExportStatus && _duExportStatus.coverageStatus === 'partial';
     btnExport4.disabled = _duIsCheckingExportStatus || hasExport || !_duQueueApproved || !hasQueue || _duDirtyCount() > 0 || _duIsSaving;
-    btnExport4.textContent = _duIsCheckingExportStatus ? 'Checking…' : (hasExport ? 'CSV Verified' : (partialExport ? 'Export Missing' : 'Export CSV'));
+    btnExport4.textContent = _duIsCheckingExportStatus ? 'Checking…' : (hasExport ? 'CSV Verified' : (partialExport ? 'Update CSV' : 'Export CSV'));
     btnExport4.classList.toggle('btn-ghost', hasExport);
     btnExport4.classList.toggle('btn-primary', !hasExport);
     btnExport4.title = !_duQueueApproved
@@ -634,8 +634,8 @@ function _duRenderStepGates() {
       : hasExport
         ? 'A CSV already exists and covers every loaded row.'
         : partialExport
-          ? 'Export only rows missing from the existing dated CSV.'
-          : 'Export current queue to 01_Pending_Upload as a QB CSV';
+          ? 'Merge missing rows into the canonical dated CSV.'
+          : 'Create or update the canonical QB CSV in 01_Pending_Upload';
   }
   _duApplyStepCardStates();
 }
@@ -694,17 +694,17 @@ function _duPreflightExport() {
 
   var body =
     '<div class="upload-preview-note">' +
-      '<strong>' + checkRows.length + ' row' + (checkRows.length === 1 ? '' : 's') + '</strong> will be written to <em>01_Pending_Upload</em> as a CSV.' +
+      '<strong>' + checkRows.length + ' row' + (checkRows.length === 1 ? '' : 's') + '</strong> will be merged into the canonical CSV in <em>01_Pending_Upload</em>.' +
     '</div>' +
     (_duExportStatus && _duExportStatus.coverageStatus === 'partial'
-      ? '<div class="upload-preview-note ok">An existing CSV covers ' + _duEsc(_duExportStatus.matchedRowCount || 0) + ' row(s); this export will include only the missing rows.</div>'
+      ? '<div class="upload-preview-note ok">An existing CSV covers ' + _duEsc(_duExportStatus.matchedRowCount || 0) + ' row(s); this export will update that file with only the missing rows.</div>'
       : '') +
     '<div class="upload-pipeline-meta" style="margin:8px 0 4px">Vendor breakdown:</div>' +
     '<ul style="margin:0 0 10px 16px;padding:0;font-size:11px;color:var(--text-main)">' + vendorLines + '</ul>' +
     '<div class="upload-preview-note warn">Tip: After export, verify the CSV before pushing it to QuickBase. Duplicates already in QB will be flagged on upload.</div>';
 
-  _duOpenModal('Confirm Export to QB CSV', body, [
-    { label: 'Confirm Export', cls: 'upload-btn btn-primary', onclick: '_duCloseModal(); _duExportPipelineCsv();' },
+  _duOpenModal('Confirm Canonical CSV Update', body, [
+    { label: 'Update CSV', cls: 'upload-btn btn-primary', onclick: '_duCloseModal(); _duExportPipelineCsv();' },
     { label: 'Cancel', cls: 'upload-btn', onclick: '_duCloseModal()' }
   ]);
 }
@@ -771,15 +771,15 @@ function _duLoadQueueForDate(dateStr) {
 
 function _duExportPipelineCsv() {
   showToast(_duExportStatus && _duExportStatus.coverageStatus === 'partial'
-    ? 'Exporting missing Daily Upload rows to CSV…'
-    : 'Exporting current QuickBase upload tab to CSV…', 'info');
+    ? 'Updating canonical Daily Upload CSV…'
+    : 'Creating or updating canonical Daily Upload CSV…', 'info');
   google.script.run
     .withSuccessHandler(function(result) {
       _duLatestExport = {
         fileId: result.fileId,
         fileName: result.fileName,
         fileUrl: result.fileUrl,
-        modifiedAt: result.createdAt
+        modifiedAt: result.modifiedAt || result.createdAt
       };
       _duExportStatus = {
         targetDate: _duLoadedQueueDate,
@@ -790,7 +790,7 @@ function _duExportPipelineCsv() {
         fileName: result.fileName,
         fileUrl: result.fileUrl,
         createdAt: result.createdAt,
-        modifiedAt: result.createdAt,
+        modifiedAt: result.modifiedAt || result.createdAt,
         coverageStatus: result.coverageStatus || 'complete',
         rowCount: result.rowCount || _duQueue.length,
         exportedRowCount: result.exportedRowCount || result.rowCount || 0,
@@ -800,7 +800,7 @@ function _duExportPipelineCsv() {
       };
       _duRenderPipeline();
       _duRenderToolbar();
-      showToast(result.reusedExisting ? 'Existing CSV already covers the loaded queue.' : 'CSV exported to 01_Pending_Upload.', 'success');
+      showToast(result.reusedExisting ? 'Existing CSV already covers the loaded queue.' : 'Canonical CSV updated in 01_Pending_Upload.', 'success');
     })
     .withFailureHandler(function(err) {
       showToast('CSV export failed: ' + (err.message || err), 'error');

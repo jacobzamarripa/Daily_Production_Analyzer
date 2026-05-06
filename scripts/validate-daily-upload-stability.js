@@ -47,7 +47,7 @@ const frontend = read('src/_module_daily_upload.html');
 let capturedPopulateArg = null;
 const fakeFiles = [
   {
-    getName: () => 'Daily_Production_Report_04.24.26-04.26.26.csv',
+    getName: () => 'Daily_Production_Report_2026-04-24_to_2026-04-26.csv',
     getId: () => 'range-file',
     getUrl: () => 'https://drive.example/range-file',
     getDateCreated: () => new Date(2026, 3, 27, 8, 0, 0),
@@ -113,17 +113,17 @@ const context = {
     const dates = Array.isArray(targetDates) ? targetDates.slice().sort() : [targetDates];
     const targetDate = dates[0] || '';
     const targetDateLabel = dates.length > 1 ? `${dates[0]} - ${dates[dates.length - 1]}` : targetDate;
-    const datePart = dates.length > 1 ? '04.24.26-04.26.26' : '04.27.26';
+    const datePart = dates.length > 1 ? '2026-04-24_to_2026-04-26' : '2026-04-27';
     return {
       targetDate,
       targetDates: dates,
       targetDateLabel,
-      exists: datePart === '04.24.26-04.26.26',
-      coverageStatus: datePart === '04.24.26-04.26.26' ? 'complete' : 'missing',
-      complete: datePart === '04.24.26-04.26.26',
-      fileId: datePart === '04.24.26-04.26.26' ? 'range-file' : '',
-      fileName: datePart === '04.24.26-04.26.26' ? 'Daily_Production_Report_04.24.26-04.26.26.csv' : '',
-      fileUrl: datePart === '04.24.26-04.26.26' ? 'https://drive.example/range-file' : '',
+      exists: datePart === '2026-04-24_to_2026-04-26',
+      coverageStatus: datePart === '2026-04-24_to_2026-04-26' ? 'complete' : 'missing',
+      complete: datePart === '2026-04-24_to_2026-04-26',
+      fileId: datePart === '2026-04-24_to_2026-04-26' ? 'range-file' : '',
+      fileName: datePart === '2026-04-24_to_2026-04-26' ? 'Daily_Production_Report_2026-04-24_to_2026-04-26.csv' : '',
+      fileUrl: datePart === '2026-04-24_to_2026-04-26' ? 'https://drive.example/range-file' : '',
       createdAt: '2026-04-27 08:05:00',
       modifiedAt: '2026-04-27 08:05:00'
     };
@@ -165,7 +165,7 @@ assertEqual(loadResult.targetDateLabel, '2026-04-24 - 2026-04-26', 'Queue load r
 
 const exportStatus = context.getDailyUploadExportStatus(['2026-04-24', '2026-04-25', '2026-04-26']);
 assert(exportStatus.exists, 'Export status finds the range-named CSV');
-assertEqual(exportStatus.fileName, 'Daily_Production_Report_04.24.26-04.26.26.csv', 'Export status matches range filename label');
+assertEqual(exportStatus.fileName, 'Daily_Production_Report_2026-04-24_to_2026-04-26.csv', 'Export status matches canonical range filename label');
 assertEqual(exportStatus.targetDateLabel, '2026-04-24 - 2026-04-26', 'Export status returns range target label');
 
 assert(/if \(!dryRun && options\.createSnapshot === true\) \{/.test(backend), 'Live upload does not create a snapshot unless explicitly requested');

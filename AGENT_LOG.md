@@ -1,5 +1,16 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-05-06: Daily Upload canonical CSV export
+- **Branch:** `fix/daily-upload-canonical-export`.
+- **Goal:** Stop backup sprawl from partial Daily Upload exports by updating one canonical CSV per report date or date range.
+- **Changes:**
+  - Merged `feat/batch-history-tab` into `main` with a fast-forward, then branched from the merged state.
+  - Replaced Daily Upload manual export naming with canonical date-scope files like `Daily_Production_Report_2026-05-01.csv` and `Daily_Production_Report_2026-05-01_to_2026-05-02.csv`.
+  - Updated export logic to find the canonical CSV or merge all legacy date-matching CSVs, merge missing approved rows by `Date + FDH Engineering ID + Contractor`, and overwrite the canonical Drive file with a recreate fallback.
+  - Added Drive file descriptions with row count, merge count, vendor row summary, and last-updated metadata.
+  - Updated Step 4 and export confirmation copy to describe canonical CSV updates instead of missing-only backup files.
+- **Verification:** `node scripts/validate-daily-upload-csv-hardening.js`, `node scripts/validate-daily-upload-stability.js`, `node scripts/validate-daily-upload-batching.js`, `node scripts/validate-daily-upload-duplicates.js`, backend/frontend parse checks for Daily Upload, and `git diff --check` passed.
+
 > [!success] 2026-05-06: DailyUpload header and History tab polish
 - **Branch:** `feat/batch-history-tab`.
 - **Goal:** Move Pipeline/History controls into the DailyUpload header, restore native two-tone title styling, and make the History tab readable and useful in light mode.
