@@ -1,5 +1,15 @@
 # Agent Log — Omni PMO App
 
+> [!success] 2026-05-06: DailyUpload header and History tab polish
+- **Branch:** `feat/batch-history-tab`.
+- **Goal:** Move Pipeline/History controls into the DailyUpload header, restore native two-tone title styling, and make the History tab readable and useful in light mode.
+- **Changes:**
+  - Moved the Pipeline/History segmented control beside the Daily Upload title in the Upload Center header.
+  - Split the Daily Upload title into black `DAILY` and blue `UPLOAD` spans to match the OmniSight brand/header treatment.
+  - Reworked History/Audit table styles from dark-mode-first colors to light-safe surfaces, headers, rows, source pills, and PASS/FAIL chips with dark-mode overrides.
+  - Added a History summary strip showing runs shown, runs needing review, uploaded total, dupes/skips, and latest batch time using existing audit/history data.
+- **Verification:** `node scripts/validate-daily-upload-stability.js`, `node scripts/validate-daily-upload-batching.js`, `node scripts/validate-daily-upload-duplicates.js`, frontend parse check for `src/_module_daily_upload.html`, and `git diff --check -- src/WebApp.html src/_styles_daily_upload.html src/_module_daily_upload.html` passed.
+
 > [!success] 2026-05-05: Daily Upload intake poller added
 - **Branch:** `fix/daily-upload-poller`.
 - **Goal:** Reduce Daily Upload intake latency without relying on Power Automate premium HTTP webhooks.

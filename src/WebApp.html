@@ -1029,7 +1029,21 @@
           <div class="upload-overview-head">
             <div class="upload-overview-titleblock">
               <div class="upload-overview-kicker">Upload Center</div>
-              <div class="upload-overview-title">DAILYUPLOAD</div>
+              <div class="upload-overview-title"><span>DAILY</span><span>UPLOAD</span></div>
+            </div>
+            <div class="upload-tab-bar">
+              <div class="upload-tab-trough" id="upload-tab-trough">
+                <div class="upload-tab-pill-indicator" aria-hidden="true"></div>
+                <button class="upload-tab-btn active" id="upload-tab-pipeline" onclick="_duSwitchTab('pipeline')">
+                  <span class="upload-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg></span>
+                  <span class="upload-tab-label">PIPELINE</span>
+                </button>
+                <button class="upload-tab-btn" id="upload-tab-audit" onclick="_duSwitchTab('audit')">
+                  <span class="upload-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                  <span class="upload-tab-label">HISTORY</span>
+                  <span class="upload-tab-badge" id="upload-audit-badge" hidden>0</span>
+                </button>
+              </div>
             </div>
             <div class="upload-kpi-bar" id="upload-kpi-bar" aria-live="polite">
               <div class="upload-kpi-chip kpi-pending"><span class="upload-kpi-label">Pending</span><span class="upload-kpi-value">—</span></div>
@@ -1038,22 +1052,6 @@
               <div class="upload-kpi-chip kpi-failed"><span class="upload-kpi-label">Failed</span><span class="upload-kpi-value">—</span></div>
             </div>
             <div class="upload-overview-meta" id="upload-last-sync" aria-live="polite">Refreshing intake…</div>
-          </div>
-        </div>
-
-        <!-- Upload Tab Bar -->
-        <div class="upload-tab-bar">
-          <div class="upload-tab-trough" id="upload-tab-trough">
-            <div class="upload-tab-pill-indicator" aria-hidden="true"></div>
-            <button class="upload-tab-btn active" id="upload-tab-pipeline" onclick="_duSwitchTab('pipeline')">
-              <span class="upload-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg></span>
-              <span class="upload-tab-label">PIPELINE</span>
-            </button>
-            <button class="upload-tab-btn" id="upload-tab-audit" onclick="_duSwitchTab('audit')">
-              <span class="upload-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-              <span class="upload-tab-label">HISTORY</span>
-              <span class="upload-tab-badge" id="upload-audit-badge" hidden>0</span>
-            </button>
           </div>
         </div>
 
@@ -1155,6 +1153,7 @@
             <span class="du-audit-meta" id="du-audit-meta">Loading…</span>
             <button class="upload-btn btn-ghost" type="button" onclick="_duLoadAuditLog(); _duLoadHistory();" title="Refresh audit log and batch history">Refresh</button>
           </div>
+          <div class="du-history-summary" id="du-history-summary" aria-live="polite"></div>
           <div class="du-audit-table-wrap">
             <table class="du-audit-table">
               <thead>

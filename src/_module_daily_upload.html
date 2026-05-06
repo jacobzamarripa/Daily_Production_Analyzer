@@ -1715,6 +1715,7 @@ function _duFinalizeDraftCopy(drafts) {
 function _duRenderHistory() {
   var el = document.getElementById('upload-history-list');
   if (!el) return;
+  _duRenderHistorySummary();
   if (_duHistory.length === 0) {
     el.innerHTML = '<tr><td colspan="7" class="du-audit-empty">No upload history yet.</td></tr>';
     return;
@@ -1738,6 +1739,36 @@ function _duRenderHistory() {
       '<td>' + (failed > 0 ? '<span class="du-audit-chip du-audit-chip--fail">' + _duEsc(String(failed)) + '</span>' : '0') + '</td>' +
       '<td>' + (skipped > 0 ? '<span class="du-batchhist-skip">' + _duEsc(String(skipped)) + '</span>' : '0') + '</td>' +
     '</tr>';
+  }).join('');
+}
+
+function _duRenderHistorySummary(auditRows) {
+  var el = document.getElementById('du-history-summary');
+  if (!el) return;
+  auditRows = auditRows || [];
+  var runCount = auditRows.length;
+  var failedRuns = auditRows.filter(function(r) { return r['Status'] === 'Fail' && r['Reviewed'] !== 'Y'; }).length;
+  var uploaded = auditRows.reduce(function(total, r) { return total + Number(r['Uploaded'] || 0); }, 0);
+  var duplicateOrSkipped = auditRows.reduce(function(total, r) { return total + Number(r['Duplicates'] || 0); }, 0);
+  duplicateOrSkipped += _duHistory.reduce(function(total, r) { return total + Number(r['Skipped'] || 0); }, 0);
+  var latestRaw = '';
+  if (_duHistory.length && _duHistory[0]['Timestamp']) latestRaw = _duHistory[0]['Timestamp'];
+  else if (auditRows.length && auditRows[auditRows.length - 1]['Timestamp']) latestRaw = auditRows[auditRows.length - 1]['Timestamp'];
+  var latest = latestRaw
+    ? new Date(latestRaw).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+    : '—';
+
+  el.innerHTML = [
+    { label: 'Runs Shown', value: runCount, cls: '' },
+    { label: 'Needs Review', value: failedRuns, cls: failedRuns ? 'is-alert' : '' },
+    { label: 'Uploaded', value: uploaded, cls: uploaded ? 'is-good' : '' },
+    { label: 'Dupes / Skips', value: duplicateOrSkipped, cls: duplicateOrSkipped ? 'is-warn' : '' },
+    { label: 'Latest Batch', value: latest, cls: '' }
+  ].map(function(item) {
+    return '<div class="du-history-summary-card ' + item.cls + '">' +
+      '<div class="du-history-summary-label">' + _duEsc(item.label) + '</div>' +
+      '<div class="du-history-summary-value">' + _duEsc(String(item.value)) + '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -2339,8 +2370,10 @@ function _duRenderAuditLog(rows) {
   var badge = document.getElementById('upload-audit-badge');
 
   if (!tbody) return;
+  rows = rows || [];
+  _duRenderHistorySummary(rows);
 
-  if (!rows || rows.length === 0) {
+  if (rows.length === 0) {
     tbody.innerHTML = '<tr><td colspan="10" class="du-audit-empty">No unreviewed runs in the last 7 days.</td></tr>';
     if (meta)  meta.textContent = '0 runs';
     if (badge) { badge.textContent = '0'; badge.hidden = true; }
